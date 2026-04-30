@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Loader2, CheckCircle } from 'lucide-react'
 
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
 
   const supabase = createClient()
+  const router = useRouter()
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,10 +46,11 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('Email o contraseña incorrectos.')
-    }
-    // Si tiene éxito el middleware redirige automáticamente
-    setCargando(false)
+  setError('Email o contraseña incorrectos.')
+} else {
+  router.push('/dashboard')
+}
+setCargando(false)
   }
 
   if (enviado) {
