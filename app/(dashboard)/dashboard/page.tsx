@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { LayoutDashboard, Users, ClipboardList, FileText, TrendingUp } from 'lucide-react'
 
@@ -25,10 +26,10 @@ export default async function DashboardPage() {
   const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
 
   const tarjetas = [
-    { label: 'Clientes activos', valor: totalClientes ?? 0, icono: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Órdenes este mes', valor: ordenesMes ?? 0, icono: ClipboardList, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Cotizaciones abiertas', valor: cotizacionesAbiertas ?? 0, icono: FileText, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    { label: 'Ingresos del mes', valor: `$${totalIngresos.toLocaleString()}`, icono: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Clientes activos', valor: totalClientes ?? 0, icono: Users, color: 'text-blue-600', bg: 'bg-blue-50', href: '/clientes' },
+    { label: 'Órdenes este mes', valor: ordenesMes ?? 0, icono: ClipboardList, color: 'text-green-600', bg: 'bg-green-50', href: '/ordenes' },
+    { label: 'Cotizaciones abiertas', valor: cotizacionesAbiertas ?? 0, icono: FileText, color: 'text-yellow-600', bg: 'bg-yellow-50', href: '/cotizaciones' },
+    { label: 'Ingresos del mes', valor: `$${totalIngresos.toLocaleString()}`, icono: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', href: '/ordenes' },
   ]
 
   const estadoColor: Record<string, string> = {
@@ -48,8 +49,8 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        {tarjetas.map(({ label, valor, icono: Icono, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        {tarjetas.map(({ label, valor, icono: Icono, color, bg, href }) => (
+          <Link key={label} href={href} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md hover:border-gray-300 transition-all">
             <div className="flex items-start justify-between mb-4">
               <p className="text-sm font-medium text-gray-500">{label}</p>
               <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center`}>
@@ -57,7 +58,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">{valor}</p>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
         {ordenesRecientes && ordenesRecientes.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {ordenesRecientes.map((orden: any) => (
-              <div key={orden.id} className="px-6 py-4 flex items-center justify-between">
+              <Link key={orden.id} href={`/ordenes/${orden.id}`} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-gray-900">
                     {(orden.clientes as any)?.nombre ?? 'Cliente'}
@@ -78,7 +79,7 @@ export default async function DashboardPage() {
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
                   {orden.estado.replace('_', ' ')}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
