@@ -96,12 +96,12 @@ export default function FirmaDigital({ ordenId, tallerId, onFirmado, onOmitir }:
 
       const path = `${tallerId}/${ordenId}/firma_${Date.now()}.png`
       const { error: uploadError } = await supabase.storage
-        .from('fotos-diagnostico')
+        .from('diagnosticos')
         .upload(path, blob, { contentType: 'image/png', upsert: true })
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage.from('fotos-diagnostico').getPublicUrl(path)
+      const { data } = supabase.storage.from('diagnosticos').getPublicUrl(path)
 
       // Guardar referencia en fotos_diagnostico con tipo 'firma'
       await supabase.from('fotos_diagnostico').insert({

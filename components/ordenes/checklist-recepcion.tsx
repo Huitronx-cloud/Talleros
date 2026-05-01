@@ -58,10 +58,10 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
       const ext  = fotoActual.file.name.split('.').pop()
       const path = `${tallerId}/${ordenId}/recepcion_${Date.now()}.${ext}`
       const { error } = await supabase.storage
-        .from('fotos-diagnostico')
+        .from('diagnosticos')
         .upload(path, fotoActual.file, { upsert: true })
       if (error) throw error
-      const { data } = supabase.storage.from('fotos-diagnostico').getPublicUrl(path)
+      const { data } = supabase.storage.from('diagnosticos').getPublicUrl(path)
       setFotos(prev => [...prev, { url: data.publicUrl, descripcion }])
       setFotoActual(null)
       setDescripcion('')
