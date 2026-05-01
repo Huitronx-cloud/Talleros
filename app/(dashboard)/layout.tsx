@@ -12,9 +12,14 @@ export default async function DashboardLayout({
 
   if (!user) redirect('/login')
 
+  const { data: taller } = await supabase
+    .from('talleres')
+    .select('nombre')
+    .single()
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar nombreTaller={taller?.nombre ?? 'Mi taller'} />
       <main className="flex-1 ml-64 overflow-y-auto">
         <div className="p-8">
           {children}

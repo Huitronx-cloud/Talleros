@@ -25,10 +25,14 @@ const NAV_BOTTOM = [
   { href: '/configuracion', label: 'Configuración', icono: Settings },
 ]
 
-export default function Sidebar() {
-  const pathname  = usePathname()
-  const router    = useRouter()
-  const supabase  = createClient()
+interface Props {
+  nombreTaller: string
+}
+
+export default function Sidebar({ nombreTaller }: Props) {
+  const pathname = usePathname()
+  const router   = useRouter()
+  const supabase = createClient()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -44,9 +48,9 @@ export default function Sidebar() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <Wrench className="w-4 h-4 text-white" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-white font-bold text-base leading-tight">Talleros</p>
-            <p className="text-gray-400 text-xs">Mi taller</p>
+            <p className="text-gray-400 text-xs truncate">{nombreTaller}</p>
           </div>
         </div>
       </div>
