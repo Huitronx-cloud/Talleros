@@ -1,23 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car } from 'lucide-react'
+import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car, TrendingUp } from 'lucide-react'
 import { Cliente } from '@/types'
 import { eliminarCliente } from '@/app/(dashboard)/clientes/actions'
 import ModalCliente from './modal-cliente'
 
-interface Props {
-  clientes: Cliente[]
+interface ClienteStats {
+  totalGastado: number
+  visitas: number
+  ultimaVisita: string | null
 }
 
-export default function TablaClientes({ clientes }: Props) {
+interface Props {
+  clientes: Cliente[]
+  statsMap: Record<string, ClienteStats>
+}
+
+export default function TablaClientes({ clientes, statsMap }: Props) {
   const [busqueda, setBusqueda]           = useState('')
   const [modalAbierto, setModalAbierto]   = useState(false)
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null)
   const [eliminando, setEliminando]       = useState<string | null>(null)
   const [confirmar, setConfirmar]         = useState<string | null>(null)
 
-  // Búsqueda por nombre o placas
   const filtrados = clientes.filter(c =>
     c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
     (c.placas   ?? '').toUpperCase().includes(busqueda.toUpperCase()) ||
@@ -34,6 +40,16 @@ export default function TablaClientes({ clientes }: Props) {
     await eliminarCliente(id)
     setEliminando(null)
     setConfirmar(null)
+  }
+
+  const diasDesde = (fecha: string) => {
+    const diff = Date.now() - new Date(fecha).getTime()
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24))
+    if (dias === 0) return 'Hoy'
+    if (dias === 1) return 'Ayer'
+    if (dias < 30) return `Hace ${dias} días`
+    if (dias < 365) return `Hace ${Math.floor(dias / 30)} meses`
+    return `Hace ${Math.floor(dias / 365)} año${Math.floor(dias / 365) > 1 ? 's' : ''}`
   }
 
   return (
@@ -87,120 +103,147 @@ export default function TablaClientes({ clientes }: Props) {
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contacto</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Vehículo</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Notas</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Valor de vida</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Última visita</th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filtrados.map(c => (
-                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                {filtrados.map(c => {
+                  const stats = statsMap[c.id]
+                  return (
+                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
 
-                    {/* Cliente */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-blue-600 text-sm font-bold">
-                            {c.nombre.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Contacto */}
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        {c.telefono && (
-                          <div className="flex items-center gap-1.5 text-sm text-gray-700">
-                            <Phone className="w-3.5 h-3.5 text-gray-400" />
-                            {c.telefono}
+                      {/* Cliente */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-blue-600 text-sm font-bold">
+                              {c.nombre.charAt(0).toUpperCase()}
+                            </span>
                           </div>
-                        )}
-                        {c.email && (
-                          <div className="flex items-center gap-1.5 text-sm text-gray-700">
-                            <Mail className="w-3.5 h-3.5 text-gray-400" />
-                            {c.email}
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
+                            <p className="text-xs text-gray-400">
+                              Cliente desde {new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })}
+                            </p>
                           </div>
-                        )}
-                        {!c.telefono && !c.email && (
-                          <span className="text-xs text-gray-400">Sin contacto</span>
-                        )}
-                      </div>
-                    </td>
+                        </div>
+                      </td>
 
-                    {/* Vehículo */}
-                    <td className="px-6 py-4">
-                      {(c.vehiculo_marca || c.placas) ? (
+                      {/* Contacto */}
+                      <td className="px-6 py-4">
                         <div className="space-y-1">
-                          {c.vehiculo_marca && (
+                          {c.telefono && (
                             <div className="flex items-center gap-1.5 text-sm text-gray-700">
-                              <Car className="w-3.5 h-3.5 text-gray-400" />
-                              {[c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_año].filter(Boolean).join(' ')}
+                              <Phone className="w-3.5 h-3.5 text-gray-400" />
+                              {c.telefono}
                             </div>
                           )}
-                          {c.placas && (
-                            <span className="inline-block bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2 py-0.5 rounded">
-                              {c.placas}
-                            </span>
+                          {c.email && (
+                            <div className="flex items-center gap-1.5 text-sm text-gray-700">
+                              <Mail className="w-3.5 h-3.5 text-gray-400" />
+                              {c.email}
+                            </div>
+                          )}
+                          {!c.telefono && !c.email && (
+                            <span className="text-xs text-gray-400">Sin contacto</span>
                           )}
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">Sin vehículo</span>
-                      )}
-                    </td>
+                      </td>
 
-                    {/* Notas */}
-                    <td className="px-6 py-4 max-w-[200px]">
-                      <p className="text-sm text-gray-700 truncate">
-                        {c.notas || <span className="text-gray-400">—</span>}
-                      </p>
-                    </td>
-
-                    {/* Acciones */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 justify-end">
-                        <button
-                          onClick={() => abrirEditar(c)}
-                          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Editar"
-                        >
-                          <Pencil className="w-4 h-4 text-gray-400 hover:text-blue-600" />
-                        </button>
-
-                        {confirmar === c.id ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleEliminar(c.id)}
-                              disabled={eliminando === c.id}
-                              className="text-xs font-medium text-red-600 hover:text-red-700 px-2 py-1 bg-red-50 rounded-lg"
-                            >
-                              {eliminando === c.id ? '...' : 'Confirmar'}
-                            </button>
-                            <button
-                              onClick={() => setConfirmar(null)}
-                              className="text-xs font-medium text-gray-500 px-2 py-1 hover:bg-gray-100 rounded-lg"
-                            >
-                              No
-                            </button>
+                      {/* Vehículo */}
+                      <td className="px-6 py-4">
+                        {(c.vehiculo_marca || c.placas) ? (
+                          <div className="space-y-1">
+                            {c.vehiculo_marca && (
+                              <div className="flex items-center gap-1.5 text-sm text-gray-700">
+                                <Car className="w-3.5 h-3.5 text-gray-400" />
+                                {[c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_año].filter(Boolean).join(' ')}
+                              </div>
+                            )}
+                            {c.placas && (
+                              <span className="inline-block bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2 py-0.5 rounded">
+                                {c.placas}
+                              </span>
+                            )}
                           </div>
                         ) : (
-                          <button
-                            onClick={() => setConfirmar(c.id)}
-                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
-                          </button>
+                          <span className="text-xs text-gray-400">Sin vehículo</span>
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      {/* Valor de vida */}
+                      <td className="px-6 py-4">
+                        {stats ? (
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                              <span className="text-sm font-semibold text-gray-900">
+                                ${stats.totalGastado.toLocaleString('es-MX')}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {stats.visitas} {stats.visitas === 1 ? 'visita' : 'visitas'}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">Sin órdenes</span>
+                        )}
+                      </td>
+
+                      {/* Última visita */}
+                      <td className="px-6 py-4">
+                        {stats?.ultimaVisita ? (
+                          <span className="text-sm text-gray-600">
+                            {diasDesde(stats.ultimaVisita)}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+
+                      {/* Acciones */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1 justify-end">
+                          <button
+                            onClick={() => abrirEditar(c)}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="w-4 h-4 text-gray-400 hover:text-blue-600" />
+                          </button>
+
+                          {confirmar === c.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEliminar(c.id)}
+                                disabled={eliminando === c.id}
+                                className="text-xs font-medium text-red-600 hover:text-red-700 px-2 py-1 bg-red-50 rounded-lg"
+                              >
+                                {eliminando === c.id ? '...' : 'Confirmar'}
+                              </button>
+                              <button
+                                onClick={() => setConfirmar(null)}
+                                className="text-xs font-medium text-gray-500 px-2 py-1 hover:bg-gray-100 rounded-lg"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmar(c.id)}
+                              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
