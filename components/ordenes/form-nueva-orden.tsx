@@ -5,33 +5,33 @@ import { useRouter } from 'next/navigation'
 import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
+import ChecklistRecepcion from './checklist-recepcion'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 interface Props {
   clientes: Cliente[]
+  tallerId: string
 }
 
 const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
 
-export default function FormNuevaOrden({ clientes }: Props) {
+export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Props) {
   const router = useRouter()
-  const [paso, setPaso]       = useState(1)
+  const [paso, setPaso]         = useState(1)
   const [cargando, setCargando] = useState(false)
-  const [error, setError]     = useState('')
+  const [error, setError]       = useState('')
+  const [ordenId, setOrdenId]   = useState<string | null>(null)
 
-  // Paso 1
-  const [busquedaCliente, setBusquedaCliente] = useState('')
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
-  const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
+  const [busquedaCliente, setBusquedaCliente]           = useState('')
+  const [clienteSeleccionado, setClienteSeleccionado]   = useState<Cliente | null>(null)
+  const [mostrarSugerencias, setMostrarSugerencias]     = useState(false)
 
-  // Vehículo (auto-llenado desde cliente o manual)
   const [vehiculo, setVehiculo] = useState({
     marca: '', modelo: '', año: '', placas: '', kilometraje: '',
   })
 
-  // Paso 2
   const [form, setForm] = useState({
     descripcion_problema: '',
     diagnostico: '',
@@ -44,7 +44,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
   })
   const [servicios, setServicios] = useState<ServicioItem[]>([{ ...SERVICIO_VACIO }])
 
-  // ── Búsqueda de cliente ──
   const sugerencias = busquedaCliente.length > 1
     ? clientes.filter(c =>
         c.nombre.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
@@ -57,10 +56,10 @@ export default function FormNuevaOrden({ clientes }: Props) {
     setBusquedaCliente(c.nombre)
     setMostrarSugerencias(false)
     setVehiculo({
-      marca: c.vehiculo_marca ?? '',
-      modelo: c.vehiculo_modelo ?? '',
-      año: c.vehiculo_año ? String(c.vehiculo_año) : '',
-      placas: c.placas ?? '',
+      marca:       c.vehiculo_marca ?? '',
+      modelo:      c.vehiculo_modelo ?? '',
+      año:         c.vehiculo_año ? String(c.vehiculo_año) : '',
+      placas:      c.placas ?? '',
       kilometraje: '',
     })
   }
@@ -71,7 +70,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
     setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '' })
   }
 
-  // ── Servicios ──
   const actualizarServicio = (i: number, campo: keyof ServicioItem, val: string) => {
     setServicios(prev => prev.map((s, idx) => {
       if (idx !== i) return s
@@ -84,12 +82,10 @@ export default function FormNuevaOrden({ clientes }: Props) {
   const agregarServicio = () => setServicios(prev => [...prev, { ...SERVICIO_VACIO }])
   const quitarServicio  = (i: number) => setServicios(prev => prev.filter((_, idx) => idx !== i))
 
-  // ── Totales ──
   const subtotal  = servicios.reduce((acc, s) => acc + s.total, 0)
   const descuento = parseFloat(form.descuento) || 0
   const total     = Math.max(0, subtotal - descuento)
 
-  // ── Submit ──
   const handleSubmit = async () => {
     if (!form.descripcion_problema.trim()) { setError('La descripción del problema es obligatoria'); return }
     setCargando(true)
@@ -121,34 +117,41 @@ export default function FormNuevaOrden({ clientes }: Props) {
       setError(resultado.error)
       setCargando(false)
     } else {
-      router.push(resultado.id ? `/ordenes/${resultado.id}` : '/ordenes')
+      setOrdenId(resultado.id ?? null)
+      setPaso(3)
+      setCargando(false)
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto">
+
       {/* Progreso */}
-      <div className="flex items-center gap-3 mb-8">
-        {[1, 2].map(n => (
-          <div key={n} className="flex items-center gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors ${
-              paso >= n ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-            }`}>{n}</div>
-            <span className={`text-sm font-medium ${paso >= n ? 'text-gray-900' : 'text-gray-400'}`}>
-              {n === 1 ? 'Cliente y vehículo' : 'Servicios y detalles'}
-            </span>
-            {n < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
-          </div>
-        ))}
-      </div>
+      {paso < 3 && (
+        <div className="flex items-center gap-3 mb-8">
+          {[
+            { n: 1, label: 'Cliente y vehículo' },
+            { n: 2, label: 'Servicios y detalles' },
+            { n: 3, label: 'Checklist de recepción' },
+          ].map(({ n, label }) => (
+            <div key={n} className="flex items-center gap-3">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors ${
+                paso >= n ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>{n}</div>
+              <span className={`text-sm font-medium ${paso >= n ? 'text-gray-900' : 'text-gray-400'}`}>
+                {label}
+              </span>
+              {n < 3 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── PASO 1 ── */}
       {paso === 1 && (
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Cliente</h2>
-
-            {/* Búsqueda */}
             <div className="relative mb-4">
               <label className={LABEL}>Buscar cliente existente</label>
               <div className="relative">
@@ -235,7 +238,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
       {/* ── PASO 2 ── */}
       {paso === 2 && (
         <div className="space-y-6">
-          {/* Problema */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Problema reportado</h2>
             <div>
@@ -258,7 +260,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
             </div>
           </div>
 
-          {/* Servicios */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Servicios</h2>
@@ -266,16 +267,13 @@ export default function FormNuevaOrden({ clientes }: Props) {
                 <Plus className="w-4 h-4" /> Agregar
               </button>
             </div>
-
             <div className="space-y-3">
-              {/* Header */}
               <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 uppercase px-1">
                 <div className="col-span-5">Descripción</div>
                 <div className="col-span-2 text-center">Cant.</div>
                 <div className="col-span-3 text-right">Precio unit.</div>
                 <div className="col-span-2 text-right">Total</div>
               </div>
-
               {servicios.map((s, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-5">
@@ -300,8 +298,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
                 </div>
               ))}
             </div>
-
-            {/* Totales */}
             <div className="mt-5 pt-4 border-t border-gray-100 space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
@@ -323,7 +319,6 @@ export default function FormNuevaOrden({ clientes }: Props) {
             </div>
           </div>
 
-          {/* Extra */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Datos adicionales</h2>
             <div className="grid grid-cols-2 gap-4">
@@ -373,6 +368,16 @@ export default function FormNuevaOrden({ clientes }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── PASO 3 — CHECKLIST ── */}
+      {paso === 3 && ordenId && (
+        <ChecklistRecepcion
+          ordenId={ordenId}
+          tallerId={tallerIdProp}
+          onTerminar={() => router.push(`/ordenes/${ordenId}`)}
+        />
+      )}
+
     </div>
   )
 }

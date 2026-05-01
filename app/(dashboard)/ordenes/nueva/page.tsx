@@ -5,18 +5,18 @@ import FormNuevaOrden from '@/components/ordenes/form-nueva-orden'
 export default async function NuevaOrdenPage() {
   const supabase = createClient()
 
-  const { data: clientes } = await supabase
-    .from('clientes')
-    .select('*')
-    .order('nombre')
+  const [{ data: clientes }, { data: usuario }] = await Promise.all([
+    supabase.from('clientes').select('*').order('nombre'),
+    supabase.from('usuarios').select('taller_id').single(),
+  ])
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Nueva orden de trabajo</h1>
-        <p className="text-gray-500 text-sm mt-1">Completa los datos en 2 pasos.</p>
-      </div>
-      <FormNuevaOrden clientes={(clientes ?? []) as Cliente[]} />
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Nueva orden de trabajo</h1>
+      <FormNuevaOrden
+        clientes={(clientes ?? []) as Cliente[]}
+        tallerId={usuario?.taller_id ?? ''}
+      />
     </div>
   )
 }
