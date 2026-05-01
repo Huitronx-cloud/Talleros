@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
-import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
+import { enviarNotificacion, mensajeOrdenLista, mensajeResena } from '@/lib/notificaciones'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -86,7 +86,7 @@ export async function cambiarEstado(
 
   const { data: orden } = await supabase
     .from('ordenes')
-    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono)')
+    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono), talleres(google_review_url, nombre, moneda)')
     .eq('id', ordenId)
     .single()
 
@@ -119,7 +119,7 @@ export async function cambiarEstado(
   // Notificación automática al marcar como listo
   if (nuevoEstado === 'listo' && orden.clientes) {
     const { data: taller } = await supabase.rpc('get_taller_para_pdf', { p_taller_id: orden.taller_id })
-    const cliente = orden.clientes as { nombre: string; telefono: string | null }
+    const cliente = (orden.clientes as any) as { nombre: string; telefono: string | null }
 
     const mensaje = mensajeOrdenLista({
       nombre:       cliente.nombre,
@@ -131,7 +131,6 @@ export async function cambiarEstado(
       moneda:       taller?.moneda,
     })
 
-    // Fire-and-forget: no bloquea la respuesta al usuario
     enviarNotificacion({
       supabase,
       tallerId:  orden.taller_id,
@@ -141,6 +140,36 @@ export async function cambiarEstado(
       tipo:      'orden_lista',
       mensaje,
     }).catch(console.error)
+  }
+
+  // Reseña automática de Google al marcar como entregado (2 horas después)
+  if (nuevoEstado === 'entregado' && orden.clientes) {
+    const taller = (orden.talleres as any) as { google_review_url: string | null; nombre: string; moneda: string } | null
+    const cliente = (orden.clientes as any) as { nombre: string; telefono: string | null }
+    const reviewUrl = taller?.google_review_url
+
+    if (reviewUrl && cliente.telefono) {
+      const mensaje = mensajeResena({
+        nombre:          cliente.nombre,
+        marca:           orden.vehiculo_marca,
+        modelo:          orden.vehiculo_modelo,
+        tallerNombre:    taller?.nombre ?? 'el taller',
+        googleReviewUrl: reviewUrl,
+      })
+
+      // Espera 2 horas antes de enviar (7200000 ms)
+      setTimeout(() => {
+        enviarNotificacion({
+          supabase,
+          tallerId:  orden.taller_id,
+          ordenId,
+          clienteId: orden.cliente_id,
+          telefono:  cliente.telefono,
+          tipo:      'seguimiento',
+          mensaje,
+        }).catch(console.error)
+      }, 7200000)
+    }
   }
 
   revalidatePath('/ordenes')
