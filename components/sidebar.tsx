@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
-  LayoutGrid
+  LayoutGrid,
   Users,
   ClipboardList,
   FileText,
