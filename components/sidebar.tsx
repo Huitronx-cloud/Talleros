@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
+  LayoutGrid
   Users,
   ClipboardList,
   FileText,
@@ -16,6 +17,7 @@ import {
 
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',     icono: LayoutDashboard },
+  { href: '/kanban',       label: 'Kanban',         icono: LayoutGrid      },
   { href: '/clientes',     label: 'Clientes',      icono: Users           },
   { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList   },
   { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText        },
