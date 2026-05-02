@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
   LayoutGrid,
+  CalendarDays,
   Users,
   ClipboardList,
   FileText,
@@ -16,11 +17,12 @@ import {
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { href: '/dashboard',    label: 'Dashboard',     icono: LayoutDashboard },
-  { href: '/kanban',       label: 'Kanban',         icono: LayoutGrid      },
-  { href: '/clientes',     label: 'Clientes',      icono: Users           },
-  { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList   },
-  { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText        },
+  { href: '/dashboard',    label: 'Dashboard',    icono: LayoutDashboard },
+  { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid      },
+  { href: '/citas',        label: 'Citas',         icono: CalendarDays    },
+  { href: '/clientes',     label: 'Clientes',     icono: Users           },
+  { href: '/ordenes',      label: 'Órdenes',      icono: ClipboardList   },
+  { href: '/cotizaciones', label: 'Cotizaciones', icono: FileText        },
 ]
 
 const NAV_BOTTOM = [
