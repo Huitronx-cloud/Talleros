@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import CalendarioCitas from '@/components/citas/calendario-citas'
+import CopiarlinkCitas from '@/components/citas/copiar-link-citas'
 
 export default async function CitasPage() {
   const supabase = createClient()
@@ -15,6 +16,8 @@ export default async function CitasPage() {
     .order('fecha', { ascending: true })
     .order('hora', { ascending: true })
 
+  const linkPublico = `${process.env.NEXT_PUBLIC_APP_URL}/citas/${taller?.id}`
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -24,22 +27,7 @@ export default async function CitasPage() {
             Agenda y gestiona las citas de tu taller.
           </p>
         </div>
-        {taller && (
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Link público de citas</p>
-              <p className="text-xs font-mono text-blue-600 truncate max-w-xs">
-                {process.env.NEXT_PUBLIC_APP_URL}/citas/{taller.id}
-              </p>
-            </div>
-            <button
-              onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}/citas/${taller.id}`)}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-            >
-              Copiar link
-            </button>
-          </div>
-        )}
+        {taller && <CopiarlinkCitas link={linkPublico} />}
       </div>
       <CalendarioCitas citas={citas ?? []} tallerId={taller?.id ?? ''} />
     </div>
