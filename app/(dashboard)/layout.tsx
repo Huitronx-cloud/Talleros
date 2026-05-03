@@ -18,10 +18,11 @@ export default async function DashboardLayout({
     .single()
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar nombreTaller={taller?.nombre ?? 'Mi taller'} />
-      <main className="flex-1 ml-64 overflow-y-auto">
-        <div className="p-8">
+      {/* Móvil: padding top por la barra fija. Desktop: margin left por el sidebar */}
+      <main className="flex-1 md:ml-64 pt-14 md:pt-0 overflow-y-auto w-full">
+        <div className="p-4 md:p-8">
           {children}
         </div>
       </main>
