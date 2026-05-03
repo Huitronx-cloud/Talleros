@@ -103,9 +103,8 @@ export default function TablaClientes({ clientes, statsMap }: Props) {
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contacto</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Vehículo</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Valor de vida</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Última visita</th>
-                  <th className="px-6 py-3" />
+<th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Valor de vida</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Última visita</th>                  <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -174,7 +173,7 @@ export default function TablaClientes({ clientes, statsMap }: Props) {
                       </td>
 
                       {/* Valor de vida */}
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 hidden md:table-cell">
                         {stats ? (
                           <div>
                             <div className="flex items-center gap-1.5">
@@ -193,7 +192,7 @@ export default function TablaClientes({ clientes, statsMap }: Props) {
                       </td>
 
                       {/* Última visita */}
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 hidden md:table-cell">
                         {stats?.ultimaVisita ? (
                           <span className="text-sm text-gray-600">
                             {diasDesde(stats.ultimaVisita)}

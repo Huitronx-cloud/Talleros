@@ -157,7 +157,7 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
   }
 
   return (
-    <div className="flex gap-5 overflow-x-auto pb-4">
+    <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
       {COLUMNAS.map(col => {
         const tarjetas = ordenesState.filter(o => o.estado === col.id)
         const esSobre  = sobreColumna === col.id
@@ -169,7 +169,7 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
             onDragOver={e => handleDragOver(e, col.id)}
             onDrop={e => handleDrop(e, col.id)}
             onDragLeave={() => setSobreColumna(null)}
-            className={`flex-shrink-0 w-80 rounded-2xl border-2 transition-all ${
+            className={`flex-shrink-0 w-72 md:w-80 rounded-2xl border-2 transition-all ${
               esSobre
                 ? `${col.border} ${col.bg} shadow-lg scale-[1.01]`
                 : 'border-gray-200 bg-gray-50'
