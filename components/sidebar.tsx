@@ -19,7 +19,7 @@ import {
   Menu,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const NAV_ITEMS = [
   { href: '/dashboard',    label: 'Dashboard',    icono: LayoutDashboard },
@@ -44,6 +44,16 @@ export default function Sidebar({ nombreTaller }: Props) {
   const supabase = createClient()
   const [colapsado, setColapsado] = useState(false)
   const [menuMovil, setMenuMovil] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setColapsado(true), 7000)
+    return () => clearTimeout(timer)
+  }, [])
+  useEffect(() => {
+    const main = document.getElementById('main-content')
+    if (!main) return
+    main.style.marginLeft = colapsado ? '4rem' : '16rem'
+  }, [colapsado])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
