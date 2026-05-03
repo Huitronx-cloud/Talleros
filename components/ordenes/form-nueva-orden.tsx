@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
@@ -10,23 +10,59 @@ import ChecklistRecepcion from './checklist-recepcion'
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
+// Tasas de IVA por país
+const IVA_POR_PAIS: Record<string, { tasa: number; etiqueta: string }> = {
+  'México':    { tasa: 0.16,  etiqueta: 'IVA 16%' },
+  'Colombia':  { tasa: 0.19,  etiqueta: 'IVA 19%' },
+  'Argentina': { tasa: 0.21,  etiqueta: 'IVA 21%' },
+  'Chile':     { tasa: 0.19,  etiqueta: 'IVA 19%' },
+  'Perú':      { tasa: 0.18,  etiqueta: 'IGV 18%' },
+  'Ecuador':   { tasa: 0.15,  etiqueta: 'IVA 15%' },
+  'Venezuela': { tasa: 0.16,  etiqueta: 'IVA 16%' },
+  'Bolivia':   { tasa: 0.13,  etiqueta: 'IVA 13%' },
+  'Paraguay':  { tasa: 0.10,  etiqueta: 'IVA 10%' },
+  'Uruguay':   { tasa: 0.22,  etiqueta: 'IVA 22%' },
+  'Guatemala': { tasa: 0.12,  etiqueta: 'IVA 12%' },
+  'Costa Rica':{ tasa: 0.13,  etiqueta: 'IVA 13%' },
+  'Panamá':    { tasa: 0.07,  etiqueta: 'ITBMS 7%' },
+  'Honduras':  { tasa: 0.15,  etiqueta: 'ISV 15%' },
+  'El Salvador':{ tasa: 0.13, etiqueta: 'IVA 13%' },
+  'Nicaragua': { tasa: 0.15,  etiqueta: 'IVA 15%' },
+  'República Dominicana': { tasa: 0.18, etiqueta: 'ITBIS 18%' },
+}
+
+function getIva(pais: string) {
+  return IVA_POR_PAIS[pais] ?? { tasa: 0.16, etiqueta: 'IVA 16%' }
+}
+
+// Símbolo de moneda
+function getMoneda(moneda: string) {
+  if (moneda === 'COP') return 'COP $'
+  return '$'
+}
+
 interface Props {
   clientes: Cliente[]
   tallerId: string
+  pais: string
+  moneda: string
 }
 
 const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
 
-export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Props) {
+export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda }: Props) {
   const router = useRouter()
   const [paso, setPaso]         = useState(1)
   const [cargando, setCargando] = useState(false)
   const [error, setError]       = useState('')
   const [ordenId, setOrdenId]   = useState<string | null>(null)
 
-  const [busquedaCliente, setBusquedaCliente]           = useState('')
-  const [clienteSeleccionado, setClienteSeleccionado]   = useState<Cliente | null>(null)
-  const [mostrarSugerencias, setMostrarSugerencias]     = useState(false)
+  // Estado para manejar el input raw del precio (string) por cada servicio
+  const [preciosRaw, setPreciosRaw] = useState<string[]>([''])
+
+  const [busquedaCliente, setBusquedaCliente]         = useState('')
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
+  const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
   const [vehiculo, setVehiculo] = useState({
     marca: '', modelo: '', año: '', placas: '', kilometraje: '',
@@ -42,7 +78,11 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
     descuento: '0',
     notas_internas: '',
   })
+
   const [servicios, setServicios] = useState<ServicioItem[]>([{ ...SERVICIO_VACIO }])
+
+  const { tasa, etiqueta } = getIva(pais)
+  const simbolo = getMoneda(moneda)
 
   const sugerencias = busquedaCliente.length > 1
     ? clientes.filter(c =>
@@ -56,10 +96,10 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
     setBusquedaCliente(c.nombre)
     setMostrarSugerencias(false)
     setVehiculo({
-      marca:       c.vehiculo_marca ?? '',
+      marca:       c.vehiculo_marca  ?? '',
       modelo:      c.vehiculo_modelo ?? '',
-      año:         c.vehiculo_año ? String(c.vehiculo_año) : '',
-      placas:      c.placas ?? '',
+      año:         c.vehiculo_año    ? String(c.vehiculo_año) : '',
+      placas:      c.placas          ?? '',
       kilometraje: '',
     })
   }
@@ -68,6 +108,20 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
     setClienteSeleccionado(null)
     setBusquedaCliente('')
     setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '' })
+  }
+
+  // Actualiza precio_unitario desde el string raw
+  const actualizarPrecioRaw = (i: number, val: string) => {
+    // Solo dígitos y punto decimal
+    const limpio = val.replace(/[^\d.]/g, '')
+    setPreciosRaw(prev => prev.map((p, idx) => idx === i ? limpio : p))
+    const num = parseFloat(limpio) || 0
+    setServicios(prev => prev.map((s, idx) => {
+      if (idx !== i) return s
+      const updated = { ...s, precio_unitario: num }
+      updated.total = updated.cantidad * updated.precio_unitario
+      return updated
+    }))
   }
 
   const actualizarServicio = (i: number, campo: keyof ServicioItem, val: string) => {
@@ -79,12 +133,23 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
     }))
   }
 
-  const agregarServicio = () => setServicios(prev => [...prev, { ...SERVICIO_VACIO }])
-  const quitarServicio  = (i: number) => setServicios(prev => prev.filter((_, idx) => idx !== i))
+  const agregarServicio = () => {
+    setServicios(prev => [...prev, { ...SERVICIO_VACIO }])
+    setPreciosRaw(prev => [...prev, ''])
+  }
 
-  const subtotal  = servicios.reduce((acc, s) => acc + s.total, 0)
-  const descuento = parseFloat(form.descuento) || 0
-  const total     = Math.max(0, subtotal - descuento)
+  const quitarServicio = (i: number) => {
+    setServicios(prev => prev.filter((_, idx) => idx !== i))
+    setPreciosRaw(prev => prev.filter((_, idx) => idx !== i))
+  }
+
+  const subtotal   = servicios.reduce((acc, s) => acc + s.total, 0)
+  const descuento  = parseFloat(form.descuento) || 0
+  const baseIva    = Math.max(0, subtotal - descuento)
+  const impuestos  = Math.round(baseIva * tasa * 100) / 100
+  const total      = Math.round((baseIva + impuestos) * 100) / 100
+
+  const fmt = (n: number) => `${simbolo}${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   const handleSubmit = async () => {
     if (!form.descripcion_problema.trim()) { setError('La descripción del problema es obligatoria'); return }
@@ -107,6 +172,8 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
       fecha_prometida:      form.fecha_prometida,
       subtotal,
       descuento,
+      impuestos,
+      tasa_iva:             tasa,
       total,
       forma_pago:           form.forma_pago,
       notas_internas:       form.notas_internas,
@@ -260,6 +327,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
             </div>
           </div>
 
+          {/* Servicios */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Servicios</h2>
@@ -277,16 +345,53 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
               {servicios.map((s, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-5">
-                    <input type="text" value={s.descripcion} onChange={e => actualizarServicio(i, 'descripcion', e.target.value)} placeholder="Servicio o refacción" className={INPUT} />
+                    <input
+                      type="text"
+                      value={s.descripcion}
+                      onChange={e => actualizarServicio(i, 'descripcion', e.target.value)}
+                      placeholder="Servicio o refacción"
+                      className={INPUT}
+                    />
                   </div>
                   <div className="col-span-2">
-                    <input type="number" min={1} value={s.cantidad} onChange={e => actualizarServicio(i, 'cantidad', e.target.value)} className={INPUT} />
+                    <input
+                      type="number"
+                      min={1}
+                      value={s.cantidad}
+                      onChange={e => actualizarServicio(i, 'cantidad', e.target.value)}
+                      className={INPUT}
+                    />
                   </div>
                   <div className="col-span-3">
-                    <input type="number" min={0} step={0.01} value={s.precio_unitario} onChange={e => actualizarServicio(i, 'precio_unitario', e.target.value)} className={INPUT} />
+                    {/* Campo precio con $ dinámico */}
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 pointer-events-none select-none">
+                        {(preciosRaw[i] ?? '') !== '' || s.precio_unitario > 0 ? '$' : ''}
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={preciosRaw[i] ?? (s.precio_unitario > 0 ? String(s.precio_unitario) : '')}
+                        onChange={e => actualizarPrecioRaw(i, e.target.value)}
+                        onFocus={e => {
+                          // Al hacer focus, si el valor es 0, limpiar para escribir fácil
+                          if (!preciosRaw[i] && s.precio_unitario === 0) {
+                            setPreciosRaw(prev => prev.map((p, idx) => idx === i ? '' : p))
+                          }
+                        }}
+                        onBlur={() => {
+                          // Al salir, si está vacío poner 0 como raw
+                          if ((preciosRaw[i] ?? '') === '') {
+                            setPreciosRaw(prev => prev.map((p, idx) => idx === i ? '' : p))
+                          }
+                        }}
+                        placeholder="0.00"
+                        className={`${INPUT} ${(preciosRaw[i] ?? '') !== '' || s.precio_unitario > 0 ? 'pl-7' : ''}`}
+                      />
+                    </div>
                   </div>
                   <div className="col-span-1 text-right text-sm font-semibold text-gray-900">
-                    ${s.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    {fmt(s.total)}
                   </div>
                   <div className="col-span-1 flex justify-end">
                     {servicios.length > 1 && (
@@ -298,10 +403,12 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
                 </div>
               ))}
             </div>
+
+            {/* Totales */}
             <div className="mt-5 pt-4 border-t border-gray-100 space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                <span>{fmt(subtotal)}</span>
               </div>
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>Descuento</span>
@@ -312,9 +419,13 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp }: Pro
                   className="w-28 px-2 py-1 border border-gray-300 rounded text-sm text-right text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex justify-between text-base font-bold text-gray-900 pt-1">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>{etiqueta}</span>
+                <span>{fmt(impuestos)}</span>
+              </div>
+              <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100">
                 <span>Total</span>
-                <span>${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                <span>{fmt(total)}</span>
               </div>
             </div>
           </div>

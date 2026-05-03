@@ -1,35 +1,35 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import FormCitaPublica from '@/components/citas/form-cita-publica'
+import CalendarioCitas from '@/components/citas/calendario-citas'
+import CopiarlinkCitas from '@/components/citas/copiar-link-citas'
 
-export default async function CitaPublicaPage({ params }: { params: { tallerId: string } }) {
+export default async function CitasPage() {
   const supabase = createClient()
 
   const { data: taller } = await supabase
     .from('talleres')
-    .select('id, nombre, logo_url, ciudad, pais')
-    .eq('id', params.tallerId)
+    .select('id, nombre')
     .single()
 
-  if (!taller) notFound()
+  const { data: citas } = await supabase
+    .from('citas')
+    .select('*')
+    .order('fecha', { ascending: true })
+    .order('hora', { ascending: true })
+
+  const linkPublico = `${process.env.NEXT_PUBLIC_APP_URL}/citas/${taller?.id}`
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-lg mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          {taller.logo_url ? (
-            <img src={taller.logo_url} alt={taller.nombre} className="h-12 object-contain mx-auto mb-3" />
-          ) : (
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-lg">{taller.nombre.charAt(0)}</span>
-            </div>
-          )}
-          <h1 className="text-2xl font-bold text-gray-900">{taller.nombre}</h1>
-          <p className="text-gray-500 text-sm mt-1">Agenda tu cita en línea</p>
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Agenda y gestiona las citas de tu taller.
+          </p>
         </div>
-        <FormCitaPublica tallerId={taller.id} tallerNombre={taller.nombre} />
+        {taller && <CopiarlinkCitas link={linkPublico} />}
       </div>
+      <CalendarioCitas citas={citas ?? []} tallerId={taller?.id ?? ''} />
     </div>
   )
 }

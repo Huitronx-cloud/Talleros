@@ -6,12 +6,38 @@ import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { crearCotizacion } from '@/app/(dashboard)/cotizaciones/actions'
 import { Cliente, Orden, ServicioItem } from '@/types'
 
+// Tasas de IVA por país — igual que en form-nueva-orden
+const IVA_POR_PAIS: Record<string, { tasa: number; etiqueta: string }> = {
+  'México':              { tasa: 0.16,  etiqueta: 'IVA 16%' },
+  'Colombia':            { tasa: 0.19,  etiqueta: 'IVA 19%' },
+  'Argentina':           { tasa: 0.21,  etiqueta: 'IVA 21%' },
+  'Chile':               { tasa: 0.19,  etiqueta: 'IVA 19%' },
+  'Perú':                { tasa: 0.18,  etiqueta: 'IGV 18%' },
+  'Ecuador':             { tasa: 0.15,  etiqueta: 'IVA 15%' },
+  'Venezuela':           { tasa: 0.16,  etiqueta: 'IVA 16%' },
+  'Bolivia':             { tasa: 0.13,  etiqueta: 'IVA 13%' },
+  'Paraguay':            { tasa: 0.10,  etiqueta: 'IVA 10%' },
+  'Uruguay':             { tasa: 0.22,  etiqueta: 'IVA 22%' },
+  'Guatemala':           { tasa: 0.12,  etiqueta: 'IVA 12%' },
+  'Costa Rica':          { tasa: 0.13,  etiqueta: 'IVA 13%' },
+  'Panamá':              { tasa: 0.07,  etiqueta: 'ITBMS 7%' },
+  'Honduras':            { tasa: 0.15,  etiqueta: 'ISV 15%' },
+  'El Salvador':         { tasa: 0.13,  etiqueta: 'IVA 13%' },
+  'Nicaragua':           { tasa: 0.15,  etiqueta: 'IVA 15%' },
+  'República Dominicana':{ tasa: 0.18,  etiqueta: 'ITBIS 18%' },
+}
+
+function getIva(pais: string) {
+  return IVA_POR_PAIS[pais] ?? { tasa: 0.16, etiqueta: 'IVA 16%' }
+}
+
 interface Props {
   clientes: Cliente[]
   ordenes: Orden[]
   monedaDefault: 'MXN' | 'COP'
   vigenciaDiasDefault: number
   ordenPreseleccionada?: string
+  pais: string
 }
 
 const FILA_VACIA: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
@@ -22,31 +48,35 @@ export default function FormCotizacion({
   monedaDefault,
   vigenciaDiasDefault,
   ordenPreseleccionada,
+  pais,
 }: Props) {
   const router = useRouter()
 
-  // Step
   const [paso, setPaso] = useState(1)
 
   // Step 1
-  const [busquedaCliente, setBusquedaCliente] = useState('')
-  const [clienteId, setClienteId]             = useState('')
-  const [ordenId, setOrdenId]                 = useState(ordenPreseleccionada ?? '')
+  const [busquedaCliente, setBusquedaCliente]       = useState('')
+  const [clienteId, setClienteId]                   = useState('')
+  const [ordenId, setOrdenId]                       = useState(ordenPreseleccionada ?? '')
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false)
   const refBusqueda = useRef<HTMLDivElement>(null)
 
   // Step 2
-  const [servicios, setServicios] = useState<ServicioItem[]>([{ ...FILA_VACIA }])
-  const [descuento, setDescuento] = useState(0)
-  const [aplicarIva, setAplicarIva] = useState(false)
-  const [moneda, setMoneda]         = useState<'MXN' | 'COP'>(monedaDefault)
+  const [servicios, setServicios]       = useState<ServicioItem[]>([{ ...FILA_VACIA }])
+  const [preciosRaw, setPreciosRaw]     = useState<string[]>([''])
+  const [descuento, setDescuento]       = useState(0)
+  const [aplicarIva, setAplicarIva]     = useState(true)  // activo por defecto
+  const [moneda, setMoneda]             = useState<'MXN' | 'COP'>(monedaDefault)
   const [vigenciaDias, setVigenciaDias] = useState(vigenciaDiasDefault)
-  const [notas, setNotas]           = useState('')
+  const [notas, setNotas]               = useState('')
 
   const [cargando, setCargando] = useState(false)
   const [error, setError]       = useState('')
 
-  // Pre-fill from orden
+  const { tasa, etiqueta } = getIva(pais)
+  const simbolo = moneda === 'COP' ? 'COP $' : '$'
+
+  // Pre-fill desde orden
   useEffect(() => {
     if (!ordenPreseleccionada) return
     const orden = ordenes.find(o => o.id === ordenPreseleccionada)
@@ -60,11 +90,14 @@ export default function FormCotizacion({
       precio_unitario: s.precio_unitario,
       total:           s.cantidad * s.precio_unitario,
     }))
-    if (serviciosPrefill.length) setServicios(serviciosPrefill)
+    if (serviciosPrefill.length) {
+      setServicios(serviciosPrefill)
+      setPreciosRaw(serviciosPrefill.map(s => s.precio_unitario > 0 ? String(s.precio_unitario) : ''))
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Close dropdown on outside click
+  // Cerrar dropdown al click afuera
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (refBusqueda.current && !refBusqueda.current.contains(e.target as Node)) {
@@ -75,17 +108,16 @@ export default function FormCotizacion({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Derived totals
-  const subtotal  = servicios.reduce((s, r) => s + r.total, 0)
-  const impuestos = aplicarIva ? (subtotal - descuento) * 0.16 : 0
-  const total     = subtotal - descuento + impuestos
+  // Totales
+  const subtotal   = servicios.reduce((s, r) => s + r.total, 0)
+  const baseIva    = Math.max(0, subtotal - descuento)
+  const impuestos  = aplicarIva ? Math.round(baseIva * tasa * 100) / 100 : 0
+  const total      = Math.round((baseIva + impuestos) * 100) / 100
 
-  // Clientes filtrados
   const clientesFiltrados = busquedaCliente.length >= 1
     ? clientes.filter(c => c.nombre.toLowerCase().includes(busquedaCliente.toLowerCase())).slice(0, 6)
     : []
 
-  // Ordenes del cliente seleccionado
   const ordenesFiltradas = clienteId
     ? ordenes.filter(o => o.cliente_id === clienteId)
     : []
@@ -97,12 +129,26 @@ export default function FormCotizacion({
     setOrdenId('')
   }
 
+  // Actualiza precio raw (string con $ dinámico)
+  function actualizarPrecioRaw(i: number, val: string) {
+    const limpio = val.replace(/[^\d.]/g, '')
+    setPreciosRaw(prev => prev.map((p, idx) => idx === i ? limpio : p))
+    const num = parseFloat(limpio) || 0
+    setServicios(prev => {
+      const filas = [...prev]
+      const fila  = { ...filas[i], precio_unitario: num }
+      fila.total  = Number(fila.cantidad) * num
+      filas[i]    = fila
+      return filas
+    })
+  }
+
   function actualizarFila(idx: number, campo: keyof ServicioItem, valor: string | number) {
     setServicios(prev => {
       const filas = [...prev]
       const fila  = { ...filas[idx], [campo]: valor }
-      if (campo === 'cantidad' || campo === 'precio_unitario') {
-        fila.total = Number(fila.cantidad) * Number(fila.precio_unitario)
+      if (campo === 'cantidad') {
+        fila.total = Number(valor) * Number(fila.precio_unitario)
       }
       filas[idx] = fila
       return filas
@@ -111,10 +157,12 @@ export default function FormCotizacion({
 
   function agregarFila() {
     setServicios(prev => [...prev, { ...FILA_VACIA }])
+    setPreciosRaw(prev => [...prev, ''])
   }
 
   function eliminarFila(idx: number) {
     setServicios(prev => prev.filter((_, i) => i !== idx))
+    setPreciosRaw(prev => prev.filter((_, i) => i !== idx))
   }
 
   function moverFila(idx: number, dir: -1 | 1) {
@@ -125,7 +173,17 @@ export default function FormCotizacion({
       filas[idx + dir] = temp
       return filas
     })
+    setPreciosRaw(prev => {
+      const arr  = [...prev]
+      const temp = arr[idx]
+      arr[idx]   = arr[idx + dir]
+      arr[idx + dir] = temp
+      return arr
+    })
   }
+
+  const fmt = (n: number) =>
+    `${simbolo}${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   async function handleSubmit() {
     setError('')
@@ -153,8 +211,6 @@ export default function FormCotizacion({
     router.push(`/cotizaciones/${result.id}`)
   }
 
-  const fmt = (n: number) => n.toLocaleString('es-MX', { minimumFractionDigits: 2 })
-
   return (
     <div className="max-w-3xl mx-auto">
       {/* Progress */}
@@ -172,14 +228,16 @@ export default function FormCotizacion({
         ))}
       </div>
 
-      {/* Step 1 */}
+      {/* ── PASO 1 ── */}
       {paso === 1 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
           <h2 className="font-semibold text-gray-900">Cliente y orden (opcional)</h2>
 
           {/* Buscador cliente */}
           <div ref={refBusqueda}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cliente <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Cliente <span className="text-red-500">*</span>
+            </label>
             <div className="relative">
               <input
                 type="text"
@@ -218,12 +276,14 @@ export default function FormCotizacion({
                   if (e.target.value) {
                     const orden = ordenes.find(o => o.id === e.target.value)
                     if (orden?.servicios_realizados?.length) {
-                      setServicios(orden.servicios_realizados.map(s => ({
+                      const svcs = orden.servicios_realizados.map(s => ({
                         descripcion:     s.descripcion,
                         cantidad:        s.cantidad,
                         precio_unitario: s.precio_unitario,
                         total:           s.cantidad * s.precio_unitario,
-                      })))
+                      }))
+                      setServicios(svcs)
+                      setPreciosRaw(svcs.map(s => s.precio_unitario > 0 ? String(s.precio_unitario) : ''))
                     }
                   }
                 }}
@@ -232,7 +292,7 @@ export default function FormCotizacion({
                 <option value="">Sin orden vinculada</option>
                 {ordenesFiltradas.map(o => (
                   <option key={o.id} value={o.id}>
-                    #{String(o.numero_orden).padStart(4, '0')} — {o.descripcion_problema.slice(0, 50)}
+                    #{String(o.numero_orden).padStart(4, '0')} — {(o.descripcion_problema ?? '').slice(0, 50)}
                   </option>
                 ))}
               </select>
@@ -240,7 +300,7 @@ export default function FormCotizacion({
             </div>
           )}
 
-          {/* Moneda */}
+          {/* Moneda y vigencia */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
@@ -282,7 +342,7 @@ export default function FormCotizacion({
         </div>
       )}
 
-      {/* Step 2 */}
+      {/* ── PASO 2 ── */}
       {paso === 2 && (
         <div className="space-y-5">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -296,7 +356,6 @@ export default function FormCotizacion({
               </button>
             </div>
 
-            {/* Tabla servicios */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -330,14 +389,27 @@ export default function FormCotizacion({
                         />
                       </td>
                       <td className="py-1.5 px-2">
-                        <input
-                          type="number"
-                          value={fila.precio_unitario}
-                          min={0}
-                          step={0.01}
-                          onChange={e => actualizarFila(i, 'precio_unitario', Number(e.target.value))}
-                          className="w-full border border-gray-200 rounded px-2 py-1.5 text-gray-900 bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                        />
+                        {/* Precio con $ dinámico */}
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 pointer-events-none select-none">
+                            {(preciosRaw[i] ?? '') !== '' || fila.precio_unitario > 0 ? '$' : ''}
+                          </span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={preciosRaw[i] ?? (fila.precio_unitario > 0 ? String(fila.precio_unitario) : '')}
+                            onChange={e => actualizarPrecioRaw(i, e.target.value)}
+                            onFocus={() => {
+                              if (!preciosRaw[i] && fila.precio_unitario === 0) {
+                                setPreciosRaw(prev => prev.map((p, idx) => idx === i ? '' : p))
+                              }
+                            }}
+                            placeholder="0.00"
+                            className={`w-full border border-gray-200 rounded py-1.5 text-gray-900 bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm ${
+                              (preciosRaw[i] ?? '') !== '' || fila.precio_unitario > 0 ? 'pl-5 pr-2' : 'px-2'
+                            }`}
+                          />
+                        </div>
                       </td>
                       <td className="py-1.5 px-2 text-right font-medium text-gray-900">
                         {fmt(fila.total)}
@@ -371,14 +443,13 @@ export default function FormCotizacion({
             <div className="mt-5 border-t border-gray-100 pt-4 space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span className="font-medium text-gray-900">{moneda === 'MXN' ? '$' : 'COP '}{fmt(subtotal)}</span>
+                <span className="font-medium text-gray-900">{fmt(subtotal)}</span>
               </div>
 
-              {/* Descuento */}
               <div className="flex justify-between items-center text-sm text-gray-600">
                 <span>Descuento</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400">{moneda === 'MXN' ? '$' : 'COP'}</span>
+                  <span className="text-gray-400 text-xs">{simbolo}</span>
                   <input
                     type="number"
                     value={descuento}
@@ -390,7 +461,7 @@ export default function FormCotizacion({
                 </div>
               </div>
 
-              {/* IVA toggle */}
+              {/* IVA — toggle con etiqueta automática por país */}
               <div className="flex justify-between items-center text-sm text-gray-600">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
@@ -399,16 +470,16 @@ export default function FormCotizacion({
                     onChange={e => setAplicarIva(e.target.checked)}
                     className="w-4 h-4 rounded accent-blue-600"
                   />
-                  Aplicar IVA (16%)
+                  Aplicar {etiqueta}
                 </label>
                 {aplicarIva && (
-                  <span className="font-medium text-gray-900">{moneda === 'MXN' ? '$' : 'COP '}{fmt(impuestos)}</span>
+                  <span className="font-medium text-gray-900">{fmt(impuestos)}</span>
                 )}
               </div>
 
               <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-100 pt-2 mt-2">
                 <span>TOTAL</span>
-                <span>{moneda === 'MXN' ? '$' : 'COP '}{fmt(total)}</span>
+                <span>{fmt(total)}</span>
               </div>
             </div>
           </div>

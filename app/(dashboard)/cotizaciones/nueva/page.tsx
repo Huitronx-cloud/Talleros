@@ -13,7 +13,7 @@ export default async function NuevaCotizacionPage({
   const [{ data: clientes }, { data: ordenes }, { data: taller }] = await Promise.all([
     supabase.from('clientes').select('*').order('nombre'),
     supabase.from('ordenes').select('id, numero_orden, cliente_id, descripcion_problema, servicios_realizados').order('created_at', { ascending: false }),
-    supabase.from('talleres').select('moneda, vigencia_dias').single(),
+    supabase.from('talleres').select('moneda, vigencia_dias, pais').single(),
   ])
 
   return (
@@ -28,10 +28,11 @@ export default async function NuevaCotizacionPage({
 
       <FormCotizacion
         clientes={clientes ?? []}
-        ordenes={ordenes ?? []}
+        ordenes={(ordenes ?? []) as any[]}
         monedaDefault={(taller?.moneda as 'MXN' | 'COP') ?? 'MXN'}
         vigenciaDiasDefault={taller?.vigencia_dias ?? 15}
         ordenPreseleccionada={searchParams.orden_id}
+        pais={taller?.pais ?? 'México'}
       />
     </div>
   )

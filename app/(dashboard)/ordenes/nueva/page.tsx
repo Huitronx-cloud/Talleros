@@ -10,12 +10,22 @@ export default async function NuevaOrdenPage() {
     supabase.from('usuarios').select('taller_id').single(),
   ])
 
+  const tallerId = usuario?.taller_id ?? ''
+
+  const { data: taller } = await supabase
+    .from('talleres')
+    .select('pais, moneda')
+    .eq('id', tallerId)
+    .single()
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Nueva orden de trabajo</h1>
       <FormNuevaOrden
         clientes={(clientes ?? []) as Cliente[]}
-        tallerId={usuario?.taller_id ?? ''}
+        tallerId={tallerId}
+        pais={taller?.pais ?? 'México'}
+        moneda={taller?.moneda ?? 'MXN'}
       />
     </div>
   )

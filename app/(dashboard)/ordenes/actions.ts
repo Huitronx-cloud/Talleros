@@ -21,6 +21,8 @@ export interface OrdenForm {
   fecha_prometida: string
   subtotal: number
   descuento: number
+  impuestos: number
+  tasa_iva: number
   total: number
   forma_pago: FormaPago
   notas_internas: string
@@ -65,6 +67,8 @@ export async function crearOrden(datos: OrdenForm) {
     fecha_prometida:      datos.fecha_prometida  || null,
     subtotal:             datos.subtotal,
     descuento:            datos.descuento,
+    impuestos:            datos.impuestos,
+    tasa_iva:             datos.tasa_iva,
     total:                datos.total,
     forma_pago:           datos.forma_pago,
     notas_internas:       datos.notas_internas   || null,
