@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Camera, CheckCircle2, Loader2, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import FirmaDigital from './firma-digital'
+import InspeccionDanos from './inspeccion-danos'
 
 const ITEMS_CHECKLIST = [
   'Carrocería sin daños visibles',
@@ -155,6 +156,15 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Inspección de daños */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Mapa de daños del vehículo</h3>
+            <InspeccionDanos
+              ordenId={ordenId}
+              tallerId={tallerId}
+            />
           </div>
 
           {/* Fotos */}

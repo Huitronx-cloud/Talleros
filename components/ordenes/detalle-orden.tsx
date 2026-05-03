@@ -1,5 +1,6 @@
 'use client'
 
+import InspeccionDanos from './inspeccion-danos'
 import { useState } from 'react'
 import Link from 'next/link'
 import {
