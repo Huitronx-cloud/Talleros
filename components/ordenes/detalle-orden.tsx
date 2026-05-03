@@ -4,7 +4,7 @@ import InspeccionDanos from './inspeccion-danos'
 import { useState } from 'react'
 import Link from 'next/link'
 import {
-  ArrowLeft, Car, User, Phone, Calendar, Wrench, FileText,
+  ArrowLeft, Car, User, Phone, Calendar, Wrench, FileText, FileDown,
   Loader2, MessageCircle, CheckCircle2, XCircle, Clock
 } from 'lucide-react'
 import { Orden, EstadoOrden, Notificacion } from '@/types'
@@ -73,19 +73,26 @@ export default function DetalleOrden({
   const [portalUrl, setPortalUrl]               = useState('')
   const [servicioExtra, setServicioExtra]       = useState('')
   const [costoExtra, setCostoExtra]             = useState('')
+  const [enviandoPdf, setEnviandoPdf] = useState(false)
+const [pdfEnviado, setPdfEnviado]   = useState(false)
 
   const siguienteEstado = ESTADOS_SIGUIENTE[estadoActual]
 
   const handleCambiarEstado = async () => {
-    if (!siguienteEstado) return
-    setCambiando(true)
-    const resultado = await cambiarEstado(orden.id, siguienteEstado)
-    if (!resultado.error) {
-      setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
-      setEstadoActual(siguienteEstado)
+  if (!siguienteEstado) return
+  setCambiando(true)
+  const resultado = await cambiarEstado(orden.id, siguienteEstado)
+  if (!resultado.error) {
+    setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
+    setEstadoActual(siguienteEstado)
+    // Envío automático de PDF al entregar
+    if (siguienteEstado === 'entregado') {
+      fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
+        .catch(console.error)
     }
-    setCambiando(false)
   }
+  setCambiando(false)
+}
 
   const handleGuardarNota = async () => {
     setGuardando(true)
@@ -103,6 +110,18 @@ export default function DetalleOrden({
       })
     } finally { setEnviandoWA(false) }
   }
+
+  const handleEnviarPdfWhatsApp = async () => {
+  setEnviandoPdf(true)
+  try {
+    const res = await fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
+    if (res.ok) setPdfEnviado(true)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    setEnviandoPdf(false)
+  }
+}
 
   const handleSolicitarAprobacion = async () => {
     if (!servicioExtra || !costoExtra) return
@@ -307,6 +326,15 @@ export default function DetalleOrden({
             )}
           </div>
 
+          {/* Inspección de daños */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Inspección de daños</h3>
+            <InspeccionDanos
+              ordenId={orden.id}
+              tallerId={orden.taller_id as string}
+            />
+          </div>
+
           {/* Servicios */}
           {orden.servicios_realizados?.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -433,6 +461,43 @@ export default function DetalleOrden({
               </button>
             )}
           </div>
+
+          {/* Reporte PDF por WhatsApp */}
+<div className="bg-white rounded-xl border border-gray-200 p-5">
+  <div className="flex items-center gap-2 mb-3">
+    <FileDown className="w-4 h-4 text-blue-500" />
+    <h3 className="text-sm font-semibold text-gray-900">Reporte PDF de servicio</h3>
+  </div>
+  <p className="text-xs text-gray-400 mb-4">
+    Envía el reporte completo del servicio al cliente por WhatsApp como archivo PDF.
+    {estadoActual === 'entregado' && ' Se envía automáticamente al marcar como entregado.'}
+  </p>
+  <div className="flex items-center gap-3">
+    {pdfEnviado ? (
+      <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+        <CheckCircle2 className="w-4 h-4" /> PDF enviado correctamente
+      </div>
+    ) : (
+      <button
+        onClick={handleEnviarPdfWhatsApp}
+        disabled={enviandoPdf}
+        className="flex items-center gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg transition-colors"
+      >
+        {enviandoPdf
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando PDF...</>
+          : <><FileDown className="w-4 h-4" /> Enviar PDF por WhatsApp</>
+        }
+      </button>
+    )}
+    <a
+      href={`/api/ordenes/${orden.id}/pdf`}
+      target="_blank"
+      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium underline underline-offset-2"
+    >
+      Ver PDF
+    </a>
+  </div>
+</div>
 
           {/* Solicitar aprobación de trabajo adicional */}
           {estadoActual !== 'entregado' && (

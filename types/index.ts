@@ -120,6 +120,8 @@ export interface Orden {
   fecha_entrega: string | null
   subtotal: number
   descuento: number
+  impuestos: number
+  tasa_iva: number
   total: number
   forma_pago: FormaPago
   notas_internas: string | null
