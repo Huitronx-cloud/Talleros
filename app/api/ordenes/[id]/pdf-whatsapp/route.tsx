@@ -55,17 +55,12 @@ const { error: uploadError } = await adminClient.storage
     upsert: true,
   })
 
-const { data: urlData } = adminClient.storage
+    // 3. Obtener URL pública
+    const { data: urlData } = adminClient.storage
   .from('pdfs-ordenes')
   .getPublicUrl(filename)
 
     if (uploadError) throw new Error(`Error subiendo PDF: ${uploadError.message}`)
-
-    // 3. Obtener URL pública
-    const { data: urlData } = supabase.storage
-      .from('pdfs-ordenes')
-      .getPublicUrl(filename)
-
     const pdfUrl = urlData.publicUrl
 
     // 4. Enviar por WhatsApp con Twilio

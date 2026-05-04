@@ -31,7 +31,8 @@ const NAV_ITEMS = [
 ]
 
 const NAV_BOTTOM = [
-  { href: '/configuracion', label: 'Configuración', icono: Settings },
+  { href: '/configuracion/equipo', label: 'Equipo',         icono: Users    },
+  { href: '/configuracion',        label: 'Configuración',  icono: Settings },
 ]
 
 interface Props {
