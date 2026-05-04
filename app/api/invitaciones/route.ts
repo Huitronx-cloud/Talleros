@@ -55,12 +55,14 @@ export async function POST(req: NextRequest) {
   const linkBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://talleros-omega.vercel.app'
   const link     = `${linkBase}/unirse?token=${invitacion.token}`
 
-  await admin.auth.admin.inviteUserByEmail(email, {
-    data: { invitacion_token: invitacion.token },
-    redirectTo: link,
-  })
+  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+  data: { invitacion_token: invitacion.token },
+  redirectTo: link,
+})
 
-  return NextResponse.json({ success: true, link })
+console.log('[INVITE]', { inviteData, inviteError })
+
+return NextResponse.json({ success: true, link, inviteError })
 }
 
 export async function GET(req: NextRequest) {
