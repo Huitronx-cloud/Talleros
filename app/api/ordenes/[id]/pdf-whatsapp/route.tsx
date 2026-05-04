@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Orden, Taller } from '@/types'
 import OrdenDocumento from '@/lib/pdf/orden-documento'
 import twilio from 'twilio'
@@ -42,12 +43,21 @@ export async function POST(
     // 2. Subir PDF a Supabase Storage
     const numero   = String(orden.numero_orden).padStart(4, '0')
     const filename = `orden-${numero}-${Date.now()}.pdf`
-    const { error: uploadError } = await supabase.storage
-      .from('pdfs-ordenes')
-      .upload(filename, buffer, {
-        contentType: 'application/pdf',
-        upsert: true,
-      })
+    const adminClient = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const { error: uploadError } = await adminClient.storage
+  .from('pdfs-ordenes')
+  .upload(filename, buffer, {
+    contentType: 'application/pdf',
+    upsert: true,
+  })
+
+const { data: urlData } = adminClient.storage
+  .from('pdfs-ordenes')
+  .getPublicUrl(filename)
 
     if (uploadError) throw new Error(`Error subiendo PDF: ${uploadError.message}`)
 
