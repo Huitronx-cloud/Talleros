@@ -55,14 +55,41 @@ export async function POST(req: NextRequest) {
   const linkBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://talleros-omega.vercel.app'
   const link     = `${linkBase}/unirse?token=${invitacion.token}`
 
-  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-  data: { invitacion_token: invitacion.token },
-  redirectTo: link,
+  // Enviar email con Resend directamente
+const resendRes = await fetch('https://api.resend.com/emails', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    from: 'TallerOS <onboarding@resend.dev>',
+    to: [email],
+    subject: `Te invitaron a unirte a ${(taller as any)?.nombre ?? 'un taller'} en TallerOS`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
+        <h1 style="font-size:22px;color:#111827;margin-bottom:8px">🔧 TallerOS</h1>
+        <p style="color:#6B7280;font-size:14px;margin-bottom:24px">
+          Has sido invitado a unirte a <strong>${(taller as any)?.nombre ?? 'un taller'}</strong> 
+          como <strong>${rol}</strong>.
+        </p>
+        <a href="${link}" 
+           style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;
+                  padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600">
+          Aceptar invitación
+        </a>
+        <p style="color:#9CA3AF;font-size:12px;margin-top:24px">
+          Este link expira en 7 días. Si no esperabas esta invitación, ignora este email.
+        </p>
+      </div>
+    `,
+  }),
 })
 
-console.log('[INVITE]', { inviteData, inviteError })
+const resendData = await resendRes.json()
+console.log('[RESEND]', resendData)
 
-return NextResponse.json({ success: true, link, inviteError })
+return NextResponse.json({ success: true, link })
 }
 
 export async function GET(req: NextRequest) {
