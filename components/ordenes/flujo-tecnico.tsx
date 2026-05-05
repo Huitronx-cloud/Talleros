@@ -13,6 +13,9 @@ import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
 import InspeccionDanos from './inspeccion-danos'
 import { createClient } from '@/lib/supabase/client'
+import TimerOrden from './timer-orden'
+import NotaVoz from './nota-voz'
+
 
 const ITEMS_CHECKLIST = [
   'Revisé el problema reportado por el cliente',
@@ -179,6 +182,13 @@ export default function FlujoTecnico({ orden, nombreTecnico }: Props) {
             </div>
           )}
 
+          {/* Timer */}
+          <TimerOrden
+            ordenId={orden.id}
+            tiempoInicial={(orden as any).tiempo_trabajado_minutos ?? 0}
+            timerInicio={(orden as any).timer_inicio ?? null}
+          />
+
           {/* Nota del técnico */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <p className="text-sm font-semibold text-gray-900 mb-2">Mis notas</p>
@@ -196,6 +206,13 @@ export default function FlujoTecnico({ orden, nombreTecnico }: Props) {
             >
               {guardandoNota ? 'Guardando...' : 'Guardar nota'}
             </button>
+          </div>
+
+          {/* Nota de voz */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <p className="text-sm font-semibold text-gray-900 mb-1">Notas de voz</p>
+            <p className="text-xs text-gray-400 mb-3">Graba un audio con tus observaciones en lugar de escribir.</p>
+            <NotaVoz ordenId={orden.id} tallerId={orden.taller_id as string} />
           </div>
 
           <button
