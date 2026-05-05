@@ -31,8 +31,8 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
   const conteo = (estado: EstadoOrden | 'todas') =>
     estado === 'todas' ? ordenes.length : ordenes.filter(o => o.estado === estado).length
 
-  return (
-    <>
+    return (
+    <div className="max-w-screen-lg mx-auto">
       {/* Encabezado */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -156,6 +156,6 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
           ))
         )}
       </div>
-    </>
+    </div>
   )
 }

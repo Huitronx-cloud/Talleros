@@ -35,8 +35,12 @@ export default async function DashboardLayout({
         logoUrl={taller?.logo_url ?? null}
         rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
       />
-      <main className="flex-1 pt-14 md:pt-0 md:ml-16 overflow-y-auto w-full transition-all duration-300" id="main-content">
-        <div className="p-4 md:p-8">
+      {/* pt-14 en móvil (barra superior), md:ml-16 sidebar colapsado, xl:ml-64 sidebar expandido */}
+      <main
+        className="flex-1 pt-14 md:pt-0 md:ml-16 overflow-y-auto w-full transition-all duration-300"
+        id="main-content"
+      >
+        <div className="p-4 md:p-6 lg:p-8 max-w-screen-xl mx-auto">
           {children}
         </div>
       </main>
