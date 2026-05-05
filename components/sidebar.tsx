@@ -5,59 +5,51 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
-  LayoutDashboard,
-  LayoutGrid,
-  CalendarDays,
-  Users,
-  ClipboardList,
-  FileText,
-  Settings,
-  LogOut,
-  Wrench,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
+  LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
+  FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { RolUsuario } from '@/types'
 
-const NAV_ITEMS = [
-  { href: '/dashboard',    label: 'Dashboard',    icono: LayoutDashboard },
-  { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid      },
-  { href: '/citas',        label: 'Citas',         icono: CalendarDays    },
-  { href: '/clientes',     label: 'Clientes',      icono: Users           },
-  { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList   },
-  { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText        },
+const TODOS_NAV_ITEMS = [
+  { href: '/dashboard',    label: 'Dashboard',    icono: LayoutDashboard, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/citas',        label: 'Citas',         icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/clientes',     label: 'Clientes',      icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText,        roles: ['propietario', 'admin', 'recepcion'] },
 ]
 
-const NAV_BOTTOM = [
-  { href: '/configuracion/equipo', label: 'Equipo',         icono: Users    },
-  { href: '/configuracion',        label: 'Configuración',  icono: Settings },
+const TODOS_NAV_BOTTOM = [
+  { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,  roles: ['propietario', 'admin'] },
+  { href: '/configuracion',        label: 'Configuración', icono: Settings, roles: ['propietario', 'admin'] },
 ]
 
 interface Props {
   nombreTaller: string
+  rol: RolUsuario
 }
 
-export default function Sidebar({ nombreTaller }: Props) {
+export default function Sidebar({ nombreTaller, rol }: Props) {
   const pathname = usePathname()
   const router   = useRouter()
   const supabase = createClient()
   const [colapsado, setColapsado] = useState(false)
   const [menuMovil, setMenuMovil] = useState(false)
 
+  const NAV_ITEMS    = TODOS_NAV_ITEMS.filter(i => i.roles.includes(rol))
+  const NAV_BOTTOM   = TODOS_NAV_BOTTOM.filter(i => i.roles.includes(rol))
+
   useEffect(() => {
     const timer = setTimeout(() => setColapsado(true), 7000)
     return () => clearTimeout(timer)
   }, [])
- useEffect(() => {
+
+  useEffect(() => {
     const main = document.getElementById('main-content')
     if (!main) return
     const esMobil = window.innerWidth < 768
-    if (esMobil) {
-      main.style.marginLeft = '0'
-      return
-    }
+    if (esMobil) { main.style.marginLeft = '0'; return }
     main.style.marginLeft = colapsado ? '4rem' : '16rem'
   }, [colapsado])
 
@@ -90,7 +82,7 @@ export default function Sidebar({ nombreTaller }: Props) {
 
   return (
     <>
-      {/* ── BARRA MÓVIL (visible solo en móvil) ── */}
+      {/* ── BARRA MÓVIL ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -98,15 +90,12 @@ export default function Sidebar({ nombreTaller }: Props) {
           </div>
           <span className="text-white font-bold text-sm">TallerOS</span>
         </div>
-        <button
-          onClick={() => setMenuMovil(!menuMovil)}
-          className="text-gray-400 hover:text-white p-1"
-        >
+        <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1">
           {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* ── MENÚ MÓVIL DESPLEGABLE ── */}
+      {/* ── MENÚ MÓVIL ── */}
       {menuMovil && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMenuMovil(false)}>
           <div className="absolute top-14 left-0 right-0 bg-gray-900 border-b border-gray-800 py-3 px-3 space-y-1" onClick={e => e.stopPropagation()}>
@@ -160,7 +149,6 @@ export default function Sidebar({ nombreTaller }: Props) {
         'hidden md:flex h-screen bg-gray-900 flex-col fixed left-0 top-0 transition-all duration-300 z-30',
         colapsado ? 'w-16' : 'w-64'
       )}>
-        {/* Logo */}
         <div className={cn('px-3 py-5 border-b border-gray-800 flex items-center', colapsado ? 'justify-center' : 'gap-3 px-6')}>
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <Wrench className="w-4 h-4 text-white" />
@@ -173,14 +161,12 @@ export default function Sidebar({ nombreTaller }: Props) {
           )}
         </div>
 
-        {/* Nav principal */}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
             <NavLink key={item.href} {...item} />
           ))}
         </nav>
 
-        {/* Nav inferior */}
         <div className="px-2 py-4 border-t border-gray-800 space-y-1">
           {NAV_BOTTOM.map(item => (
             <NavLink key={item.href} {...item} />
@@ -196,8 +182,6 @@ export default function Sidebar({ nombreTaller }: Props) {
             <LogOut className="w-4 h-4 flex-shrink-0" />
             {!colapsado && <span>Cerrar sesión</span>}
           </button>
-
-          {/* Botón colapsar */}
           <button
             onClick={() => setColapsado(!colapsado)}
             className={cn(

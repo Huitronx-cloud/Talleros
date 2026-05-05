@@ -1,7 +1,21 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const RUTAS_PUBLICAS = ['/login', '/auth/callback']
+const RUTAS_PUBLICAS = ['/login', '/auth/callback', '/unirse', '/portal', '/citas']
+
+// Rutas permitidas por rol
+const RUTAS_POR_ROL: Record<string, string[]> = {
+  propietario: ['*'],
+  admin:       ['*'],
+  tecnico:     ['/dashboard', '/ordenes', '/kanban', '/citas'],
+  recepcion:   ['/dashboard', '/ordenes', '/clientes', '/cotizaciones', '/kanban', '/citas'],
+}
+
+function tieneAcceso(rol: string, pathname: string): boolean {
+  const rutas = RUTAS_POR_ROL[rol] ?? []
+  if (rutas.includes('*')) return true
+  return rutas.some(r => pathname === r || pathname.startsWith(r + '/'))
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -11,13 +25,9 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -27,26 +37,39 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
+
   const esRutaPublica = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
 
-  // Sin sesión y accediendo a ruta protegida → redirigir al login
+  // Sin sesión → login
   if (!user && !esRutaPublica) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Con sesión y accediendo a /login → redirigir al dashboard
+  // Con sesión en login → dashboard
   if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Redirigir raíz al dashboard
+  // Raíz → dashboard
   if (user && pathname === '/') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Verificar rol si está autenticado y es ruta del dashboard
+  if (user && !esRutaPublica) {
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+
+    const rol = usuario?.rol ?? 'tecnico'
+
+    if (!tieneAcceso(rol, pathname)) {
+      return NextResponse.redirect(new URL('/ordenes', request.url))
+    }
   }
 
   return supabaseResponse
