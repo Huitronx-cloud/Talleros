@@ -11,6 +11,7 @@ import { Orden, EstadoOrden, Notificacion } from '@/types'
 import { cambiarEstado, agregarNotaInterna } from '@/app/(dashboard)/ordenes/actions'
 import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
+import PanelPagos from './panel-pagos'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
   recibido:   'en_proceso',
@@ -400,6 +401,8 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
               </div>
             </div>
           )}
+          {/* Pagos y anticipos */}
+          <PanelPagos orden={orden} tallerId={orden.taller_id as string} />
 
           {/* Notas internas */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
