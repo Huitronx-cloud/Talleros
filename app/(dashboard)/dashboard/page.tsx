@@ -1,15 +1,13 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutDashboard, Users, ClipboardList, FileText, TrendingUp, Download, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, FileText, TrendingUp, Download, AlertTriangle, Clock } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 
 export default async function DashboardPage() {
   const supabase = createClient()
 
-  const ahora = new Date()
-  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
-
-  // Últimos 6 meses para la gráfica
+  const ahora      = new Date()
+  const inicioMes  = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
   const inicioGrafica = new Date(ahora.getFullYear(), ahora.getMonth() - 5, 1).toISOString()
 
   const [
@@ -21,6 +19,7 @@ export default async function DashboardPage() {
     { data: ordenesRetrasadas },
     { data: ingresosPorMes },
     { data: taller },
+    { data: ordenesTiempo },
   ] = await Promise.all([
     supabase.from('clientes').select('*', { count: 'exact', head: true }),
     supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes),
@@ -30,45 +29,87 @@ export default async function DashboardPage() {
       .select('id, descripcion_problema, estado, created_at, clientes(nombre)')
       .order('created_at', { ascending: false })
       .limit(5),
-    // Órdenes con fecha prometida vencida y no entregadas
     supabase.from('ordenes')
       .select('id, numero_orden, fecha_prometida, estado, clientes(nombre)')
       .lt('fecha_prometida', ahora.toISOString().split('T')[0])
       .neq('estado', 'entregado')
       .not('fecha_prometida', 'is', null)
       .order('fecha_prometida', { ascending: true }),
-    // Ingresos de los últimos 6 meses
     supabase.from('ordenes')
       .select('total, created_at')
       .gte('created_at', inicioGrafica)
       .eq('estado', 'entregado'),
-    // Nombre del taller
     supabase.from('talleres').select('nombre').single(),
+    // Órdenes con tiempo registrado
+    supabase.from('ordenes')
+      .select('descripcion_problema, servicios_realizados, tiempo_trabajado_minutos, mecanico_asignado, estado')
+      .gt('tiempo_trabajado_minutos', 0)
+      .eq('estado', 'entregado')
+      .order('created_at', { ascending: false })
+      .limit(50),
   ])
 
   const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
 
-  // Agrupar ingresos por mes para la gráfica
+  // Agrupar ingresos por mes
   const meses = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(ahora.getFullYear(), ahora.getMonth() - 5 + i, 1)
     return {
-      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      key:   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
       label: d.toLocaleDateString('es-MX', { month: 'short' }),
       total: 0,
     }
   })
-
   ingresosPorMes?.forEach(o => {
     const key = o.created_at.slice(0, 7)
     const mes = meses.find(m => m.key === key)
     if (mes) mes.total += o.total || 0
   })
 
+  // Calcular promedios de tiempo por tipo de servicio
+  const mapaServicios: Record<string, { minutos: number[]; mecanicos: Set<string> }> = {}
+  ordenesTiempo?.forEach((o: any) => {
+    const min      = o.tiempo_trabajado_minutos ?? 0
+    const mecanico = o.mecanico_asignado ?? 'Sin asignar'
+    const servicios: { descripcion: string }[] = o.servicios_realizados ?? []
+
+    if (servicios.length === 0) {
+      const key = (o.descripcion_problema ?? 'Servicio general').slice(0, 40)
+      if (!mapaServicios[key]) mapaServicios[key] = { minutos: [], mecanicos: new Set() }
+      mapaServicios[key].minutos.push(min)
+      mapaServicios[key].mecanicos.add(mecanico)
+    } else {
+      servicios.forEach(s => {
+        const key = s.descripcion.slice(0, 40)
+        if (!mapaServicios[key]) mapaServicios[key] = { minutos: [], mecanicos: new Set() }
+        mapaServicios[key].minutos.push(min)
+        mapaServicios[key].mecanicos.add(mecanico)
+      })
+    }
+  })
+
+  const promediosServicios = Object.entries(mapaServicios)
+    .map(([nombre, { minutos, mecanicos }]) => ({
+      nombre,
+      promedio: Math.round(minutos.reduce((a, b) => a + b, 0) / minutos.length),
+      cantidad: minutos.length,
+      mecanicos: Array.from(mecanicos).join(', '),
+    }))
+    .sort((a, b) => b.cantidad - a.cantidad)
+    .slice(0, 6)
+
+  const formatMin = (min: number) => {
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    if (h === 0) return `${m}m`
+    return `${h}h ${m}m`
+  }
+
   const tarjetas = [
-    { label: 'Clientes activos',     valor: totalClientes ?? 0,              icono: Users,         color: 'text-blue-600',   bg: 'bg-blue-50',   href: '/clientes'     },
-    { label: 'Órdenes este mes',     valor: ordenesMes ?? 0,                 icono: ClipboardList, color: 'text-green-600',  bg: 'bg-green-50',  href: '/ordenes'      },
-    { label: 'Cotizaciones abiertas',valor: cotizacionesAbiertas ?? 0,       icono: FileText,      color: 'text-yellow-600', bg: 'bg-yellow-50', href: '/cotizaciones' },
-    { label: 'Ingresos del mes',     valor: `$${totalIngresos.toLocaleString()}`, icono: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', href: '/ordenes'  },
+    { label: 'Clientes activos',      valor: totalClientes ?? 0,                   icono: Users,         color: 'text-blue-600',   bg: 'bg-blue-50',   href: '/clientes'     },
+    { label: 'Órdenes este mes',      valor: ordenesMes ?? 0,                      icono: ClipboardList, color: 'text-green-600',  bg: 'bg-green-50',  href: '/ordenes'      },
+    { label: 'Cotizaciones abiertas', valor: cotizacionesAbiertas ?? 0,            icono: FileText,      color: 'text-yellow-600', bg: 'bg-yellow-50', href: '/cotizaciones' },
+    { label: 'Ingresos del mes',      valor: `$${totalIngresos.toLocaleString()}`, icono: TrendingUp,    color: 'text-purple-600', bg: 'bg-purple-50', href: '/ordenes'      },
   ]
 
   const estadoColor: Record<string, string> = {
@@ -79,9 +120,8 @@ export default async function DashboardPage() {
   }
 
   const diasRetraso = (fecha: string) => {
-    const hoy = new Date()
     const prometida = new Date(fecha + 'T12:00:00')
-    return Math.floor((hoy.getTime() - prometida.getTime()) / (1000 * 60 * 60 * 24))
+    return Math.floor((ahora.getTime() - prometida.getTime()) / (1000 * 60 * 60 * 24))
   }
 
   return (
@@ -152,15 +192,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* Gráfica + Órdenes recientes */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        {/* Gráfica de ingresos */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-6">Ingresos últimos 6 meses</h2>
           <GraficaIngresos datos={meses} />
         </div>
 
-        {/* Órdenes recientes */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="text-base font-semibold text-gray-900">Órdenes recientes</h2>
@@ -189,6 +226,45 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Tiempos por servicio */}
+      {promediosServicios.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Clock className="w-4 h-4 text-blue-500" />
+            <h2 className="text-base font-semibold text-gray-900">Tiempos promedio por servicio</h2>
+            <span className="text-xs text-gray-400 ml-auto">Basado en {ordenesTiempo?.length ?? 0} órdenes con tiempo registrado</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {promediosServicios.map(s => {
+              const porcentaje = Math.min(100, (s.promedio / 480) * 100) // max 8h
+              return (
+                <div key={s.nombre} className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">{s.nombre}</p>
+                    <span className="text-lg font-bold text-blue-600 flex-shrink-0">{formatMin(s.promedio)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div
+                      className="bg-blue-500 h-1.5 rounded-full transition-all"
+                      style={{ width: `${porcentaje}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>{s.cantidad} {s.cantidad === 1 ? 'orden' : 'órdenes'}</span>
+                    <span className="truncate ml-2">{s.mecanicos}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {promediosServicios.length === 0 && (
+            <p className="text-sm text-gray-400 text-center py-4">
+              Los promedios aparecerán cuando los técnicos registren tiempo en sus órdenes.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
