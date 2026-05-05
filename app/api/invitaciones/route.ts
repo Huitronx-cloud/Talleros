@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   // Enviar email de invitación vía Supabase Auth
   const linkBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://talleros-omega.vercel.app'
   const link     = `${linkBase}/unirse?token=${invitacion.token}`
-
+console.log('[RESEND KEY]', process.env.RESEND_API_KEY ? 'existe' : 'NO EXISTE')
   // Enviar email con Resend directamente
 const resendRes = await fetch('https://api.resend.com/emails', {
   method: 'POST',
