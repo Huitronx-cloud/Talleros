@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
+import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
 
 export default async function DashboardLayout({
   children,
@@ -25,6 +26,8 @@ export default async function DashboardLayout({
     .eq('id', usuario?.taller_id ?? '')
     .single()
 
+  const esRecepcion = usuario?.rol === 'recepcion'
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar
@@ -36,6 +39,9 @@ export default async function DashboardLayout({
           {children}
         </div>
       </main>
+      {esRecepcion && usuario?.taller_id && (
+        <NotificacionesRealtime tallerId={usuario.taller_id} />
+      )}
     </div>
   )
 }
