@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { Orden, Notificacion } from '@/types'
+import { Orden, Notificacion, RolUsuario } from '@/types'
 import DetalleOrden from '@/components/ordenes/detalle-orden'
+import FlujoTecnico from '@/components/ordenes/flujo-tecnico'
 
 export default async function DetalleOrdenPage({
   params,
@@ -10,7 +11,9 @@ export default async function DetalleOrdenPage({
 }) {
   const supabase = createClient()
 
-  const [{ data: orden }, { data: notificaciones }] = await Promise.all([
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [{ data: orden }, { data: notificaciones }, { data: usuario }] = await Promise.all([
     supabase
       .from('ordenes')
       .select('*, clientes(nombre, telefono)')
@@ -21,9 +24,25 @@ export default async function DetalleOrdenPage({
       .select('*')
       .eq('orden_id', params.id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('usuarios')
+      .select('rol, nombre')
+      .eq('id', user!.id)
+      .single(),
   ])
 
   if (!orden) notFound()
+
+  const esTecnico = usuario?.rol === 'tecnico'
+
+  if (esTecnico) {
+    return (
+      <FlujoTecnico
+        orden={orden as Orden}
+        nombreTecnico={usuario?.nombre ?? ''}
+      />
+    )
+  }
 
   return (
     <DetalleOrden
