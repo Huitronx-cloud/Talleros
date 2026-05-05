@@ -26,6 +26,7 @@ export interface OrdenForm {
   total: number
   forma_pago: FormaPago
   notas_internas: string
+  vin?: string | null
 }
 
 async function getTallerId(): Promise<string | null> {
@@ -73,6 +74,7 @@ export async function crearOrden(datos: OrdenForm) {
     forma_pago:           datos.forma_pago,
     notas_internas:       datos.notas_internas   || null,
     historial:            historialInicial,
+    vin: datos.vin ?? null,
   }).select('id').single()
 
   if (error) return { error: error.message }

@@ -63,6 +63,7 @@ export interface Cliente {
   vehiculo_modelo: string | null
   vehiculo_año: number | null
   placas: string | null
+  vin: string | null
   notas: string | null
   created_at: string
 }
@@ -109,6 +110,7 @@ export interface Orden {
   vehiculo_modelo: string | null
   vehiculo_año: number | null
   placas: string | null
+  vin: string | null
   kilometraje: number | null
   descripcion_problema: string | null
   diagnostico: string | null

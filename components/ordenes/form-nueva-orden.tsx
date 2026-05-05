@@ -177,6 +177,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       total,
       forma_pago:           form.forma_pago,
       notas_internas:       form.notas_internas,
+      vin: (vehiculo as any).vin?.trim() || null,
     }
 
     const resultado = await crearOrden(datos)
@@ -284,6 +285,17 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
                 <label className={LABEL}>Placas</label>
                 <input type="text" value={vehiculo.placas} onChange={e => setVehiculo(p => ({ ...p, placas: e.target.value.toUpperCase() }))} placeholder="ABC-123" className={INPUT} />
               </div>
+              <div className="col-span-2">
+  <label className={LABEL}>VIN (Número de serie del vehículo)</label>
+  <input
+    type="text"
+    value={(vehiculo as any).vin ?? ''}
+    onChange={e => setVehiculo(p => ({ ...p, vin: e.target.value.toUpperCase() }))}
+    placeholder="17 caracteres — ej. 1HGCM82633A123456"
+    className={INPUT}
+    maxLength={17}
+  />
+</div>
               <div className="col-span-2">
                 <label className={LABEL}>Kilometraje</label>
                 <input type="number" value={vehiculo.kilometraje} onChange={e => setVehiculo(p => ({ ...p, kilometraje: e.target.value }))} placeholder="85000" className={INPUT} />

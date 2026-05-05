@@ -277,6 +277,17 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
             </div>
           </div>
 
+          {/* Botón historial del vehículo */}
+{(orden.placas || (orden as any).vin) && (
+  <Link
+    href={`/vehiculos/${encodeURIComponent((orden as any).vin ?? orden.placas ?? '')}`}
+    className="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+  >
+    <Car className="w-3.5 h-3.5" />
+    Ver historial completo del vehículo
+  </Link>
+)}
+
           {/* Fechas y mecánico */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
