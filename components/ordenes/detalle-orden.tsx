@@ -40,11 +40,11 @@ const ESTADO_NOTIF = {
 
 type Tab = 'resumen' | 'comunicacion' | 'garantia' | 'historial'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'resumen',       label: 'Resumen'               },
-  { id: 'comunicacion',  label: 'Comunicación'           },
-  { id: 'garantia',      label: 'Garantía y seguimiento' },
-  { id: 'historial',     label: 'Historial'              },
+const TABS: { id: Tab; label: string; activo: string; inactivo: string }[] = [
+  { id: 'resumen',      label: 'Resumen',               activo: 'bg-blue-600 text-white',   inactivo: 'text-blue-600 hover:text-blue-700'   },
+  { id: 'comunicacion', label: 'Comunicación',           activo: 'bg-green-600 text-white',  inactivo: 'text-green-600 hover:text-green-700'  },
+  { id: 'garantia',     label: 'Garantía y seguimiento', activo: 'bg-amber-500 text-white',  inactivo: 'text-amber-500 hover:text-amber-600'  },
+  { id: 'historial',    label: 'Historial',              activo: 'bg-purple-600 text-white', inactivo: 'text-purple-600 hover:text-purple-700' },
 ]
 
 export default function DetalleOrden({
@@ -212,15 +212,15 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6">
+      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setTabActivo(tab.id)}
-            className={`flex-1 text-sm font-medium py-2 rounded-lg transition-all ${
+            className={`flex-1 text-sm font-semibold py-2.5 px-3 rounded-lg transition-all whitespace-nowrap border-2 ${
               tabActivo === tab.id
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? `${tab.activo} border-transparent shadow-sm`
+                : `bg-white ${tab.inactivo} border-gray-200 hover:border-gray-300`
             }`}
           >
             {tab.label}
