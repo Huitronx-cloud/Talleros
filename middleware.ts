@@ -7,7 +7,7 @@ const RUTAS_PUBLICAS = ['/login', '/auth/callback', '/unirse', '/portal', '/cita
 const RUTAS_POR_ROL: Record<string, string[]> = {
   propietario: ['*'],
   admin:       ['*'],
-  tecnico:     ['/dashboard', '/ordenes', '/kanban', '/citas'],
+  tecnico: ['/ordenes', '/kanban', '/citas'],
   recepcion:   ['/dashboard', '/ordenes', '/clientes', '/cotizaciones', '/kanban', '/citas'],
 }
 
@@ -49,8 +49,14 @@ export async function middleware(request: NextRequest) {
 
   // Con sesión en login → dashboard
   if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
+  const { data: usuario } = await supabase
+    .from('usuarios')
+    .select('rol')
+    .eq('id', user.id)
+    .single()
+  const destino = usuario?.rol === 'tecnico' ? '/ordenes' : '/dashboard'
+  return NextResponse.redirect(new URL(destino, request.url))
+}
 
   // Raíz → dashboard
   if (user && pathname === '/') {

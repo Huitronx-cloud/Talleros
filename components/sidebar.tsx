@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
 
 const TODOS_NAV_ITEMS = [
-  { href: '/dashboard',    label: 'Dashboard',    icono: LayoutDashboard, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/dashboard', label: 'Dashboard', icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion'] },
   { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/citas',        label: 'Citas',         icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/clientes',     label: 'Clientes',      icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
