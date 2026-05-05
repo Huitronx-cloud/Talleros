@@ -377,6 +377,15 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
                   <span>Subtotal</span>
                   <span>${orden.subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
                 </div>
+                <p className="text-xs text-gray-400 capitalize">Forma de pago: {orden.forma_pago}</p>
+                {(orden as any).numero_factura && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-gray-400">Factura:</span>
+                    <span className="text-xs font-mono font-semibold text-gray-700">
+                      {(orden as any).numero_factura}
+                    </span>
+                  </div>
+                )}
                 {orden.descuento > 0 && (
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Descuento</span>

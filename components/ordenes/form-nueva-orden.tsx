@@ -69,6 +69,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   })
 
   const [form, setForm] = useState({
+    numero_factura: '',
     descripcion_problema: '',
     diagnostico: '',
     mecanico_asignado: '',
@@ -178,6 +179,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       forma_pago:           form.forma_pago,
       notas_internas:       form.notas_internas,
       vin: (vehiculo as any).vin?.trim() || null,
+      
     }
 
     const resultado = await crearOrden(datos)
@@ -193,7 +195,16 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
 
   return (
     <div className="max-w-2xl mx-auto">
-
+<div className="col-span-2">
+  <label className={LABEL}>Número de factura (opcional)</label>
+  <input
+    type="text"
+    value={form.numero_factura}
+    onChange={e => setForm(p => ({ ...p, numero_factura: e.target.value }))}
+    placeholder="Ej. A-0001 — déjalo vacío si no aplica"
+    className={INPUT}
+  />
+</div>
       {/* Progreso */}
       {paso < 3 && (
         <div className="flex items-center gap-3 mb-8">
