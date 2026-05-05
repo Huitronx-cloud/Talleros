@@ -124,6 +124,8 @@ export interface Orden {
   tasa_iva: number
   total: number
   forma_pago: FormaPago
+  cobrado: boolean
+  fecha_cobro: string | null
   notas_internas: string | null
   historial: HistorialItem[]
   created_at: string

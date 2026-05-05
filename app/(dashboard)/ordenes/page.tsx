@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Orden, RolUsuario } from '@/types'
 import ListaOrdenes from '@/components/ordenes/lista-ordenes'
 import MisOrdenes from '@/components/ordenes/mis-ordenes'
+import AgendaRecepcion from '@/components/recepcion/agenda-recepcion'
 
 export default async function OrdenesPage() {
   const supabase = createClient()
@@ -14,8 +15,43 @@ export default async function OrdenesPage() {
     .eq('id', user!.id)
     .single()
 
-  const esTecnico = usuario?.rol === 'tecnico'
+  const esTecnico    = usuario?.rol === 'tecnico'
+  const esRecepcion  = usuario?.rol === 'recepcion'
 
+  // Recepcionista — agenda del día
+  if (esRecepcion) {
+    const hoy   = new Date().toISOString().split('T')[0]
+
+    const [{ data: citasHoy }, { data: ordenesListas }, { data: ordenesHoy }] = await Promise.all([
+      supabase
+        .from('citas')
+        .select('*, clientes(nombre, telefono)')
+        .eq('fecha', hoy)
+        .order('hora', { ascending: true }),
+      supabase
+        .from('ordenes')
+        .select('*, clientes(nombre, telefono)')
+        .eq('estado', 'listo')
+        .eq('cobrado', false)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('ordenes')
+        .select('*, clientes(nombre, telefono)')
+        .gte('created_at', hoy + 'T00:00:00')
+        .order('created_at', { ascending: false }),
+    ])
+
+    return (
+      <AgendaRecepcion
+        citasHoy={(citasHoy ?? []) as any[]}
+        ordenesListas={(ordenesListas ?? []) as Orden[]}
+        ordenesHoy={(ordenesHoy ?? []) as Orden[]}
+        nombreRecepcionista={usuario?.nombre ?? ''}
+      />
+    )
+  }
+
+  // Técnico — mis órdenes
   const query = supabase
     .from('ordenes')
     .select('*, clientes(nombre, telefono)')
