@@ -20,6 +20,7 @@ export default async function DashboardPage() {
     { data: ingresosPorMes },
     { data: taller },
     { data: ordenesTiempo },
+    { data: inventarioItems },
   ] = await Promise.all([
     supabase.from('clientes').select('*', { count: 'exact', head: true }),
     supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes),
@@ -47,7 +48,10 @@ export default async function DashboardPage() {
       .eq('estado', 'entregado')
       .order('created_at', { ascending: false })
       .limit(50),
-  ])
+      
+  supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
+])
+const stockBajo = (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
 
   const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
 
@@ -104,7 +108,30 @@ export default async function DashboardPage() {
     if (h === 0) return `${m}m`
     return `${h}h ${m}m`
   }
-
+{/* Alerta stock bajo */}
+{stockBajo.length > 0 && (
+  <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <div className="flex items-center gap-2 mb-3">
+      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+      <p className="text-sm font-semibold text-amber-700">
+        {stockBajo.length} {stockBajo.length === 1 ? 'producto con' : 'productos con'} stock bajo
+      </p>
+      <Link href="/inventario" className="ml-auto text-xs text-amber-600 font-medium hover:text-amber-700">
+        Ver inventario →
+      </Link>
+    </div>
+    <div className="space-y-1.5">
+      {stockBajo.slice(0, 3).map((p: any) => (
+        <div key={p.id} className="flex items-center justify-between bg-white border border-amber-100 rounded-lg px-3 py-2">
+          <p className="text-sm text-gray-900 font-medium">{p.nombre}</p>
+          <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+            {p.stock_actual} / {p.stock_minimo} {p.unidad}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
   const tarjetas = [
     { label: 'Clientes activos',      valor: totalClientes ?? 0,                   icono: Users,         color: 'text-blue-600',   bg: 'bg-blue-50',   href: '/clientes'     },
     { label: 'Órdenes este mes',      valor: ordenesMes ?? 0,                      icono: ClipboardList, color: 'text-green-600',  bg: 'bg-green-50',  href: '/ordenes'      },

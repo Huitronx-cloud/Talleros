@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
   FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog,
+  Package,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -18,6 +19,7 @@ const TODOS_NAV_ITEMS = [
   { href: '/clientes',     label: 'Clientes',      icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
   { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText,        roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/inventario', label: 'Inventario', icono: Package, roles: ['propietario', 'admin', 'recepcion'] },
 ]
 
 const TODOS_NAV_BOTTOM = [
