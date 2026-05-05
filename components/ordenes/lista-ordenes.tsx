@@ -6,12 +6,12 @@ import { Plus, Search, ClipboardList, Car, User, Calendar } from 'lucide-react'
 import { Orden, EstadoOrden } from '@/types'
 import BadgeEstado from './badge-estado'
 
-const TABS: { label: string; valor: EstadoOrden | 'todas' }[] = [
-  { label: 'Todas',      valor: 'todas'      },
-  { label: 'Recibidas',  valor: 'recibido'   },
-  { label: 'En proceso', valor: 'en_proceso' },
-  { label: 'Listas',     valor: 'listo'      },
-  { label: 'Entregadas', valor: 'entregado'  },
+const TABS = [
+  { label: 'Todas',      valor: 'todas'      as const, activo: 'bg-gray-800 text-white',    inactivo: 'text-gray-600 hover:text-gray-800',   punto: 'bg-gray-500'    },
+  { label: 'Recibidas',  valor: 'recibido'   as const, activo: 'bg-gray-500 text-white',    inactivo: 'text-gray-500 hover:text-gray-600',   punto: 'bg-gray-400'    },
+  { label: 'En proceso', valor: 'en_proceso' as const, activo: 'bg-blue-600 text-white',    inactivo: 'text-blue-600 hover:text-blue-700',   punto: 'bg-blue-500'    },
+  { label: 'Listas',     valor: 'listo'      as const, activo: 'bg-green-600 text-white',   inactivo: 'text-green-600 hover:text-green-700', punto: 'bg-green-500'   },
+  { label: 'Entregadas', valor: 'entregado'  as const, activo: 'bg-purple-600 text-white',  inactivo: 'text-purple-600 hover:text-purple-700',punto: 'bg-purple-500' },
 ]
 
 export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
@@ -48,21 +48,24 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
         </Link>
       </div>
 
-      {/* Tabs */}
-<div className="flex items-center gap-1 mb-4 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+      {/* Tabs con colores */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1">
         {TABS.map(t => (
           <button
             key={t.valor}
             onClick={() => setTab(t.valor)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap border-2 ${
               tab === t.valor
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? `${t.activo} border-transparent shadow-sm`
+                : `bg-white ${t.inactivo} border-gray-200 hover:border-gray-300`
             }`}
           >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+              tab === t.valor ? 'bg-white' : t.punto
+            }`} />
             {t.label}
-            <span className={`text-xs rounded-full px-1.5 py-0.5 ${
-              tab === t.valor ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-500'
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
+              tab === t.valor ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
             }`}>
               {conteo(t.valor)}
             </span>
@@ -99,7 +102,6 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
               className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
             >
               <div className="flex items-start justify-between gap-4">
-                {/* Info principal */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded font-mono">
@@ -107,14 +109,12 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
                     </span>
                     <BadgeEstado estado={orden.estado} />
                   </div>
-
                   <div className="flex items-center gap-2 mb-1">
                     <User className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {orden.clientes?.nombre ?? 'Cliente no asignado'}
                     </p>
                   </div>
-
                   {(orden.vehiculo_marca || orden.placas) && (
                     <div className="flex items-center gap-2">
                       <Car className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
@@ -129,15 +129,12 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
                       </p>
                     </div>
                   )}
-
                   {orden.descripcion_problema && (
                     <p className="text-sm text-gray-500 mt-2 truncate">
                       {orden.descripcion_problema}
                     </p>
                   )}
                 </div>
-
-                {/* Info derecha */}
                 <div className="text-right flex-shrink-0">
                   <p className="text-lg font-bold text-gray-900">
                     ${orden.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
