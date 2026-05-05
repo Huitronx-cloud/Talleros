@@ -22,7 +22,7 @@ export default async function DashboardLayout({
 
   const { data: taller } = await supabase
     .from('talleres')
-    .select('nombre')
+    .select('nombre, logo_url')
     .eq('id', usuario?.taller_id ?? '')
     .single()
 
@@ -32,6 +32,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar
         nombreTaller={taller?.nombre ?? 'Mi taller'}
+        logoUrl={taller?.logo_url ?? null}
         rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
       />
       <main className="flex-1 pt-14 md:pt-0 md:ml-16 overflow-y-auto w-full transition-all duration-300" id="main-content">

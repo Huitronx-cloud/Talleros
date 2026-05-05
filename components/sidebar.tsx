@@ -27,10 +27,11 @@ const TODOS_NAV_BOTTOM = [
 
 interface Props {
   nombreTaller: string
+  logoUrl: string | null
   rol: RolUsuario
 }
 
-export default function Sidebar({ nombreTaller, rol }: Props) {
+export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   const pathname = usePathname()
   const router   = useRouter()
   const supabase = createClient()
@@ -84,11 +85,17 @@ export default function Sidebar({ nombreTaller, rol }: Props) {
     <>
       {/* ── BARRA MÓVIL ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Wrench className="w-3.5 h-3.5 text-white" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
+            {logoUrl ? (
+              <img src={logoUrl} alt={nombreTaller} className="w-full h-full object-contain" />
+            ) : (
+              <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Wrench className="w-3.5 h-3.5 text-white" />
+              </div>
+            )}
           </div>
-          <span className="text-white font-bold text-sm">TallerOS</span>
+          <span className="text-white font-bold text-sm truncate max-w-[160px]">{nombreTaller}</span>
         </div>
         <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1">
           {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -149,18 +156,23 @@ export default function Sidebar({ nombreTaller, rol }: Props) {
         'hidden md:flex h-screen bg-gray-900 flex-col fixed left-0 top-0 transition-all duration-300 z-30',
         colapsado ? 'w-16' : 'w-64'
       )}>
-        <div className={cn('px-3 py-5 border-b border-gray-800 flex items-center', colapsado ? 'justify-center' : 'gap-3 px-6')}>
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-4 h-4 text-white" />
+        <div className={cn('px-3 py-5 border-b border-gray-800 flex items-center', colapsado ? 'justify-center' : 'gap-3 px-4')}>
+          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
+            {logoUrl ? (
+              <img src={logoUrl} alt={nombreTaller} className="w-full h-full object-contain" />
+            ) : (
+              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Wrench className="w-4 h-4 text-white" />
+              </div>
+            )}
           </div>
           {!colapsado && (
             <div className="min-w-0">
-              <p className="text-white font-bold text-base leading-tight">TallerOS</p>
-              <p className="text-gray-400 text-xs truncate">{nombreTaller}</p>
+              <p className="text-white font-bold text-sm leading-tight truncate">{nombreTaller}</p>
+              <p className="text-gray-500 text-xs mt-0.5 capitalize">{rol}</p>
             </div>
           )}
         </div>
-
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
             <NavLink key={item.href} {...item} />
