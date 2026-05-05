@@ -6,6 +6,7 @@ import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide
 import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
+import SelectorCatalogo from './selector-catalogo'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -179,6 +180,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       forma_pago:           form.forma_pago,
       notas_internas:       form.notas_internas,
       vin: (vehiculo as any).vin?.trim() || null,
+      numero_factura: form.numero_factura.trim() || null,
       
     }
 
@@ -354,9 +356,18 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Servicios</h2>
-              <button onClick={agregarServicio} className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:text-blue-700">
-                <Plus className="w-4 h-4" /> Agregar
-              </button>
+              <div className="flex items-center gap-3">
+                <SelectorCatalogo
+                  tallerId={tallerIdProp}
+                  onSeleccionar={servicio => {
+                    setServicios(prev => [...prev, servicio])
+                    setPreciosRaw(prev => [...prev, String(servicio.precio_unitario)])
+                  }}
+                />
+                <button onClick={agregarServicio} className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:text-blue-700">
+                  <Plus className="w-4 h-4" /> Agregar
+                </button>
+              </div>
             </div>
             <div className="space-y-3">
               <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 uppercase px-1">
