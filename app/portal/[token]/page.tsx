@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Clock, CheckCircle2, Package, Wrench, Phone } from 'lucide-react'
 
@@ -7,7 +8,10 @@ export default async function PortalClientePage({
 }: {
   params: { token: string }
 }) {
-  const supabase = createClient()
+  const supabase = createAnonClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const { data: tokenData } = await supabase
     .from('portal_tokens')
