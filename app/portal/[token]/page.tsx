@@ -23,8 +23,8 @@ export default async function PortalClientePage({
   if (!tokenData) notFound()
 
   const orden   = tokenData.ordenes as any
-  const cliente = orden.clientes
-  const taller  = orden.talleres
+  const cliente = orden?.clientes ?? {}
+  const taller  = orden?.talleres ?? {}
 
   const { data: todasFotos } = await supabase
     .from('fotos_diagnostico')
