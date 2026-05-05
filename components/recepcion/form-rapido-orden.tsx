@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronRight, ChevronLeft, Loader2, UserPlus, Car } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, Loader2, UserPlus, Car, History } from 'lucide-react'
+import HistorialCliente from './historial-cliente'
 import { Cliente } from '@/types'
 import { crearOrden } from '@/app/(dashboard)/ordenes/actions'
 
@@ -179,21 +180,32 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda }: Pr
                 )}
               </div>
 
-              {/* Cliente seleccionado */}
+              {/* Cliente seleccionado + historial */}
               {clienteSeleccionado && (
-                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-                  <div>
-                    <p className="text-sm font-bold text-blue-900">{clienteSeleccionado.nombre}</p>
-                    <p className="text-xs text-blue-600">
-                      {[clienteSeleccionado.vehiculo_marca, clienteSeleccionado.vehiculo_modelo, clienteSeleccionado.placas].filter(Boolean).join(' · ')}
-                    </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                    <div>
+                      <p className="text-sm font-bold text-blue-900">{clienteSeleccionado.nombre}</p>
+                      <p className="text-xs text-blue-600">
+                        {[clienteSeleccionado.vehiculo_marca, clienteSeleccionado.vehiculo_modelo, clienteSeleccionado.placas].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setClienteSeleccionado(null); setBusqueda('') }}
+                      className="text-xs text-blue-500 hover:text-blue-700 font-medium"
+                    >
+                      Cambiar
+                    </button>
                   </div>
-                  <button
-                    onClick={() => { setClienteSeleccionado(null); setBusqueda('') }}
-                    className="text-xs text-blue-500 hover:text-blue-700 font-medium"
-                  >
-                    Cambiar
-                  </button>
+
+                  {/* Historial rápido */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <History className="w-4 h-4 text-gray-400" />
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Historial del cliente</p>
+                    </div>
+                    <HistorialCliente cliente={clienteSeleccionado} />
+                  </div>
                 </div>
               )}
 
