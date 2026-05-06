@@ -1,13 +1,21 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const RUTAS_PUBLICAS = ['/login', '/auth/callback', '/unirse', '/portal', '/citas']
+const RUTAS_PUBLICAS = [
+  '/login',
+  '/auth/callback',
+  '/unirse',
+  '/portal',
+  '/citas',
+  '/registro',      // ← NUEVO
+]
 
-// Rutas permitidas por rol
+const RUTAS_POST_REGISTRO = ['/onboarding'] // ← NUEVO: sesión sí, onboarding no requerido
+
 const RUTAS_POR_ROL: Record<string, string[]> = {
   propietario: ['*'],
   admin:       ['*'],
-  tecnico: ['/ordenes', '/kanban', '/citas'],
+  tecnico:     ['/ordenes', '/kanban', '/citas'],
   recepcion:   ['/dashboard', '/ordenes', '/clientes', '/cotizaciones', '/kanban', '/citas'],
 }
 
@@ -40,31 +48,37 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const esRutaPublica = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
+  const esRutaPublica      = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
+  const esRutaPostRegistro = RUTAS_POST_REGISTRO.some(r => pathname.startsWith(r))
 
   // Sin sesión → login
-  if (!user && !esRutaPublica) {
+  if (!user && !esRutaPublica && !esRutaPostRegistro) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Con sesión en login → dashboard
+  // Con sesión en /login → redirigir según rol
   if (user && pathname === '/login') {
-  const { data: usuario } = await supabase
-    .from('usuarios')
-    .select('rol')
-    .eq('id', user.id)
-    .single()
-  const destino = usuario?.rol === 'tecnico' ? '/ordenes' : '/dashboard'
-  return NextResponse.redirect(new URL(destino, request.url))
-}
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+    const destino = usuario?.rol === 'tecnico' ? '/ordenes' : '/dashboard'
+    return NextResponse.redirect(new URL(destino, request.url))
+  }
+
+  // Con sesión en /registro → ya tiene cuenta, ir al dashboard
+  if (user && pathname.startsWith('/registro')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
 
   // Raíz → dashboard
   if (user && pathname === '/') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Verificar rol si está autenticado y es ruta del dashboard
-  if (user && !esRutaPublica) {
+  // Verificar acceso por rol en rutas protegidas
+  if (user && !esRutaPublica && !esRutaPostRegistro) {
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('rol')
