@@ -172,7 +172,7 @@ export default function RegistroPage() {
                     onChange={e => actualizar('nombre_taller', e.target.value)}
                     placeholder="Ej: Taller Mecánico García"
                     maxLength={80}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     onKeyDown={e => e.key === 'Enter' && avanzar()}
                   />
                 </div>
@@ -184,7 +184,7 @@ export default function RegistroPage() {
                   <select
                     value={form.pais}
                     onChange={e => actualizar('pais', e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   >
                     {PAISES.map(p => (
                       <option key={p.code} value={p.code}>
