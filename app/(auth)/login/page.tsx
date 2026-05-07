@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Loader2, CheckCircle } from 'lucide-react'
@@ -17,6 +17,47 @@ export default function LoginPage() {
 
   const supabase = createClient()
   const router = useRouter()
+
+  // ── Detectar token en hash fragment (viene del magic link de registro) ──────
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash) return
+
+    const params = new URLSearchParams(hash.substring(1))
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    const type = params.get('type')
+
+    if (accessToken && refreshToken && type === 'magiclink') {
+      setCargando(true)
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          setError('El enlace expiró o es inválido. Solicita uno nuevo.')
+          setCargando(false)
+        } else {
+          // Verificar si el taller tiene onboarding completo
+          supabase
+            .from('usuarios')
+            .select('taller_id, talleres(onboarding_completo)')
+            .single()
+            .then(({ data }) => {
+              const taller = Array.isArray(data?.talleres)
+                ? data.talleres[0]
+                : data?.talleres as { onboarding_completo: boolean } | null
+              
+              if (taller?.onboarding_completo === false) {
+                router.push('/onboarding')
+              } else {
+                router.push('/dashboard')
+              }
+            })
+        }
+      })
+    }
+  }, [])
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,11 +87,20 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-  setError('Email o contraseña incorrectos.')
-} else {
-  router.push('/dashboard')
-}
-setCargando(false)
+      setError('Email o contraseña incorrectos.')
+    } else {
+      router.push('/dashboard')
+    }
+    setCargando(false)
+  }
+
+  if (cargando && !enviado) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
+        <p className="text-gray-500 text-sm">Verificando enlace…</p>
+      </div>
+    )
   }
 
   if (enviado) {
@@ -75,7 +125,6 @@ setCargando(false)
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-      {/* Selector de modo */}
       <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
         <button
           onClick={() => setModo('magic-link')}
@@ -101,7 +150,6 @@ setCargando(false)
 
       <form onSubmit={modo === 'magic-link' ? handleMagicLink : handlePassword}>
         <div className="space-y-4">
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Correo electrónico
@@ -119,7 +167,6 @@ setCargando(false)
             </div>
           </div>
 
-          {/* Contraseña (solo en modo password) */}
           {modo === 'password' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
