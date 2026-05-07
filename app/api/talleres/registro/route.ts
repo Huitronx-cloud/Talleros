@@ -10,12 +10,6 @@ const supabaseAdmin = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
 
-const IVA_POR_PAIS: Record<string, number> = {
-  MX: 16, CO: 19, AR: 21, PE: 18, CL: 19, EC: 15,
-  VE: 16, BO: 13, PY: 10, UY: 22, GT: 12, HN: 15,
-  SV: 13, CR: 13, PA: 7,  DO: 18, CU: 0,  NI: 15,
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -63,15 +57,14 @@ export async function POST(req: Request) {
     }
 
     const userId = authData.user.id
-    const iva = IVA_POR_PAIS[pais] ?? 16
+    
 
     // ── 2. Crear el taller ───────────────────────────────────────────────────
-    const { data: taller, error: tallerError } = await supabaseAdmin
+   const { data: taller, error: tallerError } = await supabaseAdmin
       .from('talleres')
       .insert({
         nombre: nombre_taller.trim(),
         pais,
-        iva_porcentaje: iva,
         onboarding_completo: false,
       })
       .select('id')
@@ -114,7 +107,7 @@ export async function POST(req: Request) {
     // ── 5. Email de bienvenida ───────────────────────────────────────────────
     try {
       await resend.emails.send({
-        from: 'TallerOS <hola@talleros.app>', // ← cambia por tu dominio verificado en Resend
+        from: 'TallerOS <onboarding@resend.dev>', // ← cambia por tu dominio verificado en Resend
         to: email.toLowerCase().trim(),
         subject: `¡Bienvenido a TallerOS, ${nombre_propietario.trim().split(' ')[0]}!`,
         html: buildEmailHtml({
