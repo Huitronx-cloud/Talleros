@@ -118,13 +118,18 @@ export default function RegistroPage() {
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-2">
-            <span className="text-2xl font-bold text-slate-900">
-              Taller<span className="text-blue-600">OS</span>
-            </span>
-          </a>
-          <p className="text-slate-500 text-sm mt-1">Gestión inteligente para tu taller</p>
-        </div>
+  <a href="/" className="inline-flex flex-col items-center gap-2">
+    <img
+      src="/icon-512.png"
+      alt="TallerOS"
+      className="h-16 w-16 object-contain"
+    />
+    <span className="text-2xl font-bold text-slate-900">
+      Taller<span className="text-blue-600">OS</span>
+    </span>
+  </a>
+  <p className="text-slate-500 text-sm mt-1">Gestión inteligente para tu taller</p>
+</div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
