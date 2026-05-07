@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     // ── 6. Email de bienvenida ───────────────────────────────────────────────
     try {
       await resend.emails.send({
-        from: 'TallerOS <hola@talleros.app>', // ← cambia por tu dominio verificado en Resend
+       from: 'TallerOS <onboarding@resend.dev>', // ← cambia por tu dominio verificado en Resend
         to: email.toLowerCase().trim(),
         subject: `¡Bienvenido a TallerOS, ${nombre_propietario.trim().split(' ')[0]}!`,
         html: buildEmailHtml({
