@@ -26,3 +26,7 @@ body {
     text-wrap: balance;
   }
 }
+input, select, textarea {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
