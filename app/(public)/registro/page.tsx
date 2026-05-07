@@ -85,7 +85,6 @@ export default function RegistroPage() {
     }
   }
 
-  // ── Pantalla de éxito ──────────────────────────────────────────────────────
   if (exito) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
@@ -112,28 +111,22 @@ export default function RegistroPage() {
     )
   }
 
-  // ── Formulario ─────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-  <a href="/" className="inline-flex flex-col items-center gap-2">
-    <img
-      src="/icon-512.png"
-      alt="TallerOS"
-      className="h-16 w-16 object-contain"
-    />
-    <span className="text-2xl font-bold text-slate-900">
-      Taller<span className="text-blue-600">OS</span>
-    </span>
-  </a>
-  <p className="text-slate-500 text-sm mt-1">Gestión inteligente para tu taller</p>
-</div>
+          <a href="/" className="inline-flex flex-col items-center gap-2">
+            <img src="/icon-512.png" alt="TallerOS" className="h-16 w-16 object-contain" />
+            <span className="text-2xl font-bold text-slate-900">
+              Taller<span className="text-blue-600">OS</span>
+            </span>
+          </a>
+          <p className="text-slate-500 text-sm mt-1">Gestión inteligente para tu taller</p>
+        </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
-          {/* Indicador de pasos */}
           <div className="flex border-b border-slate-100">
             {([1, 2] as Paso[]).map((n) => (
               <div
@@ -154,7 +147,6 @@ export default function RegistroPage() {
 
           <div className="p-6">
 
-            {/* ── Paso 1 ── */}
             {paso === 1 && (
               <div className="space-y-4">
                 <div>
@@ -172,7 +164,8 @@ export default function RegistroPage() {
                     onChange={e => actualizar('nombre_taller', e.target.value)}
                     placeholder="Ej: Taller Mecánico García"
                     maxLength={80}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     onKeyDown={e => e.key === 'Enter' && avanzar()}
                   />
                 </div>
@@ -184,7 +177,8 @@ export default function RegistroPage() {
                   <select
                     value={form.pais}
                     onChange={e => actualizar('pais', e.target.value)}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    style={{ color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   >
                     {PAISES.map(p => (
                       <option key={p.code} value={p.code}>
@@ -207,7 +201,6 @@ export default function RegistroPage() {
               </div>
             )}
 
-            {/* ── Paso 2 ── */}
             {paso === 2 && (
               <div className="space-y-4">
                 <div>
@@ -228,7 +221,8 @@ export default function RegistroPage() {
                     onChange={e => actualizar('nombre_propietario', e.target.value)}
                     placeholder="Ej: Carlos García López"
                     maxLength={80}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     autoFocus
                   />
                 </div>
@@ -242,8 +236,8 @@ export default function RegistroPage() {
                     value={form.email}
                     onChange={e => actualizar('email', e.target.value)}
                     placeholder="carlos@mitaller.com"
-style={{ color: '#0f172a' }}
-className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     onKeyDown={e => e.key === 'Enter' && !cargando && enviar()}
                   />
                   <p className="text-slate-400 text-xs mt-1">
