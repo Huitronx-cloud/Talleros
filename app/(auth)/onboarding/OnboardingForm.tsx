@@ -9,6 +9,28 @@ interface Props {
   nombreTaller: string
 }
 
+const CODIGOS_PAIS = [
+  { code: 'CA', nombre: 'Canadá',           dial: '+1',   bandera: '🇨🇦' },
+  { code: 'MX', nombre: 'México',           dial: '+52',  bandera: '🇲🇽' },
+  { code: 'US', nombre: 'Estados Unidos',   dial: '+1',   bandera: '🇺🇸' },
+  { code: 'CO', nombre: 'Colombia',         dial: '+57',  bandera: '🇨🇴' },
+  { code: 'AR', nombre: 'Argentina',        dial: '+54',  bandera: '🇦🇷' },
+  { code: 'PE', nombre: 'Perú',             dial: '+51',  bandera: '🇵🇪' },
+  { code: 'CL', nombre: 'Chile',            dial: '+56',  bandera: '🇨🇱' },
+  { code: 'EC', nombre: 'Ecuador',          dial: '+593', bandera: '🇪🇨' },
+  { code: 'GT', nombre: 'Guatemala',        dial: '+502', bandera: '🇬🇹' },
+  { code: 'CR', nombre: 'Costa Rica',       dial: '+506', bandera: '🇨🇷' },
+  { code: 'DO', nombre: 'Rep. Dominicana',  dial: '+1',   bandera: '🇩🇴' },
+  { code: 'VE', nombre: 'Venezuela',        dial: '+58',  bandera: '🇻🇪' },
+  { code: 'BO', nombre: 'Bolivia',          dial: '+591', bandera: '🇧🇴' },
+  { code: 'PY', nombre: 'Paraguay',         dial: '+595', bandera: '🇵🇾' },
+  { code: 'UY', nombre: 'Uruguay',          dial: '+598', bandera: '🇺🇾' },
+  { code: 'HN', nombre: 'Honduras',         dial: '+504', bandera: '🇭🇳' },
+  { code: 'SV', nombre: 'El Salvador',      dial: '+503', bandera: '🇸🇻' },
+  { code: 'PA', nombre: 'Panamá',           dial: '+507', bandera: '🇵🇦' },
+  { code: 'NI', nombre: 'Nicaragua',        dial: '+505', bandera: '🇳🇮' },
+]
+
 export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
   const router = useRouter()
   const supabase = createClient()
@@ -18,7 +40,9 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
   const [error, setError] = useState('')
   const [previewLogo, setPreviewLogo] = useState<string | null>(null)
   const [archivoLogo, setArchivoLogo] = useState<File | null>(null)
-  const [form, setForm] = useState({ telefono: '', direccion: '' })
+  const [codigoPais, setCodigoPais] = useState('CA')
+  const [numeroTel, setNumeroTel] = useState('')
+  const [form, setForm] = useState({ direccion: '' })
 
   function actualizar(campo: keyof typeof form, valor: string) {
     setForm(prev => ({ ...prev, [campo]: valor }))
@@ -35,6 +59,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
     setArchivoLogo(file)
     setPreviewLogo(URL.createObjectURL(file))
     setError('')
+  }
+
+  function telefonoCompleto() {
+    const pais = CODIGOS_PAIS.find(p => p.code === codigoPais)
+    const numero = numeroTel.trim()
+    if (!numero) return ''
+    return `${pais?.dial} ${numero}`
   }
 
   async function guardar() {
@@ -60,7 +91,8 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
       }
 
       const updates: Record<string, unknown> = { onboarding_completo: true }
-      if (form.telefono.trim()) updates.telefono = form.telefono.trim()
+      const tel = telefonoCompleto()
+      if (tel) updates.telefono = tel
       if (form.direccion.trim()) updates.direccion = form.direccion.trim()
       if (logo_url) updates.logo_url = logo_url
 
@@ -78,6 +110,8 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
       setCargando(false)
     }
   }
+
+  const paisSeleccionado = CODIGOS_PAIS.find(p => p.code === codigoPais)
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
@@ -143,16 +177,45 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
               )}
             </div>
 
-            {/* Teléfono */}
+            {/* Teléfono con selector de país */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono del taller</label>
-              <input
-                type="tel"
-                value={form.telefono}
-                onChange={e => actualizar('telefono', e.target.value)}
-                placeholder="Ej: +52 55 1234 5678"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Teléfono del taller
+              </label>
+              <div className="flex gap-2">
+                {/* Selector de código */}
+                <div className="relative">
+                  <select
+                    value={codigoPais}
+                    onChange={e => setCodigoPais(e.target.value)}
+                    style={{ color: '#0f172a' }}
+                    className="appearance-none border border-slate-300 rounded-lg pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer"
+                  >
+                    {CODIGOS_PAIS.map(p => (
+                      <option key={p.code} value={p.code}>
+                        {p.bandera} {p.dial}
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                {/* Número */}
+                <input
+                  type="tel"
+                  value={numeroTel}
+                  onChange={e => setNumeroTel(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+                  placeholder={codigoPais === 'CA' || codigoPais === 'US' ? '416 123 4567' : '55 1234 5678'}
+                  style={{ color: '#0f172a' }}
+                  className="flex-1 border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              {numeroTel && (
+                <p className="text-xs text-slate-400 mt-1">
+                  Se guardará como: <span className="text-slate-600 font-medium">{paisSeleccionado?.dial} {numeroTel}</span>
+                </p>
+              )}
             </div>
 
             {/* Dirección */}
@@ -163,7 +226,8 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                 value={form.direccion}
                 onChange={e => actualizar('direccion', e.target.value)}
                 placeholder="Ej: Av. Insurgentes 123, CDMX"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{ color: '#0f172a' }}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 

@@ -44,9 +44,8 @@ export default function LoginPage() {
             .select('taller_id, talleres(onboarding_completo)')
             .single()
             .then(({ data }) => {
-              const taller = Array.isArray(data?.talleres)
-                ? data.talleres[0]
-                : data?.talleres as { onboarding_completo: boolean } | null
+              const raw = data?.talleres
+const taller = (Array.isArray(raw) ? raw[0] : raw) as { onboarding_completo: boolean } | null
               
               if (taller?.onboarding_completo === false) {
                 router.push('/onboarding')
