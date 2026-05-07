@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       )
     }
 
-    // ── 1. Crear usuario en Auth ─────────────────────────────────────────────
+    // ── 1. Crear usuario en Auth (el trigger crea taller + usuario automático) ──
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase().trim(),
       email_confirm: true,
@@ -57,44 +57,35 @@ export async function POST(req: Request) {
     }
 
     const userId = authData.user.id
-    
 
-    // ── 2. Crear el taller ───────────────────────────────────────────────────
-   const { data: taller, error: tallerError } = await supabaseAdmin
-      .from('talleres')
-      .insert({
-        nombre: nombre_taller.trim(),
-        pais,
-        onboarding_completo: false,
-      })
-      .select('id')
+    // ── 2. Esperar un momento para que el trigger termine ────────────────────
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // ── 3. Obtener el taller_id que creó el trigger ──────────────────────────
+    const { data: usuario } = await supabaseAdmin
+      .from('usuarios')
+      .select('taller_id')
+      .eq('id', userId)
       .single()
 
-    if (tallerError || !taller) {
-      await supabaseAdmin.auth.admin.deleteUser(userId)
-      console.error('Taller error:', tallerError)
-      return NextResponse.json({ error: 'Error al crear el taller.' }, { status: 500 })
+    if (!usuario?.taller_id) {
+      console.error('No se encontró taller_id después del trigger')
+      return NextResponse.json(
+        { error: 'Error al configurar el taller. Intenta de nuevo.' },
+        { status: 500 }
+      )
     }
 
-    // ── 3. Crear usuario en tabla pública ────────────────────────────────────
-    const { error: usuarioError } = await supabaseAdmin
-      .from('usuarios')
-      .insert({
-        id: userId,
-        taller_id: taller.id,
-        nombre: nombre_propietario.trim(),
-        email: email.toLowerCase().trim(),
-        rol: 'propietario',
+    // ── 4. Actualizar el taller con los datos reales ─────────────────────────
+    await supabaseAdmin
+      .from('talleres')
+      .update({
+        nombre: nombre_taller.trim(),
+        pais,
       })
+      .eq('id', usuario.taller_id)
 
-    if (usuarioError) {
-      await supabaseAdmin.from('talleres').delete().eq('id', taller.id)
-      await supabaseAdmin.auth.admin.deleteUser(userId)
-      console.error('Usuario error:', usuarioError)
-      return NextResponse.json({ error: 'Error al registrar el usuario.' }, { status: 500 })
-    }
-
-    // ── 4. Generar magic link ────────────────────────────────────────────────
+    // ── 5. Generar magic link ────────────────────────────────────────────────
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
@@ -104,10 +95,10 @@ export async function POST(req: Request) {
 
     const magicLink = linkData?.properties?.action_link ?? `${appUrl}/login`
 
-    // ── 5. Email de bienvenida ───────────────────────────────────────────────
+    // ── 6. Email de bienvenida ───────────────────────────────────────────────
     try {
       await resend.emails.send({
-        from: 'TallerOS <onboarding@resend.dev>', // ← cambia por tu dominio verificado en Resend
+        from: 'TallerOS <hola@talleros.app>', // ← cambia por tu dominio verificado en Resend
         to: email.toLowerCase().trim(),
         subject: `¡Bienvenido a TallerOS, ${nombre_propietario.trim().split(' ')[0]}!`,
         html: buildEmailHtml({
@@ -123,7 +114,6 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       mensaje: `Cuenta creada. Revisa tu correo en ${email} para acceder.`,
-      taller_id: taller.id,
     })
 
   } catch (err) {
