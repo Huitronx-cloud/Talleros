@@ -71,7 +71,8 @@ export default async function DashboardPage() {
     supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
   ])
 
-  const taller     = Array.isArray(usuarioData?.talleres) ? usuarioData.talleres[0] : usuarioData?.talleres as { nombre: string; logo_url: string | null } | null
+  const tallerRaw = usuarioData?.talleres
+const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'
   const rol        = (usuarioData?.rol ?? 'recepcion') as string
 
