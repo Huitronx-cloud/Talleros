@@ -146,13 +146,19 @@ export default function LoginPage() {
 
       </form>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
-        ¿No tienes cuenta?{' '}
-        <a href="/registro" className="text-blue-600 hover:text-blue-700 font-medium">
-          Regístrate gratis
-        </a>
-      </p>
-
-    </div>
+      <div className="mt-6 space-y-3 text-center">
+  <p>
+    <a href="/recuperar-password" className="text-sm text-gray-500 hover:text-blue-600 transition-colors">
+      ¿Olvidaste tu contraseña?
+    </a>
+  </p>
+  <p className="text-sm text-gray-500">
+    ¿No tienes cuenta?{' '}
+    <a href="/registro" className="text-blue-600 hover:text-blue-700 font-medium">
+      Regístrate gratis
+    </a>
+  </p>
+</div>
+</div>
   )
 }
