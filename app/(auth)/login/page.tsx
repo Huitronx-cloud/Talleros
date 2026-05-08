@@ -25,7 +25,7 @@ export default function LoginPage() {
     const refreshToken = params.get('refresh_token')
     const type         = params.get('type')
 
-    if (accessToken && refreshToken && type === 'magiclink') {
+    if (accessToken && refreshToken && (type === 'magiclink' || type === 'recovery')) {
       setCargando(true)
       supabase.auth.setSession({
         access_token:  accessToken,
@@ -43,7 +43,11 @@ export default function LoginPage() {
             .then(({ data }) => {
               const raw    = data?.talleres
               const taller = (Array.isArray(raw) ? raw[0] : raw) as { onboarding_completo: boolean } | null
-              router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
+              if (type === 'recovery') {
+  router.push('/nueva-password')
+} else {
+  router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
+}
             })
         }
       })
