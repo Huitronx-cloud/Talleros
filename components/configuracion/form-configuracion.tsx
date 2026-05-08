@@ -7,24 +7,70 @@ import { createClient } from '@/lib/supabase/client'
 import { Taller } from '@/types'
 import Image from 'next/image'
 
+const CODIGOS_PAIS = [
+  { code: 'CA', nombre: 'Canadá',          dial: '+1',   bandera: '🇨🇦' },
+  { code: 'MX', nombre: 'México',          dial: '+52',  bandera: '🇲🇽' },
+  { code: 'US', nombre: 'Estados Unidos',  dial: '+1',   bandera: '🇺🇸' },
+  { code: 'CO', nombre: 'Colombia',        dial: '+57',  bandera: '🇨🇴' },
+  { code: 'AR', nombre: 'Argentina',       dial: '+54',  bandera: '🇦🇷' },
+  { code: 'PE', nombre: 'Perú',            dial: '+51',  bandera: '🇵🇪' },
+  { code: 'CL', nombre: 'Chile',           dial: '+56',  bandera: '🇨🇱' },
+  { code: 'EC', nombre: 'Ecuador',         dial: '+593', bandera: '🇪🇨' },
+  { code: 'GT', nombre: 'Guatemala',       dial: '+502', bandera: '🇬🇹' },
+  { code: 'CR', nombre: 'Costa Rica',      dial: '+506', bandera: '🇨🇷' },
+  { code: 'DO', nombre: 'Rep. Dominicana', dial: '+1',   bandera: '🇩🇴' },
+  { code: 'VE', nombre: 'Venezuela',       dial: '+58',  bandera: '🇻🇪' },
+  { code: 'BO', nombre: 'Bolivia',         dial: '+591', bandera: '🇧🇴' },
+  { code: 'PY', nombre: 'Paraguay',        dial: '+595', bandera: '🇵🇾' },
+  { code: 'UY', nombre: 'Uruguay',         dial: '+598', bandera: '🇺🇾' },
+  { code: 'HN', nombre: 'Honduras',        dial: '+504', bandera: '🇭🇳' },
+  { code: 'SV', nombre: 'El Salvador',     dial: '+503', bandera: '🇸🇻' },
+  { code: 'PA', nombre: 'Panamá',          dial: '+507', bandera: '🇵🇦' },
+  { code: 'NI', nombre: 'Nicaragua',       dial: '+505', bandera: '🇳🇮' },
+]
+
+// Detecta el código de país y el número a partir de un teléfono guardado como "+52 55 1234 5678"
+function parsearTelefono(telefono: string): { codigoPais: string; numero: string } {
+  if (!telefono) return { codigoPais: 'MX', numero: '' }
+  const match = CODIGOS_PAIS.find(p => telefono.startsWith(p.dial))
+  if (match) {
+    return {
+      codigoPais: match.code,
+      numero: telefono.slice(match.dial.length).trim(),
+    }
+  }
+  return { codigoPais: 'MX', numero: telefono }
+}
+
 export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const supabase = createClient()
 
-  const [nombre,       setNombre]       = useState(taller.nombre       ?? '')
-  const [telefono,     setTelefono]     = useState(taller.telefono     ?? '')
-  const [direccion,    setDireccion]    = useState(taller.direccion    ?? '')
-  const [email,        setEmail]        = useState(taller.email        ?? '')
-  const [moneda,       setMoneda]       = useState<'MXN' | 'COP'>(taller.moneda ?? 'MXN')
-  const [vigencia,     setVigencia]     = useState(taller.vigencia_dias ?? 15)
-  const [logoUrl,      setLogoUrl]      = useState(taller.logo_url     ?? '')
+  const telefonoParseado = parsearTelefono(taller.telefono ?? '')
+
+  const [nombre,          setNombre]          = useState(taller.nombre          ?? '')
+  const [codigoPais,      setCodigoPais]      = useState(telefonoParseado.codigoPais)
+  const [numeroTel,       setNumeroTel]       = useState(telefonoParseado.numero)
+  const [direccion,       setDireccion]       = useState(taller.direccion       ?? '')
+  const [email,           setEmail]           = useState(taller.email           ?? '')
+  const [moneda,          setMoneda]          = useState<'MXN' | 'COP'>(taller.moneda ?? 'MXN')
+  const [vigencia,        setVigencia]        = useState(taller.vigencia_dias   ?? 15)
+  const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
   const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
 
-  const [cargando,     setCargando]     = useState(false)
-  const [subiendo,     setSubiendo]     = useState(false)
-  const [ok,           setOk]           = useState(false)
-  const [error,        setError]        = useState('')
+  const [cargando, setCargando] = useState(false)
+  const [subiendo, setSubiendo] = useState(false)
+  const [ok,       setOk]       = useState(false)
+  const [error,    setError]    = useState('')
 
   const inputFile = useRef<HTMLInputElement>(null)
+
+  const paisSeleccionado = CODIGOS_PAIS.find(p => p.code === codigoPais)
+
+  function telefonoCompleto() {
+    const numero = numeroTel.trim()
+    if (!numero) return ''
+    return `${paisSeleccionado?.dial} ${numero}`
+  }
 
   async function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -44,8 +90,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
     if (errUp) { setError('Error al subir el logo: ' + errUp.message); setSubiendo(false); return }
 
     const { data } = supabase.storage.from('logos').getPublicUrl(path)
-    console.log('URL del logo:', data.publicUrl) 
-    setLogoUrl(data.publicUrl + '?t=' + Date.now()) // cache-bust
+    setLogoUrl(data.publicUrl + '?t=' + Date.now())
     setSubiendo(false)
   }
 
@@ -59,13 +104,13 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
 
     const result = await guardarConfiguracion({
       nombre,
-      telefono,
+      telefono: telefonoCompleto(),
       direccion,
       email,
       moneda,
       vigencia_dias: vigencia,
-      logo_url: logoUrl || undefined,
-      google_review_url: googleReviewUrl || undefined,
+      logo_url:          logoUrl          || undefined,
+      google_review_url: googleReviewUrl  || undefined,
     })
 
     setCargando(false)
@@ -76,11 +121,11 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+
       {/* Logo */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <h2 className="font-semibold text-gray-900 mb-4">Logo del taller</h2>
         <div className="flex items-center gap-5">
-          {/* Preview */}
           <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden bg-gray-50 flex-shrink-0">
             {logoUrl ? (
               <div className="relative w-full h-full">
@@ -90,8 +135,6 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
               <Building2 className="w-8 h-8 text-gray-300" />
             )}
           </div>
-
-          {/* Botones */}
           <div>
             <input
               ref={inputFile}
@@ -128,7 +171,9 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
         <h2 className="font-semibold text-gray-900">Información del taller</h2>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del taller <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Nombre del taller <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={nombre}
@@ -138,41 +183,67 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+        {/* Teléfono con selector de país */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <div className="flex gap-2">
+            <div className="relative">
+              <select
+                value={codigoPais}
+                onChange={e => setCodigoPais(e.target.value)}
+                className="appearance-none border border-gray-300 rounded-lg pl-3 pr-8 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                {CODIGOS_PAIS.map(p => (
+                  <option key={p.code} value={p.code}>
+                    {p.bandera} {p.dial}
+                  </option>
+                ))}
+              </select>
+              <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
             <input
               type="tel"
-              value={telefono}
-              onChange={e => setTelefono(e.target.value)}
-              placeholder="+52 55 1234 5678"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={numeroTel}
+              onChange={e => setNumeroTel(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+              placeholder={codigoPais === 'CA' || codigoPais === 'US' ? '416 123 4567' : '55 1234 5678'}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="taller@ejemplo.com"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          {numeroTel && (
+            <p className="text-xs text-gray-400 mt-1">
+              Se guardará como: <span className="text-gray-600 font-medium">{paisSeleccionado?.dial} {numeroTel}</span>
+            </p>
+          )}
         </div>
+
         <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-    Link de reseña en Google
-  </label>
-  <input
-    type="url"
-    value={googleReviewUrl}
-    onChange={e => setGoogleReviewUrl(e.target.value)}
-    placeholder="https://g.page/r/tu-taller/review"
-    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-  <p className="text-xs text-gray-400 mt-1">Este link se enviará automáticamente al cliente para pedir reseña en Google.</p>
-</div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="taller@ejemplo.com"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Link de reseña en Google
+          </label>
+          <input
+            type="url"
+            value={googleReviewUrl}
+            onChange={e => setGoogleReviewUrl(e.target.value)}
+            placeholder="https://g.page/r/tu-taller/review"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Este link se enviará automáticamente al cliente para pedir reseña en Google.
+          </p>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
