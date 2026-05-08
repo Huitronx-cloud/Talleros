@@ -79,11 +79,11 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
         const ext = archivoLogo.name.split('.').pop()
         const path = `${tallerId}/logo.${ext}`
         const { error: uploadError } = await supabase.storage
-          .from('taller-logos')
+          .from('teller-logos')
           .upload(path, archivoLogo, { upsert: true, contentType: archivoLogo.type })
 
         if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('taller-logos').getPublicUrl(path)
+          const { data: urlData } = supabase.storage.from('teller-logos').getPublicUrl(path)
           logo_url = urlData.publicUrl
         } else {
           console.warn('Logo upload:', uploadError.message)
