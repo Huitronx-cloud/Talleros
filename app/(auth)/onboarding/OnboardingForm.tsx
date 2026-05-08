@@ -71,11 +71,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
   async function guardar() {
     setCargando(true)
     setError('')
+    console.log('Guardando...', { archivoLogo, tallerId })  // ← NUEVO
 
     try {
       let logo_url: string | null = null
 
       if (archivoLogo) {
+        console.log('Subiendo logo...', archivoLogo.name)  // ← NUEVO
         const ext = archivoLogo.name.split('.').pop()
         const path = `${tallerId}/logo.${ext}`
         const { error: uploadError } = await supabase.storage
