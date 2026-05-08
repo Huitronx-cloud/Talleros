@@ -118,10 +118,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-slate-900">
-            Taller<span className="text-blue-600">OS</span>
-          </span>
-        </div>
+  <a href="/" className="inline-flex flex-col items-center gap-2">
+    <img src="/icon-512.png" alt="TallerOS" className="h-16 w-16 object-contain" />
+    <span className="text-2xl font-bold text-slate-900">
+      Taller<span className="text-blue-600">OS</span>
+    </span>
+  </a>
+</div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <div className="mb-6">
@@ -167,10 +170,10 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                   {/* Logo principal centrado */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                     <img
-                      src={previewLogo}
-                      alt="Logo preview"
-                      className="h-24 w-auto object-contain drop-shadow-sm"
-                    />
+  src={previewLogo}
+  alt="Logo preview"
+  className="h-32 w-auto object-contain drop-shadow-sm"
+/>
                     <span className="text-xs text-slate-500 bg-white/80 px-2 py-0.5 rounded-full">
                       Haz clic para cambiar
                     </span>
