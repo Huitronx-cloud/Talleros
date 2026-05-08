@@ -81,7 +81,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
         const { error: uploadError } = await supabase.storage
           .from('teller-logos')
           .upload(path, archivoLogo, { upsert: true, contentType: archivoLogo.type })
-
+console.log('Upload result:', uploadError)
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('teller-logos').getPublicUrl(path)
           logo_url = urlData.publicUrl
