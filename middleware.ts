@@ -8,9 +8,11 @@ const RUTAS_PUBLICAS = [
   '/portal',
   '/citas',
   '/registro',
-  '/api/talleres/registro',  // ← NUEVO
-'/recuperar-password',  // ← NUEVO
-  '/nueva-password',      // ← NUEVO
+  '/api/talleres/registro',
+  '/recuperar-password',
+  '/nueva-password',
+  '/api/stripe/webhook',
+  '/api/stripe',
 ]
 
 const RUTAS_POST_REGISTRO = ['/onboarding'] // ← NUEVO: sesión sí, onboarding no requerido
