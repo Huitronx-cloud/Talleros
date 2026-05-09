@@ -20,6 +20,8 @@ export default function NuevaPasswordPage() {
 
   useEffect(() => {
     const hash = window.location.hash
+    console.log('HASH COMPLETO:', hash)
+    console.log('PARAMS:', Object.fromEntries(new URLSearchParams(hash.substring(1))))
     if (!hash) return
 
     const params = new URLSearchParams(hash.substring(1))
