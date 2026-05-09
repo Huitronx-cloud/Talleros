@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, Zap, X } from 'lucide-react'
 const PLANES = {
@@ -15,6 +16,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
   const [cerrado,     setCerrado]     = useState(false)
   const [procesando,  setProcesando]  = useState(false)
 
+  const router   = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
@@ -27,16 +29,8 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
       .then(({ data }) => setSuscripcion(data))
   }, [tallerId])
 
-  async function handleUpgrade() {
-    setProcesando(true)
-    const res  = await fetch('/api/stripe/checkout', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ precio_id: PLANES.esencial_mensual }),
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    setProcesando(false)
+  function handleUpgrade() {
+    router.push('/configuracion/plan')
   }
 
   if (!suscripcion || cerrado) return null
@@ -75,7 +69,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
 
       <button
         onClick={handleUpgrade}
-        disabled={procesando}
+        disabled={false}
         className={`shrink-0 flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
           urgente
             ? 'bg-red-600 hover:bg-red-700 text-white'
@@ -83,7 +77,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
         }`}
       >
         <Zap className="w-4 h-4" />
-        {procesando ? 'Redirigiendo…' : 'Elegir plan'}
+        {'Ver planes'}
       </button>
 
       {!esVencida && (
