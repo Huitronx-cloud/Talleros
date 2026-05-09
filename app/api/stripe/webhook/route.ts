@@ -35,8 +35,15 @@ export async function POST(req: NextRequest) {
         if (!tallerId || !subscriptionId) break
 
         const sub      = await stripe.subscriptions.retrieve(subscriptionId) as any
-        const precioId = sub.items.data[0].price.id
+        const precioId = sub.items?.data?.[0]?.price?.id
         const plan     = PRECIOS_A_PLAN[precioId] ?? 'trial'
+
+        const periodoInicio = sub.current_period_start
+          ? new Date(sub.current_period_start * 1000).toISOString()
+          : null
+        const periodoFin = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null
 
         await supabaseAdmin
           .from('suscripciones')
@@ -46,8 +53,8 @@ export async function POST(req: NextRequest) {
             stripe_subscription_id: subscriptionId,
             stripe_customer_id:     session.customer,
             precio_id:              precioId,
-            periodo_inicio:         new Date(sub.current_period_start * 1000).toISOString(),
-            periodo_fin:            new Date(sub.current_period_end   * 1000).toISOString(),
+            periodo_inicio:         periodoInicio,
+            periodo_fin:            periodoFin,
             trial_fin:              null,
           })
           .eq('taller_id', tallerId)
@@ -59,8 +66,15 @@ export async function POST(req: NextRequest) {
         const tallerId = sub.metadata?.taller_id
         if (!tallerId) break
 
-        const precioId = sub.items.data[0].price.id
+        const precioId = sub.items?.data?.[0]?.price?.id
         const plan     = PRECIOS_A_PLAN[precioId] ?? 'trial'
+
+        const periodoInicio = sub.current_period_start
+          ? new Date(sub.current_period_start * 1000).toISOString()
+          : null
+        const periodoFin = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null
 
         await supabaseAdmin
           .from('suscripciones')
@@ -68,8 +82,8 @@ export async function POST(req: NextRequest) {
             plan,
             estado:              sub.status === 'active' ? 'activa' : 'vencida',
             precio_id:           precioId,
-            periodo_inicio:      new Date(sub.current_period_start * 1000).toISOString(),
-            periodo_fin:         new Date(sub.current_period_end   * 1000).toISOString(),
+            periodo_inicio:      periodoInicio,
+            periodo_fin:         periodoFin,
             cancelar_al_periodo: sub.cancel_at_period_end,
           })
           .eq('taller_id', tallerId)
