@@ -17,7 +17,7 @@ export default function RecuperarPasswordPage() {
     setError('')
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.toLowerCase().trim(),
-      { redirectTo: window.location.origin + '/nueva-password' }
+      { redirectTo: `https://tallerosapp.com/nueva-password`, }
     )
     setCargando(false)
     if (error) { setError('No se pudo enviar el correo.'); return }
