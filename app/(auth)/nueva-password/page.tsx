@@ -19,47 +19,61 @@ export default function NuevaPasswordPage() {
   const router   = useRouter()
 
   useEffect(() => {
-    const hash = window.location.hash
-    console.log('HASH COMPLETO:', hash)
-    console.log('PARAMS:', Object.fromEntries(new URLSearchParams(hash.substring(1))))
-    if (!hash) return
+    const hash   = window.location.hash
+    const search = window.location.search
 
-    const params = new URLSearchParams(hash.substring(1))
+    console.log('HASH:', hash)
+    console.log('SEARCH:', search)
 
-    // Caso 1: Supabase nuevo — envía token_hash + type
-    const tokenHash = params.get('token_hash')
-    const type      = params.get('type')
+    // Caso 1: token en query params (?token_hash=...&type=recovery)
+    const queryParams = new URLSearchParams(search)
+    const tokenHashQ  = queryParams.get('token_hash')
+    const typeQ       = queryParams.get('type')
 
-    if (tokenHash && type === 'recovery') {
-      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    if (tokenHashQ && typeQ === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHashQ, type: 'recovery' })
         .then(({ error }) => {
-          if (error) {
-            setError('El enlace expiró o no es válido. Solicita uno nuevo.')
-          } else {
-            setSesionLista(true)
-          }
+          if (error) setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+          else setSesionLista(true)
         })
       return
     }
 
-    // Caso 2: Supabase legacy — envía access_token + refresh_token
-    const accessToken  = params.get('access_token')
-    const refreshToken = params.get('refresh_token')
+    // Caso 2: token en hash fragment (#token_hash=... o #access_token=...)
+    if (hash) {
+      const hashParams   = new URLSearchParams(hash.substring(1))
+      const tokenHashH   = hashParams.get('token_hash')
+      const typeH        = hashParams.get('type')
+      const accessToken  = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
 
-    if (accessToken && refreshToken) {
-      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-        .then(({ error }) => {
-          if (error) {
-            setError('El enlace expiró o no es válido. Solicita uno nuevo.')
-          } else {
-            setSesionLista(true)
-          }
-        })
-      return
+      if (tokenHashH && typeH === 'recovery') {
+        supabase.auth.verifyOtp({ token_hash: tokenHashH, type: 'recovery' })
+          .then(({ error }) => {
+            if (error) setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+            else setSesionLista(true)
+          })
+        return
+      }
+
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(({ error }) => {
+            if (error) setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+            else setSesionLista(true)
+          })
+        return
+      }
     }
 
-    // No se encontró ningún token válido en el hash
-    setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+    // Caso 3: Supabase ya procesó el token y hay sesión activa
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setSesionLista(true)
+      } else {
+        setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+      }
+    })
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -105,8 +119,7 @@ export default function NuevaPasswordPage() {
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Enlace inválido</h2>
         <p className="text-gray-500 text-sm mb-6">{error}</p>
-        
-          <button
+        <button
           type="button"
           onClick={() => router.push('/recuperar-password')}
           className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors text-sm text-center"
