@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: precio_id, quantity: 1 }],
+      metadata: { taller_id: usuario.taller_id },
       subscription_data: {
         metadata: { taller_id: usuario.taller_id },
       },
