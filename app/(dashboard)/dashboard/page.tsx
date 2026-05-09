@@ -6,6 +6,7 @@ import {
   AlertTriangle, Clock, Wrench, Download
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
+import BannerUpgrade from './banner-upgrade'
 
 const MODULOS = [
   { href: '/kanban',           label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -60,7 +61,7 @@ export default async function DashboardPage() {
       .gte('created_at', inicioGrafica)
       .eq('estado', 'entregado'),
     supabase.from('usuarios')
-      .select('nombre, rol, talleres(nombre, logo_url)')
+      .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
       .single(),
     supabase.from('ordenes')
       .select('descripcion_problema, servicios_realizados, tiempo_trabajado_minutos, mecanico_asignado, estado')
@@ -200,6 +201,9 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+        {/* ── BANNER UPGRADE ── */}
+        <BannerUpgrade tallerId={usuarioData?.taller_id} />
 
         {/* ── ALERTAS ── */}
         {(ordenesRetrasadas && ordenesRetrasadas.length > 0) || stockBajo.length > 0 ? (
