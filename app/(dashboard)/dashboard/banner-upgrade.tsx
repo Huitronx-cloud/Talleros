@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, Zap, X } from 'lucide-react'
-import { PLANES } from '@/lib/stripe'
+const PLANES = {
+  esencial_mensual: 'price_1TVAoRRFpmo4G9XHOUNFQDGJ',
+  esencial_anual:   'price_1TVApHRFpmo4G9XHrbpflGrA',
+  pro_mensual:      'price_1TVApeRFpmo4G9XHUD6EDGbQ',
+  pro_anual:        'price_1TVAq3RFpmo4G9XHKh2QHkjK',
+}
 
 export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
   const [suscripcion, setSuscripcion] = useState<any>(null)
