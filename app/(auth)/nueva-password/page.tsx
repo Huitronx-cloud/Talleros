@@ -18,12 +18,29 @@ export default function NuevaPasswordPage() {
   const supabase = createClient()
   const router   = useRouter()
 
-  // Supabase envía el token en el hash — necesitamos procesarlo
   useEffect(() => {
     const hash = window.location.hash
     if (!hash) return
 
-    const params       = new URLSearchParams(hash.substring(1))
+    const params = new URLSearchParams(hash.substring(1))
+
+    // Caso 1: Supabase nuevo — envía token_hash + type
+    const tokenHash = params.get('token_hash')
+    const type      = params.get('type')
+
+    if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        .then(({ error }) => {
+          if (error) {
+            setError('El enlace expiró o no es válido. Solicita uno nuevo.')
+          } else {
+            setSesionLista(true)
+          }
+        })
+      return
+    }
+
+    // Caso 2: Supabase legacy — envía access_token + refresh_token
     const accessToken  = params.get('access_token')
     const refreshToken = params.get('refresh_token')
 
@@ -36,7 +53,11 @@ export default function NuevaPasswordPage() {
             setSesionLista(true)
           }
         })
+      return
     }
+
+    // No se encontró ningún token válido en el hash
+    setError('El enlace expiró o no es válido. Solicita uno nuevo.')
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -83,11 +104,13 @@ export default function NuevaPasswordPage() {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Enlace inválido</h2>
         <p className="text-gray-500 text-sm mb-6">{error}</p>
         
-         <a href="/recuperar-password"
+          <button
+          type="button"
+          onClick={() => router.push('/recuperar-password')}
           className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors text-sm text-center"
         >
           Solicitar nuevo enlace
-        </a>
+        </button>
       </div>
     )
   }
@@ -100,7 +123,6 @@ export default function NuevaPasswordPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nueva contraseña
