@@ -270,12 +270,12 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {modulosVisibles.map(({ href, label, icono: Icono, color }) => (
               <Link key={href} href={href}
-                className="group flex flex-col items-center gap-2.5 bg-white border border-gray-200 rounded-2xl p-4 hover:border-gray-300 hover:shadow-md transition-all"
+                className="group flex flex-col items-center gap-2 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-300 hover:shadow-md transition-all"
               >
-                <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <Icono className="w-6 h-6 text-white" />
+                <div className={`w-full ${color} flex items-center justify-center py-5 group-hover:brightness-110 transition-all`}>
+                  <Icono className="w-10 h-10 text-white" />
                 </div>
-                <span className="text-xs font-medium text-gray-700 text-center leading-tight">{label}</span>
+                <span className="text-xs font-medium text-gray-700 text-center leading-tight pb-3 px-2">{label}</span>
               </Link>
             ))}
           </div>
