@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
 import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
+import UpgradeSuccessModal from '@/components/upgrade-success-modal'
 
 export default async function DashboardLayout({
   children,
@@ -47,6 +48,7 @@ export default async function DashboardLayout({
       {esRecepcion && usuario?.taller_id && (
         <NotificacionesRealtime tallerId={usuario.taller_id} />
       )}
+      <UpgradeSuccessModal />
     </div>
   )
 }
