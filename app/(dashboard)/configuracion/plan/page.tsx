@@ -114,20 +114,29 @@ export default function PlanPage() {
       )}
 
       {/* Toggle mensual/anual */}
-     <div className="flex items-center justify-center gap-4 mb-8">
-        <span className={`text-sm font-medium ${!billingAnual ? 'text-gray-900' : 'text-gray-400'}`}>
-          Mensual
-        </span>
+      <div className="flex items-center justify-center gap-4 mb-8">
         <button
           type="button"
-          onClick={() => setBillingAnual(!billingAnual)}
-          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${billingAnual ? 'bg-blue-600' : 'bg-gray-200'}`}
+          onClick={() => setBillingAnual(false)}
+          className={`text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
+            !billingAnual
+              ? 'bg-blue-600 text-white shadow'
+              : 'text-gray-400 hover:text-gray-600'
+          }`}
         >
-          <span className={`absolute top-1.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${billingAnual ? 'translate-x-8' : 'translate-x-1.5'}`} />
+          Mensual
         </button>
-        <span className={`text-sm font-medium ${billingAnual ? 'text-gray-900' : 'text-gray-400'}`}>
-          Anual <span className="text-green-600 font-semibold">-20%</span>
-        </span>
+        <button
+          type="button"
+          onClick={() => setBillingAnual(true)}
+          className={`text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
+            billingAnual
+              ? 'bg-blue-600 text-white shadow'
+              : 'text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          Anual <span className={`text-xs font-bold ml-1 ${billingAnual ? 'text-blue-200' : 'text-green-600'}`}>-20%</span>
+        </button>
       </div>
 
       {/* Planes */}
