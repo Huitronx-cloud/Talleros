@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const RUTAS_PUBLICAS = [
+  '/',
   '/login',
   '/auth/callback',
   '/unirse',
@@ -77,7 +78,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Raíz → dashboard
+  // Raíz → dashboard solo si el usuario está autenticado
   if (user && pathname === '/') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
