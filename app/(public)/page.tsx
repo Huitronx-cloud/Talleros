@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+// Link removed - using <a> tags directly
 import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
