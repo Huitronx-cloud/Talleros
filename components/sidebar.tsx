@@ -11,6 +11,8 @@ import {
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
 import PlanBadge from '@/components/plan-badge'
+import LogoFullscreen from '@/components/logo-fullscreen'
+
 
 const TODOS_NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion'] },
@@ -159,23 +161,15 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
         'hidden md:flex h-screen bg-gray-900 flex-col fixed left-0 top-0 transition-all duration-300 z-30',
         colapsado ? 'w-16' : 'w-64'
       )}>
-        <Link href="/dashboard" className={cn('px-3 py-5 border-b border-gray-800 flex items-center hover:bg-gray-800 transition-colors', colapsado ? 'justify-center' : 'gap-3 px-4')}>
-  <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
-    {logoUrl ? (
-      <img src={logoUrl} alt={nombreTaller} className="w-full h-full object-contain" />
-    ) : (
-      <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-        <Wrench className="w-4 h-4 text-white" />
-      </div>
-    )}
-  </div>
-  {!colapsado && (
-    <div className="min-w-0">
-      <p className="text-white font-bold text-sm leading-tight truncate">{nombreTaller}</p>
-      <p className="text-gray-500 text-xs mt-0.5 capitalize">{rol}</p>
-    </div>
-  )}
-</Link>
+        <div className={cn('px-3 py-5 border-b border-gray-800 flex items-center', colapsado ? 'justify-center' : 'gap-3 px-4')}>
+          <LogoFullscreen logoUrl={logoUrl} nombreTaller={nombreTaller} />
+          {!colapsado && (
+            <Link href="/dashboard" className="min-w-0 hover:opacity-80 transition-opacity">
+              <p className="text-white font-bold text-sm leading-tight truncate">{nombreTaller}</p>
+              <p className="text-gray-500 text-xs mt-0.5 capitalize">{rol}</p>
+            </Link>
+          )}
+        </div>
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
             <NavLink key={item.href} {...item} />
