@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 // Link removed - using <a> tags directly
 import { useState, useEffect, useRef } from 'react'
 import {
