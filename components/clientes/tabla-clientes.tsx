@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car, TrendingUp } from 'lucide-react'
+import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car, TrendingUp, Lock } from 'lucide-react'
 import { Cliente } from '@/types'
 import { eliminarCliente } from '@/app/(dashboard)/clientes/actions'
 import ModalCliente from './modal-cliente'
@@ -13,11 +13,13 @@ interface ClienteStats {
 }
 
 interface Props {
-  clientes: Cliente[]
-  statsMap: Record<string, ClienteStats>
+  clientes:       Cliente[]
+  statsMap:       Record<string, ClienteStats>
+  puedeAgregar?:  boolean
+  limiteClientes?: number
 }
 
-export default function TablaClientes({ clientes, statsMap }: Props) {
+export default function TablaClientes({ clientes, statsMap, puedeAgregar = true, limiteClientes = -1 }: Props) {
   const [busqueda, setBusqueda]           = useState('')
   const [modalAbierto, setModalAbierto]   = useState(false)
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null)
@@ -59,16 +61,26 @@ export default function TablaClientes({ clientes, statsMap }: Props) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {clientes.length} {clientes.length === 1 ? 'cliente registrado' : 'clientes registrados'}
+            {clientes.length}{limiteClientes !== -1 ? `/${limiteClientes}` : ''} {clientes.length === 1 ? 'cliente registrado' : 'clientes registrados'}
           </p>
         </div>
-        <button
-          onClick={abrirNuevo}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Nuevo cliente
-        </button>
+        {puedeAgregar ? (
+          <button
+            onClick={abrirNuevo}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo cliente
+          </button>
+        ) : (
+          <button
+            onClick={() => window.location.href = '/configuracion/plan'}
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-500 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Lock className="w-4 h-4" />
+            Límite alcanzado
+          </button>
+        )}
       </div>
 
       {/* Buscador */}
