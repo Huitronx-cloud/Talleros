@@ -1,5 +1,7 @@
 'use client'
 
+// live mode prices - deploy forced
+
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, Loader2, Zap, Star, AlertTriangle } from 'lucide-react'
@@ -19,7 +21,7 @@ const PLANES = {
   pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
   pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
 }
-// live mode prices - deploy forced
+
 export default function PlanPage() {
   const [suscripcion,  setSuscripcion]  = useState<Suscripcion | null>(null)
   const [cargando,     setCargando]     = useState(true)
@@ -52,6 +54,19 @@ export default function PlanPage() {
     }
     cargar()
   }, [])
+
+  async function abrirPortal() {
+    setProcesando('portal')
+    try {
+      const res  = await fetch('/api/stripe/portal', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch {
+      alert('Error al abrir el portal. Intenta de nuevo.')
+    } finally {
+      setProcesando(null)
+    }
+  }
 
   async function handleUpgrade(precioId: string) {
     setProcesando(precioId)
@@ -96,7 +111,6 @@ export default function PlanPage() {
         <p className="text-gray-500 mt-1">Gestiona tu suscripción a TallerOS</p>
       </div>
 
-      {/* Banner trial */}
       {esTrial && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
@@ -113,15 +127,12 @@ export default function PlanPage() {
         </div>
       )}
 
-      {/* Toggle mensual/anual */}
       <div className="flex items-center justify-center gap-4 mb-8">
         <button
           type="button"
           onClick={() => setBillingAnual(false)}
           className={`text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-            !billingAnual
-              ? 'bg-blue-600 text-white shadow'
-              : 'text-gray-400 hover:text-gray-600'
+            !billingAnual ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
           Mensual
@@ -130,16 +141,13 @@ export default function PlanPage() {
           type="button"
           onClick={() => setBillingAnual(true)}
           className={`text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-            billingAnual
-              ? 'bg-blue-600 text-white shadow'
-              : 'text-gray-400 hover:text-gray-600'
+            billingAnual ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
           Anual <span className={`text-xs font-bold ml-1 ${billingAnual ? 'text-blue-200' : 'text-green-600'}`}>-20%</span>
         </button>
       </div>
 
-      {/* Planes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Plan Esencial */}
@@ -244,13 +252,22 @@ export default function PlanPage() {
         </div>
       </div>
 
-      {/* Info suscripción activa */}
       {(esEsencial || esPro) && suscripcion?.periodo_fin && (
-        <div className="mt-6 bg-gray-50 rounded-xl p-4 text-sm text-gray-600">
-          {suscripcion.cancelar_al_periodo
-            ? `Tu plan se cancela el ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
-            : `Próxima renovación: ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
-          }
+        <div className="mt-6 bg-gray-50 rounded-xl p-4 text-sm text-gray-600 flex items-center justify-between gap-4 flex-wrap">
+          <span>
+            {suscripcion.cancelar_al_periodo
+              ? `Tu plan se cancela el ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
+              : `Próxima renovación: ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
+            }
+          </span>
+          <button
+            type="button"
+            onClick={abrirPortal}
+            disabled={!!procesando}
+            className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors disabled:opacity-50"
+          >
+            {procesando === 'portal' ? 'Redirigiendo…' : 'Gestionar suscripción'}
+          </button>
         </div>
       )}
     </div>
