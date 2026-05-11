@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
-  FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen,
+  FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -15,7 +15,8 @@ import LogoFullscreen from '@/components/logo-fullscreen'
 
 
 const TODOS_NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/dashboard',  label: 'Dashboard',  icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/reportes',   label: 'Reportes',   icono: BarChart2,       roles: ['propietario', 'admin'] },
   { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/citas',        label: 'Citas',         icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/clientes',     label: 'Clientes',      icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
