@@ -3,10 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 
 const PLANES_VALIDOS = [
-  'price_1TVAoRRFpmo4G9XHOUNFQDGJ',
-  'price_1TVApHRFpmo4G9XHrbpflGrA',
-  'price_1TVApeRFpmo4G9XHUD6EDGbQ',
-  'price_1TVAq3RFpmo4G9XHKh2QHkjK',
+  'price_1TVxQ1RFpmo4G9XHSD938Kyf',
+  'price_1TVxQORFpmo4G9XHZjkw3iSc',
+  'price_1TVxQgRFpmo4G9XHTVC0jRSB',
+  'price_1TVxR3RFpmo4G9XHtmdwzFAf',
 ]
 
 export async function POST(req: NextRequest) {

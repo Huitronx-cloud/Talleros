@@ -5,15 +5,15 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 })
 
 export const PLANES = {
-  esencial_mensual: 'price_1TVAoRRFpmo4G9XHOUNFQDGJ',
-  esencial_anual:   'price_1TVApHRFpmo4G9XHrbpflGrA',
-  pro_mensual:      'price_1TVApeRFpmo4G9XHUD6EDGbQ',
-  pro_anual:        'price_1TVAq3RFpmo4G9XHKh2QHkjK',
+  esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',
+  esencial_anual:   'price_1TVxQORFpmo4G9XHZjkw3iSc',
+  pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
+  pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
 }
 
 export const PRECIOS_A_PLAN: Record<string, string> = {
-  'price_1TVAoRRFpmo4G9XHOUNFQDGJ': 'esencial',
-  'price_1TVApHRFpmo4G9XHrbpflGrA': 'esencial',
-  'price_1TVApeRFpmo4G9XHUD6EDGbQ': 'pro',
-  'price_1TVAq3RFpmo4G9XHKh2QHkjK': 'pro',
+  'price_1TVxQ1RFpmo4G9XHSD938Kyf': 'esencial',
+  'price_1TVxQORFpmo4G9XHZjkw3iSc': 'esencial',
+  'price_1TVxQgRFpmo4G9XHTVC0jRSB': 'pro',
+  'price_1TVxR3RFpmo4G9XHtmdwzFAf': 'pro',
 }
