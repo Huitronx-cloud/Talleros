@@ -19,7 +19,7 @@ const PLANES = {
   pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
   pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
 }
-
+// live mode prices - deploy forced
 export default function PlanPage() {
   const [suscripcion,  setSuscripcion]  = useState<Suscripcion | null>(null)
   const [cargando,     setCargando]     = useState(true)
