@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download
+  AlertTriangle, Clock, Wrench, Download, MessageCircle
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
@@ -18,7 +18,7 @@ const MODULOS = [
   { href: '/catalogo',         label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/configuracion/equipo', label: 'Equipo',    icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',    label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
-  { href: '/configuracion/plan', label: 'Subir a Pro', icono: TrendingUp,    color: 'bg-gradient-to-br from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
+  { href: '/configuracion/plan', label: 'Subir a Pro', icono: TrendingUp, color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
 ]
 
 export default async function DashboardPage() {
@@ -72,7 +72,14 @@ export default async function DashboardPage() {
       .limit(50),
     supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
   ])
+// Obtener plan de suscripción
+  const { data: suscripcionData } = await supabase
+    .from('suscripciones')
+    .select('plan')
+    .eq('taller_id', usuarioData?.taller_id ?? '')
+    .single()
 
+  const planActual = suscripcionData?.plan ?? 'trial'
   const tallerRaw = usuarioData?.talleres
 const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'
@@ -144,13 +151,26 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
     entregado:  'bg-purple-100 text-purple-600',
   }
 
+  const WHATSAPP_SOPORTE = 'https://wa.me/1234567890?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
+
   const modulosVisibles = MODULOS.filter(m => {
     if (!m.roles.includes(rol)) return false
-    if ((m as any).upgrade) {
-      // Solo mostrar upgrade si no es Pro
-      return true // lo controlamos visualmente, siempre lo incluimos para propietario
-    }
     return true
+  }).map((m: any) => {
+    if (m.upgrade) {
+      if (planActual === 'pro') {
+        return {
+          ...m,
+          href:   WHATSAPP_SOPORTE,
+          label:  'Soporte',
+          icono:  MessageCircle,
+          color:  'from-green-500 to-green-700',
+          upgrade: false,
+          externo: true,
+        }
+      }
+    }
+    return m
   })
 
   return (
@@ -276,8 +296,10 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Módulos</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-            {modulosVisibles.map(({ href, label, icono: Icono, color, upgrade }: any) => (
-              <Link key={href} href={href}
+            {modulosVisibles.map((m: any) => {
+              const { href, label, icono: Icono, color, upgrade, externo } = m
+              return (
+              <Link key={href} href={href} target={(m as any).externo ? '_blank' : undefined} rel={(m as any).externo ? 'noopener noreferrer' : undefined}
                 className={`group flex flex-col items-center gap-2 rounded-2xl overflow-hidden transition-all hover:shadow-md ${
                   upgrade
                     ? 'border-2 border-purple-400 hover:border-purple-500'
@@ -300,7 +322,7 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
                   {label}
                 </span>
               </Link>
-            ))}
+            )})}
           </div>
         </div>
 
