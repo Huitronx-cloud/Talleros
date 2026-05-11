@@ -574,8 +574,12 @@ export default function LandingPage() {
           </div>
           <p style={{ fontSize: 13, color: '#334155' }}>© 2026 TallerOS. Gestión inteligente para talleres mecánicos en LATAM.</p>
           <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacidad', 'Términos', 'Soporte'].map(l => (
-              <a key={l} href="#" style={{ fontSize: 13, color: '#475569', textDecoration: 'none' }}>{l}</a>
+            {[
+              { label: 'Privacidad', href: '/privacidad' },
+              { label: 'Términos', href: '/terminos' },
+              { label: 'Soporte', href: 'mailto:hola@tallerosapp.com' },
+            ].map(l => (
+              <a key={l.label} href={l.href} style={{ fontSize: 13, color: '#475569', textDecoration: 'none' }}>{l.label}</a>
             ))}
           </div>
         </div>
