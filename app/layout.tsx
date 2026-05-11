@@ -5,19 +5,54 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TallerOS — Gestión de talleres',
-  description: 'Plataforma SaaS para la gestión de talleres mecánicos y de servicio.',
+  title: 'TallerOS — Gestión inteligente para talleres mecánicos',
+  description: 'TallerOS digitaliza tu taller mecánico con aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento. 14 días gratis.',
+  keywords: ['taller mecánico', 'software taller', 'gestión taller', 'SaaS taller', 'taller LATAM', 'órdenes de trabajo', 'WhatsApp taller', 'portal cliente taller'],
+  authors: [{ name: 'TallerOS' }],
+  creator: 'TallerOS',
+  publisher: 'TallerOS',
+  metadataBase: new URL('https://www.tallerosapp.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_MX',
+    url: 'https://www.tallerosapp.com',
+    siteName: 'TallerOS',
+    title: 'TallerOS — Gestión inteligente para talleres mecánicos',
+    description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis, sin tarjeta.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'TallerOS — Gestión inteligente para talleres mecánicos',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TallerOS — Gestión inteligente para talleres mecánicos',
+    description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis.',
+    images: ['/og-image.png'],
+  },
   manifest: '/manifest.json',
-  themeColor: '#2563eb',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'TallerOS',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 }
 
@@ -30,7 +65,7 @@ export default function RootLayout({
     <html lang="es">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#1d4ed8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
