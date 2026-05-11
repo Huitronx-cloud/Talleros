@@ -18,6 +18,7 @@ const MODULOS = [
   { href: '/catalogo',         label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/configuracion/equipo', label: 'Equipo',    icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',    label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
+  { href: '/configuracion/plan', label: 'Subir a Pro', icono: TrendingUp,    color: 'bg-gradient-to-br from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
 ]
 
 export default async function DashboardPage() {
@@ -143,7 +144,14 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
     entregado:  'bg-purple-100 text-purple-600',
   }
 
-  const modulosVisibles = MODULOS.filter(m => m.roles.includes(rol))
+  const modulosVisibles = MODULOS.filter(m => {
+    if (!m.roles.includes(rol)) return false
+    if ((m as any).upgrade) {
+      // Solo mostrar upgrade si no es Pro
+      return true // lo controlamos visualmente, siempre lo incluimos para propietario
+    }
+    return true
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -268,14 +276,29 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Módulos</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-            {modulosVisibles.map(({ href, label, icono: Icono, color }) => (
+            {modulosVisibles.map(({ href, label, icono: Icono, color, upgrade }: any) => (
               <Link key={href} href={href}
-                className="group flex flex-col items-center gap-2 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-300 hover:shadow-md transition-all"
+                className={`group flex flex-col items-center gap-2 rounded-2xl overflow-hidden transition-all hover:shadow-md ${
+                  upgrade
+                    ? 'border-2 border-purple-400 hover:border-purple-500'
+                    : 'bg-white border border-gray-200 hover:border-gray-300'
+                }`}
               >
-                <div className={`w-full ${color} flex items-center justify-center py-5 group-hover:brightness-110 transition-all`}>
+                <div className={`w-full bg-gradient-to-br ${
+                  upgrade ? 'from-purple-500 to-purple-700' : color
+                } flex items-center justify-center py-5 group-hover:brightness-110 transition-all relative`}>
                   <Icono className="w-10 h-10 text-white" />
+                  {upgrade && (
+                    <span className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                      PRO
+                    </span>
+                  )}
                 </div>
-                <span className="text-xs font-medium text-gray-700 text-center leading-tight pb-3 px-2">{label}</span>
+                <span className={`text-xs font-medium text-center leading-tight pb-3 px-2 ${
+                  upgrade ? 'text-purple-700 font-semibold' : 'text-gray-700'
+                }`}>
+                  {label}
+                </span>
               </Link>
             ))}
           </div>
