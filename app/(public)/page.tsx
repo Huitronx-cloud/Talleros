@@ -570,7 +570,6 @@ export default function LandingPage() {
             <div style={{ width: 32, height: 32, borderRadius: 9, overflow: 'hidden' }}>
               <img src="/icon-512.png" alt="TallerOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            </div>
             <span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>Taller<span style={{ color: '#3b82f6' }}>OS</span></span>
           </div>
           <p style={{ fontSize: 13, color: '#334155' }}>© 2026 TallerOS. Gestión inteligente para talleres mecánicos en LATAM.</p>
