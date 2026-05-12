@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
-  FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2,
+  FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2, Bell, Star,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -15,14 +15,16 @@ import LogoFullscreen from '@/components/logo-fullscreen'
 
 
 const TODOS_NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Dashboard',  icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion'] },
-  { href: '/reportes',   label: 'Reportes',   icono: BarChart2,       roles: ['propietario', 'admin'] },
-  { href: '/kanban',       label: 'Kanban',        icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
-  { href: '/citas',        label: 'Citas',         icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
-  { href: '/clientes',     label: 'Clientes',      icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
-  { href: '/ordenes',      label: 'Órdenes',       icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
-  { href: '/cotizaciones', label: 'Cotizaciones',  icono: FileText,        roles: ['propietario', 'admin', 'recepcion'] },
-  { href: '/inventario', label: 'Inventario', icono: Package, roles: ['propietario', 'admin', 'recepcion'] },
+{ href: '/dashboard', label: 'Dashboard', icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion', 'tecnico'] },
+  { href: '/reportes',       label: 'Reportes',       icono: BarChart2,       roles: ['propietario', 'admin'] },
+  { href: '/recordatorios',  label: 'Recordatorios',  icono: Bell,            roles: ['propietario', 'admin'] },  // ← NUEVA LÍNEA
+  { href: '/resenas', label: 'Reseñas Google', icono: Star, roles: ['propietario', 'admin'] },
+  { href: '/kanban',         label: 'Kanban',         icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/citas',          label: 'Citas',          icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/clientes',       label: 'Clientes',       icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/ordenes',        label: 'Órdenes',        icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/cotizaciones',   label: 'Cotizaciones',   icono: FileText,        roles: ['propietario', 'admin', 'recepcion'] },
+  { href: '/inventario',     label: 'Inventario',     icono: Package,         roles: ['propietario', 'admin', 'recepcion'] },
 ]
 
 const TODOS_NAV_BOTTOM = [
@@ -188,6 +190,12 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
               <PlanBadge />
             </div>
           )}
+          {/* Badge de plan — solo propietario y admin */}
+{!colapsado && ['propietario', 'admin'].includes(rol) && (
+  <div className="px-1 py-2">
+    <PlanBadge />
+  </div>
+)}
 
           <button
             onClick={handleLogout}
