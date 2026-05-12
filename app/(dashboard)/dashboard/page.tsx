@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell
+  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, BarChart2
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
