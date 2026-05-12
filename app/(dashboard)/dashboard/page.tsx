@@ -3,22 +3,23 @@ import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download, MessageCircle
+  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 
 const MODULOS = [
-  { href: '/kanban',           label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
-  { href: '/ordenes',          label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
-  { href: '/citas',            label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
-  { href: '/clientes',         label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
-  { href: '/cotizaciones',     label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
-  { href: '/inventario',       label: 'Inventario',    icono: Package,       color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'] },
-  { href: '/catalogo',         label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
-  { href: '/configuracion/equipo', label: 'Equipo',    icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
-  { href: '/configuracion',    label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
-  { href: '/configuracion/plan', label: 'Subir a Pro', icono: TrendingUp, color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
+  { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
+  { href: '/ordenes',              label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
+  { href: '/citas',                label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
+  { href: '/clientes',             label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
+  { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
+  { href: '/inventario',           label: 'Inventario',    icono: Package,       color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'] },
+  { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
+  { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },  // ← NUEVA LÍNEA
+  { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
+  { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
+  { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
 ]
 
 export default async function DashboardPage() {

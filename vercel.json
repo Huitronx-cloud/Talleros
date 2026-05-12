@@ -2,15 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/recordatorios",
-      "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/cron/seguimiento",
-      "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/cron/recordatorios-citas",
-      "schedule": "0 14 * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
