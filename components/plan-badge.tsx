@@ -8,10 +8,10 @@ import { Zap, Star, Clock, ChevronUp } from 'lucide-react'
 type Plan = 'trial' | 'esencial' | 'pro'
 
 export default function PlanBadge() {
-  const [plan,       setPlan]       = useState<Plan | null>(null)
-  const [diasTrial,  setDiasTrial]  = useState<number | null>(null)
-  const [promo,      setPromo]      = useState<any>(null)
-  const router = useRouter()
+  const [plan,      setPlan]      = useState<Plan | null>(null)
+  const [diasTrial, setDiasTrial] = useState<number | null>(null)
+  const [promo,     setPromo]     = useState<any>(null)
+  const router   = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
@@ -21,11 +21,14 @@ export default function PlanBadge() {
 
       const { data: usuario } = await supabase
         .from('usuarios')
-        .select('taller_id')
+        .select('taller_id, rol')
         .eq('id', user.id)
         .single()
 
       if (!usuario) return
+
+      // Solo propietario y admin ven el badge de plan
+      if (!['propietario', 'admin'].includes(usuario.rol)) return
 
       const { data: sus } = await supabase
         .from('suscripciones')
@@ -43,7 +46,6 @@ export default function PlanBadge() {
         }
       }
 
-      // Cargar promo activa
       const { data: promos } = await supabase
         .from('promociones')
         .select('*')
@@ -85,7 +87,6 @@ export default function PlanBadge() {
 
   return (
     <div className="space-y-2">
-      {/* Badge del plan */}
       <button
         onClick={() => router.push('/configuracion/plan')}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all hover:shadow-md ${config.bg} ${config.text} ${config.border}`}
@@ -95,7 +96,6 @@ export default function PlanBadge() {
         {plan !== 'pro' && <ChevronUp className="w-3 h-3 opacity-60" />}
       </button>
 
-      {/* Banner de promoción */}
       {promo && plan !== 'pro' && (
         <button
           onClick={() => router.push('/configuracion/plan')}
