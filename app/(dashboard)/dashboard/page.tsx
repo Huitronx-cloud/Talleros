@@ -11,12 +11,13 @@ import BannerUpgrade from './banner-upgrade'
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/ordenes',              label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
+  { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'] },  // ← NUEVA LÍNEA
   { href: '/citas',                label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/clientes',             label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
   { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
   { href: '/inventario',           label: 'Inventario',    icono: Package,       color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'] },
   { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
-  { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },  // ← NUEVA LÍNEA
+  { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
