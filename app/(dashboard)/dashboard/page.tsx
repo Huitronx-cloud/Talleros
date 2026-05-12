@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, BarChart2
+  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, Star, BarChart2
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
+
 
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -18,6 +19,7 @@ const MODULOS = [
   { href: '/inventario',           label: 'Inventario',    icono: Package,       color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'] },
   { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
+  { href: '/resenas', label: 'Reseñas Google', icono: Star, color: 'bg-yellow-500', roles: ['propietario','admin'], upgrade: true },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
