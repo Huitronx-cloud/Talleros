@@ -55,6 +55,13 @@ export async function POST(req: NextRequest) {
   const linkBase = process.env.NEXT_PUBLIC_APP_URL ?? 'https://talleros-omega.vercel.app'
   const link     = `${linkBase}/unirse?token=${invitacion.token}`
 console.log('[RESEND KEY]', process.env.RESEND_API_KEY ? 'existe' : 'NO EXISTE')
+const ROL_LABEL: Record<string, string> = {
+  tecnico:   'Mecánico',
+  recepcion: 'Recepcionista',
+  admin:     'Administrador',
+}
+
+const rolLabel = ROL_LABEL[rol] ?? rol
   // Enviar email con Resend directamente
 const resendRes = await fetch('https://api.resend.com/emails', {
   method: 'POST',
@@ -71,7 +78,7 @@ const resendRes = await fetch('https://api.resend.com/emails', {
         <h1 style="font-size:22px;color:#111827;margin-bottom:8px">🔧 TallerOS</h1>
         <p style="color:#6B7280;font-size:14px;margin-bottom:24px">
           Has sido invitado a unirte a <strong>${(taller as any)?.nombre ?? 'un taller'}</strong> 
-          como <strong>${rol}</strong>.
+          como <strong>${rolLabel}</strong>.
         </p>
         <a href="${link}" 
            style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;

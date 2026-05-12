@@ -32,7 +32,7 @@ export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }
     setError('')
 
     try {
-      // 1. Intentar registrar en Supabase Auth
+      // 1. Registrar en Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -45,7 +45,7 @@ export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }
         authError?.message?.includes('already registered') ||
         authError?.message?.includes('already been registered')
       ) {
-        // El email ya existe — intentar login con la contraseña ingresada
+        // Email ya existe — intentar login
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
         if (loginError) throw new Error('Este email ya tiene cuenta. Intenta con tu contraseña actual.')
         userId = loginData.user?.id ?? null
@@ -57,25 +57,16 @@ export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }
 
       if (!userId) throw new Error('No se pudo obtener el usuario')
 
-      // 2. Insertar en tabla usuarios solo si no existe
-      const { data: usuarioExistente } = await supabase
+      // 2. Upsert en tabla usuarios con el rol correcto
+      // (sobreescribe si el trigger ya creó el registro con rol incorrecto)
+      const { error: userError } = await supabase
         .from('usuarios')
-        .select('id')
-        .eq('id', userId)
-        .single()
+        .upsert(
+          { id: userId, taller_id: tallerId, nombre, email, rol },
+          { onConflict: 'id' }
+        )
 
-      if (!usuarioExistente) {
-        const { error: userError } = await supabase.from('usuarios').insert({
-          id:        userId,
-          taller_id: tallerId,
-          nombre,
-          email,
-          rol,
-        })
-        if (userError && !userError.message.includes('duplicate')) {
-          throw new Error(userError.message)
-        }
-      }
+      if (userError) throw new Error(userError.message)
 
       // 3. Marcar invitación como usada
       await fetch('/api/invitaciones/usar', {
