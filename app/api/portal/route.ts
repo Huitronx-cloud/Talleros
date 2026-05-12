@@ -4,47 +4,71 @@ import twilio from 'twilio'
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('Paso 1: inicio')
     const client = twilio(
       process.env.TWILIO_ACCOUNT_SID!,
       process.env.TWILIO_AUTH_TOKEN!
     )
-    console.log('Paso 2: twilio ok')
+
     const { ordenId } = await req.json()
-    console.log('Paso 3: ordenId', ordenId)
     const supabase = createClient()
-    console.log('Paso 4: supabase ok')
+
     const { data: orden, error: errorOrden } = await supabase
       .from('ordenes')
       .select('*, clientes(nombre, telefono), talleres(nombre, telefono)')
       .eq('id', ordenId)
       .single()
-    console.log('Paso 5: orden', orden?.id, 'error', errorOrden)
-    if (!orden) {
+
+    if (!orden || errorOrden) {
       return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
     }
-    const { data: token, error: errorToken } = await supabase
-      .from('portal_tokens')
-      .insert({ orden_id: ordenId, taller_id: orden.taller_id })
-      .select('token')
-      .single()
-    console.log('Paso 6: token', token, 'error', errorToken)
-    if (!token) {
-      return NextResponse.json({ error: 'Error generando token' }, { status: 500 })
-    }
+
     const cliente = orden.clientes as any
-    const taller = orden.talleres as any
-   const url = (process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3000') + '/portal/' + token.token
-    console.log('Paso 7: enviando WhatsApp a', cliente.telefono)
+    const taller  = orden.talleres as any
+
+    // Verificar si ya existe un token activo para esta orden
+    const { data: tokenExistente } = await supabase
+      .from('portal_tokens')
+      .select('token')
+      .eq('orden_id', ordenId)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    let tokenFinal = tokenExistente?.token
+
+    if (!tokenFinal) {
+      const { data: nuevoToken, error: errorToken } = await supabase
+        .from('portal_tokens')
+        .insert({ orden_id: ordenId, taller_id: orden.taller_id })
+        .select('token')
+        .single()
+
+      if (!nuevoToken || errorToken) {
+        return NextResponse.json({ error: 'Error generando token' }, { status: 500 })
+      }
+
+      tokenFinal = nuevoToken.token
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+    const url     = `${baseUrl}/portal/${tokenFinal}`
+
+    const vehiculo = [orden.vehiculo_marca, orden.vehiculo_modelo]
+      .filter(Boolean)
+      .join(' ') || 'tu vehículo'
+
+    const mensaje = `¡Hola ${cliente.nombre}! 👋\n\n*${taller.nombre}* ya recibió tu *${vehiculo}*.\n\nSigue el estado de tu servicio en tiempo real aquí:\n🔗 ${url}\n\nCualquier duda, responde este mensaje. 🔧`
+
+    const telefonoLimpio = cliente.telefono?.replace(/\D/g, '')
+
     await client.messages.create({
       from: process.env.TWILIO_WHATSAPP_FROM,
-      to: 'whatsapp:+' + cliente.telefono,
-      body: 'Hola ' + cliente.nombre + ' Desde ' + taller.nombre + ' le compartimos el portal: ' + url,
+      to:   `whatsapp:+${telefonoLimpio}`,
+      body: mensaje,
     })
-    console.log('Paso 8: WhatsApp enviado')
+
     return NextResponse.json({ success: true, url })
   } catch (error: any) {
-    console.error('ERROR COMPLETO:', error)
+    console.error('Error portal route:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
