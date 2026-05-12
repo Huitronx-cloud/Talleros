@@ -158,14 +158,14 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
     if (!m.roles.includes(rol)) return false
     return true
   }).map((m: any) => {
-    if (m.upgrade) {
+    if (m.href === '/configuracion/plan') {
       if (planActual === 'pro') {
         return {
           ...m,
-          href:   WHATSAPP_SOPORTE,
-          label:  'Soporte',
-          icono:  MessageCircle,
-          color:  'from-green-500 to-green-700',
+          href:    WHATSAPP_SOPORTE,
+          label:   'Soporte',
+          icono:   MessageCircle,
+          color:   'from-green-500 to-green-700',
           upgrade: false,
           externo: true,
         }
