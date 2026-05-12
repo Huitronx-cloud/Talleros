@@ -48,16 +48,23 @@ export default function RecordatoriosPage() {
 
     const { data: usuario } = await supabase
       .from('usuarios')
-      .select('taller_id, talleres(plan)')
+      .select('taller_id')
       .eq('id', user.id)
       .single()
 
     if (!usuario) return
 
     const tid = usuario.taller_id
-    const taller = usuario.talleres as any
     setTallerId(tid)
-    setPlan(taller?.plan || 'trial')
+
+    // Obtener plan desde suscripciones, igual que el dashboard
+    const { data: suscripcion } = await supabase
+      .from('suscripciones')
+      .select('plan')
+      .eq('taller_id', tid)
+      .single()
+
+    setPlan(suscripcion?.plan ?? 'trial')
 
     const { data: cfg } = await supabase
       .from('recordatorios_config')
