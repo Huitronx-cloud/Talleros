@@ -8,16 +8,16 @@ import { Orden, EstadoOrden } from '@/types'
 import { cambiarEstado } from '@/app/(dashboard)/ordenes/actions'
 
 const COLUMNAS: { id: EstadoOrden; label: string; color: string; bg: string; border: string; icono: any }[] = [
-  { id: 'recibido',   label: 'Recibido',   color: 'text-gray-600',   bg: 'bg-gray-50',    border: 'border-gray-200', icono: Package      },
-  { id: 'en_proceso', label: 'En proceso', color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200', icono: Wrench       },
-  { id: 'listo',      label: 'Listo',      color: 'text-green-600',  bg: 'bg-green-50',   border: 'border-green-200',icono: CheckCircle2 },
+  { id: 'recibido',   label: 'Recibido',   color: 'text-gray-600',  bg: 'bg-gray-50',   border: 'border-gray-200',  icono: Package      },
+  { id: 'en_proceso', label: 'En proceso', color: 'text-blue-600',  bg: 'bg-blue-50',   border: 'border-blue-200',  icono: Wrench       },
+  { id: 'listo',      label: 'Listo',      color: 'text-green-600', bg: 'bg-green-50',  border: 'border-green-200', icono: CheckCircle2 },
 ]
 
 function diasRetraso(fechaPrometida: string | null): number | null {
   if (!fechaPrometida) return null
-  const hoy = new Date()
+  const hoy      = new Date()
   const prometida = new Date(fechaPrometida + 'T12:00:00')
-  const diff = Math.floor((hoy.getTime() - prometida.getTime()) / (1000 * 60 * 60 * 24))
+  const diff     = Math.floor((hoy.getTime() - prometida.getTime()) / (1000 * 60 * 60 * 24))
   return diff > 0 ? diff : null
 }
 
@@ -26,7 +26,7 @@ function TarjetaOrden({
   onDragStart,
 }: {
   orden: Orden
-  onDragStart: (e: React.DragEvent, ordenId: string) => void
+  onDragStart?: (e: React.DragEvent, ordenId: string) => void
 }) {
   const retraso = diasRetraso(orden.fecha_prometida)
   const cliente = orden.clientes as { nombre: string; telefono: string | null } | null
@@ -34,13 +34,12 @@ function TarjetaOrden({
   return (
     <Link href={`/ordenes/${orden.id}`}>
       <div
-        draggable
-        onDragStart={e => onDragStart(e, orden.id)}
-        className={`bg-white rounded-xl border p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all select-none ${
+        draggable={!!onDragStart}
+        onDragStart={onDragStart ? e => onDragStart(e, orden.id) : undefined}
+        className={`bg-white rounded-xl border p-4 cursor-pointer hover:shadow-md transition-all select-none ${
           retraso ? 'border-red-200 bg-red-50/30' : 'border-gray-200'
         }`}
       >
-        {/* Número de orden y alerta */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-mono font-bold text-gray-400">
             #{String(orden.numero_orden).padStart(4, '0')}
@@ -53,7 +52,6 @@ function TarjetaOrden({
           )}
         </div>
 
-        {/* Vehículo */}
         <div className="flex items-start gap-2 mb-2">
           <Car className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
@@ -68,7 +66,6 @@ function TarjetaOrden({
           </div>
         </div>
 
-        {/* Cliente */}
         {cliente && (
           <div className="flex items-center gap-1.5 mb-2">
             <User className="w-3.5 h-3.5 text-gray-400" />
@@ -76,12 +73,10 @@ function TarjetaOrden({
           </div>
         )}
 
-        {/* Descripción */}
         {orden.descripcion_problema && (
           <p className="text-xs text-gray-400 line-clamp-2 mb-3">{orden.descripcion_problema}</p>
         )}
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           {orden.mecanico_asignado ? (
             <div className="flex items-center gap-1.5">
@@ -110,7 +105,99 @@ function TarjetaOrden({
   )
 }
 
-export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
+// ── VISTA MÓVIL (tabs) ──
+function KanbanMovil({ ordenes }: { ordenes: Orden[] }) {
+  const router = useRouter()
+  const [tabActivo, setTabActivo]   = useState<EstadoOrden>('recibido')
+  const [moviendo, setMoviendo]     = useState<string | null>(null)
+
+  const tarjetas = ordenes.filter(o => o.estado === tabActivo)
+
+  const moverOrden = async (ordenId: string, nuevoEstado: EstadoOrden) => {
+    setMoviendo(ordenId)
+    await cambiarEstado(ordenId, nuevoEstado)
+    setMoviendo(null)
+    router.refresh()
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Tabs */}
+      <div className="flex rounded-xl border border-gray-200 bg-gray-50 p-1 gap-1">
+        {COLUMNAS.map(col => {
+          const count  = ordenes.filter(o => o.estado === col.id).length
+          const activo = tabActivo === col.id
+          const Icono  = col.icono
+          return (
+            <button
+              key={col.id}
+              onClick={() => setTabActivo(col.id)}
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+                activo
+                  ? 'bg-white shadow-sm ' + col.color
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <Icono className="w-4 h-4" />
+              <span>{col.label}</span>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                activo ? col.bg + ' ' + col.color : 'bg-gray-100 text-gray-400'
+              }`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Tarjetas */}
+      <div className="space-y-3">
+        {tarjetas.length === 0 ? (
+          <div className="text-center py-12 text-gray-400 text-sm">
+            Sin órdenes en esta columna
+          </div>
+        ) : (
+          tarjetas.map(orden => {
+            const estadoActual = orden.estado as EstadoOrden
+            const colIdx       = COLUMNAS.findIndex(c => c.id === estadoActual)
+            const anterior     = colIdx > 0 ? COLUMNAS[colIdx - 1] : null
+            const siguiente    = colIdx < COLUMNAS.length - 1 ? COLUMNAS[colIdx + 1] : null
+
+            return (
+              <div key={orden.id} className="space-y-2">
+                <TarjetaOrden orden={orden} />
+                {/* Botones de mover */}
+                <div className="flex gap-2 px-1">
+                  {anterior && (
+                    <button
+                      onClick={() => moverOrden(orden.id, anterior.id)}
+                      disabled={moviendo === orden.id}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${anterior.border} ${anterior.color} bg-white hover:${anterior.bg}`}
+                    >
+                      {moviendo === orden.id ? '...' : `← ${anterior.label}`}
+                    </button>
+                  )}
+                  {siguiente && (
+                    <button
+                      onClick={() => moverOrden(orden.id, siguiente.id)}
+                      disabled={moviendo === orden.id}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${siguiente.border} ${siguiente.color} bg-white hover:${siguiente.bg}`}
+                    >
+                      {moviendo === orden.id ? '...' : `${siguiente.label} →`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── VISTA DESKTOP (drag & drop) ──
+function KanbanDesktop({ ordenes }: { ordenes: Orden[] }) {
   const router = useRouter()
   const [ordenesState, setOrdenesState] = useState<Orden[]>(ordenes)
   const [arrastrando, setArrastrando]   = useState<string | null>(null)
@@ -130,22 +217,17 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
   const handleDrop = async (e: React.DragEvent, nuevoEstado: EstadoOrden) => {
     e.preventDefault()
     const ordenId = e.dataTransfer.getData('ordenId')
-    const orden = ordenesState.find(o => o.id === ordenId)
+    const orden   = ordenesState.find(o => o.id === ordenId)
     if (!orden || orden.estado === nuevoEstado) {
       setArrastrando(null)
       setSobreColumna(null)
       return
     }
 
-    // Actualizar UI optimistamente
-    setOrdenesState(prev =>
-      prev.map(o => o.id === ordenId ? { ...o, estado: nuevoEstado } : o)
-    )
+    setOrdenesState(prev => prev.map(o => o.id === ordenId ? { ...o, estado: nuevoEstado } : o))
     setArrastrando(null)
     setSobreColumna(null)
     setMoviendo(ordenId)
-
-    // Persistir en Supabase
     await cambiarEstado(ordenId, nuevoEstado)
     setMoviendo(null)
     router.refresh()
@@ -157,7 +239,7 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+    <div className="flex gap-4 overflow-x-auto pb-4">
       {COLUMNAS.map(col => {
         const tarjetas = ordenesState.filter(o => o.estado === col.id)
         const esSobre  = sobreColumna === col.id
@@ -169,13 +251,10 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
             onDragOver={e => handleDragOver(e, col.id)}
             onDrop={e => handleDrop(e, col.id)}
             onDragLeave={() => setSobreColumna(null)}
-            className={`flex-shrink-0 w-72 md:w-80 rounded-2xl border-2 transition-all ${
-              esSobre
-                ? `${col.border} ${col.bg} shadow-lg scale-[1.01]`
-                : 'border-gray-200 bg-gray-50'
+            className={`flex-shrink-0 w-80 rounded-2xl border-2 transition-all ${
+              esSobre ? `${col.border} ${col.bg} shadow-lg scale-[1.01]` : 'border-gray-200 bg-gray-50'
             }`}
           >
-            {/* Header columna */}
             <div className={`px-4 py-3 rounded-t-xl flex items-center justify-between ${col.bg}`}>
               <div className="flex items-center gap-2">
                 <Icono className={`w-4 h-4 ${col.color}`} />
@@ -186,15 +265,12 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
               </span>
             </div>
 
-            {/* Tarjetas */}
             <div className="p-3 space-y-3 min-h-[200px]">
               {tarjetas.length === 0 ? (
                 <div className={`flex items-center justify-center h-24 rounded-xl border-2 border-dashed transition-all ${
                   esSobre ? col.border : 'border-gray-200'
                 }`}>
-                  <p className="text-xs text-gray-400">
-                    {esSobre ? 'Suelta aquí' : 'Sin órdenes'}
-                  </p>
+                  <p className="text-xs text-gray-400">{esSobre ? 'Suelta aquí' : 'Sin órdenes'}</p>
                 </div>
               ) : (
                 tarjetas.map(orden => (
@@ -208,8 +284,6 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
                   </div>
                 ))
               )}
-
-              {/* Zona de drop visible cuando arrastras */}
               {esSobre && tarjetas.length > 0 && (
                 <div className={`h-16 rounded-xl border-2 border-dashed ${col.border} flex items-center justify-center`}>
                   <p className={`text-xs font-medium ${col.color}`}>Suelta aquí</p>
@@ -220,5 +294,21 @@ export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
         )
       })}
     </div>
+  )
+}
+
+// ── COMPONENTE PRINCIPAL ──
+export default function TableroKanban({ ordenes }: { ordenes: Orden[] }) {
+  return (
+    <>
+      {/* Móvil */}
+      <div className="md:hidden">
+        <KanbanMovil ordenes={ordenes} />
+      </div>
+      {/* Desktop */}
+      <div className="hidden md:block">
+        <KanbanDesktop ordenes={ordenes} />
+      </div>
+    </>
   )
 }
