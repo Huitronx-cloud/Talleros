@@ -17,10 +17,10 @@ export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }
   const router   = useRouter()
   const supabase = createClient()
 
-  const [nombre, setNombre]       = useState('')
-  const [password, setPassword]   = useState('')
-  const [cargando, setCargando]   = useState(false)
-  const [error, setError]         = useState('')
+  const [nombre, setNombre]     = useState('')
+  const [password, setPassword] = useState('')
+  const [cargando, setCargando] = useState(false)
+  const [error, setError]       = useState('')
 
   const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 
@@ -32,35 +32,59 @@ export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }
     setError('')
 
     try {
-      // 1. Registrar usuario en Supabase Auth
+      // 1. Intentar registrar en Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { nombre } },
       })
 
-      if (authError) throw new Error(authError.message)
-      if (!authData.user) throw new Error('No se pudo crear el usuario')
+      let userId: string | null = null
 
-      // 2. Crear registro en tabla usuarios
-      const { error: userError } = await supabase.from('usuarios').insert({
-        id:        authData.user.id,
-        taller_id: tallerId,
-        nombre,
-        email,
-        rol,
-      })
+      if (
+        authError?.message?.includes('already registered') ||
+        authError?.message?.includes('already been registered')
+      ) {
+        // El email ya existe — intentar login con la contraseña ingresada
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+        if (loginError) throw new Error('Este email ya tiene cuenta. Intenta con tu contraseña actual.')
+        userId = loginData.user?.id ?? null
+      } else if (authError) {
+        throw new Error(authError.message)
+      } else {
+        userId = authData.user?.id ?? null
+      }
 
-      if (userError) throw new Error(userError.message)
+      if (!userId) throw new Error('No se pudo obtener el usuario')
+
+      // 2. Insertar en tabla usuarios solo si no existe
+      const { data: usuarioExistente } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('id', userId)
+        .single()
+
+      if (!usuarioExistente) {
+        const { error: userError } = await supabase.from('usuarios').insert({
+          id:        userId,
+          taller_id: tallerId,
+          nombre,
+          email,
+          rol,
+        })
+        if (userError && !userError.message.includes('duplicate')) {
+          throw new Error(userError.message)
+        }
+      }
 
       // 3. Marcar invitación como usada
       await fetch('/api/invitaciones/usar', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body:    JSON.stringify({ token }),
       })
 
-      router.push('/ordenes')
+      router.push('/dashboard')
     } catch (e: any) {
       setError(e.message)
     } finally {
