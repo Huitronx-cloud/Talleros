@@ -63,7 +63,7 @@ const resendRes = await fetch('https://api.resend.com/emails', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    from: 'TallerOS <onboarding@resend.dev>',
+    from: 'TallerOS <notificaciones@tallerosapp.com>',
     to: [email],
     subject: `Te invitaron a unirte a ${(taller as any)?.nombre ?? 'un taller'} en TallerOS`,
     html: `
