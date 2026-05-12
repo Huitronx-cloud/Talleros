@@ -216,11 +216,11 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
           {/* Métricas rápidas */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Clientes',          valor: totalClientes ?? 0,                   href: '/clientes',     color: 'text-sky-300' },
-              { label: 'Órdenes este mes',  valor: ordenesMes ?? 0,                      href: '/ordenes',      color: 'text-green-300' },
-              { label: 'Cotiz. abiertas',   valor: cotizacionesAbiertas ?? 0,            href: '/cotizaciones', color: 'text-yellow-300' },
-              { label: 'Ingresos del mes',  valor: `$${totalIngresos.toLocaleString()}`, href: '/ordenes',      color: 'text-purple-300' },
-            ].map(({ label, valor, href, color }) => (
+              { label: 'Clientes',         valor: totalClientes ?? 0,        href: '/clientes',     color: 'text-sky-300',    ocultar: ['tecnico'] },
+              { label: 'Órdenes este mes', valor: ordenesMes ?? 0,           href: '/ordenes',      color: 'text-green-300',  ocultar: [] },
+              { label: 'Cotiz. abiertas',  valor: cotizacionesAbiertas ?? 0, href: '/cotizaciones', color: 'text-yellow-300', ocultar: ['tecnico'] },
+              { label: 'Ingresos del mes', valor: `$${totalIngresos.toLocaleString()}`, href: '/ordenes', color: 'text-purple-300', ocultar: ['tecnico'] },
+            ].filter(m => !m.ocultar.includes(rol)).map(({ label, valor, href, color }) => (
               <Link key={label} href={href}
                 className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 py-3 transition-colors"
               >
@@ -331,15 +331,47 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
         </div>
 
         {/* ── GRÁFICA + ÓRDENES RECIENTES ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-6">Ingresos últimos 6 meses</h2>
-            <GraficaIngresos datos={meses} />
+        {rol !== 'tecnico' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-6">Ingresos últimos 6 meses</h2>
+              <GraficaIngresos datos={meses} />
+            </div>
+            <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="text-base font-semibold text-gray-900">Órdenes recientes</h2>
+              </div>
+              {ordenesRecientes && ordenesRecientes.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {ordenesRecientes.map((orden: any) => (
+                    <Link key={orden.id} href={`/ordenes/${orden.id}`}
+                      className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {(orden.clientes as any)?.nombre ?? 'Cliente'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
+                      </div>
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {orden.estado.replace('_', ' ')}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-400 text-sm">Aún no hay órdenes registradas.</p>
+                </div>
+              )}
+            </div>
           </div>
-
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+        ) : (
+          // Vista simplificada para técnico — sus órdenes recientes sin financiero
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-900">Órdenes recientes</h2>
+              <h2 className="text-base font-semibold text-gray-900">Mis órdenes recientes</h2>
             </div>
             {ordenesRecientes && ordenesRecientes.length > 0 ? (
               <div className="divide-y divide-gray-100">
@@ -366,7 +398,7 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
               </div>
             )}
           </div>
-        </div>
+        )}
 
         {/* ── TIEMPOS POR SERVICIO ── */}
         {promediosServicios.length > 0 && (

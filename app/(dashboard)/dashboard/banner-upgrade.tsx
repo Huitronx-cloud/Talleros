@@ -4,17 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, Zap, X } from 'lucide-react'
-const PLANES = {
-  esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',
-  esencial_anual:   'price_1TVxQORFpmo4G9XHZjkw3iSc',
-  pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
-  pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
-}
 
-export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
+export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; rol?: string }) {
   const [suscripcion, setSuscripcion] = useState<any>(null)
   const [cerrado,     setCerrado]     = useState(false)
-  const [procesando,  setProcesando]  = useState(false)
 
   const router   = useRouter()
   const supabase = createClient()
@@ -29,10 +22,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
       .then(({ data }) => setSuscripcion(data))
   }, [tallerId])
 
-  function handleUpgrade() {
-    router.push('/configuracion/plan')
-  }
-
+  if (!['propietario', 'admin'].includes(rol ?? '')) return null
   if (!suscripcion || cerrado) return null
 
   const esTrial   = suscripcion.plan === 'trial'
@@ -48,9 +38,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
 
   return (
     <div className={`rounded-xl border p-4 flex items-center gap-4 ${
-      urgente
-        ? 'bg-red-50 border-red-200'
-        : 'bg-amber-50 border-amber-200'
+      urgente ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
     }`}>
       <AlertTriangle className={`w-5 h-5 shrink-0 ${urgente ? 'text-red-500' : 'text-amber-500'}`} />
 
@@ -68,8 +56,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
       </div>
 
       <button
-        onClick={handleUpgrade}
-        disabled={false}
+        onClick={() => router.push('/configuracion/plan')}
         className={`shrink-0 flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
           urgente
             ? 'bg-red-600 hover:bg-red-700 text-white'
@@ -77,7 +64,7 @@ export default function BannerUpgrade({ tallerId }: { tallerId?: string }) {
         }`}
       >
         <Zap className="w-4 h-4" />
-        {'Ver planes'}
+        Ver planes
       </button>
 
       {!esVencida && (
