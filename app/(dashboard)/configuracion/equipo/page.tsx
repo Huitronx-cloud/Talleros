@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import EquipoClient from './equipo-client'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
@@ -7,6 +8,7 @@ import { Users } from 'lucide-react'
 
 export default async function EquipoPage() {
   const supabase = createClient()
+  const admin    = createServiceClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -28,8 +30,9 @@ export default async function EquipoPage() {
     )
   }
 
+  // Usar service client para ver todos los miembros del taller (bypasa RLS)
   const [{ data: miembros }, { data: suscripcion }] = await Promise.all([
-    supabase.from('usuarios').select('*').eq('taller_id', usuario.taller_id).order('created_at'),
+    admin.from('usuarios').select('*').eq('taller_id', usuario.taller_id).order('created_at'),
     supabase.from('suscripciones').select('plan').eq('taller_id', usuario.taller_id).single(),
   ])
 
@@ -45,7 +48,6 @@ export default async function EquipoPage() {
         <p className="text-gray-500 text-sm mt-1">Invita y gestiona a los miembros de tu taller.</p>
       </div>
 
-      {/* Banner de límite de usuarios */}
       {limites.usuarios !== -1 && (
         <div className={`mb-6 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap ${
           !puedeInvitar
