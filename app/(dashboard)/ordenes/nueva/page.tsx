@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { Cliente } from '@/types'
 import FormNuevaOrden from '@/components/ordenes/form-nueva-orden'
 import FormRapidoOrden from '@/components/recepcion/form-rapido-orden'
@@ -7,6 +8,7 @@ import { redirect } from 'next/navigation'
 
 export default async function NuevaOrdenPage() {
   const supabase = createClient()
+  const admin    = createServiceClient()
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -16,11 +18,10 @@ export default async function NuevaOrdenPage() {
     .eq('id', user!.id)
     .single()
 
-  const tallerId = usuario?.taller_id ?? ''
+  const tallerId    = usuario?.taller_id ?? ''
   const esRecepcion = usuario?.rol === 'recepcion'
 
-  // Obtener plan y uso del mes actual
-  const mesActual = new Date().toISOString().slice(0, 7) // '2026-05'
+  const mesActual = new Date().toISOString().slice(0, 7)
 
   const [
     { data: clientes },
@@ -39,11 +40,18 @@ export default async function NuevaOrdenPage() {
       .lt('created_at', `${mesActual}-31`),
   ])
 
-  const plan    = suscripcion?.plan ?? 'trial'
-  const limites = getLimites(plan)
+  // Usar service client para bypassar RLS y obtener todos los mecánicos del taller
+  const { data: mecanicos } = await admin
+    .from('usuarios')
+    .select('id, nombre')
+    .eq('taller_id', tallerId)
+    .eq('rol', 'tecnico')
+    .order('nombre')
+
+  const plan            = suscripcion?.plan ?? 'trial'
+  const limites         = getLimites(plan)
   const totalOrdenesMes = ordenesEsteMes ?? 0
 
-  // Si superó el límite de órdenes → redirigir con mensaje
   if (!puedeCrear(totalOrdenesMes, limites.ordenes_mes)) {
     redirect('/ordenes?limite=ordenes')
   }
@@ -62,6 +70,7 @@ export default async function NuevaOrdenPage() {
           tallerId={tallerId}
           pais={taller?.pais ?? 'México'}
           moneda={taller?.moneda ?? 'MXN'}
+          mecanicos={mecanicos ?? []}
         />
       </div>
     )
@@ -81,6 +90,7 @@ export default async function NuevaOrdenPage() {
         tallerId={tallerId}
         pais={taller?.pais ?? 'México'}
         moneda={taller?.moneda ?? 'MXN'}
+        mecanicos={mecanicos ?? []}
       />
     </div>
   )
