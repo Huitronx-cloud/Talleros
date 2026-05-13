@@ -1,3 +1,4 @@
+import PushToggle from '@/components/push-toggle'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -8,18 +9,17 @@ import {
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 
-
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/ordenes',              label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
-  { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'] },  // ← NUEVA LÍNEA
+  { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'] },
   { href: '/citas',                label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/clientes',             label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
   { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
   { href: '/inventario',           label: 'Inventario',    icono: Package,       color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'] },
   { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
-  { href: '/resenas', label: 'Reseñas Google', icono: Star, color: 'bg-yellow-500', roles: ['propietario','admin'], upgrade: true },
+  { href: '/resenas',              label: 'Reseñas Google',icono: Star,          color: 'bg-yellow-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
       .limit(50),
     supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
   ])
-// Obtener plan de suscripción
+
   const { data: suscripcionData } = await supabase
     .from('suscripciones')
     .select('plan')
@@ -84,13 +84,13 @@ export default async function DashboardPage() {
     .single()
 
   const planActual = suscripcionData?.plan ?? 'trial'
-  const tallerRaw = usuarioData?.talleres
-const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
+  const tallerRaw  = usuarioData?.talleres
+  const taller     = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'
   const rol        = (usuarioData?.rol ?? 'recepcion') as string
 
-  const stockBajo      = (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
-  const totalIngresos  = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
+  const stockBajo     = (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
+  const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
 
   const meses = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(ahora.getFullYear(), ahora.getMonth() - 5 + i, 1)
@@ -182,16 +182,12 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
 
       {/* ── HERO HEADER ── */}
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 px-6 pt-8 pb-10 relative overflow-hidden">
-
-        {/* Fondo decorativo */}
         <div className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 40%)',
           }}
         />
-
         <div className="relative max-w-5xl mx-auto">
-          {/* Logo + nombre taller */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-700 flex items-center justify-center flex-shrink-0 border border-white/10">
               {taller?.logo_url ? (
@@ -213,7 +209,6 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
             </Link>
           </div>
 
-          {/* Métricas rápidas */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Clientes',         valor: totalClientes ?? 0,        href: '/clientes',     color: 'text-sky-300',    ocultar: ['tecnico'] },
@@ -235,7 +230,7 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
         {/* ── BANNER UPGRADE ── */}
-        <BannerUpgrade tallerId={usuarioData?.taller_id} />
+        <BannerUpgrade tallerId={usuarioData?.taller_id} rol={rol} />
 
         {/* ── ALERTAS ── */}
         {(ordenesRetrasadas && ordenesRetrasadas.length > 0) || stockBajo.length > 0 ? (
@@ -303,30 +298,31 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
             {modulosVisibles.map((m: any) => {
               const { href, label, icono: Icono, color, upgrade, externo } = m
               return (
-              <Link key={href} href={href} target={(m as any).externo ? '_blank' : undefined} rel={(m as any).externo ? 'noopener noreferrer' : undefined}
-                className={`group flex flex-col items-center gap-2 rounded-2xl overflow-hidden transition-all hover:shadow-md ${
-                  upgrade
-                    ? 'border-2 border-purple-400 hover:border-purple-500'
-                    : 'bg-white border border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className={`w-full bg-gradient-to-br ${
-                  upgrade ? 'from-purple-500 to-purple-700' : color
-                } flex items-center justify-center py-5 group-hover:brightness-110 transition-all relative`}>
-                  <Icono className="w-10 h-10 text-white" />
-                  {upgrade && (
-                    <span className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                      PRO
-                    </span>
-                  )}
-                </div>
-                <span className={`text-xs font-medium text-center leading-tight pb-3 px-2 ${
-                  upgrade ? 'text-purple-700 font-semibold' : 'text-gray-700'
-                }`}>
-                  {label}
-                </span>
-              </Link>
-            )})}
+                <Link key={href} href={href} target={externo ? '_blank' : undefined} rel={externo ? 'noopener noreferrer' : undefined}
+                  className={`group flex flex-col items-center gap-2 rounded-2xl overflow-hidden transition-all hover:shadow-md ${
+                    upgrade
+                      ? 'border-2 border-purple-400 hover:border-purple-500'
+                      : 'bg-white border border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-full bg-gradient-to-br ${
+                    upgrade ? 'from-purple-500 to-purple-700' : color
+                  } flex items-center justify-center py-5 group-hover:brightness-110 transition-all relative`}>
+                    <Icono className="w-10 h-10 text-white" />
+                    {upgrade && (
+                      <span className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium text-center leading-tight pb-3 px-2 ${
+                    upgrade ? 'text-purple-700 font-semibold' : 'text-gray-700'
+                  }`}>
+                    {label}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
         </div>
 
@@ -368,40 +364,47 @@ const taller = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre
             </div>
           </div>
         ) : (
-          // Vista simplificada para técnico — sus órdenes recientes sin financiero
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="text-base font-semibold text-gray-900">Mis órdenes recientes</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                Mis notificaciones
+              </h2>
+              <PushToggle />
             </div>
-            {ordenesRecientes && ordenesRecientes.length > 0 ? (
-              <div className="divide-y divide-gray-100">
-                {ordenesRecientes.map((orden: any) => (
-                  <Link key={orden.id} href={`/ordenes/${orden.id}`}
-                    className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {(orden.clientes as any)?.nombre ?? 'Cliente'}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
-                    </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {orden.estado.replace('_', ' ')}
-                    </span>
-                  </Link>
-                ))}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="text-base font-semibold text-gray-900">Mis órdenes recientes</h2>
               </div>
-            ) : (
-              <div className="p-12 text-center">
-                <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">Aún no hay órdenes registradas.</p>
-              </div>
-            )}
+              {ordenesRecientes && ordenesRecientes.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {ordenesRecientes.map((orden: any) => (
+                    <Link key={orden.id} href={`/ordenes/${orden.id}`}
+                      className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {(orden.clientes as any)?.nombre ?? 'Cliente'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
+                      </div>
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {orden.estado.replace('_', ' ')}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-400 text-sm">Aún no hay órdenes registradas.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* ── TIEMPOS POR SERVICIO ── */}
-        {promediosServicios.length > 0 && (
+        {promediosServicios.length > 0 && rol !== 'tecnico' && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-5">
               <Clock className="w-4 h-4 text-blue-500" />
