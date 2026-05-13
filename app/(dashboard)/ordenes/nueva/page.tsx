@@ -20,6 +20,7 @@ export default async function NuevaOrdenPage() {
 
   const tallerId    = usuario?.taller_id ?? ''
   const esRecepcion = usuario?.rol === 'recepcion'
+  console.log('tallerId:', tallerId)
 
   const mesActual = new Date().toISOString().slice(0, 7)
 
@@ -47,6 +48,7 @@ export default async function NuevaOrdenPage() {
     .eq('taller_id', tallerId)
     .eq('rol', 'tecnico')
     .order('nombre')
+    console.log('mecanicos:', mecanicos)
 
   const plan            = suscripcion?.plan ?? 'trial'
   const limites         = getLimites(plan)
