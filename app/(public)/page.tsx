@@ -1,6 +1,5 @@
 'use client'
 
-import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
@@ -9,6 +8,7 @@ import {
   ChevronRight, Check, Menu, X, Zap, ArrowRight,
   TrendingUp, Users, Clock, AlertTriangle
 } from 'lucide-react'
+import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
 const DIFERENCIADORES = [
   {
@@ -87,10 +87,10 @@ const STATS = [
 export default function LandingPage() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [anual, setAnual] = useState(false)
-  const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState<Set<string>>(new Set())
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -137,7 +137,6 @@ export default function LandingPage() {
             </span>
           </a>
 
-          {/* Links desktop */}
           <div className="nav-links-desktop" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
             {[['#caracteristicas', 'Características'], ['#precios', 'Precios'], ['#por-que', '¿Por qué TallerOS?']].map(([href, label]) => (
               <a key={href} href={href} style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, textDecoration: 'none' }}
@@ -148,7 +147,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Botones desktop */}
           <div className="nav-buttons-desktop" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <a href="/login" style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, textDecoration: 'none', padding: '8px 14px' }}>
               Iniciar sesión
@@ -163,7 +161,6 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Botón hamburguesa móvil */}
           <button
             className="nav-menu-mobile"
             onClick={() => setMenuAbierto(!menuAbierto)}
@@ -173,7 +170,6 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Menú móvil */}
         {menuAbierto && (
           <div className="nav-menu-mobile" style={{
             background: 'rgba(5,10,18,0.98)',
@@ -263,15 +259,12 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Mock dashboard — oculto en móvil muy pequeño */}
           <div className="hero-dashboard" style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 20,
-            padding: '2px',
+            borderRadius: 20, padding: '2px',
             boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
-            maxWidth: 800,
-            margin: '0 auto',
+            maxWidth: 800, margin: '0 auto',
           }}>
             <div style={{ background: '#0a1628', borderRadius: 18, padding: 16, textAlign: 'left' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
@@ -282,10 +275,7 @@ export default function LandingPage() {
                   <span style={{ fontSize: 10, color: '#475569' }}>tallerosapp.com/dashboard</span>
                 </div>
               </div>
-
-              {/* Dashboard simulado — stack en móvil */}
               <div className="dashboard-grid" style={{ display: 'grid', gap: 12, minHeight: 200 }}>
-                {/* Métricas */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }} className="metrics-grid">
                   {[
                     { label: 'Clientes', val: '248', color: '#3b82f6' },
@@ -299,8 +289,6 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-
-                {/* Órdenes recientes */}
                 <div style={{ background: '#060e1a', borderRadius: 12, padding: 12 }}>
                   <div style={{ fontSize: 10, color: '#475569', marginBottom: 8, fontWeight: 600 }}>ÓRDENES RECIENTES</div>
                   {[
@@ -335,11 +323,8 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             {STATS.map((s, i) => (
               <div key={i} id={`stat-${i}`} data-animate style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 20,
-                padding: 24,
-                transition: 'all 0.6s ease',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 20, padding: 24, transition: 'all 0.6s ease',
                 transitionDelay: `${i * 100}ms`,
                 opacity: isVisible(`stat-${i}`) ? 1 : 0,
                 transform: isVisible(`stat-${i}`) ? 'translateY(0)' : 'translateY(20px)',
@@ -367,15 +352,11 @@ export default function LandingPage() {
               Cada función resuelve un problema real que cuesta clientes y dinero todos los días.
             </p>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
             {DIFERENCIADORES.map((d, i) => (
               <div key={i} id={`dif-${i}`} data-animate style={{
-                background: d.bg,
-                border: `1px solid ${d.color}30`,
-                borderRadius: 20,
-                padding: 28,
-                transition: 'all 0.6s ease',
+                background: d.bg, border: `1px solid ${d.color}30`,
+                borderRadius: 20, padding: 28, transition: 'all 0.6s ease',
                 transitionDelay: `${i * 80}ms`,
                 opacity: isVisible(`dif-${i}`) ? 1 : 0,
                 transform: isVisible(`dif-${i}`) ? 'translateY(0)' : 'translateY(30px)',
@@ -405,7 +386,6 @@ export default function LandingPage() {
               Sin sorpresas. Sin letra chica.
             </h2>
             <p style={{ fontSize: 15, color: '#64748b', marginBottom: 28 }}>14 días gratis en cualquier plan. Sin tarjeta de crédito.</p>
-            <p style={{ fontSize: 13, color: '#475569', marginBottom: 20 }}>Precios en USD</p>
 
             <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: 4 }}>
               {['Mensual', 'Anual'].map((label, i) => (
@@ -424,78 +404,121 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-            {PLANES.map((plan) => (
-              <div key={plan.nombre} style={{
-                background: plan.popular ? `linear-gradient(135deg, ${plan.bg}, #0d0a1a)` : plan.bg,
-                border: `2px solid ${plan.popular ? plan.border : plan.border + '60'}`,
-                borderRadius: 24,
-                padding: 32,
-                position: 'relative',
-                boxShadow: plan.popular ? `0 0 60px ${plan.color}25` : 'none',
-              }}>
-                {plan.popular && (
-                  <div style={{
-                    position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                    color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 999,
-                    letterSpacing: 1, textTransform: 'uppercase', whiteSpace: 'nowrap',
-                  }}>
-                    Más popular
-                  </div>
-                )}
+            {PLANES.map((plan) => {
+              const precioActual = anual ? plan.precio_anual : plan.precio_mensual
+              const precioTachado = Math.round(precioActual * 1.4)
+              const localActual = convertir(precioActual)
+              const localTachado = convertir(precioTachado)
+              const localAnual = convertir(plan.total_anual)
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: `${plan.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <plan.icono size={20} color={plan.color} />
-                  </div>
-                  <h3 style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{plan.nombre}</h3>
-                </div>
-
-                <div style={{ marginBottom: 6 }}>
-                  <span style={{ fontSize: 'clamp(40px, 8vw, 52px)', fontWeight: 900, color: plan.color, letterSpacing: '-2px' }}>
-                    ${anual ? plan.precio_anual : plan.precio_mensual} USD
-                  </span>
-                  <span style={{ fontSize: 14, color: '#475569' }}>/mes</span>
-                </div>
-                {!cargandoMoneda && convertir(anual ? plan.precio_anual : plan.precio_mensual) && (
-                  <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8 }}>
-                    {convertir(anual ? plan.precio_anual : plan.precio_mensual)} al mes
-                  </p>
-                )}
-                {anual && (
-                  <p style={{ fontSize: 12, color: '#64748b', marginBottom: 20 }}>
-                    ${plan.total_anual} USD facturado anualmente
-                    {!cargandoMoneda && convertir(plan.total_anual) && (
-                      <span style={{ color: '#475569' }}> ({convertir(plan.total_anual)})</span>
-                    )}
-                  </p>
-                )}
-
-                <div style={{ height: 1, background: `${plan.color}20`, margin: '20px 0' }} />
-
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {plan.features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: '#94a3b8' }}>
-                      <div style={{ width: 18, height: 18, borderRadius: 5, background: `${plan.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                        <Check size={11} color={plan.color} strokeWidth={3} />
-                      </div>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <a href="/registro" style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  background: plan.popular ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
-                  color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none',
-                  padding: '13px 20px', borderRadius: 12,
-                  boxShadow: `0 8px 24px ${plan.color}40`,
+              return (
+                <div key={plan.nombre} style={{
+                  background: plan.popular ? `linear-gradient(135deg, ${plan.bg}, #0d0a1a)` : plan.bg,
+                  border: `2px solid ${plan.popular ? plan.border : plan.border + '60'}`,
+                  borderRadius: 24, padding: 32, position: 'relative',
+                  boxShadow: plan.popular ? `0 0 60px ${plan.color}25` : 'none',
                 }}>
-                  Empezar prueba gratis
-                  <ArrowRight size={16} />
-                </a>
+                  {plan.popular && (
+                    <div style={{
+                      position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
+                      background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                      color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 999,
+                      letterSpacing: 1, textTransform: 'uppercase', whiteSpace: 'nowrap',
+                    }}>
+                      Más popular
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${plan.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <plan.icono size={20} color={plan.color} />
+                    </div>
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{plan.nombre}</h3>
+                  </div>
+
+                  {/* Badge oferta */}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#22c55e15', border: '1px solid #22c55e30', borderRadius: 999, padding: '4px 12px', marginBottom: 12 }}>
+                    <div style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%' }} />
+                    <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700 }}>Oferta exclusiva para nuevos talleres</span>
+                  </div>
+
+                  {/* Precio tachado */}
+                  {!cargandoMoneda && localTachado && (
+                    <p style={{ fontSize: 15, color: '#475569', textDecoration: 'line-through', marginBottom: 4 }}>
+                      {localTachado} /mes
+                    </p>
+                  )}
+
+                  {/* Precio principal */}
+                  <div style={{ marginBottom: 6 }}>
+                    {!cargandoMoneda && localActual ? (
+                      <div>
+                        <span style={{ fontSize: 'clamp(36px, 7vw, 52px)', fontWeight: 900, color: plan.color, letterSpacing: '-2px' }}>
+                          {localActual}
+                        </span>
+                        <span style={{ fontSize: 14, color: '#475569' }}> /mes</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <span style={{ fontSize: 'clamp(36px, 7vw, 52px)', fontWeight: 900, color: plan.color, letterSpacing: '-2px' }}>
+                          ${precioActual} USD
+                        </span>
+                        <span style={{ fontSize: 14, color: '#475569' }}>/mes</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {anual && (
+                    <p style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
+                      {!cargandoMoneda && localAnual
+                        ? `${localAnual} facturado anualmente`
+                        : `$${plan.total_anual} USD facturado anualmente`
+                      }
+                    </p>
+                  )}
+
+                  <div style={{ height: 1, background: `${plan.color}20`, margin: '20px 0' }} />
+
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {plan.features.map(f => (
+                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: '#94a3b8' }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 5, background: `${plan.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                          <Check size={11} color={plan.color} strokeWidth={3} />
+                        </div>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <a href="/registro" style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    background: plan.popular ? 'linear-gradient(135deg, #7c3aed, #a855f7)' : 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                    color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none',
+                    padding: '13px 20px', borderRadius: 12,
+                    boxShadow: `0 8px 24px ${plan.color}40`,
+                  }}>
+                    Empezar prueba gratis
+                    <ArrowRight size={16} />
+                  </a>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Social proof */}
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '10px 20px' }}>
+              <div style={{ display: 'flex' }}>
+                {['#3b82f6', '#22c55e', '#a855f7', '#f59e0b'].map((color, i) => (
+                  <div key={i} style={{ width: 28, height: 28, borderRadius: '50%', background: color, border: '2px solid #050a12', marginLeft: i === 0 ? 0 : -8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>T</span>
+                  </div>
+                ))}
               </div>
-            ))}
+              <p style={{ fontSize: 13, color: '#64748b' }}>
+                <span style={{ color: '#f1f5f9', fontWeight: 700 }}>+50 talleres</span> ya digitalizaron su operación con TallerOS
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -508,8 +531,7 @@ export default function LandingPage() {
             border: '1px solid rgba(59,130,246,0.2)',
             borderRadius: 28,
             padding: 'clamp(32px, 6vw, 64px) clamp(20px, 5vw, 48px)',
-            position: 'relative',
-            overflow: 'hidden',
+            position: 'relative', overflow: 'hidden',
           }}>
             <div style={{ position: 'absolute', top: -80, right: -80, width: 240, height: 240, background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent)', borderRadius: '50%' }} />
             <div style={{ position: 'relative' }}>
@@ -572,11 +594,10 @@ export default function LandingPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        
+
         .nav-links-desktop { display: flex !important; }
         .nav-buttons-desktop { display: flex !important; }
         .nav-menu-mobile { display: none !important; }
-        .dashboard-grid { grid-template-columns: 1fr; }
         .metrics-grid { grid-template-columns: repeat(4, 1fr) !important; }
         .hero-ctas { flex-direction: row !important; }
 
