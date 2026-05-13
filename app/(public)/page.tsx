@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
-  Check, Menu, X, Zap, ArrowRight,
-  TrendingUp, AlertTriangle
+  ChevronRight, Check, Menu, X, Zap, ArrowRight,
+  TrendingUp, Users, Clock, AlertTriangle
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
@@ -83,13 +83,20 @@ const STATS = [
   { valor: '#1', texto: 'queja en LATAM: cobros no autorizados', icon: MessageCircle, color: '#3b82f6' },
   { valor: '+40%', texto: 'más ingresos con recordatorios automáticos', icon: TrendingUp, color: '#22c55e' },
 ]
+const [stats, setStats] = useState({ hoy: 0, semana: 0, total: 0 })
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => setStats(d))
+      .catch(() => {})
+  }, [])
 
 export default function LandingPage() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [anual, setAnual] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState<Set<string>>(new Set())
-  const [stats, setStats] = useState({ hoy: 0, semana: 0, total: 0 })
   const observerRef = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
 
@@ -97,13 +104,6 @@ export default function LandingPage() {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    fetch('/api/stats')
-      .then(r => r.json())
-      .then(d => setStats(d))
-      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -140,6 +140,18 @@ export default function LandingPage() {
             <div style={{ width: 32, height: 32, borderRadius: 9, overflow: 'hidden' }}>
               <img src="/icon-512.png" alt="TallerOS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
+            {/* Ticker de actividad real */}
+          {stats.semana > 0 && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 999, padding: '6px 16px', marginBottom: 16 }}>
+              <span style={{ fontSize: 14 }}>🔧</span>
+              <span style={{ fontSize: 13, color: '#86efac', fontWeight: 600 }}>
+                {stats.hoy > 0
+                  ? `${stats.hoy} taller${stats.hoy > 1 ? 'es' : ''} se registró hoy`
+                  : `${stats.semana} taller${stats.semana > 1 ? 'es' : ''} se registraron esta semana`
+                }
+              </span>
+            </div>
+          )}
             <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
               Taller<span style={{ color: '#3b82f6' }}>OS</span>
             </span>
@@ -227,27 +239,10 @@ export default function LandingPage() {
         </div>
 
         <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center', position: 'relative', width: '100%' }}>
-
-          {/* Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 999, padding: '6px 16px', marginBottom: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 999, padding: '6px 16px', marginBottom: 28 }}>
             <div style={{ width: 8, height: 8, background: '#22c55e', borderRadius: '50%', boxShadow: '0 0 8px #22c55e' }} />
             <span style={{ fontSize: 12, color: '#93c5fd', fontWeight: 600 }}>Gestión inteligente para talleres en LATAM</span>
           </div>
-
-          {/* Ticker de actividad real */}
-          {stats.semana > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 999, padding: '6px 16px' }}>
-                <span style={{ fontSize: 14 }}>🔧</span>
-                <span style={{ fontSize: 13, color: '#86efac', fontWeight: 600 }}>
-                  {stats.hoy > 0
-                    ? `${stats.hoy} taller${stats.hoy > 1 ? 'es' : ''} se registró hoy`
-                    : `${stats.semana} taller${stats.semana > 1 ? 'es' : ''} se registraron esta semana`
-                  }
-                </span>
-              </div>
-            </div>
-          )}
 
           <h1 style={{ fontSize: 'clamp(32px, 7vw, 76px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', marginBottom: 20 }}>
             Tu taller merece ser{' '}
@@ -284,7 +279,6 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Mock dashboard */}
           <div className="hero-dashboard" style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.08)',
@@ -301,8 +295,8 @@ export default function LandingPage() {
                   <span style={{ fontSize: 10, color: '#475569' }}>tallerosapp.com/dashboard</span>
                 </div>
               </div>
-              <div style={{ display: 'grid', gap: 12, minHeight: 200 }}>
-                <div style={{ display: 'grid', gap: 8 }} className="metrics-grid">
+              <div className="dashboard-grid" style={{ display: 'grid', gap: 12, minHeight: 200 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }} className="metrics-grid">
                   {[
                     { label: 'Clientes', val: '248', color: '#3b82f6' },
                     { label: 'Órdenes', val: '32', color: '#22c55e' },
@@ -431,11 +425,11 @@ export default function LandingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
             {PLANES.map((plan) => {
-              const precioActual  = anual ? plan.precio_anual : plan.precio_mensual
+              const precioActual = anual ? plan.precio_anual : plan.precio_mensual
               const precioTachado = Math.round(precioActual * 1.4)
-              const localActual   = convertir(precioActual)
-              const localTachado  = convertir(precioTachado)
-              const localAnual    = convertir(plan.total_anual)
+              const localActual = convertir(precioActual)
+              const localTachado = convertir(precioTachado)
+              const localAnual = convertir(plan.total_anual)
 
               return (
                 <div key={plan.nombre} style={{
@@ -542,10 +536,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p style={{ fontSize: 13, color: '#64748b' }}>
-                <span style={{ color: '#f1f5f9', fontWeight: 700 }}>
-                  {stats.total > 0 ? `+${stats.total}` : '+50'} talleres
-                </span>{' '}
-                ya digitalizaron su operación con TallerOS
+                <span style={{ color: '#f1f5f9', fontWeight: 700 }}>+50 talleres</span> ya digitalizaron su operación con TallerOS
               </p>
             </div>
           </div>
