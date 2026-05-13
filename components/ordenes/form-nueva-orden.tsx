@@ -11,24 +11,23 @@ import SelectorCatalogo from './selector-catalogo'
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
-// Tasas de IVA por país
 const IVA_POR_PAIS: Record<string, { tasa: number; etiqueta: string }> = {
-  'México':    { tasa: 0.16,  etiqueta: 'IVA 16%' },
-  'Colombia':  { tasa: 0.19,  etiqueta: 'IVA 19%' },
-  'Argentina': { tasa: 0.21,  etiqueta: 'IVA 21%' },
-  'Chile':     { tasa: 0.19,  etiqueta: 'IVA 19%' },
-  'Perú':      { tasa: 0.18,  etiqueta: 'IGV 18%' },
-  'Ecuador':   { tasa: 0.15,  etiqueta: 'IVA 15%' },
-  'Venezuela': { tasa: 0.16,  etiqueta: 'IVA 16%' },
-  'Bolivia':   { tasa: 0.13,  etiqueta: 'IVA 13%' },
-  'Paraguay':  { tasa: 0.10,  etiqueta: 'IVA 10%' },
-  'Uruguay':   { tasa: 0.22,  etiqueta: 'IVA 22%' },
-  'Guatemala': { tasa: 0.12,  etiqueta: 'IVA 12%' },
-  'Costa Rica':{ tasa: 0.13,  etiqueta: 'IVA 13%' },
-  'Panamá':    { tasa: 0.07,  etiqueta: 'ITBMS 7%' },
-  'Honduras':  { tasa: 0.15,  etiqueta: 'ISV 15%' },
-  'El Salvador':{ tasa: 0.13, etiqueta: 'IVA 13%' },
-  'Nicaragua': { tasa: 0.15,  etiqueta: 'IVA 15%' },
+  'México':               { tasa: 0.16, etiqueta: 'IVA 16%'   },
+  'Colombia':             { tasa: 0.19, etiqueta: 'IVA 19%'   },
+  'Argentina':            { tasa: 0.21, etiqueta: 'IVA 21%'   },
+  'Chile':                { tasa: 0.19, etiqueta: 'IVA 19%'   },
+  'Perú':                 { tasa: 0.18, etiqueta: 'IGV 18%'   },
+  'Ecuador':              { tasa: 0.15, etiqueta: 'IVA 15%'   },
+  'Venezuela':            { tasa: 0.16, etiqueta: 'IVA 16%'   },
+  'Bolivia':              { tasa: 0.13, etiqueta: 'IVA 13%'   },
+  'Paraguay':             { tasa: 0.10, etiqueta: 'IVA 10%'   },
+  'Uruguay':              { tasa: 0.22, etiqueta: 'IVA 22%'   },
+  'Guatemala':            { tasa: 0.12, etiqueta: 'IVA 12%'   },
+  'Costa Rica':           { tasa: 0.13, etiqueta: 'IVA 13%'   },
+  'Panamá':               { tasa: 0.07, etiqueta: 'ITBMS 7%'  },
+  'Honduras':             { tasa: 0.15, etiqueta: 'ISV 15%'   },
+  'El Salvador':          { tasa: 0.13, etiqueta: 'IVA 13%'   },
+  'Nicaragua':            { tasa: 0.15, etiqueta: 'IVA 15%'   },
   'República Dominicana': { tasa: 0.18, etiqueta: 'ITBIS 18%' },
 }
 
@@ -36,29 +35,27 @@ function getIva(pais: string) {
   return IVA_POR_PAIS[pais] ?? { tasa: 0.16, etiqueta: 'IVA 16%' }
 }
 
-// Símbolo de moneda
 function getMoneda(moneda: string) {
   if (moneda === 'COP') return 'COP $'
   return '$'
 }
+
+const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
 
 interface Props {
   clientes: Cliente[]
   tallerId: string
   pais: string
   moneda: string
+  mecanicos: { id: string; nombre: string }[]
 }
 
-const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
-
-export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda }: Props) {
+export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda, mecanicos }: Props) {
   const router = useRouter()
   const [paso, setPaso]         = useState(1)
   const [cargando, setCargando] = useState(false)
   const [error, setError]       = useState('')
   const [ordenId, setOrdenId]   = useState<string | null>(null)
-
-  // Estado para manejar el input raw del precio (string) por cada servicio
   const [preciosRaw, setPreciosRaw] = useState<string[]>([''])
 
   const [busquedaCliente, setBusquedaCliente]         = useState('')
@@ -66,19 +63,19 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
   const [vehiculo, setVehiculo] = useState({
-    marca: '', modelo: '', año: '', placas: '', kilometraje: '',
+    marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '',
   })
 
   const [form, setForm] = useState({
-    numero_factura: '',
+    numero_factura:       '',
     descripcion_problema: '',
-    diagnostico: '',
-    mecanico_asignado: '',
-    fecha_prometida: '',
-    estado: 'recibido' as EstadoOrden,
-    forma_pago: 'efectivo' as FormaPago,
-    descuento: '0',
-    notas_internas: '',
+    diagnostico:          '',
+    mecanico_asignado:    '',
+    fecha_prometida:      '',
+    estado:               'recibido' as EstadoOrden,
+    forma_pago:           'efectivo' as FormaPago,
+    descuento:            '0',
+    notas_internas:       '',
   })
 
   const [servicios, setServicios] = useState<ServicioItem[]>([{ ...SERVICIO_VACIO }])
@@ -103,18 +100,17 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       año:         c.vehiculo_año    ? String(c.vehiculo_año) : '',
       placas:      c.placas          ?? '',
       kilometraje: '',
+      vin:         '',
     })
   }
 
   const limpiarCliente = () => {
     setClienteSeleccionado(null)
     setBusquedaCliente('')
-    setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '' })
+    setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '' })
   }
 
-  // Actualiza precio_unitario desde el string raw
   const actualizarPrecioRaw = (i: number, val: string) => {
-    // Solo dígitos y punto decimal
     const limpio = val.replace(/[^\d.]/g, '')
     setPreciosRaw(prev => prev.map((p, idx) => idx === i ? limpio : p))
     const num = parseFloat(limpio) || 0
@@ -145,11 +141,11 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
     setPreciosRaw(prev => prev.filter((_, idx) => idx !== i))
   }
 
-  const subtotal   = servicios.reduce((acc, s) => acc + s.total, 0)
-  const descuento  = parseFloat(form.descuento) || 0
-  const baseIva    = Math.max(0, subtotal - descuento)
-  const impuestos  = Math.round(baseIva * tasa * 100) / 100
-  const total      = Math.round((baseIva + impuestos) * 100) / 100
+  const subtotal  = servicios.reduce((acc, s) => acc + s.total, 0)
+  const descuento = parseFloat(form.descuento) || 0
+  const baseIva   = Math.max(0, subtotal - descuento)
+  const impuestos = Math.round(baseIva * tasa * 100) / 100
+  const total     = Math.round((baseIva + impuestos) * 100) / 100
 
   const fmt = (n: number) => `${simbolo}${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
@@ -179,9 +175,8 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       total,
       forma_pago:           form.forma_pago,
       notas_internas:       form.notas_internas,
-      vin: (vehiculo as any).vin?.trim() || null,
-      numero_factura: form.numero_factura.trim() || null,
-      
+      vin:                  vehiculo.vin?.trim() || null,
+      numero_factura:       form.numero_factura.trim() || null,
     }
 
     const resultado = await crearOrden(datos)
@@ -197,16 +192,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
 
   return (
     <div className="max-w-2xl mx-auto">
-<div className="col-span-2">
-  <label className={LABEL}>Número de factura (opcional)</label>
-  <input
-    type="text"
-    value={form.numero_factura}
-    onChange={e => setForm(p => ({ ...p, numero_factura: e.target.value }))}
-    placeholder="Ej. A-0001 — déjalo vacío si no aplica"
-    className={INPUT}
-  />
-</div>
+
       {/* Progreso */}
       {paso < 3 && (
         <div className="flex items-center gap-3 mb-8">
@@ -299,16 +285,16 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
                 <input type="text" value={vehiculo.placas} onChange={e => setVehiculo(p => ({ ...p, placas: e.target.value.toUpperCase() }))} placeholder="ABC-123" className={INPUT} />
               </div>
               <div className="col-span-2">
-  <label className={LABEL}>VIN (Número de serie del vehículo)</label>
-  <input
-    type="text"
-    value={(vehiculo as any).vin ?? ''}
-    onChange={e => setVehiculo(p => ({ ...p, vin: e.target.value.toUpperCase() }))}
-    placeholder="17 caracteres — ej. 1HGCM82633A123456"
-    className={INPUT}
-    maxLength={17}
-  />
-</div>
+                <label className={LABEL}>VIN (Número de serie del vehículo)</label>
+                <input
+                  type="text"
+                  value={vehiculo.vin}
+                  onChange={e => setVehiculo(p => ({ ...p, vin: e.target.value.toUpperCase() }))}
+                  placeholder="17 caracteres — ej. 1HGCM82633A123456"
+                  className={INPUT}
+                  maxLength={17}
+                />
+              </div>
               <div className="col-span-2">
                 <label className={LABEL}>Kilometraje</label>
                 <input type="number" value={vehiculo.kilometraje} onChange={e => setVehiculo(p => ({ ...p, kilometraje: e.target.value }))} placeholder="85000" className={INPUT} />
@@ -333,6 +319,16 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
           <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Problema reportado</h2>
             <div>
+              <label className={LABEL}>Número de factura (opcional)</label>
+              <input
+                type="text"
+                value={form.numero_factura}
+                onChange={e => setForm(p => ({ ...p, numero_factura: e.target.value }))}
+                placeholder="Ej. A-0001 — déjalo vacío si no aplica"
+                className={INPUT}
+              />
+            </div>
+            <div>
               <label className={LABEL}>Descripción del problema <span className="text-red-500">*</span></label>
               <textarea rows={3} value={form.descripcion_problema} onChange={e => setForm(p => ({ ...p, descripcion_problema: e.target.value }))} placeholder="¿Qué problema reporta el cliente?" className={`${INPUT} resize-none`} />
             </div>
@@ -343,7 +339,16 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Mecánico asignado</label>
-                <input type="text" value={form.mecanico_asignado} onChange={e => setForm(p => ({ ...p, mecanico_asignado: e.target.value }))} placeholder="Nombre del mecánico" className={INPUT} />
+                <select
+                  value={form.mecanico_asignado}
+                  onChange={e => setForm(p => ({ ...p, mecanico_asignado: e.target.value }))}
+                  className={INPUT}
+                >
+                  <option value="">Sin asignar</option>
+                  {mecanicos.map(m => (
+                    <option key={m.id} value={m.nombre}>{m.nombre}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={LABEL}>Fecha prometida</label>
@@ -397,7 +402,6 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
                     />
                   </div>
                   <div className="col-span-3">
-                    {/* Campo precio con $ dinámico */}
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 pointer-events-none select-none">
                         {(preciosRaw[i] ?? '') !== '' || s.precio_unitario > 0 ? '$' : ''}
@@ -407,14 +411,12 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
                         inputMode="decimal"
                         value={preciosRaw[i] ?? (s.precio_unitario > 0 ? String(s.precio_unitario) : '')}
                         onChange={e => actualizarPrecioRaw(i, e.target.value)}
-                        onFocus={e => {
-                          // Al hacer focus, si el valor es 0, limpiar para escribir fácil
+                        onFocus={() => {
                           if (!preciosRaw[i] && s.precio_unitario === 0) {
                             setPreciosRaw(prev => prev.map((p, idx) => idx === i ? '' : p))
                           }
                         }}
                         onBlur={() => {
-                          // Al salir, si está vacío poner 0 como raw
                           if ((preciosRaw[i] ?? '') === '') {
                             setPreciosRaw(prev => prev.map((p, idx) => idx === i ? '' : p))
                           }
