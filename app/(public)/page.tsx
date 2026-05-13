@@ -1,5 +1,6 @@
 'use client'
 
+import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
@@ -86,6 +87,7 @@ const STATS = [
 export default function LandingPage() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [anual, setAnual] = useState(false)
+  const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState<Set<string>>(new Set())
   const observerRef = useRef<IntersectionObserver | null>(null)
@@ -455,8 +457,18 @@ export default function LandingPage() {
                   </span>
                   <span style={{ fontSize: 14, color: '#475569' }}>/mes</span>
                 </div>
+                {!cargandoMoneda && convertir(anual ? plan.precio_anual : plan.precio_mensual) && (
+                  <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8 }}>
+                    {convertir(anual ? plan.precio_anual : plan.precio_mensual)} al mes
+                  </p>
+                )}
                 {anual && (
-                  <p style={{ fontSize: 12, color: '#64748b', marginBottom: 20 }}>${plan.total_anual} USD facturado anualmente</p>
+                  <p style={{ fontSize: 12, color: '#64748b', marginBottom: 20 }}>
+                    ${plan.total_anual} USD facturado anualmente
+                    {!cargandoMoneda && convertir(plan.total_anual) && (
+                      <span style={{ color: '#475569' }}> ({convertir(plan.total_anual)})</span>
+                    )}
+                  </p>
                 )}
 
                 <div style={{ height: 1, background: `${plan.color}20`, margin: '20px 0' }} />
