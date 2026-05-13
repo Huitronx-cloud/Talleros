@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus, Search, FileText } from 'lucide-react'
 import { Cotizacion, EstadoCotizacion } from '@/types'
 import BadgeEstadoCotizacion from './badge-estado-cotizacion'
+import { formatMoney } from '@/lib/utils'
 
 const TABS: { label: string; valor: EstadoCotizacion | 'todas' }[] = [
   { label: 'Todas',     valor: 'todas'     },
@@ -112,8 +113,7 @@ export default function ListaCotizaciones({ cotizaciones }: { cotizaciones: Coti
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{c.vigencia_dias} días</td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    {c.moneda === 'MXN' ? '$' : 'COP '}
-                    {c.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    {formatMoney(c.total, c.moneda)}
                   </td>
                 </tr>
               ))}

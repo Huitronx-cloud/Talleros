@@ -14,7 +14,7 @@ export default async function ReportesPage() {
   const { data: usuario } = await supabase
     .from('usuarios')
     .select('taller_id, rol')
-    .eq('id', user!.id)
+    .eq('id', user.id)
     .single()
 
   const tallerId = usuario?.taller_id ?? ''
@@ -25,10 +25,15 @@ export default async function ReportesPage() {
     .eq('taller_id', tallerId)
     .single()
 
+  const { data: taller } = await supabase
+    .from('talleres')
+    .select('moneda')
+    .eq('id', tallerId)
+    .single()
+
   const plan    = suscripcion?.plan ?? 'trial'
   const limites = getLimites(plan)
 
-  // Bloquear si no es Pro
   if (!limites.reportes) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
@@ -71,7 +76,6 @@ export default async function ReportesPage() {
     )
   }
 
-  // Obtener datos para reportes
   const hace6Meses = new Date()
   hace6Meses.setMonth(hace6Meses.getMonth() - 6)
   const desde = hace6Meses.toISOString()
@@ -101,6 +105,7 @@ export default async function ReportesPage() {
       ordenes={ordenes ?? []}
       clientes={clientes ?? []}
       cotizaciones={cotizaciones ?? []}
+      taller={taller}
     />
   )
 }

@@ -5,6 +5,7 @@ import { Download, MessageCircle, Send, Check, Trash2 } from 'lucide-react'
 import { cambiarEstadoCotizacion, eliminarCotizacion } from '@/app/(dashboard)/cotizaciones/actions'
 import { useRouter } from 'next/navigation'
 import { EstadoCotizacion } from '@/types'
+import { formatMoney } from '@/lib/utils'
 
 interface Props {
   id: string
@@ -34,12 +35,11 @@ export default function AccionesPdf({
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const numero  = String(numeroCotizacion).padStart(4, '0')
-  const sym     = moneda === 'MXN' ? '$' : 'COP '
-  const totalFmt = total.toLocaleString('es-MX', { minimumFractionDigits: 2 })
+  const totalFmt = formatMoney(total, moneda)
 
   // WhatsApp link
   const mensajeWa = encodeURIComponent(
-    `Hola ${nombreCliente ?? 'estimado cliente'}, le compartimos la cotización #${numero} por un total de ${sym}${totalFmt}. ` +
+    `Hola ${nombreCliente ?? 'estimado cliente'}, le compartimos la cotización #${numero} por un total de ${totalFmt}. ` +
     `Puede descargarla desde el enlace o solicitar más información.`
   )
   const telefonoLimpio = (telefonoCliente ?? '').replace(/\D/g, '')

@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Orden, Taller } from '@/types'
 import OrdenDocumento from '@/lib/pdf/orden-documento'
 import twilio from 'twilio'
+import { formatMoney } from '@/lib/utils'
 
 export async function POST(
   _req: NextRequest,
@@ -75,13 +76,12 @@ const { error: uploadError } = await adminClient.storage
       : `whatsapp:+${telefonoLimpio}`
 
     const vehiculo = [orden.vehiculo_marca, orden.vehiculo_modelo].filter(Boolean).join(' ') || 'su vehículo'
-    const moneda   = (taller as any).moneda === 'COP' ? 'COP $' : '$'
-    const totalFmt = (orden.total ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })
+    const totalFmt = formatMoney(orden.total ?? 0, (taller as any).moneda)
 
     await client.messages.create({
       from: process.env.TWILIO_WHATSAPP_FROM!,
       to,
-      body: `Hola ${cliente?.nombre} 👋 Aquí está el reporte de servicio de su ${vehiculo} en ${(taller as any).nombre}.\n\n💰 Total: ${moneda}${totalFmt}\n\nAdjunto encontrará el PDF con el detalle completo. ¡Gracias por preferirnos! 🙏`,
+     body: `Hola ${cliente?.nombre} 👋 Aquí está el reporte de servicio de su ${vehiculo} en ${(taller as any).nombre}.\n\n💰 Total: ${totalFmt}\n\nAdjunto encontrará el PDF con el detalle completo. ¡Gracias por preferirnos! 🙏`,
       mediaUrl: [pdfUrl],
     })
 

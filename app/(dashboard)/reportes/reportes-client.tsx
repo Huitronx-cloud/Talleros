@@ -5,6 +5,7 @@ import {
   TrendingUp, Users, Clock, Wrench, DollarSign,
   BarChart2, RefreshCw, Award, Target
 } from 'lucide-react'
+import { formatMoney } from '@/lib/utils'
 
 type Periodo = '1m' | '3m' | '6m'
 
@@ -12,9 +13,10 @@ interface Props {
   ordenes:      any[]
   clientes:     any[]
   cotizaciones: any[]
+  taller?:      any
 }
 
-export default function ReportesClient({ ordenes, clientes, cotizaciones }: Props) {
+export default function ReportesClient({ ordenes, clientes, cotizaciones, taller }: Props) {
   const [periodo, setPeriodo] = useState<Periodo>('3m')
 
   const desde = useMemo(() => {
@@ -89,7 +91,7 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones }: Prop
   const maxIngreso = Math.max(...ingresosPorMes.map(m => m.total), 1)
   const maxMecanico = Math.max(...porMecanico.map(m => m.ingresos), 1)
 
-  const fmt = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  const fmt = (n: number) => formatMoney(n, taller?.moneda)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

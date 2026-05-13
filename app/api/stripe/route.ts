@@ -1,62 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-})
+import { createClient } from '@/lib/supabase/server'
+import { stripe, PLANES } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
-    const { tallerId, plan, moneda } = await req.json()
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const prices = {
-      basico: {
-        MXN: 29900,
-        COP: 4500000,
-      },
-      pro: {
-        MXN: 59900,
-        COP: 9000000,
-      },
-      multi: {
-        MXN: 99900,
-        COP: 15000000,
-      },
+    if (!user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
+    const { precio_id } = await req.json()
+
+    if (!Object.values(PLANES).includes(precio_id)) {
+      return NextResponse.json({ error: 'Plan inválido' }, { status: 400 })
+    }
+
+    // Obtener datos del taller y suscripción
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('taller_id, talleres(nombre, email)')
+      .eq('id', user.id)
+      .single()
+
+    if (!usuario) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+    }
+
+    const { data: suscripcion } = await supabase
+      .from('suscripciones')
+      .select('stripe_customer_id')
+      .eq('taller_id', usuario.taller_id)
+      .single()
+
+    // Crear o reutilizar customer en Stripe
+    let customerId = suscripcion?.stripe_customer_id
+
+    if (!customerId) {
+      const taller = usuario.talleres as any
+      const customer = await stripe.customers.create({
+        email: taller?.email ?? user.email,
+        name:  taller?.nombre ?? 'Taller',
+        metadata: { taller_id: usuario.taller_id },
+      })
+      customerId = customer.id
+
+      await supabase
+        .from('suscripciones')
+        .update({ stripe_customer_id: customerId })
+        .eq('taller_id', usuario.taller_id)
+    }
+
+    // Crear sesión de Stripe Checkout
     const session = await stripe.checkout.sessions.create({
+      customer:             customerId,
+      mode:                 'subscription',
       payment_method_types: ['card'],
-      mode: 'subscription',
-      currency: moneda.toLowerCase(),
-      line_items: [
-        {
-          price_data: {
-            currency: moneda.toLowerCase(),
-            product_data: {
-              name: `TallerOS Plan ${plan}`,
-            },
-            unit_amount: prices[plan as keyof typeof prices][moneda as 'MXN' | 'COP'],
-            recurring: {
-              interval: 'month',
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        tallerId,
-        plan,
+      line_items: [{ price: precio_id, quantity: 1 }],
+      subscription_data: {
+        metadata: { taller_id: usuario.taller_id },
       },
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?pago=exitoso`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/precios`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgrade=success`,
+      cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL}/configuracion/plan?upgrade=cancelled`,
     })
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error('Error Stripe:', error)
-    return NextResponse.json(
-      { error: 'Error procesando pago' },
-      { status: 500 }
-    )
+    console.error('Stripe checkout error:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

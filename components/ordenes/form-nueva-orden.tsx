@@ -7,6 +7,7 @@ import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
 import SelectorCatalogo from './selector-catalogo'
+import { formatMoney } from '@/lib/utils'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -147,7 +148,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const impuestos = Math.round(baseIva * tasa * 100) / 100
   const total     = Math.round((baseIva + impuestos) * 100) / 100
 
-  const fmt = (n: number) => `${simbolo}${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const fmt = (n: number) => formatMoney(n, moneda)
 
   const handleSubmit = async () => {
     if (!form.descripcion_problema.trim()) { setError('La descripción del problema es obligatoria'); return }
@@ -364,6 +365,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
               <div className="flex items-center gap-3">
                 <SelectorCatalogo
                   tallerId={tallerIdProp}
+                  moneda={moneda}
                   onSeleccionar={servicio => {
                     setServicios(prev => [...prev, servicio])
                     setPreciosRaw(prev => [...prev, String(servicio.precio_unitario)])

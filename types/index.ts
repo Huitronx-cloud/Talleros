@@ -125,6 +125,7 @@ export interface Orden {
   impuestos: number
   tasa_iva: number
   total: number
+  moneda?: string | null
   forma_pago: FormaPago
   cobrado: boolean
   fecha_cobro: string | null

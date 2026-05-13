@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { DollarSign, Plus, CheckCircle2, Loader2, X } from 'lucide-react'
 import { Orden, FormaPago } from '@/types'
+import { formatMoney } from '@/lib/utils'
 
 interface Pago {
   id: string
@@ -89,7 +90,7 @@ export default function PanelPagos({ orden, tallerId }: Props) {
     setGuardando(false)
   }
 
-  const fmt = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+  const fmt = (n: number) => formatMoney(n, orden?.moneda)
 
   const CONCEPTO_COLOR: Record<string, string> = {
     anticipo: 'bg-blue-100 text-blue-700',

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { crearCotizacion } from '@/app/(dashboard)/cotizaciones/actions'
 import { Cliente, Orden, ServicioItem } from '@/types'
+import { formatMoney } from '@/lib/utils'
 
 // Tasas de IVA por país — igual que en form-nueva-orden
 const IVA_POR_PAIS: Record<string, { tasa: number; etiqueta: string }> = {
@@ -182,8 +183,7 @@ export default function FormCotizacion({
     })
   }
 
-  const fmt = (n: number) =>
-    `${simbolo}${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const fmt = (n: number) => formatMoney(n, moneda)
 
   async function handleSubmit() {
     setError('')

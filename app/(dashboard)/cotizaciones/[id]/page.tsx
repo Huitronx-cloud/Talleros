@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import BadgeEstadoCotizacion from '@/components/cotizaciones/badge-estado-cotizacion'
 import AccionesPdf from '@/components/cotizaciones/acciones-pdf'
 import { Cotizacion } from '@/types'
+import { formatMoney } from '@/lib/utils'
 
 export default async function DetalleCotizacionPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -25,7 +26,7 @@ export default async function DetalleCotizacionPage({ params }: { params: { id: 
   const descuento  = c.descuento ?? 0
   const impuestos  = c.impuestos ?? 0
   const total      = c.total     ?? 0
-  const fmt        = (n: number) => (n ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })
+  const fmt        = (n: number) => formatMoney(n ?? 0, c.moneda)
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus, Search, ClipboardList, Car, User, Calendar } from 'lucide-react'
 import { Orden, EstadoOrden } from '@/types'
 import BadgeEstado from './badge-estado'
+import { formatMoney } from '@/lib/utils'
 
 const TABS = [
   { label: 'Todas',      valor: 'todas'      as const, activo: 'bg-gray-800 text-white',    inactivo: 'text-gray-600 hover:text-gray-800',   punto: 'bg-gray-500'    },
@@ -137,7 +138,7 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-lg font-bold text-gray-900">
-                    ${orden.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    {formatMoney(orden.total, orden.moneda)}
                   </p>
                   {orden.fecha_prometida && (
                     <div className="flex items-center gap-1 text-xs text-gray-400 mt-1 justify-end">

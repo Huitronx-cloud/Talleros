@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BookOpen, Search, X, Plus } from 'lucide-react'
 import { ServicioItem } from '@/types'
+import { formatMoney } from '@/lib/utils'
 
 interface Servicio {
   id: string
@@ -17,9 +18,10 @@ interface Servicio {
 interface Props {
   tallerId: string
   onSeleccionar: (servicio: ServicioItem) => void
+  moneda?: string | null
 }
 
-export default function SelectorCatalogo({ tallerId, onSeleccionar }: Props) {
+export default function SelectorCatalogo({ tallerId, onSeleccionar, moneda }: Props) {
   const supabase  = createClient()
   const [abierto, setAbierto]     = useState(false)
   const [servicios, setServicios] = useState<Servicio[]>([])
@@ -114,7 +116,7 @@ export default function SelectorCatalogo({ tallerId, onSeleccionar }: Props) {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                     <span className="text-sm font-bold text-gray-900">
-                      ${s.precio.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {formatMoney(s.precio, moneda)}
                     </span>
                     <Plus className="w-4 h-4 text-purple-500" />
                   </div>

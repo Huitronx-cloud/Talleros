@@ -15,9 +15,10 @@ interface Props {
   tallerId: string
   pais: string
   moneda: string
+  mecanicos: { id: string; nombre: string }[]
 }
 
-export default function FormRapidoOrden({ clientes, tallerId, pais, moneda }: Props) {
+export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, mecanicos }: Props) {
   const router = useRouter()
 
   const [paso, setPaso]                       = useState(1)
@@ -333,15 +334,16 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda }: Pr
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Mecánico asignado</label>
-              <input
-                type="text"
-                value={mecanico}
-                onChange={e => setMecanico(e.target.value)}
-                placeholder="Nombre"
-                className={INPUT}
-              />
-            </div>
-            <div>
+<select
+  value={mecanico}
+  onChange={e => setMecanico(e.target.value)}
+  className={INPUT}
+>
+  <option value="">Sin asignar</option>
+  {mecanicos.map(m => (
+    <option key={m.id} value={m.nombre}>{m.nombre}</option>
+  ))}
+</select>
               <label className={LABEL}>Fecha prometida</label>
               <input
                 type="date"

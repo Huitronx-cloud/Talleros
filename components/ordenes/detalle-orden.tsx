@@ -12,6 +12,7 @@ import { cambiarEstado, agregarNotaInterna } from '@/app/(dashboard)/ordenes/act
 import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
 import PanelPagos from './panel-pagos'
+import { formatMoney } from '@/lib/utils'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
   recibido:   'en_proceso',
@@ -367,8 +368,8 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
                     <tr key={i}>
                       <td className="px-5 py-3 text-sm text-gray-900">{s.descripcion}</td>
                       <td className="px-4 py-3 text-sm text-gray-600 text-center">{s.cantidad}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-right">${s.precio_unitario.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
-                      <td className="px-5 py-3 text-sm font-semibold text-gray-900 text-right">${s.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 text-right">{formatMoney(s.precio_unitario, orden.moneda)}</td>
+                      <td className="px-5 py-3 text-sm font-semibold text-gray-900 text-right">{formatMoney(s.total, orden.moneda)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -376,7 +377,7 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
               <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-1.5">
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Subtotal</span>
-                  <span>${orden.subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                  <span>{formatMoney(orden.subtotal, orden.moneda)}</span>
                 </div>
                 <p className="text-xs text-gray-400 capitalize">Forma de pago: {orden.forma_pago}</p>
                 {(orden as any).numero_factura && (
@@ -390,12 +391,12 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
                 {orden.descuento > 0 && (
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Descuento</span>
-                    <span>-${orden.descuento.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                    <span>-{formatMoney(orden.descuento, orden.moneda)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold text-gray-900 pt-1 border-t border-gray-200">
                   <span>Total</span>
-                  <span>${orden.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                  <span>{formatMoney(orden.total, orden.moneda)}</span>
                 </div>
                 <p className="text-xs text-gray-400 capitalize">Forma de pago: {orden.forma_pago}</p>
               </div>

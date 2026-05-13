@@ -75,11 +75,16 @@ export async function crearOrden(datos: OrdenForm) {
     forma_pago:           datos.forma_pago,
     notas_internas:       datos.notas_internas   || null,
     historial:            historialInicial,
-    vin: datos.vin ?? null,
-    numero_factura: datos.numero_factura ?? null,
+    vin:                  datos.vin ?? null,
+    numero_factura:       datos.numero_factura ?? null,
   }).select('id').single()
 
   if (error) return { error: error.message }
+
+  // Notificar al mecánico si fue asignado
+  if (datos.mecanico_asignado && data?.id) {
+    notificarMecanicoAsignado(data.id, datos.mecanico_asignado, tallerId).catch(console.error)
+  }
 
   revalidatePath('/ordenes')
   return { error: null, id: data.id }
@@ -113,6 +118,7 @@ export async function cambiarEstado(
     estado: nuevoEstado,
     historial,
   }
+
   if (nuevoEstado === 'entregado') {
     actualizacion.fecha_entrega = new Date().toISOString().split('T')[0]
   }
@@ -165,7 +171,6 @@ export async function cambiarEstado(
         googleReviewUrl: reviewUrl,
       })
 
-      // Espera 2 horas antes de enviar (7200000 ms)
       setTimeout(() => {
         enviarNotificacion({
           supabase,
@@ -203,4 +208,35 @@ export async function eliminarOrden(id: string) {
   if (error) return { error: error.message }
   revalidatePath('/ordenes')
   return { error: null }
+}
+
+async function notificarMecanicoAsignado(
+  ordenId: string,
+  mecanicoNombre: string,
+  tallerId: string
+) {
+  try {
+    const supabase = createClient()
+    const { data: mecanico } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('taller_id', tallerId)
+      .eq('nombre', mecanicoNombre)
+      .single()
+
+    if (!mecanico) return
+
+    await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/push/enviar`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        usuarioId: mecanico.id,
+        titulo:    '🔧 Nueva orden asignada',
+        cuerpo:    'Te han asignado una nueva orden de trabajo.',
+        url:       `/ordenes/${ordenId}`,
+      }),
+    })
+  } catch (e) {
+    console.error('Error notificando mecánico:', e)
+  }
 }
