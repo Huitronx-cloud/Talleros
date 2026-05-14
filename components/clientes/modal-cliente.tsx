@@ -12,7 +12,7 @@ interface Props {
 
 const FORM_VACIO: ClienteForm = {
   nombre: '', telefono: '', email: '',
-  vehiculo_marca: '', vehiculo_modelo: '', vehiculo_año: null, placas: '', notas: '',
+  vehiculo_marca: '', vehiculo_modelo: '', vehiculo_año: null, placas: '', vin: '', notas: '',
 }
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
@@ -32,6 +32,7 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
       vehiculo_modelo: cliente.vehiculo_modelo ?? '',
       vehiculo_año:    cliente.vehiculo_año    ?? null,
       placas:          cliente.placas          ?? '',
+      vin:             cliente.vin             ?? '',
       notas:           cliente.notas           ?? '',
     } : FORM_VACIO)
     setError('')

@@ -5,6 +5,7 @@ import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car, TrendingUp, Lock
 import { Cliente } from '@/types'
 import { eliminarCliente } from '@/app/(dashboard)/clientes/actions'
 import ModalCliente from './modal-cliente'
+import Link from 'next/link'
 
 interface ClienteStats {
   totalGastado: number
@@ -134,7 +135,9 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                             </span>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
+                            <Link href={`/clientes/${c.id}`} className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                              {c.nombre}
+                            </Link>
                             <p className="text-xs text-gray-400">
                               Cliente desde {new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })}
                             </p>
