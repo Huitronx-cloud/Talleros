@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import ClienteDetalle from './cliente-detalle/page'
+import ClienteDetalle from './cliente-detalle'
 
 export default async function ClienteDetallePage({ params }: { params: { id: string } }) {
   const supabase = createClient()
