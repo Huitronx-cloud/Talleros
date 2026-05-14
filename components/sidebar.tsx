@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
   FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2, Bell, Star,
+  Smartphone,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -28,9 +29,10 @@ const TODOS_NAV_ITEMS = [
 ]
 
 const TODOS_NAV_BOTTOM = [
-  { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,  roles: ['propietario', 'admin'] },
-  { href: '/configuracion',        label: 'Configuración', icono: Settings, roles: ['propietario', 'admin'] },
-  { href: '/catalogo', label: 'Catálogo', icono: BookOpen, roles: ['propietario', 'admin'] },
+  { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,    roles: ['propietario', 'admin'] },
+  { href: '/configuracion',        label: 'Configuración', icono: Settings,   roles: ['propietario', 'admin'] },
+  { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,   roles: ['propietario', 'admin'] },
+  { href: '/ayuda/instalar',       label: 'Instalar app',  icono: Smartphone, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
 ]
 
 interface Props {
