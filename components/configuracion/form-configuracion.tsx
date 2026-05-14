@@ -52,7 +52,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const [numeroTel,       setNumeroTel]       = useState(telefonoParseado.numero)
   const [direccion,       setDireccion]       = useState(taller.direccion       ?? '')
   const [email,           setEmail]           = useState(taller.email           ?? '')
-  const [moneda,          setMoneda]          = useState<'MXN' | 'COP'>(taller.moneda ?? 'MXN')
+  const [moneda, setMoneda] = useState<string>(taller.moneda ?? 'MXN')
   const [vigencia,        setVigencia]        = useState(taller.vigencia_dias   ?? 15)
   const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
   const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
@@ -265,11 +265,25 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Moneda predeterminada</label>
             <select
               value={moneda}
-              onChange={e => setMoneda(e.target.value as 'MXN' | 'COP')}
+              onChange={e => setMoneda(e.target.value as any)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+              <option value="USD">USD — Dólar estadounidense</option>
               <option value="MXN">MXN — Peso mexicano</option>
               <option value="COP">COP — Peso colombiano</option>
+              <option value="ARS">ARS — Peso argentino</option>
+              <option value="CLP">CLP — Peso chileno</option>
+              <option value="PEN">PEN — Sol peruano</option>
+              <option value="GTQ">GTQ — Quetzal guatemalteco</option>
+              <option value="CRC">CRC — Colón costarricense</option>
+              <option value="DOP">DOP — Peso dominicano</option>
+              <option value="BOB">BOB — Boliviano</option>
+              <option value="PYG">PYG — Guaraní paraguayo</option>
+              <option value="UYU">UYU — Peso uruguayo</option>
+              <option value="HNL">HNL — Lempira hondureño</option>
+              <option value="NIO">NIO — Córdoba nicaragüense</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="CAD">CAD — Dólar canadiense</option>
             </select>
           </div>
           <div>

@@ -8,7 +8,7 @@ export interface ConfiguracionForm {
   telefono: string
   direccion: string
   email: string
-  moneda: 'MXN' | 'COP'
+  moneda: string
   vigencia_dias: number
   logo_url?: string
   google_review_url?: string
