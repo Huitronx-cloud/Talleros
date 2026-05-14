@@ -37,36 +37,37 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }:
       </div>
 
       {/* Info del cliente */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
-        <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
-            <User size={24} className="text-blue-600" />
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 mb-6">
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
+            <User size={22} className="text-blue-600" />
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">{cliente.nombre}</h1>
-            <div className="flex flex-wrap gap-4 mt-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{cliente.nombre}</h1>
+            <div className="flex flex-wrap gap-3 mt-1.5">
               {cliente.telefono && (
-                <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <Phone size={14} /> {cliente.telefono}
+                <span className="flex items-center gap-1.5 text-xs md:text-sm text-gray-500">
+                  <Phone size={13} /> {cliente.telefono}
                 </span>
               )}
               {cliente.email && (
-                <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <Mail size={14} /> {cliente.email}
+                <span className="flex items-center gap-1.5 text-xs md:text-sm text-gray-500 truncate">
+                  <Mail size={13} /> {cliente.email}
                 </span>
               )}
             </div>
           </div>
-          {/* Stats */}
-          <div className="flex gap-6 text-right shrink-0">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{ordenes.length}</p>
-              <p className="text-xs text-gray-400">órdenes</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{formatMoney(totalGastado, moneda)}</p>
-              <p className="text-xs text-gray-400">total gastado</p>
-            </div>
+        </div>
+        {/* Stats — fila separada en móvil */}
+        <div className="flex gap-4 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex-1 text-center">
+            <p className="text-xl font-bold text-gray-900">{ordenes.length}</p>
+            <p className="text-xs text-gray-400">órdenes</p>
+          </div>
+          <div className="w-px bg-gray-100" />
+          <div className="flex-1 text-center">
+            <p className="text-xl font-bold text-green-600">{formatMoney(totalGastado, moneda)}</p>
+            <p className="text-xs text-gray-400">total gastado</p>
           </div>
         </div>
       </div>
