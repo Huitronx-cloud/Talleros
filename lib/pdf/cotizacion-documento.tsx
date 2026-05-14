@@ -56,6 +56,9 @@ const s = StyleSheet.create({
   notaBox:     { backgroundColor: CLARO, borderRadius: 6, padding: 12, marginTop: 24, borderLeftWidth: 3, borderLeftColor: AZUL },
   notaLabel:   { fontSize: 8, color: AZUL, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, marginBottom: 4 },
   notaTexto:   { fontSize: 9, color: MEDIO, lineHeight: 1.5 },
+  // Firma
+  firmaBox:    { backgroundColor: CLARO, borderRadius: 6, padding: 12, marginTop: 12, borderTopWidth: 1, borderTopColor: BORDE },
+  firmaTexto:  { fontSize: 9, color: MEDIO, textAlign: 'center', lineHeight: 1.5 },
   // Footer
   footer:      { position: 'absolute', bottom: 24, left: 40, right: 40, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   footerText:  { fontSize: 8, color: BORDE },
@@ -195,6 +198,13 @@ export default function CotizacionDocumento({ cotizacion, taller }: Props) {
             Después de esta fecha los precios pueden cambiar sin previo aviso.
           </Text>
         </View>
+
+        {/* ── FIRMA ── */}
+        {taller.firma_pdf && (
+          <View style={s.firmaBox}>
+            <Text style={s.firmaTexto}>{taller.firma_pdf}</Text>
+          </View>
+        )}
 
         {/* ── FOOTER ── */}
         <View style={s.footer}>
