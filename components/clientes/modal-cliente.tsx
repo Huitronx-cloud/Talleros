@@ -10,6 +10,34 @@ interface Props {
   onCerrar: () => void
 }
 
+const CODIGOS_PAIS = [
+  { code: 'MX', dial: '+52',  bandera: '🇲🇽' },
+  { code: 'CO', dial: '+57',  bandera: '🇨🇴' },
+  { code: 'AR', dial: '+54',  bandera: '🇦🇷' },
+  { code: 'PE', dial: '+51',  bandera: '🇵🇪' },
+  { code: 'CL', dial: '+56',  bandera: '🇨🇱' },
+  { code: 'EC', dial: '+593', bandera: '🇪🇨' },
+  { code: 'GT', dial: '+502', bandera: '🇬🇹' },
+  { code: 'CR', dial: '+506', bandera: '🇨🇷' },
+  { code: 'DO', dial: '+1',   bandera: '🇩🇴' },
+  { code: 'VE', dial: '+58',  bandera: '🇻🇪' },
+  { code: 'BO', dial: '+591', bandera: '🇧🇴' },
+  { code: 'PY', dial: '+595', bandera: '🇵🇾' },
+  { code: 'UY', dial: '+598', bandera: '🇺🇾' },
+  { code: 'HN', dial: '+504', bandera: '🇭🇳' },
+  { code: 'SV', dial: '+503', bandera: '🇸🇻' },
+  { code: 'PA', dial: '+507', bandera: '🇵🇦' },
+  { code: 'US', dial: '+1',   bandera: '🇺🇸' },
+  { code: 'CA', dial: '+1',   bandera: '🇨🇦' },
+]
+
+function parsearTelefono(tel: string) {
+  if (!tel) return { codigoPais: 'MX', numero: '' }
+  const match = CODIGOS_PAIS.find(p => tel.startsWith(p.dial))
+  if (match) return { codigoPais: match.code, numero: tel.slice(match.dial.length).trim() }
+  return { codigoPais: 'MX', numero: tel }
+}
+
 const FORM_VACIO: ClienteForm = {
   nombre: '', telefono: '', email: '',
   vehiculo_marca: '', vehiculo_modelo: '', vehiculo_año: null, placas: '', vin: '', notas: '',
@@ -20,21 +48,29 @@ const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 export default function ModalCliente({ cliente, onCerrar }: Props) {
   const [form, setForm]       = useState<ClienteForm>(FORM_VACIO)
-  const [cargando, setCargando] = useState(false)
+  const [codigoPais, setCodigoPais] = useState('MX')
+  const [cargando, setCargando]     = useState(false)
   const [error, setError]     = useState('')
 
   useEffect(() => {
-    setForm(cliente ? {
-      nombre:          cliente.nombre,
-      telefono:        cliente.telefono        ?? '',
-      email:           cliente.email           ?? '',
-      vehiculo_marca:  cliente.vehiculo_marca  ?? '',
-      vehiculo_modelo: cliente.vehiculo_modelo ?? '',
-      vehiculo_año:    cliente.vehiculo_año    ?? null,
-      placas:          cliente.placas          ?? '',
-      vin:             cliente.vin             ?? '',
-      notas:           cliente.notas           ?? '',
-    } : FORM_VACIO)
+    if (cliente) {
+      const { codigoPais: cp, numero } = parsearTelefono(cliente.telefono ?? '')
+      setCodigoPais(cp)
+      setForm({
+        nombre:          cliente.nombre,
+        telefono:        numero,
+        email:           cliente.email           ?? '',
+        vehiculo_marca:  cliente.vehiculo_marca  ?? '',
+        vehiculo_modelo: cliente.vehiculo_modelo ?? '',
+        vehiculo_año:    cliente.vehiculo_año    ?? null,
+        placas:          cliente.placas          ?? '',
+        vin:             cliente.vin             ?? '',
+        notas:           cliente.notas           ?? '',
+      })
+    } else {
+      setCodigoPais('MX')
+      setForm(FORM_VACIO)
+    }
     setError('')
   }, [cliente])
 
@@ -47,9 +83,14 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
     setCargando(true)
     setError('')
 
+    const paisSeleccionado = CODIGOS_PAIS.find(p => p.code === codigoPais)
+    const formConTelefono = {
+      ...form,
+      telefono: form.telefono ? `${paisSeleccionado?.dial} ${form.telefono}` : '',
+    }
     const resultado = cliente
-      ? await editarCliente(cliente.id, form)
-      : await crearCliente(form)
+      ? await editarCliente(cliente.id, formConTelefono)
+      : await crearCliente(formConTelefono)
 
     if (resultado.error) {
       setError(resultado.error)
@@ -95,13 +136,24 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={LABEL}>Teléfono</label>
-                  <input
-                    type="tel"
-                    value={form.telefono ?? ''}
-                    onChange={e => set('telefono', e.target.value)}
-                    placeholder="55 1234 5678"
-                    className={INPUT}
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={codigoPais}
+                      onChange={e => setCodigoPais(e.target.value)}
+                      className="border border-gray-300 rounded-lg pl-2 pr-7 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                    >
+                      {CODIGOS_PAIS.map(p => (
+                        <option key={p.code} value={p.code}>{p.bandera} {p.dial}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={form.telefono ?? ''}
+                      onChange={e => set('telefono', e.target.value.replace(/[^0-9\s\-]/g, ''))}
+                      placeholder="55 1234 5678"
+                      className={INPUT}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className={LABEL}>Email</label>

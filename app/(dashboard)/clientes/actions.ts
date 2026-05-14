@@ -25,6 +25,34 @@ export async function crearCliente(datos: ClienteForm) {
   })
 
   if (error) return { error: error.message }
+
+  // Enviar WhatsApp de bienvenida si tiene teléfono
+  if (datos.telefono) {
+    try {
+      const { data: taller } = await supabase
+        .from('talleres')
+        .select('nombre')
+        .eq('id', tallerId)
+        .single()
+
+      const nombreTaller = taller?.nombre ?? 'nuestro taller'
+      const nombreCliente = datos.nombre.split(' ')[0]
+
+      // Limpiar el número — quitar todo excepto dígitos y el +
+      const telefonoLimpio = datos.telefono.replace(/[\s\-\(\)]/g, '')
+
+      const mensaje = `Hola ${nombreCliente} 👋 Te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. ¡Gracias por preferirnos! 🔧`
+
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/whatsapp/bienvenida`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefono: telefonoLimpio, mensaje }),
+      })
+    } catch {
+      // Si falla el WhatsApp no bloqueamos el registro del cliente
+    }
+  }
+
   revalidatePath('/clientes')
   return { error: null }
 }
