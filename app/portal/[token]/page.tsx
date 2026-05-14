@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Clock, CheckCircle2, Package, Wrench, Phone } from 'lucide-react'
@@ -15,7 +14,7 @@ export default async function PortalClientePage({
 
   const { data: tokenData } = await supabase
     .from('portal_tokens')
-    .select('*, ordenes(*, clientes(nombre, telefono), talleres(nombre, telefono, logo_url))')
+    .select('*, ordenes(*, clientes(nombre, telefono), talleres(nombre, telefono, logo_url, horario, instagram, facebook))')
     .eq('token', params.token)
     .gt('expires_at', new Date().toISOString())
     .single()
@@ -36,10 +35,10 @@ export default async function PortalClientePage({
   const fotosDiagnostico = todasFotos?.filter((f: any) => f.tipo !== 'recepcion' && f.tipo !== 'firma') ?? []
 
   const estadoConfig: Record<string, { label: string; descripcion: string; icono: any; color: string; bg: string; paso: number }> = {
-    recibido:   { label: 'Recibido',   descripcion: 'Tu vehículo está en el taller.',        icono: Package,      color: 'text-gray-600',   bg: 'bg-gray-100',   paso: 1 },
-    en_proceso: { label: 'En proceso', descripcion: 'Estamos trabajando en tu vehículo.',     icono: Wrench,       color: 'text-blue-600',   bg: 'bg-blue-100',   paso: 2 },
-    listo:      { label: '¡Listo!',    descripcion: 'Tu vehículo está listo para recoger.',   icono: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-100',  paso: 3 },
-    entregado:  { label: 'Entregado',  descripcion: 'Tu vehículo fue entregado. ¡Gracias!',   icono: Car,          color: 'text-purple-600', bg: 'bg-purple-100', paso: 4 },
+    recibido:   { label: 'Recibido',   descripcion: 'Tu vehículo está en el taller.',       icono: Package,      color: 'text-gray-600',   bg: 'bg-gray-100',   paso: 1 },
+    en_proceso: { label: 'En proceso', descripcion: 'Estamos trabajando en tu vehículo.',    icono: Wrench,       color: 'text-blue-600',   bg: 'bg-blue-100',   paso: 2 },
+    listo:      { label: '¡Listo!',    descripcion: 'Tu vehículo está listo para recoger.',  icono: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-100',  paso: 3 },
+    entregado:  { label: 'Entregado',  descripcion: 'Tu vehículo fue entregado. ¡Gracias!',  icono: Car,          color: 'text-purple-600', bg: 'bg-purple-100', paso: 4 },
   }
 
   const pasos = [
@@ -74,6 +73,12 @@ export default async function PortalClientePage({
             </div>
           )}
           <p className="text-sm font-semibold text-gray-700">{taller.nombre}</p>
+          {taller.horario && (
+            <div className="flex items-center justify-center gap-1.5 mt-1.5">
+              <Clock className="w-3.5 h-3.5 text-gray-400" />
+              <p className="text-xs text-gray-400">{taller.horario}</p>
+            </div>
+          )}
           <h1 className="text-xl font-bold text-gray-900 mt-3">Hola, {cliente.nombre} 👋</h1>
           <p className="text-sm text-gray-500 mt-1">
             Aquí puedes seguir el estado de tu{' '}
@@ -95,7 +100,6 @@ export default async function PortalClientePage({
             </div>
           </div>
 
-          {/* Estimado de tiempo */}
           {diasRestantes !== null && (
             <div className="mt-4 pt-4 border-t border-white/50 flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
@@ -213,7 +217,7 @@ export default async function PortalClientePage({
           <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center">
             <p className="text-sm text-gray-500 mb-3">¿Tienes alguna pregunta?</p>
             <a
-             href={`https://wa.me/${taller.telefono.replace(/\D/g, '')}`}
+              href={`https://wa.me/${taller.telefono.replace(/\D/g, '')}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
@@ -221,6 +225,35 @@ export default async function PortalClientePage({
               <Phone className="w-4 h-4" />
               Contactar al taller por WhatsApp
             </a>
+          </div>
+        )}
+
+        {/* Redes sociales */}
+        {(taller.instagram || taller.facebook) && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center">
+            <p className="text-sm text-gray-500 mb-3">Síguenos en redes sociales</p>
+            <div className="flex justify-center gap-3">
+              {taller.instagram && (
+                <a
+                  href={taller.instagram.startsWith('http') ? taller.instagram : `https://instagram.com/${taller.instagram.replace('@', '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Instagram
+                </a>
+              )}
+              {taller.facebook && (
+                <a
+                  href={taller.facebook.startsWith('http') ? taller.facebook : `https://facebook.com/${taller.facebook}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  Facebook
+                </a>
+              )}
+            </div>
           </div>
         )}
 
