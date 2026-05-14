@@ -12,7 +12,7 @@ import BannerUpgrade from './banner-upgrade'
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/ordenes',              label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
-  { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'] },
+  { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/citas',                label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/clientes',             label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
   { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
@@ -161,6 +161,9 @@ export default async function DashboardPage() {
     if (!m.roles.includes(rol)) return false
     return true
   }).map((m: any) => {
+    if (m.upgrade && planActual === 'pro') {
+      return { ...m, upgrade: false }
+    }
     if (m.href === '/configuracion/plan') {
       if (planActual === 'pro') {
         return {

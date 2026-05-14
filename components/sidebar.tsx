@@ -93,7 +93,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
     <>
       {/* ── BARRA MÓVIL ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+        <Link href="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
             {logoUrl ? (
               <img src={logoUrl} alt={nombreTaller} className="w-full h-full object-contain" />
@@ -104,7 +104,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
             )}
           </div>
           <span className="text-white font-bold text-sm truncate max-w-[160px]">{nombreTaller}</span>
-        </div>
+        </Link>
         <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1">
           {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -165,7 +165,9 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
         colapsado ? 'w-16' : 'w-64'
       )}>
         <div className={cn('px-3 py-5 border-b border-gray-800 flex items-center', colapsado ? 'justify-center' : 'gap-3 px-4')}>
-          <LogoFullscreen logoUrl={logoUrl} nombreTaller={nombreTaller} />
+          <Link href="/dashboard">
+            <LogoFullscreen logoUrl={logoUrl} nombreTaller={nombreTaller} />
+          </Link>
           {!colapsado && (
             <Link href="/dashboard" className="min-w-0 hover:opacity-80 transition-opacity">
               <p className="text-white font-bold text-sm leading-tight truncate">{nombreTaller}</p>
