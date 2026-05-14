@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
+import BannerInstalar from './banner-instalar'
 
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -234,6 +235,9 @@ export default async function DashboardPage() {
 
         {/* ── BANNER UPGRADE ── */}
         <BannerUpgrade tallerId={usuarioData?.taller_id} rol={rol} />
+
+        {/* ── BANNER INSTALAR PWA ── */}
+        <BannerInstalar />
 
         {/* ── ALERTAS ── */}
         {(ordenesRetrasadas && ordenesRetrasadas.length > 0) || stockBajo.length > 0 ? (
