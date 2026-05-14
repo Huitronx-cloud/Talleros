@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Users, Pencil, Trash2, Search, Plus, Phone, Mail, Car, TrendingUp, Lock } from 'lucide-react'
 import { Cliente } from '@/types'
 import { eliminarCliente } from '@/app/(dashboard)/clientes/actions'
 import ModalCliente from './modal-cliente'
-import Link from 'next/link'
+
 
 interface ClienteStats {
   totalGastado: number
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function TablaClientes({ clientes, statsMap, puedeAgregar = true, limiteClientes = -1 }: Props) {
+  const router = useRouter()
   const [busqueda, setBusqueda]           = useState('')
   const [modalAbierto, setModalAbierto]   = useState(false)
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null)
@@ -124,7 +126,7 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                 {filtrados.map(c => {
                   const stats = statsMap[c.id]
                   return (
-                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={c.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => router.push(`/clientes/${c.id}`)}>
 
                       {/* Cliente */}
                       <td className="px-6 py-4">
@@ -135,9 +137,7 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                             </span>
                           </div>
                           <div>
-                            <Link href={`/clientes/${c.id}`} className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                              {c.nombre}
-                            </Link>
+                            <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
                             <p className="text-xs text-gray-400">
                               Cliente desde {new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })}
                             </p>
@@ -221,7 +221,7 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 justify-end">
                           <button
-                            onClick={() => abrirEditar(c)}
+                            onClick={e => { e.stopPropagation(); abrirEditar(c) }}
                             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Editar"
                           >
@@ -231,14 +231,14 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                           {confirmar === c.id ? (
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => handleEliminar(c.id)}
+                                onClick={e => { e.stopPropagation(); handleEliminar(c.id) }}
                                 disabled={eliminando === c.id}
                                 className="text-xs font-medium text-red-600 hover:text-red-700 px-2 py-1 bg-red-50 rounded-lg"
                               >
                                 {eliminando === c.id ? '...' : 'Confirmar'}
                               </button>
                               <button
-                                onClick={() => setConfirmar(null)}
+                                onClick={e => { e.stopPropagation(); setConfirmar(null) }}
                                 className="text-xs font-medium text-gray-500 px-2 py-1 hover:bg-gray-100 rounded-lg"
                               >
                                 No
@@ -246,7 +246,7 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                             </div>
                           ) : (
                             <button
-                              onClick={() => setConfirmar(c.id)}
+                              onClick={e => { e.stopPropagation(); setConfirmar(c.id) }}
                               className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                               title="Eliminar"
                             >
