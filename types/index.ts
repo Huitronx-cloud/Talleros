@@ -12,7 +12,7 @@ export interface Taller {
   direccion: string | null
   email: string | null
   logo_url: string | null
-  moneda: 'MXN' | 'COP'
+  moneda: string
   vigencia_dias: number
   google_review_url: string | null
   created_at: string
@@ -31,7 +31,7 @@ export interface Cotizacion {
   descuento: number
   impuestos: number
   total: number
-  moneda: 'MXN' | 'COP'
+  moneda: string
   estado: EstadoCotizacion
   notas: string | null
   vigencia_dias: number
