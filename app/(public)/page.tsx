@@ -284,6 +284,27 @@ export default function LandingPage() {
             </a>
           </div>
 
+          {/* Trust badges */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 48 }}>
+            {[
+              { icon: '🔒', text: 'Datos cifrados con SSL' },
+              { icon: '💳', text: 'Pagos seguros con Stripe' },
+              { icon: '🚫', text: 'Sin contratos' },
+              { icon: '🇲🇽', text: 'Soporte en español' },
+              { icon: '⚡', text: '14 días gratis' },
+            ].map((b, i) => (
+              <div key={i} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 999, padding: '6px 14px',
+              }}>
+                <span style={{ fontSize: 13 }}>{b.icon}</span>
+                <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{b.text}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Mock dashboard */}
           <div className="hero-dashboard" style={{
             background: 'rgba(255,255,255,0.03)',
@@ -427,6 +448,30 @@ export default function LandingPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Garantías de confianza */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+            {[
+              { icon: '✅', label: 'Sin tarjeta de crédito', sub: 'Para empezar' },
+              { icon: '🔄', label: 'Cancela cuando quieras', sub: 'Sin penalizaciones' },
+              { icon: '💳', label: 'Pago seguro', sub: 'Powered by Stripe' },
+              { icon: '🛡️', label: 'Datos protegidos', sub: 'Encriptación total' },
+            ].map((b, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 14, padding: '10px 16px',
+                minWidth: 180,
+              }}>
+                <span style={{ fontSize: 20 }}>{b.icon}</span>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{b.label}</p>
+                  <p style={{ fontSize: 11, color: '#475569' }}>{b.sub}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
