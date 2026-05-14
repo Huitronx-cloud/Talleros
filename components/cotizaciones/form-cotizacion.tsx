@@ -67,7 +67,7 @@ export default function FormCotizacion({
   const [preciosRaw, setPreciosRaw]     = useState<string[]>([''])
   const [descuento, setDescuento]       = useState(0)
   const [aplicarIva, setAplicarIva]     = useState(true)  // activo por defecto
-  const [moneda, setMoneda]             = useState<'MXN' | 'COP'>(monedaDefault)
+  const [moneda, setMoneda] = useState<string>(monedaDefault)
   const [vigenciaDias, setVigenciaDias] = useState(vigenciaDiasDefault)
   const [notas, setNotas]               = useState('')
 
@@ -306,11 +306,25 @@ export default function FormCotizacion({
               <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
               <select
                 value={moneda}
-                onChange={e => setMoneda(e.target.value as 'MXN' | 'COP')}
+                onChange={e => setMoneda(e.target.value as any)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="USD">USD — Dólar</option>
                 <option value="MXN">MXN — Peso mexicano</option>
                 <option value="COP">COP — Peso colombiano</option>
+                <option value="ARS">ARS — Peso argentino</option>
+                <option value="CLP">CLP — Peso chileno</option>
+                <option value="PEN">PEN — Sol peruano</option>
+                <option value="GTQ">GTQ — Quetzal</option>
+                <option value="CRC">CRC — Colón costarricense</option>
+                <option value="DOP">DOP — Peso dominicano</option>
+                <option value="BOB">BOB — Boliviano</option>
+                <option value="PYG">PYG — Guaraní</option>
+                <option value="UYU">UYU — Peso uruguayo</option>
+                <option value="HNL">HNL — Lempira</option>
+                <option value="NIO">NIO — Córdoba</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="CAD">CAD — Dólar canadiense</option>
               </select>
             </div>
             <div>

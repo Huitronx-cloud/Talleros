@@ -12,7 +12,7 @@ export interface CotizacionForm {
   descuento: number
   impuestos: number
   total: number
-  moneda: 'MXN' | 'COP'
+  moneda: string
   estado: EstadoCotizacion
   notas: string
   vigencia_dias: number
