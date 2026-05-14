@@ -15,6 +15,10 @@ export interface Taller {
   moneda: string
   vigencia_dias: number
   google_review_url: string | null
+  horario: string | null
+  instagram: string | null
+  facebook: string | null
+  firma_pdf: string | null
   created_at: string
 }
 

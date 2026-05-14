@@ -56,6 +56,10 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const [vigencia,        setVigencia]        = useState(taller.vigencia_dias   ?? 15)
   const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
   const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
+  const [horario,         setHorario]         = useState(taller.horario   ?? '')
+  const [instagram,       setInstagram]       = useState(taller.instagram ?? '')
+  const [facebook,        setFacebook]        = useState(taller.facebook  ?? '')
+  const [firmaPdf,        setFirmaPdf]        = useState(taller.firma_pdf ?? '')
 
   const [cargando, setCargando] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
@@ -109,8 +113,12 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       email,
       moneda,
       vigencia_dias: vigencia,
-      logo_url:          logoUrl          || undefined,
-      google_review_url: googleReviewUrl  || undefined,
+      logo_url:          logoUrl         || undefined,
+      google_review_url: googleReviewUrl || undefined,
+      horario:           horario         || undefined,
+      instagram:         instagram       || undefined,
+      facebook:          facebook        || undefined,
+      firma_pdf:         firmaPdf        || undefined,
     })
 
     setCargando(false)
@@ -254,6 +262,61 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
             placeholder="Calle, colonia, ciudad"
             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+      </div>
+
+      {/* Horario y redes sociales */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900">Horario y redes sociales</h2>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Horario de atención</label>
+          <input
+            type="text"
+            value={horario}
+            onChange={e => setHorario(e.target.value)}
+            placeholder="Ej. Lunes a Viernes 8am - 6pm, Sábados 9am - 2pm"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-400 mt-1">Se mostrará en el portal del cliente.</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+            <input
+              type="text"
+              value={instagram}
+              onChange={e => setInstagram(e.target.value)}
+              placeholder="@tallerelejemplo"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+            <input
+              type="text"
+              value={facebook}
+              onChange={e => setFacebook(e.target.value)}
+              placeholder="facebook.com/tallerelejemplo"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Firma del PDF */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900">Firma del PDF</h2>
+        <div>
+          <textarea
+            value={firmaPdf}
+            onChange={e => setFirmaPdf(e.target.value)}
+            placeholder="Ej. Gracias por su preferencia. Garantía de 90 días en mano de obra."
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+          <p className="text-xs text-gray-400 mt-1">Aparece al pie de todas tus cotizaciones y órdenes en PDF.</p>
         </div>
       </div>
 
