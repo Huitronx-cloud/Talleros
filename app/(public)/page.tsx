@@ -219,6 +219,63 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* TABLA SIN/CON */}
+      <section className="t-versus-section">
+        <div className="t-versus-inner">
+          <p className="t-versus-pregunta">¿Sigues gestionando tu taller con WhatsApp, Excel y llamadas perdidas?</p>
+          <h2 className="t-versus-titulo">Lo que cambia con TallerOS</h2>
+          <div className="t-versus-table">
+            <div className="t-versus-col t-versus-sin">
+              <div className="t-versus-col-header">
+                <span className="t-versus-icon-bad">✗</span>
+                <span>Sin TallerOS</span>
+              </div>
+              {[
+                'Clientes llaman sin parar a preguntar por su carro',
+                'Aprobaciones verbales que generan disputas',
+                'Sin evidencia de daños preexistentes',
+                'Pierdes clientes que no regresan nunca',
+                'Reseñas en Google solo cuando algo sale mal',
+                'No sabes cuánto ganaste este mes',
+                'Garantías en papel que se pierden',
+              ].map((item, i) => (
+                <div key={i} className="t-versus-row">
+                  <span className="t-versus-x">✗</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="t-versus-col t-versus-con">
+              <div className="t-versus-col-header">
+                <span className="t-versus-icon-good">✓</span>
+                <span>Con TallerOS</span>
+              </div>
+              {[
+                'Portal en tiempo real — el cliente ve el avance solo',
+                'Aprobación por WhatsApp con registro digital',
+                'Fotos del diagnóstico antes de tocar el vehículo',
+                'Recordatorios automáticos cada 3–6 meses',
+                'Reseña en Google solicitada automáticamente al entregar',
+                'Reportes de ingresos y rendimiento en tiempo real',
+                'Garantía digital firmada en cada entrega',
+              ].map((item, i) => (
+                <div key={i} className="t-versus-row">
+                  <span className="t-versus-check">✓</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="t-versus-ctas">
+            <a href="/registro" className="t-btn-primary">Empieza gratis — sin tarjeta <ArrowRight size={17} /></a>
+            <a href="https://wa.me/TUNUMERO?text=Hola%2C%20quiero%20una%20demo%20de%20TallerOS" target="_blank" rel="noopener noreferrer" className="t-btn-whatsapp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.862L.057 23.571a.75.75 0 00.921.921l5.709-1.475A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 01-4.988-1.373l-.357-.214-3.706.957.977-3.596-.233-.37A9.713 9.713 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+              Hablar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* MARQUEE */}
       <div className="t-marquee-wrap">
         <div className="t-marquee-track">
@@ -446,6 +503,26 @@ export default function LandingPage() {
         .t-dolor{font-size:1rem;font-weight:600;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:0.6rem 1rem;margin-bottom:1.25rem;line-height:1.4;max-width:480px;}
 .t-btn-whatsapp{display:inline-flex;align-items:center;gap:0.5rem;background:#16a34a;color:#fff;font-weight:700;font-size:0.95rem;padding:0.75rem 1.5rem;border-radius:10px;text-decoration:none;transition:background 0.2s;}
 .t-btn-whatsapp:hover{background:#15803d;}
+.t-versus-section{padding:80px 24px;background:linear-gradient(180deg,#0a0f1a 0%,#060d1a 100%);}
+.t-versus-inner{max-width:900px;margin:0 auto;}
+.t-versus-pregunta{text-align:center;color:#dc2626;font-weight:600;font-size:1rem;margin-bottom:0.5rem;}
+.t-versus-titulo{text-align:center;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:2.5rem;}
+.t-versus-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;}
+.t-versus-col{border-radius:16px;overflow:hidden;}
+.t-versus-sin{background:#1a0a0a;border:1px solid #3f1515;}
+.t-versus-con{background:#0a1a0f;border:1px solid #14532d;}
+.t-versus-col-header{display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;font-weight:700;font-size:1rem;}
+.t-versus-sin .t-versus-col-header{background:#2d0f0f;color:#f87171;}
+.t-versus-con .t-versus-col-header{background:#0f2d1a;color:#4ade80;}
+.t-versus-icon-bad{font-size:1.2rem;color:#ef4444;}
+.t-versus-icon-good{font-size:1.2rem;color:#22c55e;}
+.t-versus-row{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);font-size:0.875rem;line-height:1.4;}
+.t-versus-sin .t-versus-row{color:#fca5a5;}
+.t-versus-con .t-versus-row{color:#86efac;}
+.t-versus-x{color:#ef4444;font-weight:700;flex-shrink:0;margin-top:1px;}
+.t-versus-check{color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;}
+.t-versus-ctas{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
+@media(max-width:640px){.t-versus-table{grid-template-columns:1fr;}.t-versus-section{padding:60px 16px;}}
         .t-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
         .t-eyebrow-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pg 2s ease-in-out infinite;}
         @keyframes pg{0%,100%{box-shadow:0 0 6px #22c55e;}50%{box-shadow:0 0 14px #22c55e;}}
