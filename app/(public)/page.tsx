@@ -149,6 +149,9 @@ export default function LandingPage() {
         <div className="t-orb t-orb2" />
         <div className="t-hero-inner">
           <div className="t-hero-left">
+            <div className="t-dolor">
+              ¿Cuántos clientes perdiste esta semana porque no contestaron el teléfono?
+            </div>
             <div className="t-eyebrow">
               <span className="t-eyebrow-dot" />
               Software para talleres mecánicos en LATAM
@@ -167,8 +170,11 @@ export default function LandingPage() {
             </h1>
             <p className="t-hero-sub">TallerOS digitaliza tu operación con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
             <div className="t-hero-ctas">
-              <a href="/registro" className="t-btn-primary">Empieza gratis — 14 días <ArrowRight size={17} /></a>
-              <a href="#caracteristicas" className="t-btn-ghost">Ver características</a>
+              <a href="/registro" className="t-btn-primary">Demo gratis — sin tarjeta <ArrowRight size={17} /></a>
+              <a href="https://wa.me/TUNUMERO?text=Hola%2C%20quiero%20una%20demo%20de%20TallerOS" target="_blank" rel="noopener noreferrer" className="t-btn-whatsapp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.862L.057 23.571a.75.75 0 00.921.921l5.709-1.475A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 01-4.988-1.373l-.357-.214-3.706.957.977-3.596-.233-.37A9.713 9.713 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+                Hablar por WhatsApp
+              </a>
             </div>
             <div className="t-trust-row">
               {['Sin tarjeta de crédito','Cancela cuando quieras','Soporte en español'].map(t => (
@@ -437,6 +443,9 @@ export default function LandingPage() {
         .t-orb2{width:400px;height:400px;bottom:0;right:-60px;background:radial-gradient(circle,rgba(8,145,178,0.08) 0%,transparent 70%);}
         .t-hero-inner{max-width:1280px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;}
         .t-hero-left{display:flex;flex-direction:column;gap:22px;}
+        .t-dolor{font-size:1rem;font-weight:600;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:0.6rem 1rem;margin-bottom:1.25rem;line-height:1.4;max-width:480px;}
+.t-btn-whatsapp{display:inline-flex;align-items:center;gap:0.5rem;background:#16a34a;color:#fff;font-weight:700;font-size:0.95rem;padding:0.75rem 1.5rem;border-radius:10px;text-decoration:none;transition:background 0.2s;}
+.t-btn-whatsapp:hover{background:#15803d;}
         .t-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
         .t-eyebrow-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pg 2s ease-in-out infinite;}
         @keyframes pg{0%,100%{box-shadow:0 0 6px #22c55e;}50%{box-shadow:0 0 14px #22c55e;}}
