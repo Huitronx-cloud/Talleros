@@ -40,11 +40,9 @@ export function useMonedaLocal() {
   const info = TASAS_APROXIMADAS[pais] ?? TASAS_APROXIMADAS['US']
 
   function convertir(usd: number): string {
-    if (info.moneda === 'USD') return ''
     const local = Math.round(usd * info.tasa)
     const formateado = local.toLocaleString('es-MX')
-    return `~${info.simbolo}${formateado} ${info.moneda}`
+    return `${info.simbolo}${formateado} ${info.moneda}`
   }
-
-  return { pais, cargando, convertir, moneda: info.moneda }
+  return { pais, cargando, convertir, moneda: info.moneda, simbolo: info.simbolo }
 }

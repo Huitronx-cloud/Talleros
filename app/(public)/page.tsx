@@ -217,7 +217,7 @@ export default function LandingPage() {
 
           <div className="t-hero-right">
             <div className="t-hero-img-wrap">
-              <img src="/og-image.png" alt="TallerOS Dashboard" className="t-hero-img" />
+              <img src="/hero-dashboard.png" alt="TallerOS Dashboard" className="t-hero-img" />
               <div className="t-hero-img-glow" />
             </div>
           </div>
@@ -438,15 +438,22 @@ export default function LandingPage() {
 
                   <div className="t-plan-price-block">
                     <div className="t-poriginal-row">
-                      <span className="t-poriginal">{!cargandoMoneda && lor ? lor : `$${por} USD`}</span>
-                      <span className="t-pahorras">Ahorras {descuento}%</span>
+                      <span className="t-poriginal">
+                        {!cargandoMoneda ? lor : `$${por} USD`}
+                      </span>
+                      <span className="t-pahorras">🎉 Ahorras {descuento}%</span>
                     </div>
                     <div className="t-plan-price">
-                      {!cargandoMoneda && la
-                        ? <><span className="t-pnum">{la}</span><span className="t-pper">/mes</span></>
-                        : <><span className="t-pnum">${pa} USD</span><span className="t-pper">/mes</span></>}
+                      <span className="t-pnum">
+                        {!cargandoMoneda ? la : `$${pa} USD`}
+                      </span>
+                      <span className="t-pper">/mes</span>
                     </div>
-                    {anual && <p className="t-plan-annual">{!cargandoMoneda && lan ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>}
+                    {anual && (
+                      <p className="t-plan-annual">
+                        {!cargandoMoneda ? `${lan} al año` : `$${plan.total_anual} USD al año`}
+                      </p>
+                    )}
                   </div>
 
                   <div className="t-pdivider" />
@@ -715,11 +722,11 @@ export default function LandingPage() {
         .t-odot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pg 2s ease-in-out infinite;}
         .t-plan-price-block{background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.12);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
         .t-poriginal-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-        .t-poriginal{font-size:15px;color:#64748b;text-decoration:line-through;font-weight:500;}
+        .t-poriginal{font-size:17px;color:#94a3b8;text-decoration:line-through;font-weight:600;}
         .t-pahorras{font-size:11px;font-weight:800;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:999px;border:1px solid rgba(34,197,94,0.25);}
-        .t-plan-price{display:flex;align-items:baseline;gap:4px;}
-        .t-pnum{font-size:clamp(34px,5vw,48px);font-weight:900;color:var(--blue);letter-spacing:-2px;}
-        .t-pper{font-size:14px;color:var(--dim);}
+        .t-plan-price{display:flex;align-items:baseline;gap:6px;margin-top:4px;}
+        .t-pnum{font-size:clamp(36px,5vw,52px);font-weight:900;background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-2px;line-height:1;}
+        .t-pper{font-size:15px;color:#64748b;font-weight:600;-webkit-text-fill-color:#64748b;}
         .t-plan-annual{font-size:12px;color:var(--dim);margin-top:6px;}
         .t-pdivider{height:1px;background:var(--border);margin:20px 0;}
         .t-plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
