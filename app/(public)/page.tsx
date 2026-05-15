@@ -10,6 +10,7 @@ import {
   Quote,
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
+import OfferBar from "@/components/landing/OfferBar";
 
 const MODULOS = [
   { icon: FileText,      label: 'Órdenes de trabajo',  desc: 'Crea, asigna y sigue cada orden en tiempo real.' },
@@ -104,7 +105,9 @@ export default function LandingPage() {
   const isV = (id: string) => visible.has(id)
 
   return (
-    <div className="t-root">
+    <>
+      <OfferBar />
+      <div className="t-root">
 
       {/* NAV */}
       <nav className={`t-nav ${scrolled ? 'scrolled' : ''}`}>
@@ -622,6 +625,7 @@ export default function LandingPage() {
           .t-cta-btns .t-btn-primary,.t-cta-btns .t-btn-ghost{width:100%;max-width:320px;}
         }
       `}</style>
-    </div>
-  )
+      </div>
+    </>
+  );
 }

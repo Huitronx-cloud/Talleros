@@ -79,7 +79,7 @@ export default function RootLayout({
   <meta name="apple-mobile-web-app-title" content="TallerOS" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
 </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} has-offer-bar`}>
         <GoogleAnalytics />
         {children}
       </body>
