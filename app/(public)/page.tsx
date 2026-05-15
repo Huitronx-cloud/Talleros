@@ -40,11 +40,11 @@ const TESTIMONIALES = [
 
 const PLANES = [
   {
-    nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228, icono: Zap, popular: false,
+    nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228, precio_original_mensual: 48, precio_original_anual: 38, icono: Zap, popular: false,
     features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
-    nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468, icono: Star, popular: true,
+    nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468, precio_original_mensual: 98, precio_original_anual: 78, icono: Star, popular: true,
     features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
@@ -370,9 +370,10 @@ export default function LandingPage() {
       {/* PRECIOS */}
       <section id="precios" className="t-section">
         <div className="t-inner">
-          <div className="t-slabel">Precios</div>
+          <p className="t-versus-pregunta">¿Cuánto te cuesta al mes perder clientes por falta de seguimiento?</p>
+          <div className="t-slabel">Precios de lanzamiento — 50% OFF</div>
           <h2 className="t-sh2">Sin sorpresas. Sin letra chica.</h2>
-          <p className="t-ssub">14 días gratis en cualquier plan. Sin tarjeta de crédito.</p>
+          <p className="t-ssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
           <div className="t-toggle-wrap">
             <div className="t-toggle">
               {['Mensual','Anual'].map((label,i) => (
@@ -401,6 +402,9 @@ export default function LandingPage() {
                   </div>
                   <div className="t-plan-oferta"><span className="t-odot" /><span>Oferta exclusiva para nuevos talleres</span></div>
                   <div className="t-plan-price">
+                    <span className="t-poriginal">
+                      ${anual ? plan.precio_original_anual : plan.precio_original_mensual} USD
+                    </span>
                     {!cargandoMoneda && la ? <><span className="t-pnum">{la}</span><span className="t-pper">/mes</span></> : <><span className="t-pnum">${pa} USD</span><span className="t-pper">/mes</span></>}
                   </div>
                   {anual && <p className="t-plan-annual">{!cargandoMoneda && lan ? `${lan} facturado anualmente` : `$${plan.total_anual} USD facturado anualmente`}</p>}
@@ -604,6 +608,7 @@ export default function LandingPage() {
         .t-stat-txt{font-size:13px;color:var(--muted);line-height:1.6;}
         .t-stat-icon-wrap{width:44px;height:44px;border-radius:12px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
         .t-stats-cta{display:flex;justify-content:center;margin-top:3rem;}
+        .t-poriginal{display:block;font-size:0.85rem;color:#6b7280;text-decoration:line-through;margin-bottom:0.25rem;}
 
         /* MODULES */
         .t-modules-section{background:rgba(255,255,255,0.012);}
