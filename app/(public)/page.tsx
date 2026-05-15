@@ -288,16 +288,20 @@ export default function LandingPage() {
       {/* STATS */}
       <section id="por-que" className="t-section t-stats-section">
         <div className="t-inner">
-          <div className="t-slabel">La realidad del mercado</div>
-          <h2 className="t-sh2">El problema que TallerOS resuelve</h2>
+          <p className="t-versus-pregunta">¿Sabes por qué tus clientes no regresan?</p>
+          <div className="t-slabel">La realidad del mercado automotriz en LATAM</div>
+          <h2 className="t-sh2">Los números que tu competencia ignora</h2>
           <div className="t-stats-grid">
             {STATS_DATA.map((s,i) => (
               <div key={i} id={`st-${i}`} data-animate className={`t-stat-card ${isV(`st-${i}`)?'vis':''}`} style={{transitionDelay:`${i*80}ms`}}>
-                <s.icon size={20} className="t-stat-icon" />
+                <div className="t-stat-icon-wrap"><s.icon size={22} className="t-stat-icon" /></div>
                 <div className="t-stat-val">{s.valor}</div>
                 <p className="t-stat-txt">{s.texto}</p>
               </div>
             ))}
+          </div>
+          <div className="t-stats-cta">
+            <a href="/registro" className="t-btn-primary">Quiero ser diferente — Demo gratis <ArrowRight size={17} /></a>
           </div>
         </div>
       </section>
@@ -589,7 +593,8 @@ export default function LandingPage() {
         .t-ssub{font-size:15px;color:var(--muted);text-align:center;max-width:500px;margin:0 auto 56px;line-height:1.7;}
 
         /* STATS */
-        .t-stats-section{padding:80px 0;}
+        .t-stats-section{padding:80px 0;position:relative;}
+        .t-stats-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.08) 0%,transparent 70%);pointer-events:none;}
         .t-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:48px;}
         .t-stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s;}
         .t-stat-card.vis{opacity:1;transform:translateY(0);}
@@ -597,6 +602,8 @@ export default function LandingPage() {
         .t-stat-icon{color:var(--blue);margin-bottom:16px;}
         .t-stat-val{font-size:clamp(36px,6vw,52px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;margin-bottom:10px;}
         .t-stat-txt{font-size:13px;color:var(--muted);line-height:1.6;}
+        .t-stat-icon-wrap{width:44px;height:44px;border-radius:12px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
+        .t-stats-cta{display:flex;justify-content:center;margin-top:3rem;}
 
         /* MODULES */
         .t-modules-section{background:rgba(255,255,255,0.012);}
