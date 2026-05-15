@@ -7,57 +7,69 @@ import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
   ChevronRight, Users, FileText, BarChart2, Calendar, Package,
-  Quote,
+  Quote, Sparkles,
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
-import OfferBar from "@/components/landing/OfferBar";
 
 const MODULOS = [
-  { icon: FileText,      label: 'Órdenes de trabajo',  desc: 'Crea, asigna y sigue cada orden en tiempo real.' },
-  { icon: Users,         label: 'Clientes y vehículos', desc: 'Historial completo de cada cliente y su vehículo.' },
-  { icon: MessageCircle, label: 'WhatsApp integrado',   desc: 'Aprobaciones, notificaciones y portal directo.' },
-  { icon: BarChart2,     label: 'Reportes avanzados',   desc: 'Ingresos, rendimiento por mecánico y retención.' },
-  { icon: Calendar,      label: 'Citas y agenda',       desc: 'Organiza tu taller sin conflictos de horario.' },
-  { icon: Package,       label: 'Inventario',           desc: 'Controla refacciones y evita desabasto.' },
-  { icon: Shield,        label: 'Garantía digital',     desc: 'Documentos firmados en cada entrega.' },
-  { icon: Star,          label: 'Reseñas automáticas',  desc: 'Solicita Google Reviews al entregar el vehículo.' },
+  { icon: FileText,      label: 'Órdenes de trabajo',   desc: 'Crea, asigna y sigue cada orden en tiempo real.', color: '#2563eb', bg: 'rgba(37,99,235,0.12)' },
+  { icon: Users,         label: 'Clientes y vehículos',  desc: 'Historial completo de cada cliente y su vehículo.', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' },
+  { icon: MessageCircle, label: 'WhatsApp integrado',    desc: 'Aprobaciones, notificaciones y portal directo.', color: '#16a34a', bg: 'rgba(22,163,74,0.12)' },
+  { icon: BarChart2,     label: 'Reportes avanzados',    desc: 'Ingresos, rendimiento por mecánico y retención.', color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
+  { icon: Calendar,      label: 'Citas y agenda',        desc: 'Organiza tu taller sin conflictos de horario.', color: '#db2777', bg: 'rgba(219,39,119,0.12)' },
+  { icon: Package,       label: 'Inventario',            desc: 'Controla refacciones y evita desabasto.', color: '#d97706', bg: 'rgba(217,119,6,0.12)' },
+  { icon: Shield,        label: 'Garantía digital',      desc: 'Documentos firmados en cada entrega.', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' },
+  { icon: Star,          label: 'Reseñas automáticas',   desc: 'Solicita Google Reviews al entregar el vehículo.', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
 ]
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, color: '#2563eb', tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',    desc: 'Tu cliente aprueba o rechaza reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
-  { icon: Camera,        color: '#0891b2', tag: '0 disputas',          titulo: 'Fotos del diagnóstico',      desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.' },
-  { icon: Monitor,       color: '#2563eb', tag: '97% satisfacción',    titulo: 'Portal en tiempo real',      desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
-  { icon: Shield,        color: '#0891b2', tag: '100% profesional',    titulo: 'Garantía digital',           desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor al instante.' },
-  { icon: Bell,          color: '#2563eb', tag: '+40% retención',      titulo: 'Recordatorios automáticos',  desc: 'TallerOS contacta a tus clientes cada 3–6 meses para su mantenimiento. Ingresos recurrentes sin esfuerzo.' },
-  { icon: Star,          color: '#0891b2', tag: '5★ en Google',        titulo: 'Reseñas automáticas',        desc: 'Al entregar un vehículo TallerOS pide la reseña. El 97% lee reviews antes de elegir taller.' },
+  { icon: MessageCircle, gradient: 'linear-gradient(135deg,#1d4ed8,#2563eb)', tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp', desc: 'Tu cliente aprueba o rechaza reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado con fecha y hora.' },
+  { icon: Camera,        gradient: 'linear-gradient(135deg,#0e7490,#0891b2)', tag: '0 disputas',          titulo: 'Fotos del diagnóstico',  desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes para siempre.' },
+  { icon: Monitor,       gradient: 'linear-gradient(135deg,#1d4ed8,#7c3aed)', tag: '97% satisfacción',   titulo: 'Portal en tiempo real',  desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total que genera confianza.' },
+  { icon: Shield,        gradient: 'linear-gradient(135deg,#0e7490,#0891b2)', tag: '100% profesional',   titulo: 'Garantía digital',       desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor al instante.' },
+  { icon: Bell,          gradient: 'linear-gradient(135deg,#7c3aed,#2563eb)', tag: '+40% retención',     titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3–6 meses para su mantenimiento. Ingresos recurrentes sin esfuerzo.' },
+  { icon: Star,          gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', tag: '5★ en Google',       titulo: 'Reseñas automáticas',    desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews antes de elegir taller.' },
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica a la semana.', nombre: 'Roberto Garza',    rol: 'Dueño — Taller Garza, Monterrey MX',   inicial: 'R', color: '#2563eb', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos y el mecánico sigue sin parar.',  nombre: 'Camila Restrepo', rol: 'Administradora — AutoFix, Medellín CO', inicial: 'C', color: '#0891b2', estrellas: 5 },
-  { texto: 'Los recordatorios automáticos de mantenimiento nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',          nombre: 'Miguel Quispe',   rol: 'Propietario — Mecánica Quispe, Lima PE', inicial: 'M', color: '#2563eb', estrellas: 5 },
+  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica a la semana.', nombre: 'Roberto Garza',    rol: 'Dueño — Taller Garza, Monterrey MX',    inicial: 'R', color: '#2563eb', estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos y el mecánico sigue sin parar.',  nombre: 'Camila Restrepo', rol: 'Administradora — AutoFix, Medellín CO',  inicial: 'C', color: '#0891b2', estrellas: 5 },
+  { texto: 'Los recordatorios automáticos de mantenimiento nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',          nombre: 'Miguel Quispe',   rol: 'Propietario — Mecánica Quispe, Lima PE', inicial: 'M', color: '#7c3aed', estrellas: 5 },
 ]
 
 const PLANES = [
   {
-    nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228, precio_original_mensual: 48, precio_original_anual: 38, icono: Zap, popular: false,
+    nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
+    precio_original_mensual: 48, precio_original_anual: 38,
+    icono: Zap, popular: false,
     features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
-    nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468, precio_original_mensual: 98, precio_original_anual: 78, icono: Star, popular: true,
+    nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
+    precio_original_mensual: 98, precio_original_anual: 78,
+    icono: Star, popular: true,
     features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
 
 const STATS_DATA = [
-  { valor: '63%',  texto: 'de clientes desconfía de talleres mecánicos',    icon: AlertTriangle },
-  { valor: '97%',  texto: 'lee reseñas antes de elegir un taller',           icon: Star },
-  { valor: '#1',   texto: 'queja en LATAM: cobros no autorizados',           icon: MessageCircle },
-  { valor: '+40%', texto: 'más ingresos con recordatorios automáticos',      icon: TrendingUp },
+  { valor: '63%',  texto: 'de clientes desconfía de talleres mecánicos',  icon: AlertTriangle, gradient: 'linear-gradient(135deg,#dc2626,#ef4444)', glow: 'rgba(220,38,38,0.25)' },
+  { valor: '97%',  texto: 'lee reseñas antes de elegir un taller',         icon: Star,          gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', glow: 'rgba(245,158,11,0.25)' },
+  { valor: '#1',   texto: 'queja en LATAM: cobros no autorizados',         icon: MessageCircle, gradient: 'linear-gradient(135deg,#7c3aed,#8b5cf6)', glow: 'rgba(124,58,237,0.25)' },
+  { valor: '+40%', texto: 'más ingresos con recordatorios automáticos',    icon: TrendingUp,    gradient: 'linear-gradient(135deg,#0891b2,#06b6d4)', glow: 'rgba(8,145,178,0.25)'  },
 ]
 
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 const WORDS   = ['más confiable','más profesional','más rentable','el favorito']
+
+function getSecondsUntilEndOfMonth(): number {
+  const now = new Date()
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0)
+  return Math.floor((end.getTime() - now.getTime()) / 1000)
+}
+function formatTime(s: number) {
+  return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 }
+}
 
 export default function LandingPage() {
   const [menuAbierto, setMenuAbierto]   = useState(false)
@@ -68,9 +80,12 @@ export default function LandingPage() {
   const [typeIdx, setTypeIdx]           = useState(0)
   const [typeChar, setTypeChar]         = useState(0)
   const [typeDeleting, setTypeDeleting] = useState(false)
+  const [toastVisible, setToastVisible] = useState(false)
+  const [offerSecs, setOfferSecs]       = useState(getSecondsUntilEndOfMonth())
   const observerRef = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
 
+  // Typewriter
   useEffect(() => {
     const word = WORDS[typeIdx]
     const speed = typeDeleting ? 38 : 75
@@ -83,16 +98,31 @@ export default function LandingPage() {
     return () => clearTimeout(timer)
   }, [typeChar, typeDeleting, typeIdx])
 
+  // Scroll nav
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
+  // Stats + toast
   useEffect(() => {
-    fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
+    fetch('/api/stats').then(r => r.json()).then(d => {
+      setStats(d)
+      if (d.hoy > 0 || d.semana > 0) {
+        setTimeout(() => setToastVisible(true), 4000)
+        setTimeout(() => setToastVisible(false), 10000)
+      }
+    }).catch(() => {})
   }, [])
 
+  // Offer countdown
+  useEffect(() => {
+    const t = setInterval(() => setOfferSecs(s => s > 0 ? s - 1 : 0), 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  // Intersection
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) setVisible(p => new Set([...p, e.target.id])) }),
@@ -103,11 +133,25 @@ export default function LandingPage() {
   }, [])
 
   const isV = (id: string) => visible.has(id)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const { d, h, m, s } = formatTime(offerSecs)
 
   return (
     <>
-      <OfferBar />
       <div className="t-root">
+
+      {/* TOAST NOTIFICACION */}
+      {toastVisible && (stats.hoy > 0 || stats.semana > 0) && (
+        <div className="t-toast">
+          <span className="t-toast-icon">🔧</span>
+          <span className="t-toast-text">
+            {stats.hoy > 0
+              ? `${stats.hoy} taller${stats.hoy > 1 ? 'es' : ''} se registró hoy`
+              : `${stats.semana} talleres registrados esta semana`}
+          </span>
+          <button className="t-toast-close" onClick={() => setToastVisible(false)}>✕</button>
+        </div>
+      )}
 
       {/* NAV */}
       <nav className={`t-nav ${scrolled ? 'scrolled' : ''}`}>
@@ -149,75 +193,45 @@ export default function LandingPage() {
         <div className="t-orb t-orb2" />
         <div className="t-hero-inner">
           <div className="t-hero-left">
-            <div className="t-dolor">
-              ¿Cuántos clientes perdiste esta semana porque no contestaron el teléfono?
-            </div>
             <div className="t-eyebrow">
               <span className="t-eyebrow-dot" />
-              Software para talleres mecánicos en LATAM
+              Software de gestión inteligente para talleres mecánicos
             </div>
-            {stats.semana > 0 && (
-              <div className="t-activity">
-                <span>&#128295;</span>
-                {stats.hoy > 0 ? `${stats.hoy} taller${stats.hoy > 1 ? 'es' : ''} se registró hoy` : `${stats.semana} talleres registrados esta semana`}
-              </div>
-            )}
             <h1 className="t-h1">
               Tu taller merece ser<br />
               <span className="t-typewriter">
                 {WORDS[typeIdx].slice(0, typeChar)}<span className="t-cursor">|</span>
               </span>
             </h1>
-            <p className="t-hero-sub">TallerOS digitaliza tu operación con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
+            <p className="t-hero-sub">TallerOS digitaliza tu operación con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Todo en un solo lugar.</p>
             <div className="t-hero-ctas">
-              <a href="/registro" className="t-btn-primary">Demo gratis — sin tarjeta <ArrowRight size={17} /></a>
-              <a href="https://wa.me/TUNUMERO?text=Hola%2C%20quiero%20una%20demo%20de%20TallerOS" target="_blank" rel="noopener noreferrer" className="t-btn-whatsapp">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.862L.057 23.571a.75.75 0 00.921.921l5.709-1.475A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 01-4.988-1.373l-.357-.214-3.706.957.977-3.596-.233-.37A9.713 9.713 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
-                Hablar por WhatsApp
-              </a>
+              <a href="/registro" className="t-btn-primary">Empezar demo gratis <ArrowRight size={17} /></a>
+              <a href="#caracteristicas" className="t-btn-ghost">Ver cómo funciona</a>
             </div>
             <div className="t-trust-row">
-              {['Sin tarjeta de crédito','Cancela cuando quieras','Soporte en español'].map(t => (
+              {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
                 <div key={t} className="t-trust-pill"><Check size={11} strokeWidth={3} className="t-check" /><span>{t}</span></div>
               ))}
             </div>
           </div>
 
           <div className="t-hero-right">
-            <div className="t-mockup">
-              <div className="t-mockup-bar">
-                <div className="t-dots"><span className="td red" /><span className="td yellow" /><span className="td green" /></div>
-                <div className="t-url">tallerosapp.com/dashboard</div>
-              </div>
-              <div className="t-mockup-body">
-                <div className="t-metrics">
-                  {[{l:'Clientes',v:'248',c:'#2563eb'},{l:'Órdenes',v:'32',c:'#0891b2'},{l:'Ingresos',v:'$48K',c:'#2563eb'},{l:'Reseñas',v:'4.9★',c:'#f59e0b'}].map(m => (
-                    <div key={m.l} className="t-metric"><span className="t-mlabel">{m.l}</span><span className="t-mval" style={{color:m.c}}>{m.v}</span></div>
-                  ))}
-                </div>
-                <div className="t-orders">
-                  <div className="t-orders-hdr"><span className="t-orders-lbl">ÓRDENES ACTIVAS</span><span className="t-orders-badge">3 hoy</span></div>
-                  {[
-                    {n:'Honda Civic — Marcos V.',p:75,c:'#2563eb',e:'En proceso'},
-                    {n:'Toyota RAV4 — Sofía R.', p:40,c:'#0891b2',e:'Diagnóstico'},
-                    {n:'Ford F-150 — Carlos M.', p:100,c:'#22c55e',e:'Listo'},
-                  ].map(o => (
-                    <div key={o.n} className="t-order-row">
-                      <div className="t-order-info"><span className="t-oname">{o.n}</span><span className="t-oestado" style={{color:o.c}}>{o.e}</span></div>
-                      <div className="t-pbar"><div className="t-pfill" style={{width:`${o.p}%`,background:o.c}} /></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="t-notif">
-                  <div className="t-notif-icon"><MessageCircle size={14} color="#22c55e" /></div>
-                  <div className="t-notif-body"><span className="t-ntitle">Carlos M. aprobó la reparación</span><span className="t-nsub">Vía WhatsApp · hace 2 min</span></div>
-                  <span className="t-nbadge">Nuevo</span>
-                </div>
-              </div>
+            <div className="t-hero-img-wrap">
+              <img src="/og-image.png" alt="TallerOS Dashboard" className="t-hero-img" />
+              <div className="t-hero-img-glow" />
             </div>
           </div>
         </div>
       </section>
+
+      {/* MARQUEE */}
+      <div className="t-marquee-wrap">
+        <div className="t-marquee-track">
+          {[...MARQUEE,...MARQUEE].map((item,i) => (
+            <span key={i} className="t-mitem">{item}<span className="t-mdot">·</span></span>
+          ))}
+        </div>
+      </div>
 
       {/* TABLA SIN/CON */}
       <section className="t-versus-section">
@@ -267,35 +281,24 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="t-versus-ctas">
-            <a href="/registro" className="t-btn-primary">Empieza gratis — sin tarjeta <ArrowRight size={17} /></a>
-            <a href="https://wa.me/TUNUMERO?text=Hola%2C%20quiero%20una%20demo%20de%20TallerOS" target="_blank" rel="noopener noreferrer" className="t-btn-whatsapp">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.862L.057 23.571a.75.75 0 00.921.921l5.709-1.475A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 01-4.988-1.373l-.357-.214-3.706.957.977-3.596-.233-.37A9.713 9.713 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
-              Hablar por WhatsApp
-            </a>
+            <a href="/registro" className="t-btn-primary">Empezar gratis — sin tarjeta <ArrowRight size={17} /></a>
           </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
-      <div className="t-marquee-wrap">
-        <div className="t-marquee-track">
-          {[...MARQUEE,...MARQUEE].map((item,i) => (
-            <span key={i} className="t-mitem">{item}<span className="t-mdot">·</span></span>
-          ))}
-        </div>
-      </div>
-
       {/* STATS */}
       <section id="por-que" className="t-section t-stats-section">
         <div className="t-inner">
-          <p className="t-versus-pregunta">¿Sabes por qué tus clientes no regresan?</p>
-          <div className="t-slabel">La realidad del mercado automotriz en LATAM</div>
+          <div className="t-slabel">La realidad del mercado</div>
           <h2 className="t-sh2">Los números que tu competencia ignora</h2>
+          <p className="t-ssub">Mientras la mayoría de talleres opera igual que hace 20 años, los que usan TallerOS ya van adelante.</p>
           <div className="t-stats-grid">
             {STATS_DATA.map((s,i) => (
               <div key={i} id={`st-${i}`} data-animate className={`t-stat-card ${isV(`st-${i}`)?'vis':''}`} style={{transitionDelay:`${i*80}ms`}}>
-                <div className="t-stat-icon-wrap"><s.icon size={22} className="t-stat-icon" /></div>
-                <div className="t-stat-val">{s.valor}</div>
+                <div className="t-stat-icon-wrap" style={{background: s.gradient, boxShadow:`0 8px 24px ${s.glow}`}}>
+                  <s.icon size={22} color="#fff" />
+                </div>
+                <div className="t-stat-val" style={{background: s.gradient, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text'}}>{s.valor}</div>
                 <p className="t-stat-txt">{s.texto}</p>
               </div>
             ))}
@@ -315,9 +318,14 @@ export default function LandingPage() {
           <div className="t-modules-grid">
             {MODULOS.map((m,i) => (
               <div key={i} id={`mod-${i}`} data-animate className={`t-module-card ${isV(`mod-${i}`)?'vis':''}`} style={{transitionDelay:`${i*60}ms`}}>
-                <div className="t-module-icon"><m.icon size={22} color="#2563eb" /></div>
+                <div className="t-module-icon" style={{background: m.bg, border:`1px solid ${m.color}30`}}>
+                  <m.icon size={24} color={m.color} />
+                </div>
                 <h3 className="t-module-label">{m.label}</h3>
                 <p className="t-module-desc">{m.desc}</p>
+                <div className="t-module-arrow" style={{color: m.color}}>
+                  <ArrowRight size={14} />
+                </div>
               </div>
             ))}
           </div>
@@ -325,7 +333,7 @@ export default function LandingPage() {
       </section>
 
       {/* DIFERENCIADORES */}
-      <section id="caracteristicas" className="t-section">
+      <section id="caracteristicas" className="t-section t-features-section">
         <div className="t-inner">
           <div className="t-slabel">Por qué nos eligen</div>
           <h2 className="t-sh2">6 herramientas que transforman tu taller en 30 días</h2>
@@ -334,13 +342,21 @@ export default function LandingPage() {
             {DIFERENCIADORES.map((d,i) => (
               <div key={i} id={`dif-${i}`} data-animate className={`t-feature-card ${isV(`dif-${i}`)?'vis':''}`} style={{transitionDelay:`${i*70}ms`}}>
                 <div className="t-feature-top">
-                  <div className="t-ficon" style={{background:`${d.color}18`}}><d.icon size={20} color={d.color} /></div>
-                  <span className="t-ftag" style={{color:d.color,background:`${d.color}12`}}>{d.tag}</span>
+                  <div className="t-ficon" style={{background: d.gradient, boxShadow:`0 8px 20px rgba(0,0,0,0.3)`}}>
+                    <d.icon size={22} color="#fff" />
+                  </div>
+                  <span className="t-ftag">{d.tag}</span>
                 </div>
                 <h3 className="t-ftitle">{d.titulo}</h3>
                 <p className="t-fdesc">{d.desc}</p>
+                <div className="t-feature-bottom">
+                  <a href="/registro" className="t-feature-link">Conocer más <ArrowRight size={13} /></a>
+                </div>
               </div>
             ))}
+          </div>
+          <div className="t-features-cta">
+            <a href="/registro" className="t-btn-primary">Probar todas las funciones gratis <ArrowRight size={17} /></a>
           </div>
         </div>
       </section>
@@ -350,12 +366,14 @@ export default function LandingPage() {
         <div className="t-inner">
           <div className="t-slabel">Lo que dicen nuestros clientes</div>
           <h2 className="t-sh2">Talleres que ya dieron el salto</h2>
-          <p className="t-ssub">Dueños de talleres en LATAM comparten su experiencia con TallerOS.</p>
+          <p className="t-ssub">Dueños de talleres comparten su experiencia con TallerOS.</p>
           <div className="t-testi-grid">
             {TESTIMONIALES.map((t,i) => (
               <div key={i} id={`tes-${i}`} data-animate className={`t-testi-card ${isV(`tes-${i}`)?'vis':''}`} style={{transitionDelay:`${i*100}ms`}}>
-                <div className="t-stars">{'★'.repeat(t.estrellas)}</div>
-                <Quote size={18} className="t-quote-icon" />
+                <div className="t-testi-top">
+                  <div className="t-stars">{'★'.repeat(t.estrellas)}</div>
+                  <Quote size={18} className="t-quote-icon" />
+                </div>
                 <p className="t-testi-text">{t.texto}</p>
                 <div className="t-testi-author">
                   <div className="t-testi-avatar" style={{background:t.color}}>{t.inicial}</div>
@@ -368,12 +386,22 @@ export default function LandingPage() {
       </section>
 
       {/* PRECIOS */}
-      <section id="precios" className="t-section">
+      <section id="precios" className="t-section t-pricing-section">
         <div className="t-inner">
+          {/* OFFER BAR DENTRO DE PRECIOS */}
+          <div className="t-offer-inline">
+            <span className="t-offer-tag">🔥 OFERTA DE LANZAMIENTO — 50% OFF</span>
+            <span className="t-offer-timer">
+              Termina en{' '}
+              <strong className="t-offer-count">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong>
+            </span>
+          </div>
+
           <p className="t-versus-pregunta">¿Cuánto te cuesta al mes perder clientes por falta de seguimiento?</p>
-          <div className="t-slabel">Precios de lanzamiento — 50% OFF</div>
+          <div className="t-slabel">Precios de lanzamiento</div>
           <h2 className="t-sh2">Sin sorpresas. Sin letra chica.</h2>
           <p className="t-ssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
+
           <div className="t-toggle-wrap">
             <div className="t-toggle">
               {['Mensual','Anual'].map((label,i) => (
@@ -383,45 +411,62 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
+
           <div className="t-ptrust">
-            {[[Check,'Sin tarjeta de crédito','Para empezar'],[ArrowRight,'Cancela cuando quieras','Sin penalizaciones'],[Shield,'Pago seguro','Powered by Stripe'],[Monitor,'Datos protegidos','Encriptación total']].map(([Icon,label,sub]:any,i) => (
+            {[[Check,'Sin tarjeta de crédito','Para empezar'],[Shield,'Pago seguro','Powered by Stripe'],[Monitor,'Datos protegidos','Encriptación total'],[ArrowRight,'Cancela cuando quieras','Sin penalizaciones']].map(([Icon,label,sub]:any,i) => (
               <div key={i} className="t-ptrust-item"><Icon size={16} className="t-ptrust-icon" /><div><p className="t-ptrust-label">{label}</p><p className="t-ptrust-sub">{sub}</p></div></div>
             ))}
           </div>
+
           <div className="t-plans-grid">
             {PLANES.map(plan => {
-              const pa = anual ? plan.precio_anual : plan.precio_mensual
-              const la = convertir(pa)
+              const pa  = anual ? plan.precio_anual : plan.precio_mensual
+              const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
+              const la  = convertir(pa)
+              const lor = convertir(por)
               const lan = convertir(plan.total_anual)
+              const descuento = Math.round((1 - pa / por) * 100)
               return (
                 <div key={plan.nombre} className={`t-plan ${plan.popular?'popular':''}`}>
-                  {plan.popular && <div className="t-plan-badge">Más popular</div>}
+                  {plan.popular && <div className="t-plan-badge">⭐ Más popular</div>}
                   <div className="t-plan-hdr">
                     <div className="t-plan-icon"><plan.icono size={18} /></div>
                     <h3 className="t-plan-name">{plan.nombre}</h3>
+                    <span className="t-plan-descuento">-{descuento}%</span>
                   </div>
                   <div className="t-plan-oferta"><span className="t-odot" /><span>Oferta exclusiva para nuevos talleres</span></div>
-                  <div className="t-plan-price">
-                    <span className="t-poriginal">
-                      ${anual ? plan.precio_original_anual : plan.precio_original_mensual} USD
-                    </span>
-                    {!cargandoMoneda && la ? <><span className="t-pnum">{la}</span><span className="t-pper">/mes</span></> : <><span className="t-pnum">${pa} USD</span><span className="t-pper">/mes</span></>}
+
+                  <div className="t-plan-price-block">
+                    <div className="t-poriginal-row">
+                      <span className="t-poriginal">{!cargandoMoneda && lor ? lor : `$${por} USD`}</span>
+                      <span className="t-pahorras">Ahorras {descuento}%</span>
+                    </div>
+                    <div className="t-plan-price">
+                      {!cargandoMoneda && la
+                        ? <><span className="t-pnum">{la}</span><span className="t-pper">/mes</span></>
+                        : <><span className="t-pnum">${pa} USD</span><span className="t-pper">/mes</span></>}
+                    </div>
+                    {anual && <p className="t-plan-annual">{!cargandoMoneda && lan ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>}
                   </div>
-                  {anual && <p className="t-plan-annual">{!cargandoMoneda && lan ? `${lan} facturado anualmente` : `$${plan.total_anual} USD facturado anualmente`}</p>}
+
                   <div className="t-pdivider" />
                   <ul className="t-plan-features">
                     {plan.features.map(f => (
                       <li key={f}><span className="t-fcheck"><Check size={11} strokeWidth={3} /></span>{f}</li>
                     ))}
                   </ul>
-                  <a href="/registro" className={`t-plan-cta ${plan.popular?'popular':''}`}>Empezar prueba gratis <ArrowRight size={15} /></a>
+                  <a href="/registro" className={`t-plan-cta ${plan.popular?'popular':''}`}>
+                    Empezar 14 días gratis <ArrowRight size={15} />
+                  </a>
+                  <p className="t-plan-note">Sin tarjeta de crédito requerida</p>
                 </div>
               )
             })}
           </div>
+
           <div className="t-social-proof">
             <div className="t-avatars">
-              {['#2563eb','#0891b2','#2563eb','#f59e0b'].map((c,i) => (
+              {['#2563eb','#0891b2','#7c3aed','#f59e0b'].map((c,i) => (
                 <div key={i} className="t-avatar" style={{background:c,marginLeft:i===0?0:-8}}>T</div>
               ))}
             </div>
@@ -451,7 +496,7 @@ export default function LandingPage() {
             <div className="t-logo-img sm"><img src="/icon-512.png" alt="TallerOS" /></div>
             <span className="t-logo-text sm">Taller<span className="t-accent">OS</span></span>
           </div>
-          <p className="t-footer-copy">© 2026 TallerOS. Gestión inteligente para talleres en LATAM.</p>
+          <p className="t-footer-copy">© 2026 TallerOS. Gestión inteligente para talleres mecánicos.</p>
           <div className="t-footer-links">
             {[{label:'Privacidad',href:'/privacidad'},{label:'Términos',href:'/terminos'},{label:'Soporte',href:'mailto:hola@tallerosapp.com'}].map(l => (
               <a key={l.label} href={l.href}>{l.label}</a>
@@ -473,16 +518,24 @@ export default function LandingPage() {
         }
         .t-root{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;}
 
+        /* TOAST */
+        .t-toast{position:fixed;bottom:24px;left:24px;z-index:200;display:flex;align-items:center;gap:10px;background:rgba(7,13,28,0.95);border:1px solid rgba(37,99,235,0.3);border-radius:14px;padding:12px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(37,99,235,0.15);backdrop-filter:blur(16px);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);}
+        @keyframes toastIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+        .t-toast-icon{font-size:1.1rem;}
+        .t-toast-text{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;}
+        .t-toast-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;margin-left:4px;transition:color .15s;}
+        .t-toast-close:hover{color:var(--text);}
+
         /* NAV */
         .t-nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent;}
         .t-nav.scrolled{background:rgba(4,8,15,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom-color:var(--border);}
-        .t-nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 24px;}
-        .t-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-        .t-logo-img{width:30px;height:30px;border-radius:8px;overflow:hidden;}
+        .t-nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 24px;}
+        .t-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+        .t-logo-img{width:38px;height:38px;border-radius:10px;overflow:hidden;}
         .t-logo-img img{width:100%;height:100%;object-fit:contain;}
-        .t-logo-img.sm{width:26px;height:26px;}
-        .t-logo-text{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.5px;}
-        .t-logo-text.sm{font-size:15px;}
+        .t-logo-img.sm{width:28px;height:28px;}
+        .t-logo-text{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+        .t-logo-text.sm{font-size:16px;}
         .t-accent{color:var(--blue);}
         .t-nav-links{display:flex;align-items:center;gap:28px;}
         .t-nav-link{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;}
@@ -508,33 +561,9 @@ export default function LandingPage() {
         .t-orb2{width:400px;height:400px;bottom:0;right:-60px;background:radial-gradient(circle,rgba(8,145,178,0.08) 0%,transparent 70%);}
         .t-hero-inner{max-width:1280px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;}
         .t-hero-left{display:flex;flex-direction:column;gap:22px;}
-        .t-dolor{font-size:1rem;font-weight:600;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:0.6rem 1rem;margin-bottom:1.25rem;line-height:1.4;max-width:480px;}
-.t-btn-whatsapp{display:inline-flex;align-items:center;gap:0.5rem;background:#16a34a;color:#fff;font-weight:700;font-size:0.95rem;padding:0.75rem 1.5rem;border-radius:10px;text-decoration:none;transition:background 0.2s;}
-.t-btn-whatsapp:hover{background:#15803d;}
-.t-versus-section{padding:80px 24px;background:linear-gradient(180deg,#0a0f1a 0%,#060d1a 100%);}
-.t-versus-inner{max-width:900px;margin:0 auto;}
-.t-versus-pregunta{text-align:center;color:#dc2626;font-weight:600;font-size:1rem;margin-bottom:0.5rem;}
-.t-versus-titulo{text-align:center;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:2.5rem;}
-.t-versus-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;}
-.t-versus-col{border-radius:16px;overflow:hidden;}
-.t-versus-sin{background:#1a0a0a;border:1px solid #3f1515;}
-.t-versus-con{background:#0a1a0f;border:1px solid #14532d;}
-.t-versus-col-header{display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;font-weight:700;font-size:1rem;}
-.t-versus-sin .t-versus-col-header{background:#2d0f0f;color:#f87171;}
-.t-versus-con .t-versus-col-header{background:#0f2d1a;color:#4ade80;}
-.t-versus-icon-bad{font-size:1.2rem;color:#ef4444;}
-.t-versus-icon-good{font-size:1.2rem;color:#22c55e;}
-.t-versus-row{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);font-size:0.875rem;line-height:1.4;}
-.t-versus-sin .t-versus-row{color:#fca5a5;}
-.t-versus-con .t-versus-row{color:#86efac;}
-.t-versus-x{color:#ef4444;font-weight:700;flex-shrink:0;margin-top:1px;}
-.t-versus-check{color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;}
-.t-versus-ctas{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
-@media(max-width:640px){.t-versus-table{grid-template-columns:1fr;}.t-versus-section{padding:60px 16px;}}
         .t-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
-        .t-eyebrow-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pg 2s ease-in-out infinite;}
+        .t-eyebrow-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pg 2s ease-in-out infinite;flex-shrink:0;}
         @keyframes pg{0%,100%{box-shadow:0 0 6px #22c55e;}50%{box-shadow:0 0 14px #22c55e;}}
-        .t-activity{display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.18);border-radius:999px;padding:6px 14px;width:fit-content;font-size:13px;font-weight:600;color:#86efac;}
         .t-h1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2.5px;color:#f8fafc;}
         .t-typewriter{display:block;background:linear-gradient(135deg,#2563eb,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;min-height:1.1em;}
         .t-cursor{-webkit-text-fill-color:#2563eb;animation:blink .9s step-end infinite;font-weight:300;}
@@ -550,37 +579,12 @@ export default function LandingPage() {
         .t-trust-pill{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--dim);}
         .t-check{color:#22c55e;}
 
-        /* MOCK */
-        .t-hero-right{display:flex;justify-content:center;}
-        .t-mockup{width:100%;max-width:520px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.05);animation:fl 6s ease-in-out infinite;}
-        @keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-        .t-mockup-bar{background:var(--bg-mid);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
-        .t-dots{display:flex;gap:5px;}
-        .td{width:10px;height:10px;border-radius:50%;}
-        .td.red{background:#ef4444;}.td.yellow{background:#f59e0b;}.td.green{background:#22c55e;}
-        .t-url{flex:1;background:rgba(255,255,255,0.04);border-radius:6px;padding:4px 10px;font-size:10px;color:var(--dim);font-family:'Geist Mono',monospace;}
-        .t-mockup-body{padding:14px;display:flex;flex-direction:column;gap:12px;}
-        .t-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-        .t-metric{background:var(--bg-mid);border-radius:10px;padding:10px;}
-        .t-mlabel{display:block;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-        .t-mval{font-size:17px;font-weight:800;letter-spacing:-.5px;}
-        .t-orders{background:var(--bg-mid);border-radius:12px;padding:12px;}
-        .t-orders-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-        .t-orders-lbl{font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
-        .t-orders-badge{font-size:9px;font-weight:700;color:var(--blue);background:rgba(37,99,235,0.15);padding:2px 8px;border-radius:999px;}
-        .t-order-row{margin-bottom:10px;}
-        .t-order-row:last-child{margin-bottom:0;}
-        .t-order-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-        .t-oname{font-size:10px;font-weight:600;color:var(--text);}
-        .t-oestado{font-size:9px;font-weight:700;}
-        .t-pbar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
-        .t-pfill{height:100%;border-radius:2px;}
-        .t-notif{display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:10px 12px;}
-        .t-notif-icon{width:28px;height:28px;border-radius:8px;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-        .t-notif-body{flex:1;}
-        .t-ntitle{display:block;font-size:11px;font-weight:600;color:var(--text);}
-        .t-nsub{display:block;font-size:9px;color:var(--muted);margin-top:1px;}
-        .t-nbadge{font-size:9px;font-weight:700;color:#22c55e;background:rgba(34,197,94,0.15);padding:2px 7px;border-radius:999px;white-space:nowrap;}
+        /* HERO IMAGE */
+        .t-hero-right{display:flex;justify-content:center;align-items:center;}
+        .t-hero-img-wrap{position:relative;width:100%;max-width:560px;}
+        .t-hero-img{width:100%;border-radius:20px;box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);animation:fl 6s ease-in-out infinite;}
+        .t-hero-img-glow{position:absolute;inset:-20px;border-radius:40px;background:radial-gradient(ellipse at 50% 50%,rgba(37,99,235,0.15) 0%,transparent 70%);pointer-events:none;z-index:-1;}
+        @keyframes fl{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-12px) rotate(0.5deg);}}
 
         /* MARQUEE */
         .t-marquee-wrap{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;padding:14px 0;background:rgba(255,255,255,0.012);}
@@ -589,63 +593,105 @@ export default function LandingPage() {
         .t-mitem{font-size:13px;font-weight:500;color:var(--dim);white-space:nowrap;}
         .t-mdot{margin:0 20px;color:var(--blue);}
 
+        /* VERSUS */
+        .t-versus-section{padding:80px 24px;background:linear-gradient(180deg,#0a0f1a 0%,#060d1a 100%);}
+        .t-versus-inner{max-width:900px;margin:0 auto;}
+        .t-versus-pregunta{text-align:center;color:#dc2626;font-weight:600;font-size:1rem;margin-bottom:0.5rem;}
+        .t-versus-titulo{text-align:center;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:2.5rem;}
+        .t-versus-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;}
+        .t-versus-col{border-radius:16px;overflow:hidden;}
+        .t-versus-sin{background:#1a0a0a;border:1px solid #3f1515;}
+        .t-versus-con{background:#0a1a0f;border:1px solid #14532d;}
+        .t-versus-col-header{display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;font-weight:700;font-size:1rem;}
+        .t-versus-sin .t-versus-col-header{background:#2d0f0f;color:#f87171;}
+        .t-versus-con .t-versus-col-header{background:#0f2d1a;color:#4ade80;}
+        .t-versus-icon-bad{font-size:1.2rem;color:#ef4444;}
+        .t-versus-icon-good{font-size:1.2rem;color:#22c55e;}
+        .t-versus-row{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);font-size:0.875rem;line-height:1.4;}
+        .t-versus-sin .t-versus-row{color:#fca5a5;}
+        .t-versus-con .t-versus-row{color:#86efac;}
+        .t-versus-x{color:#ef4444;font-weight:700;flex-shrink:0;margin-top:1px;}
+        .t-versus-check{color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;}
+        .t-versus-ctas{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
+        @media(max-width:640px){.t-versus-table{grid-template-columns:1fr;}.t-versus-section{padding:60px 16px;}}
+
         /* SHARED */
         .t-inner{max-width:1200px;margin:0 auto;padding:0 24px;}
         .t-section{padding:80px 0;}
         .t-slabel{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:center;}
         .t-sh2{font-size:clamp(26px,4vw,48px);font-weight:900;letter-spacing:-2px;line-height:1.05;color:#f8fafc;text-align:center;margin-bottom:12px;}
-        .t-ssub{font-size:15px;color:var(--muted);text-align:center;max-width:500px;margin:0 auto 56px;line-height:1.7;}
+        .t-ssub{font-size:15px;color:var(--muted);text-align:center;max-width:540px;margin:0 auto 56px;line-height:1.7;}
 
         /* STATS */
         .t-stats-section{padding:80px 0;position:relative;}
-        .t-stats-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.08) 0%,transparent 70%);pointer-events:none;}
-        .t-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:48px;}
-        .t-stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s;}
+        .t-stats-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.06) 0%,transparent 70%);pointer-events:none;}
+        .t-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:48px;}
+        .t-stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px 28px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;}
+        .t-stat-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;border-radius:20px;}
         .t-stat-card.vis{opacity:1;transform:translateY(0);}
-        .t-stat-card:hover{border-color:rgba(37,99,235,0.3);}
-        .t-stat-icon{color:var(--blue);margin-bottom:16px;}
-        .t-stat-val{font-size:clamp(36px,6vw,52px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;margin-bottom:10px;}
-        .t-stat-txt{font-size:13px;color:var(--muted);line-height:1.6;}
-        .t-stat-icon-wrap{width:44px;height:44px;border-radius:12px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
-        .t-stats-cta{display:flex;justify-content:center;margin-top:3rem;}
-        .t-poriginal{display:block;font-size:0.85rem;color:#6b7280;text-decoration:line-through;margin-bottom:0.25rem;}
+        .t-stat-card:hover{border-color:rgba(37,99,235,0.3);box-shadow:0 20px 48px rgba(0,0,0,0.3);transform:translateY(-4px);}
+        .t-stat-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;}
+        .t-stat-val{font-size:clamp(42px,6vw,56px);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:12px;}
+        .t-stat-txt{font-size:14px;color:#94a3b8;line-height:1.6;font-weight:500;}
+        .t-stats-cta{display:flex;justify-content:center;margin-top:3.5rem;}
 
         /* MODULES */
         .t-modules-section{background:rgba(255,255,255,0.012);}
         .t-modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-        .t-module-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:24px;text-align:center;opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease,border-color .25s;}
+        .t-module-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px 24px;opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease,border-color .25s,box-shadow .25s;cursor:pointer;position:relative;overflow:hidden;}
+        .t-module-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+        .t-module-card:hover::after{transform:scaleX(1);}
         .t-module-card.vis{opacity:1;transform:translateY(0);}
-        .t-module-card:hover{border-color:rgba(37,99,235,0.35);transform:translateY(-5px);box-shadow:0 16px 40px rgba(37,99,235,0.1);}
-        .t-module-icon{width:52px;height:52px;border-radius:14px;background:rgba(37,99,235,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
-        .t-module-label{font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
-        .t-module-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+        .t-module-card:hover{border-color:rgba(37,99,235,0.3);transform:translateY(-6px);box-shadow:0 20px 48px rgba(37,99,235,0.12);}
+        .t-module-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:transform .25s;}
+        .t-module-card:hover .t-module-icon{transform:scale(1.1);}
+        .t-module-label{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
+        .t-module-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+        .t-module-arrow{display:flex;align-items:center;opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s;}
+        .t-module-card:hover .t-module-arrow{opacity:1;transform:translateX(0);}
 
         /* FEATURES */
-        .t-features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
-        .t-feature-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px;opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease,border-color .2s;}
+        .t-features-section{background:linear-gradient(180deg,var(--bg) 0%,rgba(7,13,28,0.8) 100%);}
+        .t-features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+        .t-feature-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px;opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
+        .t-feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);}
         .t-feature-card.vis{opacity:1;transform:translateY(0);}
-        .t-feature-card:hover{border-color:rgba(37,99,235,0.3);}
-        .t-feature-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-        .t-ficon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;}
-        .t-ftag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
-        .t-ftitle{font-size:17px;font-weight:800;color:#f1f5f9;margin-bottom:10px;}
-        .t-fdesc{font-size:14px;color:var(--muted);line-height:1.75;}
+        .t-feature-card:hover{border-color:rgba(37,99,235,0.25);box-shadow:0 24px 56px rgba(0,0,0,0.35);transform:translateY(-4px);}
+        .t-feature-top{display:flex;align-items:center;justify-content:space-between;}
+        .t-ficon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .t-ftag{font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.07);color:#94a3b8;border:1px solid rgba(255,255,255,0.08);letter-spacing:.3px;}
+        .t-ftitle{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1.2;}
+        .t-fdesc{font-size:14px;color:#64748b;line-height:1.75;flex:1;}
+        .t-feature-bottom{margin-top:auto;padding-top:8px;}
+        .t-feature-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;transition:gap .2s;}
+        .t-feature-link:hover{gap:10px;}
+        .t-features-cta{display:flex;justify-content:center;margin-top:3rem;}
 
         /* TESTIMONIALES */
         .t-testi-section{background:rgba(255,255,255,0.012);}
         .t-testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-        .t-testi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s;}
+        .t-testi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s;display:flex;flex-direction:column;gap:16px;}
         .t-testi-card.vis{opacity:1;transform:translateY(0);}
-        .t-testi-card:hover{border-color:rgba(37,99,235,0.3);}
-        .t-stars{color:#f59e0b;font-size:14px;letter-spacing:2px;margin-bottom:12px;}
-        .t-quote-icon{color:var(--blue);opacity:.4;margin-bottom:10px;}
-        .t-testi-text{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:20px;font-style:italic;}
-        .t-testi-author{display:flex;align-items:center;gap:12px;}
-        .t-testi-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+        .t-testi-card:hover{border-color:rgba(37,99,235,0.25);transform:translateY(-4px);}
+        .t-testi-top{display:flex;align-items:center;justify-content:space-between;}
+        .t-stars{color:#f59e0b;font-size:15px;letter-spacing:3px;}
+        .t-quote-icon{color:var(--blue);opacity:.35;}
+        .t-testi-text{font-size:14px;color:#94a3b8;line-height:1.8;font-style:italic;flex:1;}
+        .t-testi-author{display:flex;align-items:center;gap:12px;padding-top:8px;border-top:1px solid var(--border);}
+        .t-testi-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;}
         .t-testi-name{font-size:14px;font-weight:700;color:#f1f5f9;}
         .t-testi-rol{font-size:12px;color:var(--dim);margin-top:2px;}
 
         /* PRICING */
+        .t-pricing-section{position:relative;}
+        .t-pricing-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.07) 0%,transparent 60%);pointer-events:none;}
+
+        /* OFFER INLINE */
+        .t-offer-inline{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;background:linear-gradient(90deg,rgba(220,38,38,0.15),rgba(185,28,28,0.15));border:1px solid rgba(220,38,38,0.3);border-radius:14px;padding:14px 24px;margin-bottom:2rem;}
+        .t-offer-tag{font-size:13px;font-weight:800;color:#fca5a5;letter-spacing:.5px;}
+        .t-offer-timer{font-size:13px;color:#fda4af;}
+        .t-offer-count{font-family:'Geist Mono',monospace;font-weight:700;font-size:15px;color:#fff;background:rgba(220,38,38,0.4);padding:2px 8px;border-radius:6px;letter-spacing:.05em;}
+
         .t-toggle-wrap{display:flex;justify-content:center;margin-bottom:24px;}
         .t-toggle{display:inline-flex;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;}
         .t-tbtn{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:all .2s;font-family:inherit;}
@@ -656,31 +702,37 @@ export default function LandingPage() {
         .t-ptrust-icon{color:var(--blue);flex-shrink:0;}
         .t-ptrust-label{font-size:13px;font-weight:700;color:#e2e8f0;}
         .t-ptrust-sub{font-size:11px;color:var(--dim);margin-top:1px;}
-        .t-plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:860px;margin:0 auto;}
-        .t-plan{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rl);padding:32px;position:relative;transition:border-color .2s,transform .2s;}
-        .t-plan:hover{transform:translateY(-3px);}
-        .t-plan.popular{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 20px 60px rgba(37,99,235,0.18);}
-        .t-plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:4px 16px;border-radius:999px;letter-spacing:.5px;white-space:nowrap;text-transform:uppercase;}
-        .t-plan-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+        .t-plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto;}
+        .t-plan{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rl);padding:36px 32px;position:relative;transition:border-color .2s,transform .2s,box-shadow .2s;}
+        .t-plan:hover{transform:translateY(-4px);box-shadow:0 24px 56px rgba(0,0,0,0.35);}
+        .t-plan.popular{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 24px 64px rgba(37,99,235,0.2);}
+        .t-plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;letter-spacing:.5px;white-space:nowrap;text-transform:uppercase;box-shadow:0 4px 12px rgba(37,99,235,0.4);}
+        .t-plan-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
         .t-plan-icon{width:36px;height:36px;border-radius:10px;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;color:var(--blue);}
-        .t-plan-name{font-size:20px;font-weight:800;color:#f8fafc;}
-        .t-plan-oferta{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:999px;padding:4px 12px;margin-bottom:14px;font-size:11px;font-weight:600;color:#86efac;}
-        .t-odot{width:5px;height:5px;background:#22c55e;border-radius:50%;}
-        .t-plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:6px;}
-        .t-pnum{font-size:clamp(32px,5vw,46px);font-weight:900;color:var(--blue);letter-spacing:-2px;}
+        .t-plan-name{font-size:22px;font-weight:900;color:#f8fafc;flex:1;}
+        .t-plan-descuento{font-size:12px;font-weight:800;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;padding:3px 10px;border-radius:999px;}
+        .t-plan-oferta{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:999px;padding:4px 12px;margin-bottom:20px;font-size:11px;font-weight:600;color:#86efac;}
+        .t-odot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pg 2s ease-in-out infinite;}
+        .t-plan-price-block{background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.12);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
+        .t-poriginal-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+        .t-poriginal{font-size:15px;color:#64748b;text-decoration:line-through;font-weight:500;}
+        .t-pahorras{font-size:11px;font-weight:800;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:999px;border:1px solid rgba(34,197,94,0.25);}
+        .t-plan-price{display:flex;align-items:baseline;gap:4px;}
+        .t-pnum{font-size:clamp(34px,5vw,48px);font-weight:900;color:var(--blue);letter-spacing:-2px;}
         .t-pper{font-size:14px;color:var(--dim);}
-        .t-plan-annual{font-size:12px;color:var(--dim);margin-bottom:14px;}
+        .t-plan-annual{font-size:12px;color:var(--dim);margin-top:6px;}
         .t-pdivider{height:1px;background:var(--border);margin:20px 0;}
-        .t-plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
-        .t-plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--muted);}
+        .t-plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+        .t-plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#94a3b8;}
         .t-fcheck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;color:var(--blue);}
-        .t-plan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);color:#93c5fd;font-size:15px;font-weight:700;text-decoration:none;padding:13px 20px;border-radius:12px;transition:all .2s;}
+        .t-plan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);color:#93c5fd;font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
         .t-plan-cta:hover{background:rgba(37,99,235,0.2);color:#fff;}
         .t-plan-cta.popular{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 8px 24px rgba(37,99,235,0.4);}
-        .t-plan-cta.popular:hover{background:#1d4ed8;}
-        .t-social-proof{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:40px;}
+        .t-plan-cta.popular:hover{background:#1d4ed8;box-shadow:0 12px 32px rgba(37,99,235,0.5);}
+        .t-plan-note{text-align:center;font-size:11px;color:var(--dim);margin-top:10px;}
+        .t-social-proof{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:48px;}
         .t-avatars{display:flex;}
-        .t-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+        .t-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
         .t-sproof-text{font-size:13px;color:var(--muted);}
         .t-sproof-text strong{color:#e2e8f0;}
 
@@ -690,7 +742,7 @@ export default function LandingPage() {
         .t-cta-orb{position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(37,99,235,0.15),transparent);}
         .t-cta-h2{font-size:clamp(28px,4.5vw,52px);font-weight:900;letter-spacing:-2px;color:#f8fafc;margin:12px 0;}
         .t-cta-sub{font-size:clamp(14px,1.8vw,17px);color:var(--muted);line-height:1.7;margin-bottom:36px;}
-        .t-cta-btns{display:flex;flex-direction:column;align-items:center;gap:12px;}
+        .t-cta-btns{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;}
 
         /* FOOTER */
         .t-footer{border-top:1px solid var(--border);padding:32px 24px;}
@@ -721,9 +773,11 @@ export default function LandingPage() {
           .t-ptrust{flex-direction:column;align-items:center;}
           .t-ptrust-item{width:100%;max-width:320px;}
           .t-cta-btns .t-btn-primary,.t-cta-btns .t-btn-ghost{width:100%;max-width:320px;}
+          .t-offer-inline{flex-direction:column;gap:.75rem;text-align:center;}
+          .t-toast{left:12px;right:12px;bottom:16px;}
         }
       `}</style>
       </div>
     </>
-  );
+  )
 }
