@@ -146,8 +146,13 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
           </div>
           <span className="text-white font-bold text-sm truncate max-w-[160px]">{nombreTaller}</span>
         </Link>
-        <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1">
+        <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1 relative">
           {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {citasPendientes > 0 && !menuMovil && (
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+              {citasPendientes > 9 ? '9+' : citasPendientes}
+            </span>
+          )}
         </button>
       </div>
 
@@ -155,22 +160,31 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
       {menuMovil && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMenuMovil(false)}>
           <div className="absolute top-14 left-0 right-0 bg-gray-900 border-b border-gray-800 py-3 px-3 space-y-1" onClick={e => e.stopPropagation()}>
-            {NAV_ITEMS.map(item => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuMovil(false)}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors',
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                )}
-              >
-                <item.icono className="w-4 h-4 flex-shrink-0" />
-                {item.label}
-              </Link>
-            ))}
+            {NAV_ITEMS.map(item => {
+              const esCitas   = item.href === '/citas'
+              const showBadge = esCitas && citasPendientes > 0
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuMovil(false)}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors',
+                    pathname === item.href || pathname.startsWith(item.href + '/')
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  )}
+                >
+                  <item.icono className="w-4 h-4 flex-shrink-0" />
+                  <span className="flex-1">{item.label}</span>
+                  {showBadge && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                      {citasPendientes > 9 ? '9+' : citasPendientes}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
             <div className="border-t border-gray-800 pt-2 mt-2 space-y-1">
               {NAV_BOTTOM.map(item => (
                 <Link
