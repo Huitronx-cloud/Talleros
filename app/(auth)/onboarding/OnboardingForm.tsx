@@ -147,6 +147,18 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
       .from('talleres')
       .update({ onboarding_completo: true })
       .eq('id', tallerId)
+
+    // Email de bienvenida (no bloqueante)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const nombreUsuario = user?.user_metadata?.nombre?.split(' ')[0] ?? 'Propietario'
+      await fetch('/api/email-bienvenida', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ nombreUsuario, nombreTaller }),
+      })
+    } catch {}
+
     setCargando(false)
     router.push('/dashboard')
   }
