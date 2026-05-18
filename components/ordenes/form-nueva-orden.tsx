@@ -8,6 +8,7 @@ import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
 import SelectorCatalogo from './selector-catalogo'
 import { formatMoney } from '@/lib/utils'
+import AutocompleteVehiculo from '@/components/ui/AutocompleteVehiculo'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -271,11 +272,24 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Marca</label>
-                <input type="text" value={vehiculo.marca} onChange={e => setVehiculo(p => ({ ...p, marca: e.target.value }))} placeholder="Toyota" className={INPUT} />
+                <AutocompleteVehiculo
+                  type="marca"
+                  value={vehiculo.marca}
+                  onChange={val => setVehiculo(p => ({ ...p, marca: val, modelo: '' }))}
+                  placeholder="Toyota, BYD, Nissan..."
+                  className={INPUT}
+                />
               </div>
               <div>
                 <label className={LABEL}>Modelo</label>
-                <input type="text" value={vehiculo.modelo} onChange={e => setVehiculo(p => ({ ...p, modelo: e.target.value }))} placeholder="Corolla" className={INPUT} />
+                <AutocompleteVehiculo
+                  type="modelo"
+                  value={vehiculo.modelo}
+                  onChange={val => setVehiculo(p => ({ ...p, modelo: val }))}
+                  placeholder="Corolla, Atto 3..."
+                  className={INPUT}
+                  marcaSeleccionada={vehiculo.marca}
+                />
               </div>
               <div>
                 <label className={LABEL}>Año</label>

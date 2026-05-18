@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import { Cliente, ClienteForm } from '@/types'
 import { crearCliente, editarCliente } from '@/app/(dashboard)/clientes/actions'
+import AutocompleteVehiculo from '@/components/ui/AutocompleteVehiculo'
 
 interface Props {
   cliente?: Cliente | null
@@ -178,22 +179,23 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={LABEL}>Marca</label>
-                  <input
-                    type="text"
+                  <AutocompleteVehiculo
+                    type="marca"
                     value={form.vehiculo_marca ?? ''}
-                    onChange={e => set('vehiculo_marca', e.target.value)}
-                    placeholder="Ej: Toyota"
+                    onChange={val => { set('vehiculo_marca', val); set('vehiculo_modelo', '') }}
+                    placeholder="Toyota, BYD, Nissan..."
                     className={INPUT}
                   />
                 </div>
                 <div>
                   <label className={LABEL}>Modelo</label>
-                  <input
-                    type="text"
+                  <AutocompleteVehiculo
+                    type="modelo"
                     value={form.vehiculo_modelo ?? ''}
-                    onChange={e => set('vehiculo_modelo', e.target.value)}
-                    placeholder="Ej: Corolla"
+                    onChange={val => set('vehiculo_modelo', val)}
+                    placeholder="Corolla, Atto 3..."
                     className={INPUT}
+                    marcaSeleccionada={form.vehiculo_marca ?? ''}
                   />
                 </div>
               </div>
