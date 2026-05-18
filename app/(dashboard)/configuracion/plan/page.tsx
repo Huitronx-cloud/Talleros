@@ -15,6 +15,16 @@ type Suscripcion = {
   stripe_subscription_id: string | null
 }
 
+type Tarjeta = {
+  brand:         string
+  last4:         string
+  exp_month:     string
+  exp_year:      string
+  porVencer:     boolean
+  vencida:       boolean
+  diasRestantes: number
+} | null
+
 const PLANES = {
   esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',
   esencial_anual:   'price_1TVxQORFpmo4G9XHZjkw3iSc',
@@ -24,6 +34,7 @@ const PLANES = {
 
 export default function PlanPage() {
   const [suscripcion,  setSuscripcion]  = useState<Suscripcion | null>(null)
+  const [tarjeta,      setTarjeta]      = useState<Tarjeta>(null)
   const [cargando,     setCargando]     = useState(true)
   const [procesando,   setProcesando]   = useState<string | null>(null)
   const [billingAnual, setBillingAnual] = useState(false)
@@ -51,6 +62,14 @@ export default function PlanPage() {
 
       setSuscripcion(data)
       setCargando(false)
+
+      // Cargar datos de tarjeta si tiene suscripción activa
+      if (data?.plan !== 'trial') {
+        fetch('/api/stripe/tarjeta')
+          .then(r => r.json())
+          .then(d => setTarjeta(d.tarjeta ?? null))
+          .catch(() => {})
+      }
     }
     cargar()
   }, [])
@@ -268,6 +287,56 @@ export default function PlanPage() {
           >
             {procesando === 'portal' ? 'Redirigiendo…' : 'Gestionar suscripción'}
           </button>
+        </div>
+      )}
+
+      {/* Datos de la tarjeta */}
+      {tarjeta && (
+        <div className={`mt-4 rounded-xl p-4 border flex items-center justify-between gap-4 flex-wrap ${
+          tarjeta.vencida
+            ? 'bg-red-50 border-red-200'
+            : tarjeta.porVencer
+            ? 'bg-amber-50 border-amber-200'
+            : 'bg-white border-gray-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-7 rounded flex items-center justify-center text-xs font-bold uppercase ${
+              tarjeta.brand === 'visa'       ? 'bg-blue-600 text-white' :
+              tarjeta.brand === 'mastercard' ? 'bg-red-600 text-white'  :
+              tarjeta.brand === 'amex'       ? 'bg-green-600 text-white' :
+              'bg-gray-700 text-white'
+            }`}>
+              {tarjeta.brand.slice(0, 4)}
+            </div>
+            <div>
+              <p className={`text-sm font-semibold ${
+                tarjeta.vencida ? 'text-red-800' : tarjeta.porVencer ? 'text-amber-800' : 'text-gray-900'
+              }`}>
+                •••• •••• •••• {tarjeta.last4}
+              </p>
+              <p className={`text-xs mt-0.5 ${
+                tarjeta.vencida ? 'text-red-600' : tarjeta.porVencer ? 'text-amber-600' : 'text-gray-500'
+              }`}>
+                {tarjeta.vencida
+                  ? '⚠️ Tarjeta vencida — actualiza tu método de pago'
+                  : tarjeta.porVencer
+                  ? `⚠️ Vence ${tarjeta.exp_month}/${tarjeta.exp_year} — quedan ${tarjeta.diasRestantes} días`
+                  : `Vence ${tarjeta.exp_month}/${tarjeta.exp_year}`
+                }
+              </p>
+            </div>
+          </div>
+          {(tarjeta.vencida || tarjeta.porVencer) && (
+            <button
+              type="button"
+              onClick={abrirPortal}
+              className={`text-xs font-bold px-3 py-2 rounded-lg text-white transition-colors ${
+                tarjeta.vencida ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-500 hover:bg-amber-600'
+              }`}
+            >
+              Actualizar tarjeta
+            </button>
+          )}
         </div>
       )}
     </div>
