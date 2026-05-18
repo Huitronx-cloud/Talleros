@@ -205,13 +205,16 @@ export default async function DashboardPage() {
               <p className="text-blue-300 text-sm font-medium">{saludo}, {nombreUser}</p>
               <h1 className="text-white text-2xl font-bold leading-tight">{taller?.nombre ?? 'Tu taller'}</h1>
             </div>
+            <div className="ml-auto flex items-center gap-2">
+            <PushToggle />
             <Link
               href="/api/exportar"
-              className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors border border-white/10"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors border border-white/10"
             >
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Exportar</span>
             </Link>
+          </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
