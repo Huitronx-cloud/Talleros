@@ -188,18 +188,12 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
             <NavLink key={item.href} {...item} />
           ))}
 
-          {/* Badge de plan — solo cuando sidebar expandido */}
-          {!colapsado && (
+          {/* Badge de plan — solo propietario y admin, sidebar expandido */}
+          {!colapsado && ['propietario', 'admin'].includes(rol) && (
             <div className="px-1 py-2">
               <PlanBadge />
             </div>
           )}
-          {/* Badge de plan — solo propietario y admin */}
-{!colapsado && ['propietario', 'admin'].includes(rol) && (
-  <div className="px-1 py-2">
-    <PlanBadge />
-  </div>
-)}
 
           <button
             onClick={handleLogout}

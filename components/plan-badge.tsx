@@ -92,7 +92,7 @@ export default function PlanBadge() {
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all hover:shadow-md ${config.bg} ${config.text} ${config.border}`}
       >
         <Icono className="w-3.5 h-3.5" />
-        {config.label}
+        {plan === 'pro' ? 'Gestionar suscripción' : config.label}
         {plan !== 'pro' && <ChevronUp className="w-3 h-3 opacity-60" />}
       </button>
 
