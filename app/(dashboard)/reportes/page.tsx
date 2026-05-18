@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { getLimites } from '@/lib/plan-limits'
 import { redirect } from 'next/navigation'
 import ReportesClient from './reportes-client'
@@ -6,7 +7,8 @@ import { Lock } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function ReportesPage() {
-  const supabase = createClient()
+  const supabase        = createClient()
+  const supabaseService = createServiceClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -85,18 +87,18 @@ export default async function ReportesPage() {
     { data: clientes, error: errorClientes },
     { data: cotizaciones, error: errorCotizaciones },
   ] = await Promise.all([
-    supabase
+    supabaseService
       .from('ordenes')
       .select('id, total, estado, created_at, mecanico_asignado, cliente_id, servicios_realizados, tiempo_trabajado_minutos')
       .eq('taller_id', tallerId)
       .gte('created_at', desde)
       .order('created_at', { ascending: true }),
-    supabase
+    supabaseService
       .from('clientes')
       .select('id, created_at')
       .eq('taller_id', tallerId)
       .gte('created_at', desde),
-    supabase
+    supabaseService
       .from('cotizaciones')
       .select('id, estado, created_at')
       .eq('taller_id', tallerId)
