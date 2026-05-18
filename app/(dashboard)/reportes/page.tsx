@@ -103,6 +103,16 @@ export default async function ReportesPage() {
       .gte('created_at', desde),
   ])
 
+  console.log('REPORTES DEBUG:', {
+    tallerId,
+    plan,
+    reportes: limites.reportes,
+    ordenesCount: ordenes?.length ?? 0,
+    ordenesEntregadas: ordenes?.filter(o => o.estado === 'entregado').length ?? 0,
+    totalIngresos: ordenes?.filter(o => o.estado === 'entregado').reduce((a, o) => a + (o.total || 0), 0) ?? 0,
+    moneda: taller?.moneda,
+  })
+
   return (
     <ReportesClient
       ordenes={ordenes ?? []}
