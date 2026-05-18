@@ -69,6 +69,7 @@ export interface Cliente {
   placas: string | null
   vin: string | null
   notas: string | null
+  foto_vehiculo_url: string | null
   created_at: string
 }
 

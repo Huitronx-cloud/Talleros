@@ -5,6 +5,8 @@ import { X, Loader2 } from 'lucide-react'
 import { Cliente, ClienteForm } from '@/types'
 import { crearCliente, editarCliente } from '@/app/(dashboard)/clientes/actions'
 import AutocompleteVehiculo from '@/components/ui/AutocompleteVehiculo'
+import FotoVehiculo from '@/components/ui/FotoVehiculo'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   cliente?: Cliente | null
@@ -42,35 +44,49 @@ function parsearTelefono(tel: string) {
 const FORM_VACIO: ClienteForm = {
   nombre: '', telefono: '', email: '',
   vehiculo_marca: '', vehiculo_modelo: '', vehiculo_año: null, placas: '', vin: '', notas: '',
+  foto_vehiculo_url: null,
 }
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 export default function ModalCliente({ cliente, onCerrar }: Props) {
-  const [form, setForm]       = useState<ClienteForm>(FORM_VACIO)
+  const [form, setForm]             = useState<ClienteForm>(FORM_VACIO)
   const [codigoPais, setCodigoPais] = useState('MX')
   const [cargando, setCargando]     = useState(false)
-  const [error, setError]     = useState('')
+  const [error, setError]           = useState('')
+  const [fotoUrl, setFotoUrl]       = useState<string | null>(null)
+  const [tallerId, setTallerId]     = useState('')
+  const supabase = createClient()
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      createClient().from('usuarios').select('taller_id').eq('id', user.id).single()
+        .then(({ data }) => { if (data) setTallerId(data.taller_id) })
+    })
+  }, [])
 
   useEffect(() => {
     if (cliente) {
       const { codigoPais: cp, numero } = parsearTelefono(cliente.telefono ?? '')
-      setCodigoPais(cp)
       setForm({
-        nombre:          cliente.nombre,
-        telefono:        numero,
-        email:           cliente.email           ?? '',
-        vehiculo_marca:  cliente.vehiculo_marca  ?? '',
-        vehiculo_modelo: cliente.vehiculo_modelo ?? '',
-        vehiculo_año:    cliente.vehiculo_año    ?? null,
-        placas:          cliente.placas          ?? '',
-        vin:             cliente.vin             ?? '',
-        notas:           cliente.notas           ?? '',
+        nombre:             cliente.nombre,
+        telefono:           numero,
+        email:              cliente.email           ?? '',
+        vehiculo_marca:     cliente.vehiculo_marca  ?? '',
+        vehiculo_modelo:    cliente.vehiculo_modelo ?? '',
+        vehiculo_año:       cliente.vehiculo_año    ?? null,
+        placas:             cliente.placas          ?? '',
+        vin:                cliente.vin             ?? '',
+        notas:              cliente.notas           ?? '',
+        foto_vehiculo_url:  cliente.foto_vehiculo_url ?? null,
       })
+      setFotoUrl(cliente.foto_vehiculo_url ?? null)
     } else {
       setCodigoPais('MX')
       setForm(FORM_VACIO)
+      setFotoUrl(null)
     }
     setError('')
   }, [cliente])
@@ -88,6 +104,7 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
     const formConTelefono = {
       ...form,
       telefono: form.telefono ? `${paisSeleccionado?.dial} ${form.telefono}` : '',
+      foto_vehiculo_url: fotoUrl,
     }
     const resultado = cliente
       ? await editarCliente(cliente.id, formConTelefono)
@@ -177,6 +194,15 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
             </p>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className={LABEL}>Foto del vehículo</label>
+                  <FotoVehiculo
+                    tallerId={tallerId}
+                    clienteId={cliente?.id}
+                    fotoActual={fotoUrl}
+                    onFotoChange={setFotoUrl}
+                  />
+                </div>
                 <div>
                   <label className={LABEL}>Marca</label>
                   <AutocompleteVehiculo
