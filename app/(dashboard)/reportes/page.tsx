@@ -106,9 +106,7 @@ export default async function ReportesPage() {
       .gte('created_at', desde),
   ])
 
-console.log('ORDENES RAW:', JSON.stringify(ordenes?.slice(0,2)))
-  console.log('ERROR ORDENES:', errorOrdenes?.message)
-  console.log('TALLER ID:', tallerId)
+console.log('DEBUG REPORTES tallerId:', tallerId, 'ordenes:', ordenes?.length, 'errorOrdenes:', errorOrdenes?.message, 'errorClientes:', errorClientes?.message, 'errorCotizaciones:', errorCotizaciones?.message)
   return (
     <ReportesClient
       ordenes={ordenes ?? []}
