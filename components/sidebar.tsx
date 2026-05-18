@@ -204,7 +204,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
                 </Link>
               ))}
               <div className="px-3 py-2">
-                <PushToggle dark={true} />
+                <PushToggle dark={true} showText={true} />
               </div>
               <button
                 onClick={handleLogout}

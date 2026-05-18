@@ -3,7 +3,7 @@
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Bell, BellOff, Loader2 } from 'lucide-react'
 
-export default function PushToggle({ dark = false }: { dark?: boolean }) {
+export default function PushToggle({ dark = false, showText = false }: { dark?: boolean; showText?: boolean }) {
   const { soportado, permiso, activado, cargando, activar, desactivar } = usePushNotifications()
 
   if (!soportado) return null
@@ -37,7 +37,7 @@ export default function PushToggle({ dark = false }: { dark?: boolean }) {
         ? <Bell className="w-4 h-4 flex-shrink-0" />
         : <BellOff className="w-4 h-4 flex-shrink-0" />
       }
-      <span className="hidden sm:inline">
+      <span className={showText ? 'inline' : 'hidden sm:inline'}>
         {cargando
           ? 'Activando...'
           : activado
