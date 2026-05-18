@@ -88,15 +88,18 @@ export default async function ReportesPage() {
     supabase
       .from('ordenes')
       .select('id, total, estado, created_at, mecanico_asignado, cliente_id, servicios_realizados, tiempo_trabajado_minutos')
+      .eq('taller_id', tallerId)
       .gte('created_at', desde)
       .order('created_at', { ascending: true }),
     supabase
       .from('clientes')
       .select('id, created_at')
+      .eq('taller_id', tallerId)
       .gte('created_at', desde),
     supabase
       .from('cotizaciones')
       .select('id, estado, created_at')
+      .eq('taller_id', tallerId)
       .gte('created_at', desde),
   ])
 
