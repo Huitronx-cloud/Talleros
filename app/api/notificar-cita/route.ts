@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     // Obtener suscripciones push del taller
     const { data: suscripciones } = await supabaseAdmin
       .from('push_suscripciones')
-      .select('suscripcion')
+      .select('endpoint, p256dh, auth')
       .eq('taller_id', tallerId)
 
     if (!suscripciones || suscripciones.length === 0) {
@@ -38,8 +38,11 @@ export async function POST(req: NextRequest) {
     })
 
     const resultados = await Promise.allSettled(
-      suscripciones.map(({ suscripcion }) =>
-        webpush.sendNotification(suscripcion, payload)
+      suscripciones.map(({ endpoint, p256dh, auth }) =>
+        webpush.sendNotification(
+          { endpoint, keys: { p256dh, auth } },
+          payload
+        )
       )
     )
 
