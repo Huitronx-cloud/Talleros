@@ -70,7 +70,49 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
 
   const cambiarEstado = async (citaId: string, nuevoEstado: EstadoCita) => {
     setActualizando(true)
+
     await supabase.from('citas').update({ estado: nuevoEstado }).eq('id', citaId)
+
+    // Si se confirma la cita → crear cliente automáticamente si no existe
+    if (nuevoEstado === 'confirmada') {
+      const cita = citas.find(c => c.id === citaId)
+      if (cita) {
+        // Buscar si ya existe un cliente con ese teléfono
+        const telefonoLimpio = cita.cliente_telefono.replace(/\D/g, '')
+        const { data: clienteExistente } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('taller_id', tallerId)
+          .ilike('telefono', `%${telefonoLimpio}%`)
+          .maybeSingle()
+
+        if (!clienteExistente) {
+          // Crear cliente nuevo
+          const { data: clienteNuevo } = await supabase
+            .from('clientes')
+            .insert({
+              taller_id: tallerId,
+              nombre:    cita.cliente_nombre,
+              telefono:  cita.cliente_telefono,
+              email:     cita.cliente_email ?? null,
+            })
+            .select('id')
+            .single()
+
+          // Si tiene vehículo, crearlo también
+          if (clienteNuevo && (cita.vehiculo_marca || cita.vehiculo_modelo)) {
+            await supabase.from('vehiculos').insert({
+              cliente_id: clienteNuevo.id,
+              taller_id:  tallerId,
+              marca:      cita.vehiculo_marca ?? '',
+              modelo:     cita.vehiculo_modelo ?? '',
+              placas:     cita.placas ?? null,
+            })
+          }
+        }
+      }
+    }
+
     setCitas(prev => prev.map(c => c.id === citaId ? { ...c, estado: nuevoEstado } : c))
     if (citaSeleccionada?.id === citaId) setCitaSeleccionada(prev => prev ? { ...prev, estado: nuevoEstado } : null)
     setActualizando(false)
