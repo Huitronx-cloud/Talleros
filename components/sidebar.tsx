@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
 import PlanBadge from '@/components/plan-badge'
 import LogoFullscreen from '@/components/logo-fullscreen'
+import PushToggle from './push-toggle'
 
 
 const TODOS_NAV_ITEMS = [
@@ -202,6 +203,9 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
                   {item.label}
                 </Link>
               ))}
+              <div className="px-3 py-2">
+                <PushToggle dark={true} />
+              </div>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
