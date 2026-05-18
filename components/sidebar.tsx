@@ -45,8 +45,29 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   const pathname = usePathname()
   const router   = useRouter()
   const supabase = createClient()
-  const [colapsado, setColapsado] = useState(false)
-  const [menuMovil, setMenuMovil] = useState(false)
+  const [colapsado, setColapsado]       = useState(false)
+  const [menuMovil, setMenuMovil]       = useState(false)
+  const [citasPendientes, setCitasPendientes] = useState(0)
+
+  useEffect(() => {
+    if (!['propietario', 'admin', 'recepcion'].includes(rol)) return
+
+    async function cargarCitas() {
+      const { data: usuario } = await supabase.from('usuarios').select('taller_id').eq('id', (await supabase.auth.getUser()).data.user?.id ?? '').single()
+      if (!usuario) return
+      const { count } = await supabase.from('citas').select('*', { count: 'exact', head: true }).eq('taller_id', usuario.taller_id).eq('estado', 'pendiente')
+      setCitasPendientes(count ?? 0)
+
+      // Realtime
+      supabase.channel('citas-badge')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'citas', filter: `taller_id=eq.${usuario.taller_id}` }, async () => {
+          const { count: c } = await supabase.from('citas').select('*', { count: 'exact', head: true }).eq('taller_id', usuario.taller_id).eq('estado', 'pendiente')
+          setCitasPendientes(c ?? 0)
+        })
+        .subscribe()
+    }
+    cargarCitas()
+  }, [rol])
 
   const NAV_ITEMS    = TODOS_NAV_ITEMS.filter(i => i.roles.includes(rol))
   const NAV_BOTTOM   = TODOS_NAV_BOTTOM.filter(i => i.roles.includes(rol))
@@ -71,22 +92,40 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   }
 
   const NavLink = ({ href, label, icono: Icono }: { href: string; label: string; icono: any }) => {
-    const activo = pathname === href || pathname.startsWith(href + '/')
+    const activo    = pathname === href || pathname.startsWith(href + '/')
+    const esCitas   = href === '/citas'
+    const showBadge = esCitas && citasPendientes > 0
     return (
       <Link
         href={href}
         onClick={() => setMenuMovil(false)}
         title={colapsado ? label : undefined}
         className={cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative',
           colapsado ? 'justify-center' : '',
           activo
             ? 'bg-blue-600 text-white'
             : 'text-gray-400 hover:text-white hover:bg-gray-800'
         )}
       >
-        <Icono className="w-4 h-4 flex-shrink-0" />
-        {!colapsado && <span>{label}</span>}
+        <div className="relative flex-shrink-0">
+          <Icono className="w-4 h-4" />
+          {showBadge && (
+            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+              {citasPendientes > 9 ? '9+' : citasPendientes}
+            </span>
+          )}
+        </div>
+        {!colapsado && (
+          <span className="flex items-center gap-2 flex-1">
+            {label}
+            {showBadge && !colapsado && (
+              <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                {citasPendientes > 9 ? '9+' : citasPendientes}
+              </span>
+            )}
+          </span>
+        )}
       </Link>
     )
   }
