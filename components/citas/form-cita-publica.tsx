@@ -132,6 +132,21 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     })
 
     if (err) { setError('Error al agendar. Intenta de nuevo.'); setEnviando(false); return }
+
+    // Notificar al taller — nueva cita pendiente
+    try {
+      await fetch('/api/notificar-cita', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          tallerId,
+          clienteNombre:  form.cliente_nombre.trim(),
+          fecha:          fechaSeleccionada,
+          hora:           horaSeleccionada,
+        }),
+      })
+    } catch {}
+
     setListo(true)
     setEnviando(false)
   }

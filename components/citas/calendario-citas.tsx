@@ -72,7 +72,16 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
     setActualizando(true)
 
     await supabase.from('citas').update({ estado: nuevoEstado }).eq('id', citaId)
-
+// Mandar WhatsApp + email al confirmar
+    if (nuevoEstado === 'confirmada') {
+      try {
+        await fetch('/api/confirmar-cita', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ citaId, tallerId }),
+        })
+      } catch {}
+    }
     // Si se confirma la cita → crear cliente automáticamente si no existe
     if (nuevoEstado === 'confirmada') {
       const cita = citas.find(c => c.id === citaId)
