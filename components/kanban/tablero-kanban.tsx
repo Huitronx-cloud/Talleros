@@ -29,7 +29,7 @@ function TarjetaOrden({
   onDragStart?: (e: React.DragEvent, ordenId: string) => void
 }) {
   const retraso = diasRetraso(orden.fecha_prometida)
-  const cliente = orden.clientes as { nombre: string; telefono: string | null } | null
+  const cliente = orden.clientes as { nombre: string; telefono: string | null; foto_vehiculo_url?: string | null } | null
 
   return (
     <Link href={`/ordenes/${orden.id}`}>
@@ -51,6 +51,16 @@ function TarjetaOrden({
             </span>
           )}
         </div>
+
+        {cliente?.foto_vehiculo_url && (
+          <div className="mb-2 rounded-lg overflow-hidden border border-gray-100" style={{ height: 80 }}>
+            <img
+              src={cliente.foto_vehiculo_url}
+              alt="Vehículo"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        )}
 
         <div className="flex items-start gap-2 mb-2">
           <Car className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />

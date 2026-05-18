@@ -7,7 +7,7 @@ export default async function KanbanPage() {
 
   const { data: ordenes } = await supabase
     .from('ordenes')
-    .select('*, clientes(nombre, telefono)')
+    .select('*, clientes(nombre, telefono, foto_vehiculo_url)')
     .neq('estado', 'entregado')
     .order('created_at', { ascending: true })
 
