@@ -157,9 +157,19 @@ export default async function DashboardPage() {
     entregado:  'bg-purple-100 text-purple-600',
   }
 
-  const WHATSAPP_SOPORTE = 'https://wa.me/1234567890?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
+  const WHATSAPP_SOPORTE = 'https://wa.me/TUNUMERO?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
 
-  const modulosVisibles = MODULOS.filter(m => {
+  const soporte = planActual === 'pro' ? [{
+    href:    WHATSAPP_SOPORTE,
+    label:   'Soporte Pro',
+    icono:   MessageCircle,
+    color:   'from-green-500 to-green-700',
+    upgrade: false,
+    externo: true,
+    roles:   ['propietario', 'admin'],
+  }] : []
+
+  const modulosVisibles = [...MODULOS.filter(m => {
     if (!m.roles.includes(rol)) return false
     return true
   }).map((m: any) => {
@@ -170,17 +180,17 @@ export default async function DashboardPage() {
       if (planActual === 'pro') {
         return {
           ...m,
-          href:    WHATSAPP_SOPORTE,
-          label:   'Soporte',
-          icono:   MessageCircle,
-          color:   'from-green-500 to-green-700',
+          href:    '/configuracion/plan',
+          label:   'Mi suscripción',
+          icono:   TrendingUp,
+          color:   'from-blue-500 to-blue-700',
           upgrade: false,
-          externo: true,
+          externo: false,
         }
       }
     }
     return m
-  })
+  }), ...soporte.filter(m => m.roles.includes(rol))]
 
   return (
     <div className="min-h-screen bg-gray-50">
