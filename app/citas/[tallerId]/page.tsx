@@ -24,13 +24,19 @@ export default async function CitaPublicaPage({
   const hoy     = new Date().toISOString().split('T')[0]
   const en30dias = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data: citasOcupadas } = await supabase
-    .from('citas')
-    .select('fecha, hora')
-    .eq('taller_id', params.tallerId)
-    .gte('fecha', hoy)
-    .lte('fecha', en30dias)
-    .neq('estado', 'cancelada')
+  const [
+    { data: citasOcupadas },
+    { data: citasConfig },
+  ] = await Promise.all([
+    supabase.from('citas').select('fecha, hora')
+      .eq('taller_id', params.tallerId)
+      .gte('fecha', hoy)
+      .lte('fecha', en30dias)
+      .neq('estado', 'cancelada'),
+    supabase.from('citas_config').select('*')
+      .eq('taller_id', params.tallerId)
+      .single(),
+  ])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -64,6 +70,7 @@ export default async function CitaPublicaPage({
           tallerId={taller.id}
           tallerNombre={taller.nombre}
           citasOcupadas={(citasOcupadas ?? []) as { fecha: string; hora: string }[]}
+          citasConfig={citasConfig ?? null}
         />
       </div>
 

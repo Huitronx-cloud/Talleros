@@ -30,13 +30,22 @@ function formatFecha(año: number, mes: number, dia: number) {
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const DIAS  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 
-interface Props {
-  tallerId: string
-  tallerNombre: string
-  citasOcupadas: { fecha: string; hora: string }[]
+interface HorarioDia { abre: string; cierra: string }
+
+interface CitasConfig {
+  horario:         Record<string, HorarioDia | null>
+  limite_por_dia:  number
+  dias_bloqueados: string[]
 }
 
-export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas: citasIniciales }: Props) {
+interface Props {
+  tallerId:      string
+  tallerNombre:  string
+  citasOcupadas: { fecha: string; hora: string }[]
+  citasConfig:   CitasConfig | null
+}
+
+export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas: citasIniciales, citasConfig }: Props) {
   const supabase = createClient()
   const hoy      = new Date()
 
@@ -95,8 +104,34 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
   const horariosOcupados = (fecha: string) =>
     citasOcupadas.filter(c => c.fecha === fecha).map(c => c.hora.slice(0, 5))
 
+  const DIAS_SEMANA: Record<number, string> = {
+    0: 'domingo', 1: 'lunes', 2: 'martes', 3: 'miercoles',
+    4: 'jueves',  5: 'viernes', 6: 'sabado',
+  }
+
+  const esDiaBloqueado = (fecha: string) =>
+    citasConfig?.dias_bloqueados?.includes(fecha) ?? false
+
+  const esDiaCerrado = (dia: number) => {
+    if (!citasConfig) return false
+    const fecha   = new Date(añoVista, mesVista, dia)
+    const diaSem  = DIAS_SEMANA[fecha.getDay()]
+    return citasConfig.horario[diaSem] === null
+  }
+
+  const limitePorDia = citasConfig?.limite_por_dia ?? 18
+
   const esDiaOcupado = (fecha: string) =>
-    horariosOcupados(fecha).length >= HORARIOS.length
+    horariosOcupados(fecha).length >= limitePorDia
+
+  const horariosDisponibles = (fecha: string) => {
+    if (!citasConfig) return HORARIOS
+    const fechaObj = new Date(fecha + 'T12:00:00')
+    const diaSem   = DIAS_SEMANA[fechaObj.getDay()]
+    const horario  = citasConfig.horario[diaSem]
+    if (!horario) return []
+    return HORARIOS.filter(h => h >= horario.abre && h <= horario.cierra)
+  }
 
   const esPasado = (dia: number) => {
     const fecha = new Date(añoVista, mesVista, dia)
@@ -106,7 +141,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     return fecha < hoyDate
   }
 
-  const esDomingo = (dia: number) => new Date(añoVista, mesVista, dia).getDay() === 0
+  const esDomingo = (dia: number) => !citasConfig && new Date(añoVista, mesVista, dia).getDay() === 0
 
   const dias = getDiasDelMes(añoVista, mesVista)
 
@@ -235,11 +270,13 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
               {dias.map((dia, i) => {
                 if (!dia) return <div key={i} />
                 const fecha    = formatFecha(añoVista, mesVista, dia)
-                const pasado   = esPasado(dia)
-                const domingo  = esDomingo(dia)
-                const ocupado  = esDiaOcupado(fecha)
-                const seleccionado = fecha === fechaSeleccionada
-                const deshabilitado = pasado || domingo || ocupado
+                const pasado        = esPasado(dia)
+                const domingo       = esDomingo(dia)
+                const ocupado       = esDiaOcupado(fecha)
+                const bloqueado     = esDiaBloqueado(fecha)
+                const cerrado       = esDiaCerrado(dia)
+                const seleccionado  = fecha === fechaSeleccionada
+                const deshabilitado = pasado || domingo || ocupado || bloqueado || cerrado
 
                 return (
                   <button
@@ -288,7 +325,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
                 </span>
               </p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {HORARIOS.map(hora => {
+                {horariosDisponibles(fechaSeleccionada).map(hora => {
                   const ocupado    = horariosOcupados(fechaSeleccionada).includes(hora)
                   const seleccionado = hora === horaSeleccionada
                   return (
