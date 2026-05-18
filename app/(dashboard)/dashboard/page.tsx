@@ -9,6 +9,7 @@ import {
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
+import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -232,6 +233,16 @@ export default async function DashboardPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+        {/* ── ONBOARDING ── */}
+        {rol === 'propietario' && (
+          <OnboardingChecklist
+            tallerNombre={taller?.nombre ?? 'tu taller'}
+            tieneClientes={(totalClientes ?? 0) > 0}
+            tieneOrdenes={(ordenesMes ?? 0) > 0}
+            tallerId={usuarioData?.taller_id ?? ''}
+          />
+        )}
 
         {/* ── BANNER UPGRADE ── */}
         <BannerUpgrade tallerId={usuarioData?.taller_id} rol={rol} />
