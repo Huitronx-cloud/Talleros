@@ -81,9 +81,9 @@ export default async function ReportesPage() {
   const desde = hace6Meses.toISOString()
 
   const [
-    { data: ordenes },
-    { data: clientes },
-    { data: cotizaciones },
+    { data: ordenes, error: errorOrdenes },
+    { data: clientes, error: errorClientes },
+    { data: cotizaciones, error: errorCotizaciones },
   ] = await Promise.all([
     supabase
       .from('ordenes')
@@ -102,6 +102,19 @@ export default async function ReportesPage() {
       .eq('taller_id', tallerId)
       .gte('created_at', desde),
   ])
+
+  console.log('REPORTES DEBUG:', {
+    tallerId,
+    plan,
+    reportes: limites.reportes,
+    errorOrdenes: errorOrdenes?.message ?? null,
+    errorClientes: errorClientes?.message ?? null,
+    errorCotizaciones: errorCotizaciones?.message ?? null,
+    ordenesCount: ordenes?.length ?? 0,
+    ordenesEntregadas: ordenes?.filter(o => o.estado === 'entregado').length ?? 0,
+    totalIngresos: ordenes?.filter(o => o.estado === 'entregado').reduce((a, o) => a + (o.total || 0), 0) ?? 0,
+    moneda: taller?.moneda,
+  })
 
   console.log('REPORTES DEBUG:', {
     tallerId,
