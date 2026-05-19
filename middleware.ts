@@ -1,6 +1,61 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── CORS ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'https://www.tallerosapp.com',
+  'https://tallerosapp.com',
+]
+
+// Endpoints que reciben peticiones de terceros (Stripe, Vercel Cron)
+const CORS_EXCEPTIONS = [
+  '/api/stripe/webhook',
+  '/api/cron/',
+  '/api/notificar-cita',
+  '/api/confirmar-cita',
+]
+
+function handleCORS(request: NextRequest): NextResponse | null {
+  const { pathname } = request.nextUrl
+  const isApiRoute = pathname.startsWith('/api/')
+  if (!isApiRoute) return null
+
+  // Excepciones — estos endpoints no validamos origen
+  const isException = CORS_EXCEPTIONS.some(e => pathname.startsWith(e))
+  if (isException) return null
+
+  const origin = request.headers.get('origin') ?? ''
+
+  // Preflight OPTIONS — responder directamente
+  if (request.method === 'OPTIONS') {
+    const res = new NextResponse(null, { status: 204 })
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      res.headers.set('Access-Control-Allow-Origin', origin)
+    }
+    res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.headers.set('Access-Control-Max-Age', '86400')
+    return res
+  }
+
+  // En producción, bloquear si el origen no es tallerosapp.com
+  // En desarrollo (sin origin o localhost) dejamos pasar
+  if (
+    origin &&
+    !ALLOWED_ORIGINS.includes(origin) &&
+    !origin.includes('localhost') &&
+    !origin.includes('127.0.0.1') &&
+    !origin.includes('vercel.app') // preview deploys de Vercel
+  ) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Origin not allowed' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  return null
+}
+
 const RUTAS_PUBLICAS = [
   '/',
   '/privacidad',
@@ -34,6 +89,10 @@ function tieneAcceso(rol: string, pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // ── CORS check primero ────────────────────────────────────────────────────
+  const corsResponse = handleCORS(request)
+  if (corsResponse) return corsResponse
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
