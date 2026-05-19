@@ -186,7 +186,7 @@ export default function LandingPage() {
     {/* HERO */}
     <section className="lh">
       <div className="lh-bg">
-        <div className="lh-photo" style={{backgroundImage:`url(${HF.workshop3})`}} />
+        <div className="lh-photo" style={{backgroundImage:`url('/hero-bg.png')`}} />
         <div className="lh-ov" />
         <div className="lh-grid" />
       </div>
