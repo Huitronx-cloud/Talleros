@@ -71,8 +71,7 @@ export default async function DashboardPage() {
       .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
       .single(),
     supabase.from('ordenes')
-      .select('descripcion_problema, servicios_realizados, tiempo_trabajado_minutos, mecanico_asignado, estado')
-      .gt('tiempo_trabajado_minutos', 0)
+      .select('descripcion_problema, servicios_realizados, mecanico_asignado, estado')
       .eq('estado', 'entregado')
       .order('created_at', { ascending: false })
       .limit(50),
@@ -157,7 +156,7 @@ export default async function DashboardPage() {
     entregado:  'bg-purple-100 text-purple-600',
   }
 
-  const WHATSAPP_SOPORTE = 'https://wa.me/TUNUMERO?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
+ const WHATSAPP_SOPORTE = 'https://wa.me/16476791091?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
 
   const soporte = planActual === 'pro' ? [{
     href:    WHATSAPP_SOPORTE,
@@ -183,10 +182,15 @@ export default async function DashboardPage() {
           href:    '/configuracion/plan',
           label:   'Mi suscripción',
           icono:   TrendingUp,
-          color:   'from-blue-500 to-blue-700',
+          color:   'bg-blue-600',
           upgrade: false,
           externo: false,
         }
+      }
+      // No pro — mantener como "Subir a Pro" con estilo normal
+      return {
+        ...m,
+        color: 'bg-gradient-to-br from-purple-500 to-purple-700',
       }
     }
     return m
