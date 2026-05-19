@@ -165,17 +165,33 @@ export default function RecordatoriosPage() {
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Bell className="w-6 h-6 text-sky-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Bell className="w-6 h-6 text-sky-500" />
             Recordatorios de Mantenimiento
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-gray-500 mt-1">
             Contacta automáticamente a clientes que no han visitado el taller en 3 a 6 meses.
           </p>
         </div>
-        <span className="bg-sky-500/10 text-sky-400 text-xs font-semibold px-3 py-1 rounded-full border border-sky-500/20">
+        <span className="bg-sky-500/10 text-sky-600 text-xs font-semibold px-3 py-1 rounded-full border border-sky-500/20">
           PRO
         </span>
+      </div>
+
+      {/* Bloque explicativo */}
+      <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5 flex gap-4">
+        <div className="shrink-0 w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center">
+          <Bell className="w-5 h-5 text-sky-600" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-sky-900">¿Cómo funciona?</p>
+          <p className="text-sm text-sky-800 leading-relaxed">
+            TallerOS revisa cada día si algún cliente no ha visitado el taller en el tiempo que tú configures (3, 4, 5 o 6 meses). Cuando detecta uno, le manda automáticamente un mensaje por WhatsApp o email recordándole que su vehículo podría necesitar mantenimiento.
+          </p>
+          <p className="text-sm text-sky-800 leading-relaxed">
+            Tú solo activas el switch, eliges el intervalo y personalizas el mensaje una vez. A partir de ahí, <strong>TallerOS trabaja solo</strong> — sin que tengas que hacer nada más.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">

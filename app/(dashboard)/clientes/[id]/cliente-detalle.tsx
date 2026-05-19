@@ -39,8 +39,16 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }:
       {/* Info del cliente */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 mb-6">
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
-            <User size={22} className="text-blue-600" />
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden">
+            {cliente.foto_vehiculo_url ? (
+              <img
+                src={cliente.foto_vehiculo_url}
+                alt="Vehículo"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User size={22} className="text-blue-600" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">{cliente.nombre}</h1>

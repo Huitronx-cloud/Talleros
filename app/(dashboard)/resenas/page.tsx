@@ -150,17 +150,33 @@ export default function ResenasPage() {
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Star className="w-6 h-6 text-yellow-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Star className="w-6 h-6 text-yellow-500" />
             Reseñas de Google
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-gray-500 mt-1">
             Al entregar una orden, el cliente recibe automáticamente un mensaje para dejar su reseña.
           </p>
         </div>
-        <span className="bg-yellow-500/10 text-yellow-400 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-500/20">
+        <span className="bg-yellow-500/10 text-yellow-600 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-500/20">
           PRO
         </span>
+      </div>
+
+      {/* Bloque explicativo */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 flex gap-4">
+        <div className="shrink-0 w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+          <Star className="w-5 h-5 text-yellow-600" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-yellow-900">¿Cómo funciona?</p>
+          <p className="text-sm text-yellow-800 leading-relaxed">
+            Cada vez que marcas una orden como <strong>Entregada</strong>, TallerOS manda automáticamente un mensaje al cliente pidiéndole que deje una reseña en Google. El link de tu perfil de Google ya va incluido en el mensaje.
+          </p>
+          <p className="text-sm text-yellow-800 leading-relaxed">
+            Puedes personalizar el texto del mensaje para que suene como tú — más formal o más casual. Solo configúralo una vez y olvídate. El sistema se encarga de pedirle la reseña a cada cliente en el momento ideal: justo cuando acaba de recoger su auto.
+          </p>
+        </div>
       </div>
 
       {/* Stats */}
