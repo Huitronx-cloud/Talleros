@@ -172,9 +172,6 @@ export default async function DashboardPage() {
     if (!m.roles.includes(rol)) return false
     return true
   }).map((m: any) => {
-    if (m.upgrade && planActual === 'pro') {
-      return { ...m, upgrade: false }
-    }
     if (m.href === '/configuracion/plan') {
       if (planActual === 'pro') {
         return {
@@ -187,11 +184,10 @@ export default async function DashboardPage() {
           externo: false,
         }
       }
-      // No pro — mantener como "Subir a Pro" con estilo normal
-      return {
-        ...m,
-        color: 'bg-gradient-to-br from-purple-500 to-purple-700',
-      }
+      return m
+    }
+    if (m.upgrade && planActual === 'pro') {
+      return { ...m, upgrade: false }
     }
     return m
   }), ...soporte.filter(m => m.roles.includes(rol))]
