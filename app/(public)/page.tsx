@@ -27,29 +27,29 @@ const HF = {
 }
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, img: HF.phone1,     tag: '3x mas aprobaciones', titulo: 'Aprobacion por WhatsApp',    desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
-  { icon: Camera,        img: HF.mechanic1,  tag: '0 disputas',           titulo: 'Fotos del diagnostico',      desc: 'Documenta el estado del vehiculo antes de tocar nada. Elimina disputas sobre danos preexistentes.' },
-  { icon: Monitor,       img: HF.dashboard1, tag: '97% satisfaccion',     titulo: 'Portal en tiempo real',      desc: 'Tu cliente ve el avance de su vehiculo en vivo sin llamar al taller. Transparencia total.' },
-  { icon: Shield,        img: HF.team1,      tag: '100% profesional',     titulo: 'Garantia digital',           desc: 'Emite garantias digitales firmadas en cada entrega. Diferenciate de cualquier competidor.' },
-  { icon: Bell,          img: HF.workshop1,  tag: '+40% retencion',       titulo: 'Recordatorios automaticos',  desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
-  { icon: Star,          img: HF.customer,   tag: '5 en Google',          titulo: 'Resenas automaticas',        desc: 'Al entregar un vehiculo TallerOS pide la resena automaticamente. El 97% lee reviews primero.' },
+  { icon: MessageCircle, img: HF.phone1,     tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',    desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
+  { icon: Camera,        img: HF.mechanic1,  tag: '0 disputas',           titulo: 'Fotos del diagnóstico',      desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre danos preexistentes.' },
+  { icon: Monitor,       img: HF.dashboard1, tag: '97% satisfacción',     titulo: 'Portal en tiempo real',      desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
+  { icon: Shield,        img: HF.team1,      tag: '100% profesional',     titulo: 'Garantía digital',           desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.' },
+  { icon: Bell,          img: HF.workshop1,  tag: '+40% retención',       titulo: 'Recordatorios automáticos',  desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
+  { icon: Star,          img: HF.customer,   tag: '5 en Google',          titulo: 'Reseñas automáticas',        desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews primero.' },
 ]
 
 const MODULOS = [
-  { icon: FileText,      label: 'Ordenes de trabajo',  desc: 'Crea y sigue cada orden en tiempo real.',  color: '#3b82f6' },
-  { icon: Users,         label: 'Clientes y vehiculos', desc: 'Historial completo de cada cliente.',      color: '#06b6d4' },
+  { icon: FileText,      label: 'Órdenes de trabajo',  desc: 'Crea y sigue cada orden en tiempo real.',  color: '#3b82f6' },
+  { icon: Users,         label: 'Clientes y vehículos', desc: 'Historial completo de cada cliente.',      color: '#06b6d4' },
   { icon: MessageCircle, label: 'WhatsApp integrado',   desc: 'Aprobaciones y notificaciones directas.',  color: '#22c55e' },
-  { icon: BarChart2,     label: 'Reportes avanzados',   desc: 'Ingresos y rendimiento por mecanico.',     color: '#a855f7' },
+  { icon: BarChart2,     label: 'Reportes avanzados',   desc: 'Ingresos y rendimiento por mecánico.',     color: '#a855f7' },
   { icon: Calendar,      label: 'Citas y agenda',        desc: 'Organiza sin conflictos de horario.',      color: '#ec4899' },
   { icon: Package,       label: 'Inventario',            desc: 'Controla refacciones sin desabasto.',      color: '#f59e0b' },
-  { icon: Shield,        label: 'Garantia digital',      desc: 'Documentos firmados en cada entrega.',    color: '#10b981' },
-  { icon: Star,          label: 'Resenas automaticas',  desc: 'Google Reviews sin esfuerzo extra.',       color: '#eab308' },
+  { icon: Shield,        label: 'Garantía digital',      desc: 'Documentos firmados en cada entrega.',    color: '#10b981' },
+  { icon: Star,          label: 'Reseñas automáticas',  desc: 'Google Reviews sin esfuerzo extra.',       color: '#eab308' },
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar como va su carro. El portal en tiempo real nos ahorro horas de atencion telefonica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',   img: HF.team1,     estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdiamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                  nombre: 'Camila Restrepo', rol: 'AutoFix, Medellin CO',          img: HF.customer,  estrellas: 5 },
-  { texto: 'Los recordatorios automaticos nos trajeron clientes que no veiamos en anos. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',            nombre: 'Miguel Quispe',   rol: 'Mecanica Quispe, Lima PE',      img: HF.mechanic2, estrellas: 5 },
+  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefonica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',   img: HF.team1,     estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                  nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',          img: HF.customer,  estrellas: 5 },
+  { texto: 'Los recordatorios automáticos nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',            nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',      img: HF.mechanic2, estrellas: 5 },
 ]
 
 const PLANES = [
@@ -57,25 +57,25 @@ const PLANES = [
     nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
     icono: Zap, popular: false,
-    features: ['Ordenes de trabajo ilimitadas','Gestion de clientes y vehiculos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantia digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
+    features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
     nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
     icono: Star, popular: true,
-    features: ['Todo lo del plan Esencial','Recordatorios automaticos de mantenimiento','Solicitud automatica de resenas en Google','Reportes y metricas avanzadas','Modulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
+    features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Módulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
 
 const STATS_DATA = [
-  { valor: '63%',  texto: 'de clientes desconfia de talleres mecanicos', icon: AlertTriangle, color: '#ef4444' },
-  { valor: '97%',  texto: 'lee resenas antes de elegir un taller',        icon: Star,          color: '#f59e0b' },
+  { valor: '63%',  texto: 'de clientes desconfía de talleres mecánicos', icon: AlertTriangle, color: '#ef4444' },
+  { valor: '97%',  texto: 'lee reseñas antes de elegir un taller',        icon: Star,          color: '#f59e0b' },
   { valor: '#1',   texto: 'queja en LATAM: cobros no autorizados',        icon: MessageCircle, color: '#a855f7' },
-  { valor: '+40%', texto: 'mas ingresos con recordatorios automaticos',   icon: TrendingUp,    color: '#06b6d4' },
+  { valor: '+40%', texto: 'mas ingresos con recordatorios automáticos',   icon: TrendingUp,    color: '#06b6d4' },
 ]
 
-const MARQUEE = ['Aprobacion por WhatsApp','Portal del cliente','Resenas automaticas','Garantia digital','Fotos del diagnostico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehiculo','Control de inventario','Reportes avanzados']
-const WORDS = ['mas confiable','mas profesional','mas rentable','el favorito']
+const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
+const WORDS = ['más confiable','más profesional','más rentable','el favorito']
 
 function getSecsUntilEOM(): number {
   const now = new Date()
@@ -158,7 +158,7 @@ export default function LandingPage() {
           <span className="ll-t">Taller<em>OS</em></span>
         </a>
         <div className="ln-links">
-          {[['#modulos','Modulos'],['#caracteristicas','Como funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
             <a key={href} href={href} className="ln-a">{label}</a>
           ))}
         </div>
@@ -172,7 +172,7 @@ export default function LandingPage() {
       </div>
       {menuOpen && (
         <div className="ln-mob">
-          {[['#modulos','Modulos'],['#caracteristicas','Como funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
             <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <div className="ln-mob-act">
@@ -194,13 +194,13 @@ export default function LandingPage() {
         <div className="lh-left">
           <div className="ley">
             <span className="ley-dot" />
-            Software de gestion para talleres mecanicos
+            Software de gestión para talleres mecánicos
           </div>
           <h1 className="lh1">
             Tu taller merece ser<br/>
             <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y resenas automaticas en Google.</p>
+          <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
@@ -220,7 +220,7 @@ export default function LandingPage() {
             </div>
             <div className="lfl lfl-rv">
               <div className="lfl-ic" style={{background:'#f59e0b'}}><Star size={15} color="#fff"/></div>
-              <div><p className="lfl-l">Nueva resena</p><p className="lfl-v">5 estrellas Google</p></div>
+              <div><p className="lfl-l">Nueva reseña</p><p className="lfl-v">5 estrellas Google</p></div>
             </div>
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function LandingPage() {
     <section className="ls lprob">
       <div className="li">
         <div className="lsl">El problema real</div>
-        <h2 className="lsh2">Los numeros que tu competencia ignora</h2>
+        <h2 className="lsh2">Los números que tu competencia ignora</h2>
         <p className="lssub">Mientras la mayoria opera igual que hace 20 años, los talleres con TallerOS ya van adelante.</p>
         <div className="lstg">
           {STATS_DATA.map((s,i) => (
@@ -262,10 +262,10 @@ export default function LandingPage() {
             <div className="lver-rows">
               {[
                 ['Clientes llaman sin parar a preguntar por su carro','Portal en tiempo real - el cliente ve el avance solo'],
-                ['Aprobaciones verbales que generan disputas','Aprobacion por WhatsApp con registro digital'],
-                ['Sin evidencia de danos preexistentes','Fotos del diagnostico antes de tocar el vehiculo'],
-                ['Pierdes clientes que no regresan nunca','Recordatorios automaticos cada 3-6 meses'],
-                ['Resenas solo cuando algo sale mal','Resena en Google solicitada automaticamente'],
+                ['Aprobaciones verbales que generan disputas','Aprobación por WhatsApp con registro digital'],
+                ['Sin evidencia de danos preexistentes','Fotos del diagnóstico antes de tocar el vehículo'],
+                ['Pierdes clientes que no regresan nunca','Recordatorios automáticos cada 3-6 meses'],
+                ['Reseñas solo cuando algo sale mal','Reseña en Google solicitada automáticamente'],
               ].map(([bad,good],i) => (
                 <div key={i} className="lvrow">
                   <div className="lvbad"><span className="lvx">x</span>{bad}</div>
@@ -284,7 +284,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">Por que nos eligen</div>
         <h2 className="lsh2">6 herramientas que transforman tu taller en 30 dias</h2>
-        <p className="lssub">Cada funcion resuelve un problema real que cuesta clientes y dinero todos los dias.</p>
+        <p className="lssub">Cada función resuelve un problema real que cuesta clientes y dinero todos los días.</p>
         <div className="lfg">
           {DIFERENCIADORES.map((d,i) => (
             <div key={i} id={`dif-${i}`} data-animate className={`lfc${isV(`dif-${i}`)?' v':''}`} style={{transitionDelay:`${i*70}ms`}}>
@@ -310,7 +310,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">Todo en un solo lugar</div>
         <h2 className="lsh2">Todo lo que tu taller necesita</h2>
-        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el dia 1.</p>
+        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día 1.</p>
         <div className="lmw">
           <div className="lmimgs">
             <img src={HF.dashboard2} alt="Dashboard TallerOS" className="lmimg"/>
@@ -424,7 +424,7 @@ export default function LandingPage() {
               <img key={i} src={src} alt="" className="lpav" style={{marginLeft:i===0?0:-10}}/>
             ))}
           </div>
-          <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> ya digitalizaron su operacion</p>
+          <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> ya digitalizaron su operación</p>
         </div>
       </div>
     </section>
@@ -436,7 +436,7 @@ export default function LandingPage() {
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
         <h2 className="lcta-h2">Tu taller merece crecer.</h2>
-        <p className="lcta-sub">Unete a los talleres que ya digitalizaron su operacion.<br/>14 dias gratis, sin tarjeta de credito.</p>
+        <p className="lcta-sub">Únete a los talleres que ya digitalizaron su operación.<br/>14 dias gratis, sin tarjeta de credito.</p>
         <div className="lcta-bts">
           <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
           <a href="/login" className="lb-wh">Ya tengo cuenta</a>
@@ -448,7 +448,7 @@ export default function LandingPage() {
     <footer className="lfoot">
       <div className="lfoot-i">
         <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
-        <p className="lfoot-c">2026 TallerOS. Gestion inteligente para talleres mecanicos en LATAM.</p>
+        <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en LATAM.</p>
         <div className="lfoot-lnks">
           {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'Soporte',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
         </div>
