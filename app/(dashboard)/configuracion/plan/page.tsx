@@ -271,22 +271,47 @@ export default function PlanPage() {
         </div>
       </div>
 
-      {(esEsencial || esPro) && suscripcion?.periodo_fin && (
-        <div className="mt-6 bg-gray-50 rounded-xl p-4 text-sm text-gray-600 flex items-center justify-between gap-4 flex-wrap">
-          <span>
-            {suscripcion.cancelar_al_periodo
-              ? `Tu plan se cancela el ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
-              : `Próxima renovación: ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
-            }
-          </span>
-          <button
-            type="button"
-            onClick={abrirPortal}
-            disabled={!!procesando}
-            className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors disabled:opacity-50"
-          >
-            {procesando === 'portal' ? 'Redirigiendo…' : 'Gestionar suscripción'}
-          </button>
+      {(esEsencial || esPro) && (
+        <div className="mt-8 bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <h3 className="text-sm font-bold text-gray-900">Gestionar suscripción</h3>
+            {suscripcion?.periodo_fin && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                {suscripcion.cancelar_al_periodo
+                  ? `⚠️ Tu plan se cancela el ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
+                  : `Próxima renovación: ${new Date(suscripcion.periodo_fin).toLocaleDateString('es-MX', { dateStyle: 'long' })}`
+                }
+              </p>
+            )}
+          </div>
+          <div className="divide-y divide-gray-100">
+            {[
+              { icon: '💳', label: 'Actualizar tarjeta de crédito', desc: 'Cambia o actualiza tu método de pago' },
+              { icon: '📋', label: 'Ver historial de pagos', desc: 'Revisa tus facturas y recibos anteriores' },
+              { icon: '🔄', label: 'Cambiar de plan', desc: 'Sube o baja tu plan según tus necesidades' },
+              { icon: '❌', label: 'Cancelar suscripción', desc: 'Cancela en cualquier momento sin penalizaciones', danger: true },
+            ].map(({ icon, label, desc, danger }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={abrirPortal}
+                disabled={!!procesando}
+                className={`w-full flex items-center gap-4 px-6 py-4 text-left hover:bg-gray-50 transition-colors disabled:opacity-50 ${danger ? 'hover:bg-red-50' : ''}`}
+              >
+                <span className="text-xl flex-shrink-0">{icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${danger ? 'text-red-600' : 'text-gray-900'}`}>{label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                </div>
+                <span className="text-gray-300 flex-shrink-0">→</span>
+              </button>
+            ))}
+          </div>
+          <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <p className="text-xs text-gray-400 text-center">
+              Todas las opciones se gestionan de forma segura a través de Stripe
+            </p>
+          </div>
         </div>
       )}
 
