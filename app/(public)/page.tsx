@@ -7,34 +7,49 @@ import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
   ChevronRight, Users, FileText, BarChart2, Calendar, Package,
-  Quote, Sparkles,
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
-const MODULOS = [
-  { icon: FileText,      label: 'Órdenes de trabajo',   desc: 'Crea, asigna y sigue cada orden en tiempo real.', color: '#2563eb', bg: 'rgba(37,99,235,0.12)' },
-  { icon: Users,         label: 'Clientes y vehículos',  desc: 'Historial completo de cada cliente y su vehículo.', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' },
-  { icon: MessageCircle, label: 'WhatsApp integrado',    desc: 'Aprobaciones, notificaciones y portal directo.', color: '#16a34a', bg: 'rgba(22,163,74,0.12)' },
-  { icon: BarChart2,     label: 'Reportes avanzados',    desc: 'Ingresos, rendimiento por mecánico y retención.', color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
-  { icon: Calendar,      label: 'Citas y agenda',        desc: 'Organiza tu taller sin conflictos de horario.', color: '#db2777', bg: 'rgba(219,39,119,0.12)' },
-  { icon: Package,       label: 'Inventario',            desc: 'Controla refacciones y evita desabasto.', color: '#d97706', bg: 'rgba(217,119,6,0.12)' },
-  { icon: Shield,        label: 'Garantía digital',      desc: 'Documentos firmados en cada entrega.', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' },
-  { icon: Star,          label: 'Reseñas automáticas',   desc: 'Solicita Google Reviews al entregar el vehículo.', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-]
+const HF = {
+  mechanic1:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184811_0f52f642-6922-4609-9046-e009d73138b4.png',
+  mechanic2:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184349_16c9b69d-2d67-4b5b-99b3-25d2b62c6d3b.png',
+  dashboard1: 'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184142_cc40286e-f4a6-4479-a924-f167c62f235e.png',
+  dashboard2: 'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184033_46793d22-18c0-4fa4-8daa-fd6deb2dd8aa.png',
+  phone1:     'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_183932_cc8b0dfe-7173-4724-aa8a-39e1c97bf356.png',
+  phone2:     'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_183753_5956a2fa-6e70-4d2e-ab06-5b7ea13c4cff.png',
+  team1:      'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_181653_a084ec2c-01f0-4232-8e6d-16a667a67bc2.png',
+  team2:      'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_181641_f2ef75f8-4a84-4610-920b-57652e3e8902.png',
+  workshop1:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260511_220758_b7712631-4110-4c3f-957e-72ab663637d1.png',
+  workshop2:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260511_215520_8ea44117-7ad2-4f97-8cdb-859933e3c6ed.png',
+  workshop3:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260511_215520_d1be0adb-34fa-4778-b7dc-2a751c06cf81.png',
+  customer:   'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260511_214800_5b02a596-5e02-4cd0-81bd-30fd64857c9e.png',
+  customer2:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260511_214800_1d2f68f3-5de2-42b8-be93-a9eabce2d4c1.png',
+}
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, gradient: 'linear-gradient(135deg,#1d4ed8,#2563eb)', tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp', desc: 'Tu cliente aprueba o rechaza reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado con fecha y hora.' },
-  { icon: Camera,        gradient: 'linear-gradient(135deg,#0e7490,#0891b2)', tag: '0 disputas',          titulo: 'Fotos del diagnóstico',  desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes para siempre.' },
-  { icon: Monitor,       gradient: 'linear-gradient(135deg,#1d4ed8,#7c3aed)', tag: '97% satisfacción',   titulo: 'Portal en tiempo real',  desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total que genera confianza.' },
-  { icon: Shield,        gradient: 'linear-gradient(135deg,#0e7490,#0891b2)', tag: '100% profesional',   titulo: 'Garantía digital',       desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor al instante.' },
-  { icon: Bell,          gradient: 'linear-gradient(135deg,#7c3aed,#2563eb)', tag: '+40% retención',     titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3–6 meses para su mantenimiento. Ingresos recurrentes sin esfuerzo.' },
-  { icon: Star,          gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', tag: '5★ en Google',       titulo: 'Reseñas automáticas',    desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews antes de elegir taller.' },
+  { icon: MessageCircle, img: HF.phone1,     tag: '3x mas aprobaciones', titulo: 'Aprobacion por WhatsApp',    desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
+  { icon: Camera,        img: HF.mechanic1,  tag: '0 disputas',           titulo: 'Fotos del diagnostico',      desc: 'Documenta el estado del vehiculo antes de tocar nada. Elimina disputas sobre danos preexistentes.' },
+  { icon: Monitor,       img: HF.dashboard1, tag: '97% satisfaccion',     titulo: 'Portal en tiempo real',      desc: 'Tu cliente ve el avance de su vehiculo en vivo sin llamar al taller. Transparencia total.' },
+  { icon: Shield,        img: HF.team1,      tag: '100% profesional',     titulo: 'Garantia digital',           desc: 'Emite garantias digitales firmadas en cada entrega. Diferenciate de cualquier competidor.' },
+  { icon: Bell,          img: HF.workshop1,  tag: '+40% retencion',       titulo: 'Recordatorios automaticos',  desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
+  { icon: Star,          img: HF.customer,   tag: '5 en Google',          titulo: 'Resenas automaticas',        desc: 'Al entregar un vehiculo TallerOS pide la resena automaticamente. El 97% lee reviews primero.' },
+]
+
+const MODULOS = [
+  { icon: FileText,      label: 'Ordenes de trabajo',  desc: 'Crea y sigue cada orden en tiempo real.',  color: '#3b82f6' },
+  { icon: Users,         label: 'Clientes y vehiculos', desc: 'Historial completo de cada cliente.',      color: '#06b6d4' },
+  { icon: MessageCircle, label: 'WhatsApp integrado',   desc: 'Aprobaciones y notificaciones directas.',  color: '#22c55e' },
+  { icon: BarChart2,     label: 'Reportes avanzados',   desc: 'Ingresos y rendimiento por mecanico.',     color: '#a855f7' },
+  { icon: Calendar,      label: 'Citas y agenda',        desc: 'Organiza sin conflictos de horario.',      color: '#ec4899' },
+  { icon: Package,       label: 'Inventario',            desc: 'Controla refacciones sin desabasto.',      color: '#f59e0b' },
+  { icon: Shield,        label: 'Garantia digital',      desc: 'Documentos firmados en cada entrega.',    color: '#10b981' },
+  { icon: Star,          label: 'Resenas automaticas',  desc: 'Google Reviews sin esfuerzo extra.',       color: '#eab308' },
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica a la semana.', nombre: 'Roberto Garza',    rol: 'Dueño — Taller Garza, Monterrey MX',    inicial: 'R', color: '#2563eb', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos y el mecánico sigue sin parar.',  nombre: 'Camila Restrepo', rol: 'Administradora — AutoFix, Medellín CO',  inicial: 'C', color: '#0891b2', estrellas: 5 },
-  { texto: 'Los recordatorios automáticos de mantenimiento nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',          nombre: 'Miguel Quispe',   rol: 'Propietario — Mecánica Quispe, Lima PE', inicial: 'M', color: '#7c3aed', estrellas: 5 },
+  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar como va su carro. El portal en tiempo real nos ahorro horas de atencion telefonica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',   img: HF.team1,     estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdiamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                  nombre: 'Camila Restrepo', rol: 'AutoFix, Medellin CO',          img: HF.customer,  estrellas: 5 },
+  { texto: 'Los recordatorios automaticos nos trajeron clientes que no veiamos en anos. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',            nombre: 'Miguel Quispe',   rol: 'Mecanica Quispe, Lima PE',      img: HF.mechanic2, estrellas: 5 },
 ]
 
 const PLANES = [
@@ -42,749 +57,674 @@ const PLANES = [
     nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
     icono: Zap, popular: false,
-    features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
+    features: ['Ordenes de trabajo ilimitadas','Gestion de clientes y vehiculos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantia digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
     nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
     icono: Star, popular: true,
-    features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Usuarios ilimitados','Soporte prioritario'],
+    features: ['Todo lo del plan Esencial','Recordatorios automaticos de mantenimiento','Solicitud automatica de resenas en Google','Reportes y metricas avanzadas','Modulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
 
 const STATS_DATA = [
-  { valor: '63%',  texto: 'de clientes desconfía de talleres mecánicos',  icon: AlertTriangle, gradient: 'linear-gradient(135deg,#dc2626,#ef4444)', glow: 'rgba(220,38,38,0.25)' },
-  { valor: '97%',  texto: 'lee reseñas antes de elegir un taller',         icon: Star,          gradient: 'linear-gradient(135deg,#d97706,#f59e0b)', glow: 'rgba(245,158,11,0.25)' },
-  { valor: '#1',   texto: 'queja en LATAM: cobros no autorizados',         icon: MessageCircle, gradient: 'linear-gradient(135deg,#7c3aed,#8b5cf6)', glow: 'rgba(124,58,237,0.25)' },
-  { valor: '+40%', texto: 'más ingresos con recordatorios automáticos',    icon: TrendingUp,    gradient: 'linear-gradient(135deg,#0891b2,#06b6d4)', glow: 'rgba(8,145,178,0.25)'  },
+  { valor: '63%',  texto: 'de clientes desconfia de talleres mecanicos', icon: AlertTriangle, color: '#ef4444' },
+  { valor: '97%',  texto: 'lee resenas antes de elegir un taller',        icon: Star,          color: '#f59e0b' },
+  { valor: '#1',   texto: 'queja en LATAM: cobros no autorizados',        icon: MessageCircle, color: '#a855f7' },
+  { valor: '+40%', texto: 'mas ingresos con recordatorios automaticos',   icon: TrendingUp,    color: '#06b6d4' },
 ]
 
-const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
-const WORDS   = ['más confiable','más profesional','más rentable','el favorito']
+const MARQUEE = ['Aprobacion por WhatsApp','Portal del cliente','Resenas automaticas','Garantia digital','Fotos del diagnostico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehiculo','Control de inventario','Reportes avanzados']
+const WORDS = ['mas confiable','mas profesional','mas rentable','el favorito']
 
-function getSecondsUntilEndOfMonth(): number {
+function getSecsUntilEOM(): number {
   const now = new Date()
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0)
   return Math.floor((end.getTime() - now.getTime()) / 1000)
 }
-function formatTime(s: number) {
-  return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 }
-}
+function fmt(s: number) { return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 } }
 
 export default function LandingPage() {
-  const [menuAbierto, setMenuAbierto]   = useState(false)
-  const [anual, setAnual]               = useState(false)
-  const [scrolled, setScrolled]         = useState(false)
-  const [visible, setVisible]           = useState<Set<string>>(new Set())
-  const [stats, setStats]               = useState({ hoy: 0, semana: 0, total: 0 })
-  const [typeIdx, setTypeIdx]           = useState(0)
-  const [typeChar, setTypeChar]         = useState(0)
-  const [typeDeleting, setTypeDeleting] = useState(false)
-  const [toastVisible, setToastVisible] = useState(false)
-  const [offerSecs, setOfferSecs]       = useState(getSecondsUntilEndOfMonth())
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  const { convertir, cargando: cargandoMoneda } = useMonedaLocal()
+  const [menuOpen, setMenuOpen]     = useState(false)
+  const [anual, setAnual]           = useState(false)
+  const [scrolled, setScrolled]     = useState(false)
+  const [visible, setVisible]       = useState<Set<string>>(new Set())
+  const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0 })
+  const [tIdx, setTIdx]             = useState(0)
+  const [tChar, setTChar]           = useState(0)
+  const [tDel, setTDel]             = useState(false)
+  const [toast, setToast]           = useState(false)
+  const [secs, setSecs]             = useState(getSecsUntilEOM())
+  const obs = useRef<IntersectionObserver | null>(null)
+  const { convertir, cargando: cM } = useMonedaLocal()
 
-  // Typewriter
   useEffect(() => {
-    const word = WORDS[typeIdx]
-    const speed = typeDeleting ? 38 : 75
-    const timer = setTimeout(() => {
-      if (!typeDeleting && typeChar < word.length) { setTypeChar(c => c + 1) }
-      else if (!typeDeleting && typeChar === word.length) { setTimeout(() => setTypeDeleting(true), 1800) }
-      else if (typeDeleting && typeChar > 0) { setTypeChar(c => c - 1) }
-      else { setTypeDeleting(false); setTypeIdx(i => (i + 1) % WORDS.length) }
-    }, speed)
-    return () => clearTimeout(timer)
-  }, [typeChar, typeDeleting, typeIdx])
+    const w = WORDS[tIdx]; const sp = tDel ? 38 : 75
+    const t = setTimeout(() => {
+      if (!tDel && tChar < w.length) setTChar(c => c+1)
+      else if (!tDel && tChar === w.length) setTimeout(() => setTDel(true), 1800)
+      else if (tDel && tChar > 0) setTChar(c => c-1)
+      else { setTDel(false); setTIdx(i => (i+1) % WORDS.length) }
+    }, sp)
+    return () => clearTimeout(t)
+  }, [tChar, tDel, tIdx])
 
-  // Scroll nav
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  // Stats + toast
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => {
       setStats(d)
-      if (d.hoy > 0 || d.semana > 0) {
-        setTimeout(() => setToastVisible(true), 4000)
-        setTimeout(() => setToastVisible(false), 10000)
-      }
+      if (d.hoy > 0 || d.semana > 0) { setTimeout(() => setToast(true), 4000); setTimeout(() => setToast(false), 10000) }
     }).catch(() => {})
   }, [])
 
-  // Offer countdown
-  useEffect(() => {
-    const t = setInterval(() => setOfferSecs(s => s > 0 ? s - 1 : 0), 1000)
-    return () => clearInterval(t)
-  }, [])
+  useEffect(() => { const t = setInterval(() => setSecs(s => s > 0 ? s-1 : 0), 1000); return () => clearInterval(t) }, [])
 
-  // Intersection
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
+    obs.current = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) setVisible(p => new Set([...p, e.target.id])) }),
-      { threshold: 0.08 }
+      { threshold: 0.06 }
     )
-    document.querySelectorAll('[data-animate]').forEach(el => observerRef.current?.observe(el))
-    return () => observerRef.current?.disconnect()
+    document.querySelectorAll('[data-animate]').forEach(el => obs.current?.observe(el))
+    return () => obs.current?.disconnect()
   }, [])
 
   const isV = (id: string) => visible.has(id)
   const pad = (n: number) => String(n).padStart(2, '0')
-  const { d, h, m, s } = formatTime(offerSecs)
+  const { d, h, m, s } = fmt(secs)
 
   return (
     <>
-      <div className="t-root">
+    <div className="lr">
 
-      {/* TOAST NOTIFICACION */}
-      {toastVisible && (stats.hoy > 0 || stats.semana > 0) && (
-        <div className="t-toast">
-          <span className="t-toast-icon">🔧</span>
-          <span className="t-toast-text">
-            {stats.hoy > 0
-              ? `${stats.hoy} taller${stats.hoy > 1 ? 'es' : ''} se registró hoy`
-              : `${stats.semana} talleres registrados esta semana`}
-          </span>
-          <button className="t-toast-close" onClick={() => setToastVisible(false)}>✕</button>
+    {/* TOAST */}
+    {toast && (stats.hoy > 0 || stats.semana > 0) && (
+      <div className="l-toast">
+        <span className="l-dot" />
+        <span className="l-toast-t">{stats.hoy > 0 ? `${stats.hoy} taller${stats.hoy>1?'es':''} se registro hoy` : `${stats.semana} talleres registrados esta semana`}</span>
+        <button className="l-toast-x" onClick={() => setToast(false)}>x</button>
+      </div>
+    )}
+
+    {/* NAV */}
+    <nav className={`ln${scrolled?' sc':''}`}>
+      <div className="ln-i">
+        <a href="/" className="ll">
+          <img src="/icon-512.png" alt="TallerOS" className="ll-img" />
+          <span className="ll-t">Taller<em>OS</em></span>
+        </a>
+        <div className="ln-links">
+          {[['#modulos','Modulos'],['#caracteristicas','Como funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+            <a key={href} href={href} className="ln-a">{label}</a>
+          ))}
+        </div>
+        <div className="ln-r">
+          <a href="/login" className="ln-login">Iniciar sesion</a>
+          <a href="/registro" className="ln-cta">Prueba gratis <ChevronRight size={14}/></a>
+        </div>
+        <button className="ln-ham" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+          {menuOpen ? <X size={22}/> : <Menu size={22}/>}
+        </button>
+      </div>
+      {menuOpen && (
+        <div className="ln-mob">
+          {[['#modulos','Modulos'],['#caracteristicas','Como funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+            <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
+          ))}
+          <div className="ln-mob-act">
+            <a href="/login" className="ln-mob-login">Iniciar sesion</a>
+            <a href="/registro" className="ln-mob-cta">Prueba gratis - 14 dias</a>
+          </div>
         </div>
       )}
+    </nav>
 
-      {/* NAV */}
-      <nav className={`t-nav ${scrolled ? 'scrolled' : ''}`}>
-        <div className="t-nav-inner">
-          <a href="/" className="t-logo">
-            <div className="t-logo-img"><img src="/icon-512.png" alt="TallerOS" /></div>
-            <span className="t-logo-text">Taller<span className="t-accent">OS</span></span>
-          </a>
-          <div className="t-nav-links">
-            {[['#modulos','Módulos'],['#caracteristicas','Características'],['#precios','Precios'],['#testimoniales','Clientes']].map(([h,l]) => (
-              <a key={h} href={h} className="t-nav-link">{l}</a>
+    {/* HERO */}
+    <section className="lh">
+      <div className="lh-bg">
+        <div className="lh-photo" style={{backgroundImage:`url(${HF.workshop3})`}} />
+        <div className="lh-ov" />
+        <div className="lh-grid" />
+      </div>
+      <div className="lh-inner">
+        <div className="lh-left">
+          <div className="ley">
+            <span className="ley-dot" />
+            Software de gestion para talleres mecanicos en LATAM
+          </div>
+          <h1 className="lh1">
+            Tu taller merece ser<br/>
+            <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
+          </h1>
+          <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y resenas automaticas en Google.</p>
+          <div className="lh-ctas">
+            <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
+            <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
+          </div>
+          <div className="ltrust">
+            {['Sin tarjeta de credito','14 dias gratis','Soporte en espanol'].map(t => (
+              <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
           </div>
-          <div className="t-nav-actions">
-            <a href="/login" className="t-nav-login">Iniciar sesión</a>
-            <a href="/registro" className="t-nav-cta">Prueba gratis <ChevronRight size={14} /></a>
-          </div>
-          <button className="t-hamburger" onClick={() => setMenuAbierto(!menuAbierto)}>
-            {menuAbierto ? <X size={22} /> : <Menu size={22} />}
-          </button>
         </div>
-        {menuAbierto && (
-          <div className="t-mobile-menu">
-            {[['#modulos','Módulos'],['#caracteristicas','Características'],['#precios','Precios'],['#testimoniales','Clientes']].map(([h,l]) => (
-              <a key={h} href={h} className="t-mobile-link" onClick={() => setMenuAbierto(false)}>{l}</a>
-            ))}
-            <div className="t-mobile-actions">
-              <a href="/login" className="t-mobile-login">Iniciar sesión</a>
-              <a href="/registro" className="t-mobile-cta">Prueba gratis — 14 días</a>
+        <div className="lh-right">
+          <div className="lmock">
+            <img src="/hero-dashboard.png" alt="TallerOS Dashboard" className="lmock-s" />
+            <div className="lfl lfl-wa">
+              <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
+              <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
             </div>
-          </div>
-        )}
-      </nav>
-
-      {/* HERO */}
-      <section className="t-hero">
-        <div className="t-hero-grid" />
-        <div className="t-orb t-orb1" />
-        <div className="t-orb t-orb2" />
-        <div className="t-hero-inner">
-          <div className="t-hero-left">
-            <div className="t-eyebrow">
-              <span className="t-eyebrow-dot" />
-              Software de gestión inteligente para talleres mecánicos
-            </div>
-            <h1 className="t-h1">
-              Tu taller merece ser<br />
-              <span className="t-typewriter">
-                {WORDS[typeIdx].slice(0, typeChar)}<span className="t-cursor">|</span>
-              </span>
-            </h1>
-            <p className="t-hero-sub">TallerOS digitaliza tu operación con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Todo en un solo lugar.</p>
-            <div className="t-hero-ctas">
-              <a href="/registro" className="t-btn-primary">Empezar demo gratis <ArrowRight size={17} /></a>
-              <a href="#caracteristicas" className="t-btn-ghost">Ver cómo funciona</a>
-            </div>
-            <div className="t-trust-row">
-              {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
-                <div key={t} className="t-trust-pill"><Check size={11} strokeWidth={3} className="t-check" /><span>{t}</span></div>
-              ))}
-            </div>
-          </div>
-
-          <div className="t-hero-right">
-            <div className="t-hero-img-wrap">
-              <img src="/hero-dashboard.png" alt="TallerOS Dashboard" className="t-hero-img" />
-              <div className="t-hero-img-glow" />
+            <div className="lfl lfl-rv">
+              <div className="lfl-ic" style={{background:'#f59e0b'}}><Star size={15} color="#fff"/></div>
+              <div><p className="lfl-l">Nueva resena</p><p className="lfl-v">5 estrellas Google</p></div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* MARQUEE */}
-      <div className="t-marquee-wrap">
-        <div className="t-marquee-track">
-          {[...MARQUEE,...MARQUEE].map((item,i) => (
-            <span key={i} className="t-mitem">{item}<span className="t-mdot">·</span></span>
+    {/* MARQUEE */}
+    <div className="lmq"><div className="lmq-t">{[...MARQUEE,...MARQUEE].map((item,i) => (<span key={i} className="lmq-i">{item}<span className="lmq-d">·</span></span>))}</div></div>
+
+    {/* STATS */}
+    <section className="ls lprob">
+      <div className="li">
+        <div className="lsl">El problema real</div>
+        <h2 className="lsh2">Los numeros que tu competencia ignora</h2>
+        <p className="lssub">Mientras la mayoria opera igual que hace 20 anos, los talleres con TallerOS ya van adelante.</p>
+        <div className="lstg">
+          {STATS_DATA.map((s,i) => (
+            <div key={i} id={`st-${i}`} data-animate className={`lstc${isV(`st-${i}`)?' v':''}`} style={{transitionDelay:`${i*80}ms`}}>
+              <div className="lsti" style={{background:`${s.color}15`,border:`1px solid ${s.color}25`}}><s.icon size={22} style={{color:s.color}}/></div>
+              <div className="lstn" style={{color:s.color}}>{s.valor}</div>
+              <p className="lstxt">{s.texto}</p>
+            </div>
           ))}
         </div>
       </div>
+    </section>
 
-      {/* TABLA SIN/CON */}
-      <section className="t-versus-section">
-        <div className="t-versus-inner">
-          <p className="t-versus-pregunta">¿Sigues gestionando tu taller con WhatsApp, Excel y llamadas perdidas?</p>
-          <h2 className="t-versus-titulo">Lo que cambia con TallerOS</h2>
-          <div className="t-versus-table">
-            <div className="t-versus-col t-versus-sin">
-              <div className="t-versus-col-header">
-                <span className="t-versus-icon-bad">✗</span>
-                <span>Sin TallerOS</span>
-              </div>
+    {/* VERSUS */}
+    <section className="lver">
+      <div className="li">
+        <div className="lver-w">
+          <div className="lver-img">
+            <img src={HF.mechanic2} alt="Sin sistema" className="lvimg"/>
+            <div className="lvimg-c bad">Sin TallerOS</div>
+          </div>
+          <div className="lver-cnt">
+            <div className="lsl">Lo que cambia</div>
+            <h2 className="lver-h2">Sigues con WhatsApp,<br/>Excel y llamadas perdidas?</h2>
+            <div className="lver-rows">
               {[
-                'Clientes llaman sin parar a preguntar por su carro',
-                'Aprobaciones verbales que generan disputas',
-                'Sin evidencia de daños preexistentes',
-                'Pierdes clientes que no regresan nunca',
-                'Reseñas en Google solo cuando algo sale mal',
-                'No sabes cuánto ganaste este mes',
-                'Garantías en papel que se pierden',
-              ].map((item, i) => (
-                <div key={i} className="t-versus-row">
-                  <span className="t-versus-x">✗</span>
-                  <span>{item}</span>
+                ['Clientes llaman sin parar a preguntar por su carro','Portal en tiempo real - el cliente ve el avance solo'],
+                ['Aprobaciones verbales que generan disputas','Aprobacion por WhatsApp con registro digital'],
+                ['Sin evidencia de danos preexistentes','Fotos del diagnostico antes de tocar el vehiculo'],
+                ['Pierdes clientes que no regresan nunca','Recordatorios automaticos cada 3-6 meses'],
+                ['Resenas solo cuando algo sale mal','Resena en Google solicitada automaticamente'],
+              ].map(([bad,good],i) => (
+                <div key={i} className="lvrow">
+                  <div className="lvbad"><span className="lvx">x</span>{bad}</div>
+                  <div className="lvgood"><span className="lvch">v</span>{good}</div>
                 </div>
               ))}
             </div>
-            <div className="t-versus-col t-versus-con">
-              <div className="t-versus-col-header">
-                <span className="t-versus-icon-good">✓</span>
-                <span>Con TallerOS</span>
-              </div>
-              {[
-                'Portal en tiempo real — el cliente ve el avance solo',
-                'Aprobación por WhatsApp con registro digital',
-                'Fotos del diagnóstico antes de tocar el vehículo',
-                'Recordatorios automáticos cada 3–6 meses',
-                'Reseña en Google solicitada automáticamente al entregar',
-                'Reportes de ingresos y rendimiento en tiempo real',
-                'Garantía digital firmada en cada entrega',
-              ].map((item, i) => (
-                <div key={i} className="t-versus-row">
-                  <span className="t-versus-check">✓</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="t-versus-ctas">
-            <a href="/registro" className="t-btn-primary">Empezar gratis — sin tarjeta <ArrowRight size={17} /></a>
+            <a href="/registro" className="lb-pri" style={{marginTop:'2rem',display:'inline-flex'}}>Empezar gratis - sin tarjeta <ArrowRight size={16}/></a>
           </div>
         </div>
-      </section>
-
-      {/* STATS */}
-      <section id="por-que" className="t-section t-stats-section">
-        <div className="t-inner">
-          <div className="t-slabel">La realidad del mercado</div>
-          <h2 className="t-sh2">Los números que tu competencia ignora</h2>
-          <p className="t-ssub">Mientras la mayoría de talleres opera igual que hace 20 años, los que usan TallerOS ya van adelante.</p>
-          <div className="t-stats-grid">
-            {STATS_DATA.map((s,i) => (
-              <div key={i} id={`st-${i}`} data-animate className={`t-stat-card ${isV(`st-${i}`)?'vis':''}`} style={{transitionDelay:`${i*80}ms`}}>
-                <div className="t-stat-icon-wrap" style={{background: s.gradient, boxShadow:`0 8px 24px ${s.glow}`}}>
-                  <s.icon size={22} color="#fff" />
-                </div>
-                <div className="t-stat-val" style={{background: s.gradient, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text'}}>{s.valor}</div>
-                <p className="t-stat-txt">{s.texto}</p>
-              </div>
-            ))}
-          </div>
-          <div className="t-stats-cta">
-            <a href="/registro" className="t-btn-primary">Quiero ser diferente — Demo gratis <ArrowRight size={17} /></a>
-          </div>
-        </div>
-      </section>
-
-      {/* MODULOS */}
-      <section id="modulos" className="t-section t-modules-section">
-        <div className="t-inner">
-          <div className="t-slabel">Todo en un solo lugar</div>
-          <h2 className="t-sh2">Todo lo que tu taller necesita</h2>
-          <p className="t-ssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo integrado desde el día 1.</p>
-          <div className="t-modules-grid">
-            {MODULOS.map((m,i) => (
-              <div key={i} id={`mod-${i}`} data-animate className={`t-module-card ${isV(`mod-${i}`)?'vis':''}`} style={{transitionDelay:`${i*60}ms`}}>
-                <div className="t-module-icon" style={{background: m.bg, border:`1px solid ${m.color}30`}}>
-                  <m.icon size={24} color={m.color} />
-                </div>
-                <h3 className="t-module-label">{m.label}</h3>
-                <p className="t-module-desc">{m.desc}</p>
-                <div className="t-module-arrow" style={{color: m.color}}>
-                  <ArrowRight size={14} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DIFERENCIADORES */}
-      <section id="caracteristicas" className="t-section t-features-section">
-        <div className="t-inner">
-          <div className="t-slabel">Por qué nos eligen</div>
-          <h2 className="t-sh2">6 herramientas que transforman tu taller en 30 días</h2>
-          <p className="t-ssub">Cada función resuelve un problema real que cuesta clientes y dinero todos los días.</p>
-          <div className="t-features-grid">
-            {DIFERENCIADORES.map((d,i) => (
-              <div key={i} id={`dif-${i}`} data-animate className={`t-feature-card ${isV(`dif-${i}`)?'vis':''}`} style={{transitionDelay:`${i*70}ms`}}>
-                <div className="t-feature-top">
-                  <div className="t-ficon" style={{background: d.gradient, boxShadow:`0 8px 20px rgba(0,0,0,0.3)`}}>
-                    <d.icon size={22} color="#fff" />
-                  </div>
-                  <span className="t-ftag">{d.tag}</span>
-                </div>
-                <h3 className="t-ftitle">{d.titulo}</h3>
-                <p className="t-fdesc">{d.desc}</p>
-                <div className="t-feature-bottom">
-                  <a href="/registro" className="t-feature-link">Conocer más <ArrowRight size={13} /></a>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="t-features-cta">
-            <a href="/registro" className="t-btn-primary">Probar todas las funciones gratis <ArrowRight size={17} /></a>
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALES */}
-      <section id="testimoniales" className="t-section t-testi-section">
-        <div className="t-inner">
-          <div className="t-slabel">Lo que dicen nuestros clientes</div>
-          <h2 className="t-sh2">Talleres que ya dieron el salto</h2>
-          <p className="t-ssub">Dueños de talleres comparten su experiencia con TallerOS.</p>
-          <div className="t-testi-grid">
-            {TESTIMONIALES.map((t,i) => (
-              <div key={i} id={`tes-${i}`} data-animate className={`t-testi-card ${isV(`tes-${i}`)?'vis':''}`} style={{transitionDelay:`${i*100}ms`}}>
-                <div className="t-testi-top">
-                  <div className="t-stars">{'★'.repeat(t.estrellas)}</div>
-                  <Quote size={18} className="t-quote-icon" />
-                </div>
-                <p className="t-testi-text">{t.texto}</p>
-                <div className="t-testi-author">
-                  <div className="t-testi-avatar" style={{background:t.color}}>{t.inicial}</div>
-                  <div><p className="t-testi-name">{t.nombre}</p><p className="t-testi-rol">{t.rol}</p></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRECIOS */}
-      <section id="precios" className="t-section t-pricing-section">
-        <div className="t-inner">
-          {/* OFFER BAR DENTRO DE PRECIOS */}
-          <div className="t-offer-inline">
-            <span className="t-offer-tag">🔥 OFERTA DE LANZAMIENTO — 50% OFF</span>
-            <span className="t-offer-timer">
-              Termina en{' '}
-              <strong className="t-offer-count">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong>
-            </span>
-          </div>
-
-          <p className="t-versus-pregunta">¿Cuánto te cuesta al mes perder clientes por falta de seguimiento?</p>
-          <div className="t-slabel">Precios de lanzamiento</div>
-          <h2 className="t-sh2">Sin sorpresas. Sin letra chica.</h2>
-          <p className="t-ssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
-
-          <div className="t-toggle-wrap">
-            <div className="t-toggle">
-              {['Mensual','Anual'].map((label,i) => (
-                <button key={label} onClick={() => setAnual(i===1)} className={`t-tbtn ${(i===1)===anual?'active':''}`}>
-                  {label}{i===1 && <span className="t-tbadge">-20%</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="t-ptrust">
-            {[[Check,'Sin tarjeta de crédito','Para empezar'],[Shield,'Pago seguro','Powered by Stripe'],[Monitor,'Datos protegidos','Encriptación total'],[ArrowRight,'Cancela cuando quieras','Sin penalizaciones']].map(([Icon,label,sub]:any,i) => (
-              <div key={i} className="t-ptrust-item"><Icon size={16} className="t-ptrust-icon" /><div><p className="t-ptrust-label">{label}</p><p className="t-ptrust-sub">{sub}</p></div></div>
-            ))}
-          </div>
-
-          <div className="t-plans-grid">
-            {PLANES.map(plan => {
-              const pa  = anual ? plan.precio_anual : plan.precio_mensual
-              const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
-              const la  = convertir(pa)
-              const lor = convertir(por)
-              const lan = convertir(plan.total_anual)
-              const descuento = Math.round((1 - pa / por) * 100)
-              return (
-                <div key={plan.nombre} className={`t-plan ${plan.popular?'popular':''}`}>
-                  {plan.popular && <div className="t-plan-badge">⭐ Más popular</div>}
-                  <div className="t-plan-hdr">
-                    <div className="t-plan-icon"><plan.icono size={18} /></div>
-                    <h3 className="t-plan-name">{plan.nombre}</h3>
-                    <span className="t-plan-descuento">-{descuento}%</span>
-                  </div>
-                  <div className="t-plan-oferta"><span className="t-odot" /><span>Oferta exclusiva para nuevos talleres</span></div>
-
-                  <div className="t-plan-price-block">
-                    <div className="t-poriginal-row">
-                      <span className="t-poriginal">
-                        {!cargandoMoneda ? lor : `$${por} USD`}
-                      </span>
-                      <span className="t-pahorras">🎉 Ahorras {descuento}%</span>
-                    </div>
-                    <div className="t-plan-price">
-                      <span className="t-pnum">
-                        {!cargandoMoneda ? la : `$${pa} USD`}
-                      </span>
-                      <span className="t-pper">/mes</span>
-                    </div>
-                    {anual && (
-                      <p className="t-plan-annual">
-                        {!cargandoMoneda ? `${lan} al año` : `$${plan.total_anual} USD al año`}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="t-pdivider" />
-                  <ul className="t-plan-features">
-                    {plan.features.map(f => (
-                      <li key={f}><span className="t-fcheck"><Check size={11} strokeWidth={3} /></span>{f}</li>
-                    ))}
-                  </ul>
-                  <a href="/registro" className={`t-plan-cta ${plan.popular?'popular':''}`}>
-                    Empezar 14 días gratis <ArrowRight size={15} />
-                  </a>
-                  <p className="t-plan-note">Sin tarjeta de crédito requerida</p>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="t-social-proof">
-            <div className="t-avatars">
-              {['#2563eb','#0891b2','#7c3aed','#f59e0b'].map((c,i) => (
-                <div key={i} className="t-avatar" style={{background:c,marginLeft:i===0?0:-8}}>T</div>
-              ))}
-            </div>
-            <p className="t-sproof-text"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> ya digitalizaron su operación</p>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="t-cta-section">
-        <div className="t-cta-inner">
-          <div className="t-cta-orb" />
-          <div className="t-slabel">Empieza hoy</div>
-          <h2 className="t-cta-h2">Tu taller merece crecer.</h2>
-          <p className="t-cta-sub">Únete a los talleres que ya digitalizaron su operación.<br />14 días gratis, sin tarjeta de crédito.</p>
-          <div className="t-cta-btns">
-            <a href="/registro" className="t-btn-primary">Crear mi taller gratis <ArrowRight size={17} /></a>
-            <a href="/login" className="t-btn-ghost">Ya tengo cuenta</a>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="t-footer">
-        <div className="t-footer-inner">
-          <div className="t-footer-logo">
-            <div className="t-logo-img sm"><img src="/icon-512.png" alt="TallerOS" /></div>
-            <span className="t-logo-text sm">Taller<span className="t-accent">OS</span></span>
-          </div>
-          <p className="t-footer-copy">© 2026 TallerOS. Gestión inteligente para talleres mecánicos.</p>
-          <div className="t-footer-links">
-            {[{label:'Privacidad',href:'/privacidad'},{label:'Términos',href:'/terminos'},{label:'Soporte',href:'mailto:hola@tallerosapp.com'}].map(l => (
-              <a key={l.label} href={l.href}>{l.label}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        html{scroll-behavior:smooth;}
-        :root{
-          --bg:#04080f; --bg-card:#070d1c; --bg-mid:#080f1e;
-          --blue:#2563eb; --cyan:#0891b2;
-          --text:#e2e8f0; --muted:#64748b; --dim:#334155;
-          --border:rgba(255,255,255,0.07);
-          --r:16px; --rl:22px;
-        }
-        .t-root{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;}
-
-        /* TOAST */
-        .t-toast{position:fixed;bottom:24px;left:24px;z-index:200;display:flex;align-items:center;gap:10px;background:rgba(7,13,28,0.95);border:1px solid rgba(37,99,235,0.3);border-radius:14px;padding:12px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(37,99,235,0.15);backdrop-filter:blur(16px);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);}
-        @keyframes toastIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-        .t-toast-icon{font-size:1.1rem;}
-        .t-toast-text{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;}
-        .t-toast-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;margin-left:4px;transition:color .15s;}
-        .t-toast-close:hover{color:var(--text);}
-
-        /* NAV */
-        .t-nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent;}
-        .t-nav.scrolled{background:rgba(4,8,15,0.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom-color:var(--border);}
-        .t-nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 24px;}
-        .t-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
-        .t-logo-img{width:38px;height:38px;border-radius:10px;overflow:hidden;}
-        .t-logo-img img{width:100%;height:100%;object-fit:contain;}
-        .t-logo-img.sm{width:28px;height:28px;}
-        .t-logo-text{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;}
-        .t-logo-text.sm{font-size:16px;}
-        .t-accent{color:var(--blue);}
-        .t-nav-links{display:flex;align-items:center;gap:28px;}
-        .t-nav-link{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;}
-        .t-nav-link:hover{color:var(--text);}
-        .t-nav-actions{display:flex;align-items:center;gap:8px;}
-        .t-nav-login{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:8px 14px;transition:color .2s;}
-        .t-nav-login:hover{color:var(--text);}
-        .t-nav-cta{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:#fff;text-decoration:none;background:var(--blue);padding:9px 18px;border-radius:10px;box-shadow:0 0 0 1px #1d4ed8,0 4px 16px rgba(37,99,235,0.35);transition:background .2s,transform .15s;}
-        .t-nav-cta:hover{background:#1d4ed8;transform:translateY(-1px);}
-        .t-hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text);padding:4px;}
-        .t-mobile-menu{background:rgba(4,8,15,0.98);border-top:1px solid var(--border);padding:16px 24px 24px;}
-        .t-mobile-link{display:block;color:var(--muted);font-size:16px;font-weight:500;text-decoration:none;padding:13px 0;border-bottom:1px solid var(--border);transition:color .2s;}
-        .t-mobile-link:hover{color:var(--text);}
-        .t-mobile-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
-        .t-mobile-login{text-align:center;color:var(--muted);font-size:15px;font-weight:500;text-decoration:none;padding:12px;border:1px solid var(--border);border-radius:10px;}
-        .t-mobile-cta{text-align:center;background:var(--blue);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:13px;border-radius:10px;}
-
-        /* HERO */
-        .t-hero{min-height:100dvh;display:flex;align-items:center;padding:100px 24px 80px;position:relative;overflow:hidden;}
-        .t-hero-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:64px 64px;}
-        .t-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);}
-        .t-orb1{width:600px;height:600px;top:-120px;left:-100px;background:radial-gradient(circle,rgba(37,99,235,0.13) 0%,transparent 70%);}
-        .t-orb2{width:400px;height:400px;bottom:0;right:-60px;background:radial-gradient(circle,rgba(8,145,178,0.08) 0%,transparent 70%);}
-        .t-hero-inner{max-width:1280px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;}
-        .t-hero-left{display:flex;flex-direction:column;gap:22px;}
-        .t-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
-        .t-eyebrow-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:pg 2s ease-in-out infinite;flex-shrink:0;}
-        @keyframes pg{0%,100%{box-shadow:0 0 6px #22c55e;}50%{box-shadow:0 0 14px #22c55e;}}
-        .t-h1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2.5px;color:#f8fafc;}
-        .t-typewriter{display:block;background:linear-gradient(135deg,#2563eb,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;min-height:1.1em;}
-        .t-cursor{-webkit-text-fill-color:#2563eb;animation:blink .9s step-end infinite;font-weight:300;}
-        @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-        .t-hero-sub{font-size:clamp(15px,1.5vw,18px);color:var(--muted);line-height:1.75;max-width:520px;}
-        .t-hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
-        .t-btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:13px 24px;border-radius:12px;box-shadow:0 0 0 1px #1d4ed8,0 8px 32px rgba(37,99,235,0.4);transition:background .2s,transform .15s,box-shadow .2s;}
-        .t-btn-primary:hover{background:#1d4ed8;transform:translateY(-2px);box-shadow:0 0 0 1px #1d4ed8,0 12px 40px rgba(37,99,235,0.5);}
-        .t-btn-primary:active{transform:translateY(0) scale(0.98);}
-        .t-btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:15px;font-weight:600;text-decoration:none;padding:13px 22px;border-radius:12px;transition:background .2s,color .2s,transform .15s;}
-        .t-btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--text);transform:translateY(-1px);}
-        .t-trust-row{display:flex;flex-wrap:wrap;gap:12px;}
-        .t-trust-pill{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--dim);}
-        .t-check{color:#22c55e;}
-
-        /* HERO IMAGE */
-        .t-hero-right{display:flex;justify-content:center;align-items:center;}
-        .t-hero-img-wrap{position:relative;width:100%;max-width:560px;}
-        .t-hero-img{width:100%;border-radius:20px;box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);animation:fl 6s ease-in-out infinite;}
-        .t-hero-img-glow{position:absolute;inset:-20px;border-radius:40px;background:radial-gradient(ellipse at 50% 50%,rgba(37,99,235,0.15) 0%,transparent 70%);pointer-events:none;z-index:-1;}
-        @keyframes fl{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-12px) rotate(0.5deg);}}
-
-        /* MARQUEE */
-        .t-marquee-wrap{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;padding:14px 0;background:rgba(255,255,255,0.012);}
-        .t-marquee-track{display:flex;width:max-content;animation:mq 32s linear infinite;}
-        @keyframes mq{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-        .t-mitem{font-size:13px;font-weight:500;color:var(--dim);white-space:nowrap;}
-        .t-mdot{margin:0 20px;color:var(--blue);}
-
-        /* VERSUS */
-        .t-versus-section{padding:80px 24px;background:linear-gradient(180deg,#0a0f1a 0%,#060d1a 100%);}
-        .t-versus-inner{max-width:900px;margin:0 auto;}
-        .t-versus-pregunta{text-align:center;color:#dc2626;font-weight:600;font-size:1rem;margin-bottom:0.5rem;}
-        .t-versus-titulo{text-align:center;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:2.5rem;}
-        .t-versus-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem;}
-        .t-versus-col{border-radius:16px;overflow:hidden;}
-        .t-versus-sin{background:#1a0a0a;border:1px solid #3f1515;}
-        .t-versus-con{background:#0a1a0f;border:1px solid #14532d;}
-        .t-versus-col-header{display:flex;align-items:center;gap:0.75rem;padding:1rem 1.25rem;font-weight:700;font-size:1rem;}
-        .t-versus-sin .t-versus-col-header{background:#2d0f0f;color:#f87171;}
-        .t-versus-con .t-versus-col-header{background:#0f2d1a;color:#4ade80;}
-        .t-versus-icon-bad{font-size:1.2rem;color:#ef4444;}
-        .t-versus-icon-good{font-size:1.2rem;color:#22c55e;}
-        .t-versus-row{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 1.25rem;border-top:1px solid rgba(255,255,255,0.05);font-size:0.875rem;line-height:1.4;}
-        .t-versus-sin .t-versus-row{color:#fca5a5;}
-        .t-versus-con .t-versus-row{color:#86efac;}
-        .t-versus-x{color:#ef4444;font-weight:700;flex-shrink:0;margin-top:1px;}
-        .t-versus-check{color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;}
-        .t-versus-ctas{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
-        @media(max-width:640px){.t-versus-table{grid-template-columns:1fr;}.t-versus-section{padding:60px 16px;}}
-
-        /* SHARED */
-        .t-inner{max-width:1200px;margin:0 auto;padding:0 24px;}
-        .t-section{padding:80px 0;}
-        .t-slabel{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:center;}
-        .t-sh2{font-size:clamp(26px,4vw,48px);font-weight:900;letter-spacing:-2px;line-height:1.05;color:#f8fafc;text-align:center;margin-bottom:12px;}
-        .t-ssub{font-size:15px;color:var(--muted);text-align:center;max-width:540px;margin:0 auto 56px;line-height:1.7;}
-
-        /* STATS */
-        .t-stats-section{padding:80px 0;position:relative;}
-        .t-stats-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.06) 0%,transparent 70%);pointer-events:none;}
-        .t-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:48px;}
-        .t-stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px 28px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;}
-        .t-stat-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;border-radius:20px;}
-        .t-stat-card.vis{opacity:1;transform:translateY(0);}
-        .t-stat-card:hover{border-color:rgba(37,99,235,0.3);box-shadow:0 20px 48px rgba(0,0,0,0.3);transform:translateY(-4px);}
-        .t-stat-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;}
-        .t-stat-val{font-size:clamp(42px,6vw,56px);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:12px;}
-        .t-stat-txt{font-size:14px;color:#94a3b8;line-height:1.6;font-weight:500;}
-        .t-stats-cta{display:flex;justify-content:center;margin-top:3.5rem;}
-
-        /* MODULES */
-        .t-modules-section{background:rgba(255,255,255,0.012);}
-        .t-modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-        .t-module-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px 24px;opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease,border-color .25s,box-shadow .25s;cursor:pointer;position:relative;overflow:hidden;}
-        .t-module-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
-        .t-module-card:hover::after{transform:scaleX(1);}
-        .t-module-card.vis{opacity:1;transform:translateY(0);}
-        .t-module-card:hover{border-color:rgba(37,99,235,0.3);transform:translateY(-6px);box-shadow:0 20px 48px rgba(37,99,235,0.12);}
-        .t-module-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:transform .25s;}
-        .t-module-card:hover .t-module-icon{transform:scale(1.1);}
-        .t-module-label{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
-        .t-module-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
-        .t-module-arrow{display:flex;align-items:center;opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s;}
-        .t-module-card:hover .t-module-arrow{opacity:1;transform:translateX(0);}
-
-        /* FEATURES */
-        .t-features-section{background:linear-gradient(180deg,var(--bg) 0%,rgba(7,13,28,0.8) 100%);}
-        .t-features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
-        .t-feature-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px;opacity:0;transform:translateY(28px);transition:opacity .55s ease,transform .55s ease,border-color .2s,box-shadow .2s;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
-        .t-feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);}
-        .t-feature-card.vis{opacity:1;transform:translateY(0);}
-        .t-feature-card:hover{border-color:rgba(37,99,235,0.25);box-shadow:0 24px 56px rgba(0,0,0,0.35);transform:translateY(-4px);}
-        .t-feature-top{display:flex;align-items:center;justify-content:space-between;}
-        .t-ficon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-        .t-ftag{font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.07);color:#94a3b8;border:1px solid rgba(255,255,255,0.08);letter-spacing:.3px;}
-        .t-ftitle{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1.2;}
-        .t-fdesc{font-size:14px;color:#64748b;line-height:1.75;flex:1;}
-        .t-feature-bottom{margin-top:auto;padding-top:8px;}
-        .t-feature-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;transition:gap .2s;}
-        .t-feature-link:hover{gap:10px;}
-        .t-features-cta{display:flex;justify-content:center;margin-top:3rem;}
-
-        /* TESTIMONIALES */
-        .t-testi-section{background:rgba(255,255,255,0.012);}
-        .t-testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-        .t-testi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px;opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease,border-color .2s;display:flex;flex-direction:column;gap:16px;}
-        .t-testi-card.vis{opacity:1;transform:translateY(0);}
-        .t-testi-card:hover{border-color:rgba(37,99,235,0.25);transform:translateY(-4px);}
-        .t-testi-top{display:flex;align-items:center;justify-content:space-between;}
-        .t-stars{color:#f59e0b;font-size:15px;letter-spacing:3px;}
-        .t-quote-icon{color:var(--blue);opacity:.35;}
-        .t-testi-text{font-size:14px;color:#94a3b8;line-height:1.8;font-style:italic;flex:1;}
-        .t-testi-author{display:flex;align-items:center;gap:12px;padding-top:8px;border-top:1px solid var(--border);}
-        .t-testi-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;}
-        .t-testi-name{font-size:14px;font-weight:700;color:#f1f5f9;}
-        .t-testi-rol{font-size:12px;color:var(--dim);margin-top:2px;}
-
-        /* PRICING */
-        .t-pricing-section{position:relative;}
-        .t-pricing-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,0.07) 0%,transparent 60%);pointer-events:none;}
-
-        /* OFFER INLINE */
-        .t-offer-inline{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;background:linear-gradient(90deg,rgba(220,38,38,0.15),rgba(185,28,28,0.15));border:1px solid rgba(220,38,38,0.3);border-radius:14px;padding:14px 24px;margin-bottom:2rem;}
-        .t-offer-tag{font-size:13px;font-weight:800;color:#fca5a5;letter-spacing:.5px;}
-        .t-offer-timer{font-size:13px;color:#fda4af;}
-        .t-offer-count{font-family:'Geist Mono',monospace;font-weight:700;font-size:15px;color:#fff;background:rgba(220,38,38,0.4);padding:2px 8px;border-radius:6px;letter-spacing:.05em;}
-
-        .t-toggle-wrap{display:flex;justify-content:center;margin-bottom:24px;}
-        .t-toggle{display:inline-flex;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;}
-        .t-tbtn{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:all .2s;font-family:inherit;}
-        .t-tbtn.active{background:var(--blue);color:#fff;}
-        .t-tbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 5px;border-radius:999px;font-weight:700;}
-        .t-ptrust{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:40px;}
-        .t-ptrust-item{display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 16px;}
-        .t-ptrust-icon{color:var(--blue);flex-shrink:0;}
-        .t-ptrust-label{font-size:13px;font-weight:700;color:#e2e8f0;}
-        .t-ptrust-sub{font-size:11px;color:var(--dim);margin-top:1px;}
-        .t-plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto;}
-        .t-plan{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--rl);padding:36px 32px;position:relative;transition:border-color .2s,transform .2s,box-shadow .2s;}
-        .t-plan:hover{transform:translateY(-4px);box-shadow:0 24px 56px rgba(0,0,0,0.35);}
-        .t-plan.popular{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 24px 64px rgba(37,99,235,0.2);}
-        .t-plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;letter-spacing:.5px;white-space:nowrap;text-transform:uppercase;box-shadow:0 4px 12px rgba(37,99,235,0.4);}
-        .t-plan-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-        .t-plan-icon{width:36px;height:36px;border-radius:10px;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;color:var(--blue);}
-        .t-plan-name{font-size:22px;font-weight:900;color:#f8fafc;flex:1;}
-        .t-plan-descuento{font-size:12px;font-weight:800;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;padding:3px 10px;border-radius:999px;}
-        .t-plan-oferta{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:999px;padding:4px 12px;margin-bottom:20px;font-size:11px;font-weight:600;color:#86efac;}
-        .t-odot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:pg 2s ease-in-out infinite;}
-        .t-plan-price-block{background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.12);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
-        .t-poriginal-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-        .t-poriginal{font-size:17px;color:#94a3b8;text-decoration:line-through;font-weight:600;}
-        .t-pahorras{font-size:11px;font-weight:800;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:999px;border:1px solid rgba(34,197,94,0.25);}
-        .t-plan-price{display:flex;align-items:baseline;gap:6px;margin-top:4px;}
-        .t-pnum{font-size:clamp(36px,5vw,52px);font-weight:900;background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-2px;line-height:1;}
-        .t-pper{font-size:15px;color:#64748b;font-weight:600;-webkit-text-fill-color:#64748b;}
-        .t-plan-annual{font-size:12px;color:var(--dim);margin-top:6px;}
-        .t-pdivider{height:1px;background:var(--border);margin:20px 0;}
-        .t-plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
-        .t-plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#94a3b8;}
-        .t-fcheck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;color:var(--blue);}
-        .t-plan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);color:#93c5fd;font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
-        .t-plan-cta:hover{background:rgba(37,99,235,0.2);color:#fff;}
-        .t-plan-cta.popular{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 8px 24px rgba(37,99,235,0.4);}
-        .t-plan-cta.popular:hover{background:#1d4ed8;box-shadow:0 12px 32px rgba(37,99,235,0.5);}
-        .t-plan-note{text-align:center;font-size:11px;color:var(--dim);margin-top:10px;}
-        .t-social-proof{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:48px;}
-        .t-avatars{display:flex;}
-        .t-avatar{width:30px;height:30px;border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
-        .t-sproof-text{font-size:13px;color:var(--muted);}
-        .t-sproof-text strong{color:#e2e8f0;}
-
-        /* CTA */
-        .t-cta-section{padding:80px 24px;}
-        .t-cta-inner{max-width:720px;margin:0 auto;text-align:center;background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.18);border-radius:28px;padding:clamp(40px,6vw,72px) clamp(24px,5vw,64px);position:relative;overflow:hidden;}
-        .t-cta-orb{position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(37,99,235,0.15),transparent);}
-        .t-cta-h2{font-size:clamp(28px,4.5vw,52px);font-weight:900;letter-spacing:-2px;color:#f8fafc;margin:12px 0;}
-        .t-cta-sub{font-size:clamp(14px,1.8vw,17px);color:var(--muted);line-height:1.7;margin-bottom:36px;}
-        .t-cta-btns{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;}
-
-        /* FOOTER */
-        .t-footer{border-top:1px solid var(--border);padding:32px 24px;}
-        .t-footer-inner{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
-        .t-footer-logo{display:flex;align-items:center;gap:8px;}
-        .t-footer-copy{font-size:12px;color:var(--dim);text-align:center;}
-        .t-footer-links{display:flex;gap:24px;}
-        .t-footer-links a{font-size:13px;color:var(--dim);text-decoration:none;transition:color .2s;}
-        .t-footer-links a:hover{color:var(--muted);}
-
-        /* RESPONSIVE */
-        @media(max-width:900px){
-          .t-nav-links,.t-nav-actions{display:none;}
-          .t-hamburger{display:block;}
-          .t-hero-inner{grid-template-columns:1fr;gap:48px;}
-          .t-hero-right{display:none;}
-          .t-modules-grid{grid-template-columns:repeat(2,1fr);}
-          .t-testi-grid{grid-template-columns:1fr;}
-        }
-        @media(max-width:600px){
-          .t-hero{padding:90px 16px 60px;}
-          .t-hero-ctas{flex-direction:column;}
-          .t-btn-primary,.t-btn-ghost{width:100%;justify-content:center;max-width:340px;}
-          .t-stats-grid{grid-template-columns:1fr 1fr;}
-          .t-modules-grid{grid-template-columns:1fr 1fr;}
-          .t-features-grid{grid-template-columns:1fr;}
-          .t-plans-grid{grid-template-columns:1fr;}
-          .t-ptrust{flex-direction:column;align-items:center;}
-          .t-ptrust-item{width:100%;max-width:320px;}
-          .t-cta-btns .t-btn-primary,.t-cta-btns .t-btn-ghost{width:100%;max-width:320px;}
-          .t-offer-inline{flex-direction:column;gap:.75rem;text-align:center;}
-          .t-toast{left:12px;right:12px;bottom:16px;}
-        }
-      `}</style>
       </div>
+    </section>
+
+    {/* FEATURES */}
+    <section id="caracteristicas" className="ls lfeat-s">
+      <div className="li">
+        <div className="lsl">Por que nos eligen</div>
+        <h2 className="lsh2">6 herramientas que transforman tu taller en 30 dias</h2>
+        <p className="lssub">Cada funcion resuelve un problema real que cuesta clientes y dinero todos los dias.</p>
+        <div className="lfg">
+          {DIFERENCIADORES.map((d,i) => (
+            <div key={i} id={`dif-${i}`} data-animate className={`lfc${isV(`dif-${i}`)?' v':''}`} style={{transitionDelay:`${i*70}ms`}}>
+              <div className="lfc-iw">
+                <img src={d.img} alt={d.titulo} className="lfc-img"/>
+                <div className="lfc-iov"/>
+                <span className="lfc-tag">{d.tag}</span>
+              </div>
+              <div className="lfc-b">
+                <h3 className="lfc-t">{d.titulo}</h3>
+                <p className="lfc-d">{d.desc}</p>
+                <a href="/registro" className="lfc-lnk">Ver en accion <ArrowRight size={13}/></a>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="lcta-c"><a href="/registro" className="lb-pri">Probar todas las funciones gratis <ArrowRight size={16}/></a></div>
+      </div>
+    </section>
+
+    {/* MODULOS */}
+    <section id="modulos" className="ls lmod-s">
+      <div className="li">
+        <div className="lsl">Todo en un solo lugar</div>
+        <h2 className="lsh2">Todo lo que tu taller necesita</h2>
+        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el dia 1.</p>
+        <div className="lmw">
+          <div className="lmimgs">
+            <img src={HF.dashboard2} alt="Dashboard TallerOS" className="lmimg"/>
+            <img src={HF.team2} alt="Equipo" className="lmimg lmimg2"/>
+          </div>
+          <div className="lmgrid">
+            {MODULOS.map((m,i) => (
+              <div key={i} id={`mod-${i}`} data-animate className={`lmc${isV(`mod-${i}`)?' v':''}`} style={{transitionDelay:`${i*50}ms`}}>
+                <div className="lmc-ic" style={{background:`${m.color}15`,border:`1px solid ${m.color}25`}}><m.icon size={20} style={{color:m.color}}/></div>
+                <div><p className="lmc-l">{m.label}</p><p className="lmc-d">{m.desc}</p></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* GALLERY */}
+    <section className="lgal">
+      <div className="lgal-i">
+        <div className="lgal-t">
+          <div className="lsl">Talleres reales</div>
+          <h2 className="lgal-h2">Profesionales que ya dieron el salto digital</h2>
+          <p className="lgal-sub">Mecanicos y duenos de taller en Mexico, Colombia, Peru y toda LATAM confian en TallerOS.</p>
+          <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
+        </div>
+        <div className="lgal-ph">
+          <div className="lpc lpc1">
+            <img src={HF.workshop1} alt="Taller" className="lph"/>
+            <img src={HF.mechanic1} alt="Mecanico" className="lph"/>
+          </div>
+          <div className="lpc lpc2">
+            <img src={HF.phone2} alt="App movil" className="lph"/>
+            <img src={HF.customer2} alt="Cliente" className="lph"/>
+            <img src={HF.workshop2} alt="Taller moderno" className="lph"/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* TESTIMONIALES */}
+    <section id="testimoniales" className="ls ltesti-s">
+      <div className="li">
+        <div className="lsl">Lo que dicen nuestros clientes</div>
+        <h2 className="lsh2">Talleres que ya dieron el salto</h2>
+        <div className="ltg">
+          {TESTIMONIALES.map((t,i) => (
+            <div key={i} id={`tes-${i}`} data-animate className={`ltc${isV(`tes-${i}`)?' v':''}`} style={{transitionDelay:`${i*100}ms`}}>
+              <div className="ltc-iw"><img src={t.img} alt={t.nombre} className="ltc-img"/><div className="ltc-iov"/></div>
+              <div className="ltc-b">
+                <div className="lstr">{"★".repeat(t.estrellas)}</div>
+                <p className="ltc-txt">"{t.texto}"</p>
+                <div><p className="ltc-n">{t.nombre}</p><p className="ltc-r">{t.rol}</p></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* PRECIOS */}
+    <section id="precios" className="ls lprice-s">
+      <div className="li">
+        <div className="lobar">
+          <span className="lobar-f">🔥</span>
+          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% OFF</span>
+          <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>
+        </div>
+        <div className="lsl">Precios de lanzamiento</div>
+        <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
+        <p className="lssub">14 dias gratis en cualquier plan. Sin tarjeta de credito. Cancela cuando quieras.</p>
+        <div className="ltog-w">
+          <div className="ltog">
+            {['Mensual','Anual'].map((label,i) => (
+              <button key={label} onClick={() => setAnual(i===1)} className={`ltb${(i===1)===anual?' a':''}`}>
+                {label}{i===1 && <span className="ltbadge">-20%</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="lpg">
+          {PLANES.map(plan => {
+            const pa  = anual ? plan.precio_anual : plan.precio_mensual
+            const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
+            const la  = convertir(pa); const lor = convertir(por); const lan = convertir(plan.total_anual)
+            const pct = Math.round((1 - pa / por) * 100)
+            return (
+              <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}`}>
+                {plan.popular && <div className="lplan-b">Mas popular</div>}
+                <div className="lplan-h">
+                  <div className="lplan-ic"><plan.icono size={18}/></div>
+                  <div><h3 className="lplan-n">{plan.nombre}</h3><span className="lplan-pct">-{pct}% hoy</span></div>
+                </div>
+                <div className="lplan-pb">
+                  <div className="lplan-or">{!cM ? lor : `$${por} USD`}</div>
+                  <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
+                  {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
+                </div>
+                <ul className="lplan-fl">
+                  {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
+                </ul>
+                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Empezar 14 dias gratis <ArrowRight size={15}/></a>
+                <p className="lplan-nt">Sin tarjeta de credito requerida</p>
+              </div>
+            )
+          })}
+        </div>
+        <div className="lproof">
+          <div className="lpavs">
+            {[HF.mechanic1, HF.customer, HF.team1, HF.workshop1].map((src,i) => (
+              <img key={i} src={src} alt="" className="lpav" style={{marginLeft:i===0?0:-10}}/>
+            ))}
+          </div>
+          <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> ya digitalizaron su operacion</p>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA FINAL */}
+    <section className="lcta">
+      <div className="lcta-bg" style={{backgroundImage:`url(${HF.workshop1})`}}/>
+      <div className="lcta-ov"/>
+      <div className="lcta-i">
+        <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
+        <h2 className="lcta-h2">Tu taller merece crecer.</h2>
+        <p className="lcta-sub">Unete a los talleres que ya digitalizaron su operacion.<br/>14 dias gratis, sin tarjeta de credito.</p>
+        <div className="lcta-bts">
+          <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
+          <a href="/login" className="lb-wh">Ya tengo cuenta</a>
+        </div>
+      </div>
+    </section>
+
+    {/* FOOTER */}
+    <footer className="lfoot">
+      <div className="lfoot-i">
+        <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
+        <p className="lfoot-c">2026 TallerOS. Gestion inteligente para talleres mecanicos en LATAM.</p>
+        <div className="lfoot-lnks">
+          {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'Soporte',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
+        </div>
+      </div>
+    </footer>
+
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+      html{scroll-behavior:smooth;}
+      :root{
+        --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+        --blue:#2563eb;--blue-d:#1d4ed8;--green:#22c55e;
+        --surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
+        --bdr:rgba(15,23,42,0.08);--bdr2:rgba(15,23,42,0.12);
+        --r:14px;--rl:20px;--rxl:28px;
+        --sh-sm:0 1px 3px rgba(15,23,42,0.08),0 1px 2px rgba(15,23,42,0.06);
+        --sh-md:0 4px 16px rgba(15,23,42,0.10);
+        --sh-lg:0 16px 48px rgba(15,23,42,0.14);
+        --sh-bl:0 8px 32px rgba(37,99,235,0.25);
+      }
+      .lr{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--surf);color:var(--ink);overflow-x:hidden;min-height:100dvh;}
+
+      .l-toast{position:fixed;bottom:24px;left:24px;z-index:300;display:flex;align-items:center;gap:10px;background:var(--ink);border-radius:12px;padding:12px 18px;box-shadow:var(--sh-lg);animation:tIn .4s cubic-bezier(.34,1.56,.64,1);}
+      @keyframes tIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+      .l-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s ease infinite;flex-shrink:0;}
+      @keyframes pu{0%,100%{box-shadow:0 0 6px var(--green);}50%{box-shadow:0 0 14px var(--green);}}
+      .l-toast-t{font-size:13px;font-weight:600;color:#f8fafc;}
+      .l-toast-x{background:none;border:none;color:#64748b;cursor:pointer;font-size:12px;padding:2px 4px;margin-left:4px;}
+
+      .ln{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .25s,box-shadow .25s;}
+      .ln.sc{background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--bdr);}
+      .ln-i{max-width:1280px;margin:0 auto;display:flex;align-items:center;height:68px;padding:0 28px;gap:32px;}
+      .ll{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+      .ll-img{width:36px;height:36px;border-radius:10px;object-fit:contain;}
+      .ll-img.sm{width:28px;height:28px;}
+      .ll-t{font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.5px;}
+      .ll-t em{font-style:normal;color:var(--blue);}
+      .ll-t.sm{font-size:16px;}
+      .ln-links{display:flex;align-items:center;gap:24px;flex:1;}
+      .ln-a{font-size:14px;font-weight:600;color:var(--ink3);text-decoration:none;transition:color .15s;}
+      .ln-a:hover{color:var(--ink);}
+      .ln-r{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+      .ln-login{font-size:14px;font-weight:600;color:var(--ink3);text-decoration:none;padding:8px 14px;transition:color .15s;}
+      .ln-login:hover{color:var(--ink);}
+      .ln-cta{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:#fff;text-decoration:none;background:var(--blue);padding:9px 18px;border-radius:10px;box-shadow:var(--sh-bl);transition:background .15s,transform .1s;}
+      .ln-cta:hover{background:var(--blue-d);transform:translateY(-1px);}
+      .ln-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:4px;}
+      .ln-mob{background:var(--surf);border-top:1px solid var(--bdr);padding:12px 24px 20px;}
+      .ln-mob-a{display:block;font-size:16px;font-weight:600;color:var(--ink2);text-decoration:none;padding:13px 0;border-bottom:1px solid var(--bdr);}
+      .ln-mob-act{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+      .ln-mob-login{text-align:center;color:var(--ink3);font-size:15px;font-weight:600;text-decoration:none;padding:12px;border:1px solid var(--bdr2);border-radius:10px;}
+      .ln-mob-cta{text-align:center;background:var(--blue);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:13px;border-radius:10px;}
+
+      .lb-pri{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#fff;text-decoration:none;background:var(--blue);padding:13px 24px;border-radius:12px;box-shadow:var(--sh-bl);transition:background .15s,transform .1s;}
+      .lb-pri:hover{background:var(--blue-d);transform:translateY(-2px);}
+      .lb-out{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:rgba(255,255,255,0.85);text-decoration:none;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);padding:13px 22px;border-radius:12px;transition:background .15s;}
+      .lb-out:hover{background:rgba(255,255,255,0.18);color:#fff;}
+      .lb-wh{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:#fff;text-decoration:none;border:1.5px solid rgba(255,255,255,0.4);padding:13px 22px;border-radius:12px;transition:border-color .15s,background .15s;}
+      .lb-wh:hover{border-color:#fff;background:rgba(255,255,255,0.1);}
+
+      .lh{min-height:100dvh;display:flex;align-items:center;padding:100px 28px 80px;position:relative;overflow:hidden;background:#0a0f1e;}
+      .lh-bg{position:absolute;inset:0;}
+      .lh-photo{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(0.4);}
+      .lh-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,15,30,0.93) 40%,rgba(10,15,30,0.75) 100%);}
+      .lh-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent);}
+      .lh-inner{max-width:1280px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;z-index:1;}
+      .lh-left{display:flex;flex-direction:column;gap:24px;}
+      .ley{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
+      .ley-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s infinite;flex-shrink:0;}
+      .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
+      .ltw{display:block;color:#60a5fa;min-height:1.1em;}
+      .lc{color:#60a5fa;animation:blink .9s step-end infinite;font-weight:300;}
+      @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+      .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
+      .lh-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+      .ltrust{display:flex;flex-wrap:wrap;gap:16px;}
+      .ltrust-p{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;}
+      .lck{color:var(--green);}
+      .lh-right{display:flex;justify-content:center;align-items:center;}
+      .lmock{position:relative;width:100%;max-width:560px;}
+      .lmock-s{width:100%;border-radius:16px;box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06);animation:fl 6s ease-in-out infinite;}
+      @keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+      .lfl{position:absolute;display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;min-width:180px;}
+      .lfl-wa{bottom:24px;left:-32px;animation:fl 6s 1s ease-in-out infinite;}
+      .lfl-rv{top:24px;right:-24px;animation:fl 6s 2s ease-in-out infinite;}
+      .lfl-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+      .lfl-l{font-size:10px;color:#64748b;font-weight:600;margin-bottom:2px;}
+      .lfl-v{font-size:13px;color:#f1f5f9;font-weight:700;}
+
+      .lmq{border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);overflow:hidden;padding:14px 0;background:var(--surf2);}
+      .lmq-t{display:flex;width:max-content;animation:mq 40s linear infinite;}
+      @keyframes mq{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+      .lmq-i{font-size:13px;font-weight:600;color:var(--ink4);white-space:nowrap;}
+      .lmq-d{margin:0 20px;color:var(--blue);}
+
+      .li{max-width:1200px;margin:0 auto;padding:0 28px;}
+      .ls{padding:96px 0;}
+      .lsl{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;text-align:center;}
+      .lsh2{font-size:clamp(26px,4vw,48px);font-weight:900;letter-spacing:-1.5px;line-height:1.05;color:var(--ink);text-align:center;margin-bottom:14px;}
+      .lssub{font-size:16px;color:var(--ink3);text-align:center;max-width:560px;margin:0 auto 60px;line-height:1.7;}
+
+      .lprob{background:var(--surf2);}
+      .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+      .lstc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:32px 24px;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,box-shadow .2s;text-align:center;}
+      .lstc.v{opacity:1;transform:translateY(0);}
+      .lstc:hover{box-shadow:var(--sh-md);transform:translateY(-4px);}
+      .lsti{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+      .lstn{font-size:clamp(40px,5vw,56px);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:12px;}
+      .lstxt{font-size:14px;color:var(--ink3);line-height:1.6;}
+
+      .lver{padding:96px 0;background:var(--surf);}
+      .lver-w{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
+      .lver-img{position:relative;border-radius:var(--rl);overflow:hidden;}
+      .lvimg{width:100%;height:500px;object-fit:cover;display:block;}
+      .lvimg-c{position:absolute;bottom:16px;left:16px;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;}
+      .lvimg-c.bad{background:rgba(239,68,68,0.9);color:#fff;}
+      .lver-cnt{display:flex;flex-direction:column;}
+      .lver-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);margin-bottom:32px;text-align:left;}
+      .lver-rows{display:flex;flex-direction:column;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;}
+      .lvrow{display:grid;grid-template-columns:1fr 1fr;}
+      .lvrow:not(:last-child){border-bottom:1px solid var(--bdr);}
+      .lvbad{display:flex;align-items:flex-start;gap:8px;padding:12px 16px;font-size:13px;color:#ef4444;background:#fef2f2;line-height:1.4;}
+      .lvgood{display:flex;align-items:flex-start;gap:8px;padding:12px 16px;font-size:13px;color:#166534;background:#f0fdf4;line-height:1.4;border-left:1px solid var(--bdr);}
+      .lvx{font-weight:800;flex-shrink:0;color:#ef4444;}
+      .lvch{font-weight:800;flex-shrink:0;color:#22c55e;}
+
+      .lfeat-s{background:var(--surf2);}
+      .lfg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+      .lfc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s,box-shadow .2s;}
+      .lfc.v{opacity:1;transform:translateY(0);}
+      .lfc:hover{box-shadow:var(--sh-lg);transform:translateY(-6px);}
+      .lfc-iw{position:relative;overflow:hidden;height:200px;}
+      .lfc-img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+      .lfc:hover .lfc-img{transform:scale(1.04);}
+      .lfc-iov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(15,23,42,0.6));}
+      .lfc-tag{position:absolute;top:12px;right:12px;font-size:10px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(37,99,235,0.9);color:#fff;letter-spacing:.3px;}
+      .lfc-b{padding:24px;}
+      .lfc-t{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px;}
+      .lfc-d{font-size:14px;color:var(--ink3);line-height:1.7;margin-bottom:16px;}
+      .lfc-lnk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;transition:gap .15s;}
+      .lfc-lnk:hover{gap:10px;}
+      .lcta-c{display:flex;justify-content:center;margin-top:3rem;}
+
+      .lmod-s{background:var(--surf);}
+      .lmw{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
+      .lmimgs{display:flex;flex-direction:column;gap:16px;position:sticky;top:100px;}
+      .lmimg{width:100%;border-radius:var(--rl);object-fit:cover;box-shadow:var(--sh-md);height:240px;}
+      .lmimg2{height:180px;}
+      .lmgrid{display:flex;flex-direction:column;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;}
+      .lmc{display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--bdr);opacity:0;transform:translateX(-12px);transition:opacity .45s,transform .45s,background .15s;}
+      .lmc:last-child{border-bottom:none;}
+      .lmc.v{opacity:1;transform:translateX(0);}
+      .lmc:hover{background:var(--surf2);}
+      .lmc-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+      .lmc-l{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+      .lmc-d{font-size:12px;color:var(--ink4);line-height:1.4;}
+
+      .lgal{padding:96px 0;background:var(--surf2);overflow:hidden;}
+      .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+      .lgal-t{display:flex;flex-direction:column;gap:20px;}
+      .lgal-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);text-align:left;}
+      .lgal-sub{font-size:15px;color:var(--ink3);line-height:1.7;max-width:420px;text-align:left;}
+      .lgal-ph{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-height:520px;overflow:hidden;}
+      .lpc{display:flex;flex-direction:column;gap:12px;}
+      .lpc2{margin-top:32px;}
+      .lph{width:100%;border-radius:var(--r);object-fit:cover;aspect-ratio:1;transition:transform .3s;}
+      .lph:hover{transform:scale(1.02);}
+
+      .ltesti-s{background:var(--ink);padding:96px 0;}
+      .ltesti-s .lsl{color:#60a5fa;}
+      .ltesti-s .lsh2{color:#f8fafc;}
+      .ltg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+      .ltc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--rl);overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,border-color .2s;}
+      .ltc.v{opacity:1;transform:translateY(0);}
+      .ltc:hover{border-color:rgba(255,255,255,0.16);}
+      .ltc-iw{position:relative;height:180px;overflow:hidden;}
+      .ltc-img{width:100%;height:100%;object-fit:cover;}
+      .ltc-iov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(15,23,42,0.8));}
+      .ltc-b{padding:24px;}
+      .lstr{color:#f59e0b;font-size:14px;letter-spacing:3px;margin-bottom:12px;}
+      .ltc-txt{font-size:14px;color:#94a3b8;line-height:1.8;font-style:italic;margin-bottom:20px;}
+      .ltc-n{font-size:14px;font-weight:700;color:#f1f5f9;}
+      .ltc-r{font-size:12px;color:#475569;margin-top:2px;}
+
+      .lprice-s{background:var(--surf2);}
+      .lobar{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;background:linear-gradient(90deg,rgba(220,38,38,0.08),rgba(185,28,28,0.08));border:1px solid rgba(220,38,38,0.2);border-radius:14px;padding:14px 24px;margin-bottom:40px;}
+      .lobar-f{font-size:18px;}
+      .lobar-t{font-size:13px;font-weight:800;color:#dc2626;letter-spacing:.5px;}
+      .lobar-tm{font-size:13px;color:#ef4444;}
+      .lobar-c{font-family:monospace;font-weight:700;background:rgba(220,38,38,0.1);padding:2px 8px;border-radius:6px;}
+      .ltog-w{display:flex;justify-content:center;margin-bottom:40px;}
+      .ltog{display:inline-flex;background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:4px;}
+      .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
+      .ltb.a{background:var(--blue);color:#fff;}
+      .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
+      .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto 48px;}
+      .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;}
+      .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
+      .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px var(--blue),var(--sh-bl);}
+      .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
+      .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+      .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
+      .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
+      .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
+      .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
+      .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
+      .lplan-pr{display:flex;align-items:baseline;gap:6px;}
+      .lplan-num{font-size:clamp(36px,5vw,52px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
+      .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
+      .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
+      .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+      .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
+      .lfck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);flex-shrink:0;margin-top:2px;}
+      .lplan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--bdr2);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
+      .lplan-cta:hover{background:var(--surf3);}
+      .lplan-cta.pop{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:var(--sh-bl);}
+      .lplan-cta.pop:hover{background:var(--blue-d);}
+      .lplan-nt{text-align:center;font-size:11px;color:var(--ink4);margin-top:10px;}
+      .lproof{display:flex;align-items:center;justify-content:center;gap:14px;}
+      .lpavs{display:flex;}
+      .lpav{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--surf2);}
+      .lproof-t{font-size:14px;color:var(--ink3);}
+      .lproof-t strong{color:var(--ink);}
+
+      .lcta{position:relative;padding:128px 28px;text-align:center;overflow:hidden;}
+      .lcta-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(0.3);}
+      .lcta-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,15,30,0.94),rgba(10,15,30,0.88));}
+      .lcta-i{position:relative;z-index:1;max-width:640px;margin:0 auto;}
+      .lcta-h2{font-size:clamp(32px,5vw,60px);font-weight:900;letter-spacing:-2px;color:#f8fafc;margin:12px 0 16px;}
+      .lcta-sub{font-size:clamp(15px,1.8vw,18px);color:#94a3b8;line-height:1.7;margin-bottom:36px;}
+      .lcta-bts{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;}
+
+      .lfoot{border-top:1px solid var(--bdr);padding:32px 28px;background:var(--surf);}
+      .lfoot-i{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
+      .lfoot-l{display:flex;align-items:center;gap:8px;}
+      .lfoot-c{font-size:12px;color:var(--ink4);}
+      .lfoot-lnks{display:flex;gap:24px;}
+      .lfoot-lnks a{font-size:13px;color:var(--ink4);text-decoration:none;transition:color .15s;}
+      .lfoot-lnks a:hover{color:var(--ink2);}
+
+      @media(max-width:1024px){
+        .lstg{grid-template-columns:repeat(2,1fr);}
+        .lfg{grid-template-columns:repeat(2,1fr);}
+        .lmw{grid-template-columns:1fr;}
+        .lmimgs{position:static;display:grid;grid-template-columns:1fr 1fr;}
+        .lmimg,.lmimg2{height:180px;}
+      }
+      @media(max-width:900px){
+        .ln-links,.ln-r{display:none;}
+        .ln-ham{display:block;}
+        .lh-inner{grid-template-columns:1fr;}
+        .lh-right{display:none;}
+        .lver-w{grid-template-columns:1fr;}
+        .lver-img{display:none;}
+        .ltg{grid-template-columns:1fr;}
+        .lgal-i{grid-template-columns:1fr;}
+        .lgal-ph{max-height:280px;}
+      }
+      @media(max-width:640px){
+        .lh{padding:90px 16px 60px;}
+        .li{padding:0 16px;}
+        .ls{padding:64px 0;}
+        .lh-ctas{flex-direction:column;}
+        .lb-pri,.lb-out{width:100%;justify-content:center;max-width:340px;}
+        .lstg{grid-template-columns:1fr 1fr;}
+        .lfg{grid-template-columns:1fr;}
+        .lpg{grid-template-columns:1fr;}
+        .lobar{flex-direction:column;gap:.5rem;text-align:center;}
+        .lvrow{grid-template-columns:1fr;}
+        .lvbad{display:none;}
+        .l-toast{left:12px;right:12px;bottom:16px;}
+        .lcta-bts{flex-direction:column;align-items:center;}
+      }
+    `}</style>
+    </div>
     </>
   )
 }
