@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
   FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2, Bell, Star,
-  Smartphone,
+  Smartphone, Megaphone,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -20,7 +20,8 @@ const TODOS_NAV_ITEMS = [
 { href: '/dashboard', label: 'Dashboard', icono: LayoutDashboard, roles: ['propietario', 'admin', 'recepcion', 'tecnico'] },
   { href: '/reportes',       label: 'Reportes',       icono: BarChart2,       roles: ['propietario', 'admin'] },
   { href: '/recordatorios',  label: 'Recordatorios',  icono: Bell,            roles: ['propietario', 'admin'] },  // ← NUEVA LÍNEA
-  { href: '/resenas', label: 'Reseñas Google', icono: Star, roles: ['propietario', 'admin'] },
+  { href: '/resenas',     label: 'Reseñas Google', icono: Star,      roles: ['propietario', 'admin'] },
+  { href: '/promociones', label: 'Promociones',    icono: Megaphone, roles: ['propietario', 'admin'] },
   { href: '/kanban',         label: 'Kanban',         icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/citas',          label: 'Citas',          icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/clientes',       label: 'Clientes',       icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
