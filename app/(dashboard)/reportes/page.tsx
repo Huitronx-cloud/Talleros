@@ -90,7 +90,7 @@ export default async function ReportesPage() {
   ] = await Promise.all([
     supabaseService
       .from('ordenes')
-      .select('id, total, estado, created_at, mecanico_asignado, cliente_id, servicios_realizados, tiempo_trabajado_minutos')
+      .select('id, total, estado, created_at, mecanico_asignado, cliente_id, servicios_realizados')
       .eq('taller_id', tallerId)
       .gte('created_at', desde)
       .order('created_at', { ascending: true }),
@@ -105,24 +105,7 @@ export default async function ReportesPage() {
       .eq('taller_id', tallerId)
       .gte('created_at', desde),
   ])
-
-console.log('DEBUG REPORTES tallerId:', tallerId, 'ordenes:', ordenes?.length, 'errorOrdenes:', errorOrdenes?.message, 'errorClientes:', errorClientes?.message, 'errorCotizaciones:', errorCotizaciones?.message)
-  // DEBUG TEMPORAL
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      <div style={{padding: 24, fontFamily: 'monospace', fontSize: 12}}>
-        <p><b>tallerId:</b> {tallerId}</p>
-        <p><b>plan:</b> {plan}</p>
-        <p><b>reportes:</b> {String(limites.reportes)}</p>
-        <p><b>ordenes count:</b> {ordenes?.length ?? 'null'}</p>
-        <p><b>errorOrdenes:</b> {errorOrdenes?.message ?? 'none'}</p>
-        <p><b>errorClientes:</b> {errorClientes?.message ?? 'none'}</p>
-        <p><b>errorCotizaciones:</b> {errorCotizaciones?.message ?? 'none'}</p>
-        <p><b>moneda:</b> {taller?.moneda}</p>
-        <pre>{JSON.stringify(ordenes?.slice(0,2), null, 2)}</pre>
-      </div>
-    )
-  }
+  
 
   return (
     <ReportesClient
