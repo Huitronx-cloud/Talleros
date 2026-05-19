@@ -194,7 +194,7 @@ export default function LandingPage() {
         <div className="lh-left">
           <div className="ley">
             <span className="ley-dot" />
-            Software de gestion para talleres mecanicos en LATAM
+            Software de gestion para talleres mecanicos
           </div>
           <h1 className="lh1">
             Tu taller merece ser<br/>
@@ -235,7 +235,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">El problema real</div>
         <h2 className="lsh2">Los numeros que tu competencia ignora</h2>
-        <p className="lssub">Mientras la mayoria opera igual que hace 20 anos, los talleres con TallerOS ya van adelante.</p>
+        <p className="lssub">Mientras la mayoria opera igual que hace 20 años, los talleres con TallerOS ya van adelante.</p>
         <div className="lstg">
           {STATS_DATA.map((s,i) => (
             <div key={i} id={`st-${i}`} data-animate className={`lstc${isV(`st-${i}`)?' v':''}`} style={{transitionDelay:`${i*80}ms`}}>

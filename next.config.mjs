@@ -28,7 +28,7 @@ const securityHeaders = [
       // Estilos: self + inline (Tailwind lo necesita)
       "style-src 'self' 'unsafe-inline'",
       // Imágenes: self + Supabase storage + Google Analytics
-      "img-src 'self' blob: data: https://kbtszjpqtoqhrfnqjaxv.supabase.co https://www.googletagmanager.com https://www.google-analytics.com",
+      "img-src 'self' blob: data: https://kbtszjpqtoqhrfnqjaxv.supabase.co https://d8j0ntlcm91z4.cloudfront.net https://www.googletagmanager.com https://www.google-analytics.com",
       // Fuentes: solo self
       "font-src 'self'",
       // Conexiones: self + Supabase + Twilio + Resend + Stripe + GA
