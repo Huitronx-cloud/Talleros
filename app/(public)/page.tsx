@@ -27,12 +27,12 @@ const HF = {
 }
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, img: HF.phone1,     tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',    desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
-  { icon: Camera,        img: HF.mechanic1,  tag: '0 disputas',           titulo: 'Fotos del diagnóstico',      desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre danos preexistentes.' },
-  { icon: Monitor,       img: HF.dashboard1, tag: '97% satisfacción',     titulo: 'Portal en tiempo real',      desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
-  { icon: Shield,        img: HF.team1,      tag: '100% profesional',     titulo: 'Garantía digital',           desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.' },
-  { icon: Bell,          img: HF.workshop1,  tag: '+40% retención',       titulo: 'Recordatorios automáticos',  desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
-  { icon: Star,          img: HF.customer,   tag: '5 en Google',          titulo: 'Reseñas automáticas',        desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews primero.' },
+  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
+  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.' },
+  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
+  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.' },
+  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
+  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews primero.' },
 ]
 
 const MODULOS = [
