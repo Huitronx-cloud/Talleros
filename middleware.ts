@@ -7,12 +7,14 @@ const ALLOWED_ORIGINS = [
   'https://tallerosapp.com',
 ]
 
-// Endpoints que reciben peticiones de terceros (Stripe, Vercel Cron)
+// Excepciones CORS — endpoints que necesitan recibir de terceros
 const CORS_EXCEPTIONS = [
-  '/api/stripe/webhook',
-  '/api/cron/',
+  '/api/stripe/webhook',   // Stripe manda desde sus servidores
+  '/api/cron/',            // Vercel Cron no manda Origin
   '/api/notificar-cita',
   '/api/confirmar-cita',
+  '/sitemap.xml',          // Google necesita acceder sin Origin
+  '/robots.txt',           // Idem
 ]
 
 function handleCORS(request: NextRequest): NextResponse | null {
