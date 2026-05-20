@@ -71,6 +71,13 @@ const RUTAS_PUBLICAS = [
   '/nueva-password',
   '/api/stripe/webhook',
   '/api/stripe',
+  '/api/funnel',
+  '/guia',
+  '/mexico',
+  '/colombia',
+  '/peru',
+  '/sitemap.xml',
+  '/robots.txt',
 ]
 
 const RUTAS_POST_REGISTRO = ['/onboarding'] // ← NUEVO: sesión sí, onboarding no requerido
