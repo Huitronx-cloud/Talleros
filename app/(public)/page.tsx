@@ -313,8 +313,8 @@ export default function LandingPage() {
         <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día 1.</p>
         <div className="lmw">
           <div className="lmimgs">
-            <img src={HF.dashboard2} alt="Dashboard TallerOS" className="lmimg"/>
-            <img src={HF.team2} alt="Equipo" className="lmimg lmimg2"/>
+            <img src="/mod-img1.png" alt="Recepcion taller con TallerOS" className="lmimg"/>
+            <img src="/mod-img2.png" alt="Mecanicos usando TallerOS" className="lmimg lmimg2"/>
           </div>
           <div className="lmgrid">
             {MODULOS.map((m,i) => (
