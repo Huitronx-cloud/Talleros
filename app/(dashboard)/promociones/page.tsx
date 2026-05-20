@@ -24,14 +24,14 @@ const PRETEXTOS = [
 
 function generarMensaje({
   nombreTaller,
-  pretexto,
+  motivo,
   descripcion,
   tipoDescuento,
   valorDescuento,
   nombreCliente,
 }: {
   nombreTaller: string
-  pretexto: typeof PRETEXTOS[0] | null
+  motivo: typeof PRETEXTOS[0] | null
   descripcion: string
   tipoDescuento: 'porcentaje' | 'monto'
   valorDescuento: string
@@ -43,8 +43,8 @@ function generarMensaje({
       : `$${valorDescuento} de descuento`
     : 'una promoción especial'
 
-  const ocasion = pretexto && pretexto.id !== 'personalizado'
-    ? ` por ${pretexto.label}`
+  const ocasion = motivo && motivo.id !== 'personalizado'
+    ? ` por ${motivo.label}`
     : ''
 
   return `¡Hola ${nombreCliente}! 👋 En *${nombreTaller}* queremos consentirte${ocasion}. ${
@@ -72,7 +72,7 @@ export default function PromocionesPage() {
   const [loading, setLoading] = useState(true)
 
   // Formulario
-  const [pretextoSel, setPretextoSel] = useState<typeof PRETEXTOS[0] | null>(null)
+  const [motivoSel, setPretextoSel] = useState<typeof PRETEXTOS[0] | null>(null)
   const [descripcion, setDescripcion] = useState('')
   const [tipoDescuento, setTipoDescuento] = useState<'porcentaje' | 'monto'>('porcentaje')
   const [valorDescuento, setValorDescuento] = useState('')
@@ -139,7 +139,7 @@ export default function PromocionesPage() {
 
   const mensajePreview = generarMensaje({
     nombreTaller,
-    pretexto: pretextoSel,
+    motivo: motivoSel,
     descripcion,
     tipoDescuento,
     valorDescuento,
@@ -162,7 +162,7 @@ export default function PromocionesPage() {
           canal,
           mensaje: mensajePreview,
           descripcion,
-          pretexto: pretextoSel?.label ?? '',
+          motivo: motivoSel?.label ?? '',
           tipoDescuento,
           valorDescuento,
         }),
@@ -242,7 +242,7 @@ export default function PromocionesPage() {
         <div className="space-y-1">
           <p className="text-sm font-semibold text-orange-900">¿Cómo funciona?</p>
           <p className="text-sm text-orange-800 leading-relaxed">
-            Describe tu promoción, elige un pretexto de marketing (Día de las Madres, Navidad, etc.), 
+            Describe tu promoción, elige un motivo de marketing (Día de las Madres, Navidad, etc.), 
             selecciona los clientes a los que quieres enviársela y elige el canal. 
             TallerOS genera un mensaje personalizado para cada cliente y te lo muestra antes de enviarlo para que lo apruebes.
           </p>
@@ -268,7 +268,7 @@ export default function PromocionesPage() {
                     if (p.descuento_sugerido && !valorDescuento) setValorDescuento(p.descuento_sugerido.replace('%', ''))
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all text-left ${
-                    pretextoSel?.id === p.id
+                    motivoSel?.id === p.id
                       ? 'bg-orange-500 border-orange-500 text-white'
                       : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-orange-300'
                   }`}

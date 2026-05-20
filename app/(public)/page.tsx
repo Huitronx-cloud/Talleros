@@ -32,7 +32,7 @@ const DIFERENCIADORES = [
   { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
   { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.' },
   { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
-  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide la reseña automáticamente. El 97% lee reviews primero.' },
+  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide una reseña automáticamente. El 97% de nuevos clientes lee primero las reseñas.' },
 ]
 
 const MODULOS = [
@@ -248,7 +248,7 @@ export default function LandingPage() {
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
           </div>
           <div className="ltrust">
-            {['Sin tarjeta de credito','14 dias gratis','Soporte en espanol'].map(t => (
+            {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
           </div>
@@ -277,7 +277,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">El problema real</div>
         <h2 className="lsh2">Los números que tu competencia ignora</h2>
-        <p className="lssub">Mientras la mayoria opera igual que hace 20 años, los talleres con TallerOS ya van adelante.</p>
+        <p className="lssub">Mientras la mayoría opera igual que hace 20 años, los talleres con TallerOS ya van adelante.</p>
         <div className="lstg">
           {STATS_DATA.map((s,i) => (
             <div key={i} id={`st-${i}`} data-animate className={`lstc${isV(`st-${i}`)?' v':''}`} style={{transitionDelay:`${i*80}ms`}}>
@@ -303,9 +303,9 @@ export default function LandingPage() {
             <h2 className="lver-h2">Sigues con WhatsApp,<br/>Excel y llamadas perdidas?</h2>
             <div className="lver-rows">
               {[
-                ['Clientes llaman sin parar a preguntar por su carro','Portal en tiempo real - el cliente ve el avance solo'],
+                ['Clientes llaman sin parar para preguntar por su carro','Portal en tiempo real - el cliente ve el avance solo'],
                 ['Aprobaciones verbales que generan disputas','Aprobación por WhatsApp con registro digital'],
-                ['Sin evidencia de danos preexistentes','Fotos del diagnóstico antes de tocar el vehículo'],
+                ['Sin evidencia de daños preexistentes','Fotos del diagnóstico antes de tocar el vehículo'],
                 ['Pierdes clientes que no regresan nunca','Recordatorios automáticos cada 3-6 meses'],
                 ['Reseñas solo cuando algo sale mal','Reseña en Google solicitada automáticamente'],
               ].map(([bad,good],i) => (
@@ -352,11 +352,11 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">Todo en un solo lugar</div>
         <h2 className="lsh2">Todo lo que tu taller necesita</h2>
-        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día 1.</p>
+        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día uno.</p>
         <div className="lmw">
           <div className="lmimgs">
             <img src="/mod-img1.png" alt="Recepcion taller con TallerOS" className="lmimg"/>
-            <img src="/mod-img2.png" alt="Mecanicos usando TallerOS" className="lmimg lmimg2"/>
+            <img src="/mod-img2.png" alt="Mecánicos usando TallerOS" className="lmimg lmimg2"/>
           </div>
           <div className="lmgrid">
             {MODULOS.map((m,i) => (
@@ -376,7 +376,7 @@ export default function LandingPage() {
         <div className="lgal-t">
           <div className="lsl">Talleres reales</div>
           <h2 className="lgal-h2">Profesionales que ya dieron el salto digital</h2>
-          <p className="lgal-sub">Mecanicos y duenos de taller en Mexico, Colombia, Peru y toda LATAM confian en TallerOS.</p>
+          <p className="lgal-sub">Mecánicos y dueños de taller en Mexico, Colombia, Peru y toda Latinoamérica confían en TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
         </div>
         <div className="lgal-ph">
@@ -418,12 +418,12 @@ export default function LandingPage() {
       <div className="li">
         <div className="lobar">
           <span className="lobar-f">🔥</span>
-          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% OFF</span>
+          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% DE DESCUENTO</span>
           <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>
         </div>
         <div className="lsl">Precios de lanzamiento</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
-        <p className="lssub">14 dias gratis en cualquier plan. Sin tarjeta de credito. Cancela cuando quieras.</p>
+        <p className="lssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
         <div className="ltog-w">
           <div className="ltog">
             {['Mensual','Anual'].map((label,i) => (
@@ -454,8 +454,8 @@ export default function LandingPage() {
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
                 </ul>
-                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Empezar 14 dias gratis <ArrowRight size={15}/></a>
-                <p className="lplan-nt">Sin tarjeta de credito requerida</p>
+                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Empezar 14 días gratis <ArrowRight size={15}/></a>
+                <p className="lplan-nt">Sin tarjeta de crédito requerida</p>
               </div>
             )
           })}
@@ -506,7 +506,7 @@ export default function LandingPage() {
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
         <h2 className="lcta-h2">Tu taller merece crecer.</h2>
-        <p className="lcta-sub">Únete a los talleres que ya digitalizaron su operación.<br/>14 dias gratis, sin tarjeta de credito.</p>
+        <p className="lcta-sub">Únete a los talleres que ya digitalizaron su operación.<br/>14 días gratis, sin tarjeta de credito.</p>
         <div className="lcta-bts">
           <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
           <a href="/login" className="lb-wh">Ya tengo cuenta</a>
@@ -518,7 +518,7 @@ export default function LandingPage() {
     <footer className="lfoot">
       <div className="lfoot-i">
         <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
-        <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en LATAM.</p>
+        <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Latinoamérica.</p>
         <div className="lfoot-lnks">
           {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'Soporte',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
         </div>

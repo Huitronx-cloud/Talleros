@@ -60,7 +60,7 @@ export default function MexicoPage() {
             Empezar gratis — sin tarjeta <ArrowRight size={16}/>
           </Link>
           <div style={{display:'flex',justifyContent:'center',gap:24,marginTop:20,flexWrap:'wrap'}}>
-            {['Sin tarjeta de crédito','14 días gratis','Soporte en español','Precios en MXN'].map(t => (
+            {['Sin tarjeta de crédito','14 días gratis','Soporte en español','Precios en pesos mexicanos'].map(t => (
               <div key={t} style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#93c5fd',fontWeight:500}}>
                 <Check size={12} strokeWidth={3} style={{color:'#4ade80'}}/>{t}
               </div>
