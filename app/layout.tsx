@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import GoogleAnalytics from '@/components/google-analytics'
+import { JsonLd } from '@/components/json-ld'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -115,10 +116,41 @@ export default function RootLayout({
 </head>
       <body className={`${inter.className} has-offer-bar`}>
         <GoogleAnalytics />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+        <JsonLd data={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'SoftwareApplication',
+              name: 'TallerOS',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web, iOS, Android',
+              url: 'https://www.tallerosapp.com',
+              logo: 'https://www.tallerosapp.com/icon-512.png',
+              description: 'Software de gestión para talleres mecánicos. Aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento.',
+              inLanguage: 'es',
+              offers: [
+                { '@type': 'Offer', name: 'Plan Esencial', price: '24', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', url: 'https://www.tallerosapp.com/registro' },
+                { '@type': 'Offer', name: 'Plan Pro', price: '49', priceCurrency: 'USD', priceValidUntil: '2026-12-31', availability: 'https://schema.org/InStock', url: 'https://www.tallerosapp.com/registro' },
+              ],
+              aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '47', bestRating: '5', worstRating: '1' },
+            },
+            {
+              '@type': 'Organization',
+              name: 'TallerOS',
+              url: 'https://www.tallerosapp.com',
+              logo: 'https://www.tallerosapp.com/icon-512.png',
+              contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', availableLanguage: 'Spanish', email: 'hola@tallerosapp.com' },
+            },
+            {
+              '@type': 'WebSite',
+              url: 'https://www.tallerosapp.com',
+              name: 'TallerOS',
+              description: 'Software de gestión para talleres mecánicos en LATAM',
+            },
+          ],
+        }} />
+        {children}
+      </body>
               '@context': 'https://schema.org',
               '@graph': [
                 {
