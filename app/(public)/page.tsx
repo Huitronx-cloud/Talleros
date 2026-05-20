@@ -125,6 +125,8 @@ function LeadForm() {
     </form>
   )
 }
+
+export default function LandingPage() {
   const [menuOpen, setMenuOpen]     = useState(false)
   const [anual, setAnual]           = useState(false)
   const [scrolled, setScrolled]     = useState(false)
