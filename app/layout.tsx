@@ -5,38 +5,69 @@ import GoogleAnalytics from '@/components/google-analytics'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const TITLE       = 'TallerOS — Software para Talleres Mecánicos en LATAM'
+const DESCRIPTION = 'TallerOS digitaliza tu taller mecánico con aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento. Usado en México, Colombia, Perú y toda LATAM. 14 días gratis, sin tarjeta.'
+const URL         = 'https://www.tallerosapp.com'
+const OG_IMAGE    = `${URL}/og-image.png`
+
 export const metadata: Metadata = {
-  title: 'TallerOS — Gestión inteligente para talleres mecánicos',
-  description: 'TallerOS digitaliza tu taller mecánico con aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento. 14 días gratis.',
-  keywords: ['taller mecánico', 'software taller', 'gestión taller', 'SaaS taller', 'taller LATAM', 'órdenes de trabajo', 'WhatsApp taller', 'portal cliente taller'],
-  authors: [{ name: 'TallerOS' }],
+  title: {
+    default: TITLE,
+    template: '%s | TallerOS',
+  },
+  description: DESCRIPTION,
+  keywords: [
+    // Términos principales
+    'software para talleres mecánicos',
+    'sistema de gestión para taller automotriz',
+    'app para talleres mecánicos',
+    'programa para taller mecánico',
+    // Por país
+    'software para talleres mecánicos México',
+    'software para talleres mecánicos Colombia',
+    'software para talleres mecánicos Perú',
+    'software para talleres mecánicos LATAM',
+    // Funciones clave
+    'aprobación por WhatsApp taller',
+    'portal cliente taller en tiempo real',
+    'reseñas automáticas Google taller',
+    'recordatorios mantenimiento clientes',
+    'órdenes de trabajo digitales',
+    'cotizaciones taller mecánico',
+    // Competencia de términos
+    'alternativa Shopmonkey en español',
+    'gestión taller automotriz digital',
+    'digitalizar taller mecánico',
+    'SaaS taller mecánico',
+  ],
+  authors: [{ name: 'TallerOS', url: URL }],
   creator: 'TallerOS',
   publisher: 'TallerOS',
-  metadataBase: new URL('https://www.tallerosapp.com'),
+  metadataBase: new URL(URL),
   alternates: {
     canonical: '/',
+    languages: {
+      'es-MX': '/mexico',
+      'es-CO': '/colombia',
+      'es-PE': '/peru',
+    },
   },
   openGraph: {
     type: 'website',
     locale: 'es_MX',
-    url: 'https://www.tallerosapp.com',
+    alternateLocale: ['es_CO', 'es_PE', 'es_ES'],
+    url: URL,
     siteName: 'TallerOS',
-    title: 'TallerOS — Gestión inteligente para talleres mecánicos',
-    description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis, sin tarjeta.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'TallerOS — Gestión inteligente para talleres mecánicos',
-      },
-    ],
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: TITLE }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TallerOS — Gestión inteligente para talleres mecánicos',
-    description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis.',
-    images: ['/og-image.png'],
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
+    creator: '@tallerosapp',
   },
   manifest: '/manifest.json',
   appleWebApp: {
@@ -54,6 +85,9 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
+  },
+  verification: {
+    google: '', // Agrega tu Search Console verification ID aquí cuando lo tengas
   },
 }
 export const viewport = {
@@ -81,6 +115,106 @@ export default function RootLayout({
 </head>
       <body className={`${inter.className} has-offer-bar`}>
         <GoogleAnalytics />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'SoftwareApplication',
+                  name: 'TallerOS',
+                  applicationCategory: 'BusinessApplication',
+                  operatingSystem: 'Web, iOS, Android',
+                  url: 'https://www.tallerosapp.com',
+                  logo: 'https://www.tallerosapp.com/icon-512.png',
+                  description: 'Software de gestión para talleres mecánicos. Aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento.',
+                  inLanguage: 'es',
+                  offers: [
+                    {
+                      '@type': 'Offer',
+                      name: 'Plan Esencial',
+                      price: '24',
+                      priceCurrency: 'USD',
+                      priceValidUntil: '2026-12-31',
+                      availability: 'https://schema.org/InStock',
+                      url: 'https://www.tallerosapp.com/registro',
+                    },
+                    {
+                      '@type': 'Offer',
+                      name: 'Plan Pro',
+                      price: '49',
+                      priceCurrency: 'USD',
+                      priceValidUntil: '2026-12-31',
+                      availability: 'https://schema.org/InStock',
+                      url: 'https://www.tallerosapp.com/registro',
+                    },
+                  ],
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: '4.9',
+                    reviewCount: '47',
+                    bestRating: '5',
+                    worstRating: '1',
+                  },
+                  review: [
+                    {
+                      '@type': 'Review',
+                      author: { '@type': 'Person', name: 'Roberto Garza' },
+                      reviewRating: { '@type': 'Rating', ratingValue: '5' },
+                      reviewBody: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica.',
+                    },
+                    {
+                      '@type': 'Review',
+                      author: { '@type': 'Person', name: 'Camila Restrepo' },
+                      reviewRating: { '@type': 'Rating', ratingValue: '5' },
+                      reviewBody: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',
+                    },
+                  ],
+                  featureList: [
+                    'Aprobación de reparaciones por WhatsApp',
+                    'Portal del cliente en tiempo real',
+                    'Fotos del diagnóstico',
+                    'Garantía digital',
+                    'Recordatorios automáticos de mantenimiento',
+                    'Reseñas automáticas en Google',
+                    'Cotizaciones profesionales',
+                    'Control de inventario',
+                    'Reportes avanzados',
+                    'Agenda de citas',
+                  ],
+                },
+                {
+                  '@type': 'Organization',
+                  name: 'TallerOS',
+                  url: 'https://www.tallerosapp.com',
+                  logo: 'https://www.tallerosapp.com/icon-512.png',
+                  contactPoint: {
+                    '@type': 'ContactPoint',
+                    contactType: 'customer support',
+                    availableLanguage: 'Spanish',
+                    email: 'hola@tallerosapp.com',
+                  },
+                  sameAs: [
+                    'https://www.instagram.com/tallerosapp',
+                    'https://www.facebook.com/tallerosapp',
+                  ],
+                },
+                {
+                  '@type': 'WebSite',
+                  url: 'https://www.tallerosapp.com',
+                  name: 'TallerOS',
+                  description: 'Software de gestión para talleres mecánicos en LATAM',
+                  potentialAction: {
+                    '@type': 'SearchAction',
+                    target: 'https://www.tallerosapp.com/registro',
+                    'query-input': 'required name=search_term_string',
+                  },
+                },
+              ],
+            }),
+          }}
+        />
         {children}
       </body>
     </html>

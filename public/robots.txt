@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Bloquear rutas privadas del dashboard
+Disallow: /dashboard
+Disallow: /kanban
+Disallow: /ordenes
+Disallow: /clientes
+Disallow: /cotizaciones
+Disallow: /inventario
+Disallow: /reportes
+Disallow: /configuracion
+Disallow: /equipo
+Disallow: /catalogo
+Disallow: /recordatorios
+Disallow: /resenas
+Disallow: /promociones
+Disallow: /vehiculos
+Disallow: /citas
+Disallow: /ayuda
+Disallow: /api/
+
+Sitemap: https://www.tallerosapp.com/sitemap.xml
