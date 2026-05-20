@@ -376,19 +376,24 @@ export default function LandingPage() {
         <div className="lgal-t">
           <div className="lsl">Talleres reales</div>
           <h2 className="lgal-h2">Profesionales que ya dieron el salto digital</h2>
-          <p className="lgal-sub">Mecánicos y dueños de taller en Mexico, Colombia, Peru y toda Latinoamérica confían en TallerOS.</p>
+          <p className="lgal-sub">Mecánicos y dueños de taller en México, Colombia, Perú y toda Latinoamérica confían en TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
         </div>
-        <div className="lgal-ph">
-          <div className="lpc lpc1">
-            <img src={HF.workshop1} alt="Taller" className="lph"/>
-            <img src={HF.mechanic1} alt="Mecanico" className="lph"/>
-          </div>
-          <div className="lpc lpc2">
-            <img src={HF.phone2} alt="App movil" className="lph"/>
-            <img src={HF.customer2} alt="Cliente" className="lph"/>
-            <img src={HF.workshop2} alt="Taller moderno" className="lph"/>
-          </div>
+        <div className="lgal-grid">
+          {[
+            { img:'/taller-garcia.png',   nombre:'Taller García',               ciudad:'Ciudad de México, MX' },
+            { img:'/taller-herrera.png',  nombre:'Servicio Automotriz Herrera',  ciudad:'Guadalajara, MX'      },
+            { img:'/taller-ramirez.png',  nombre:'Mecánica Automotriz Ramírez',  ciudad:'Bogotá, CO'           },
+            { img:'/taller-vargas.png',   nombre:'Centro Automotriz Vargas',     ciudad:'Lima, PE'             },
+          ].map((t,i) => (
+            <div key={i} className="lgal-card">
+              <img src={t.img} alt={t.nombre} className="lgal-card-img"/>
+              <div className="lgal-card-info">
+                <p className="lgal-card-name">{t.nombre}</p>
+                <p className="lgal-card-city">{t.ciudad}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -678,15 +683,18 @@ export default function LandingPage() {
       .lmc-d{font-size:12px;color:var(--ink4);line-height:1.4;}
 
       .lgal{padding:96px 0;background:var(--surf2);overflow:hidden;}
-      .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+      .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lgal-t{display:flex;flex-direction:column;gap:20px;}
       .lgal-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);text-align:left;}
       .lgal-sub{font-size:15px;color:var(--ink3);line-height:1.7;max-width:420px;text-align:left;}
-      .lgal-ph{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-height:520px;overflow:hidden;}
-      .lpc{display:flex;flex-direction:column;gap:12px;}
-      .lpc2{margin-top:32px;}
-      .lph{width:100%;border-radius:var(--r);object-fit:cover;aspect-ratio:1;transition:transform .3s;}
-      .lph:hover{transform:scale(1.02);}
+      .lgal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+      .lgal-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-md);transition:transform .3s,box-shadow .3s;}
+      .lgal-card:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);}
+      .lgal-card-img{width:100%;height:180px;object-fit:cover;display:block;}
+      .lgal-card-info{background:var(--surf);padding:12px 14px;}
+      .lgal-card-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+      .lgal-card-city{font-size:11px;color:var(--ink4);display:flex;align-items:center;gap:4px;}
+      .lgal-card-city::before{content:'📍';font-size:10px;}
 
       .ltesti-s{background:var(--ink);padding:96px 0;}
       .ltesti-s .lsl{color:#60a5fa;}
@@ -801,7 +809,7 @@ export default function LandingPage() {
         .lver-img{display:none;}
         .ltg{grid-template-columns:1fr;}
         .lgal-i{grid-template-columns:1fr;}
-        .lgal-ph{max-height:280px;}
+        .lgal-grid{grid-template-columns:1fr 1fr;}
         .llm-w{grid-template-columns:1fr;}
         .llm-h2{text-align:center;}
         .llm-sub{text-align:center;}
