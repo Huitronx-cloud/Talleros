@@ -7,14 +7,12 @@ const ALLOWED_ORIGINS = [
   'https://tallerosapp.com',
 ]
 
-// Excepciones CORS — endpoints que necesitan recibir de terceros
+// Endpoints que reciben peticiones de terceros (Stripe, Vercel Cron)
 const CORS_EXCEPTIONS = [
-  '/api/stripe/webhook',   // Stripe manda desde sus servidores
-  '/api/cron/',            // Vercel Cron no manda Origin
+  '/api/stripe/webhook',
+  '/api/cron/',
   '/api/notificar-cita',
   '/api/confirmar-cita',
-  '/sitemap.xml',          // Google necesita acceder sin Origin
-  '/robots.txt',           // Idem
 ]
 
 function handleCORS(request: NextRequest): NextResponse | null {
@@ -73,13 +71,6 @@ const RUTAS_PUBLICAS = [
   '/nueva-password',
   '/api/stripe/webhook',
   '/api/stripe',
-  // Páginas SEO por país
-  '/mexico',
-  '/colombia',
-  '/peru',
-  // Archivos SEO
-  '/sitemap.xml',
-  '/robots.txt',
 ]
 
 const RUTAS_POST_REGISTRO = ['/onboarding'] // ← NUEVO: sesión sí, onboarding no requerido
@@ -173,6 +164,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
