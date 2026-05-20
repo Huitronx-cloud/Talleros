@@ -2,6 +2,19 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, ArrowRight, MessageCircle, Star, Monitor, Bell, Shield, Camera } from 'lucide-react'
 
+
+// Schema.org structured data for Colombia
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'TallerOS',
+  applicationCategory: 'BusinessApplication',
+  description: 'Software para talleres mecánicos en Colombia con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.',
+  url: 'https://www.tallerosapp.com/colombia',
+  inLanguage: 'es-CO',
+  offers: { '@type': 'Offer', price: '24', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+  areaServed: { '@type': 'Country', name: 'Colombia' },
+}
 export const metadata: Metadata = {
   title: 'Software para Talleres Mecánicos en Colombia — TallerOS',
   description: 'TallerOS es el software #1 para talleres mecánicos en Colombia. Aprobaciones por WhatsApp, portal del cliente, reseñas automáticas en Google y recordatorios de mantenimiento. Precios en COP. 14 días gratis.',
@@ -103,15 +116,6 @@ export default function ColombiaPage() {
       <footer style={{borderTop:'1px solid #e2e8f0',padding:'24px',textAlign:'center'}}>
         <p style={{fontSize:12,color:'#94a3b8'}}>© 2026 TallerOS — Software para talleres mecánicos en Colombia y LATAM</p>
       </footer>
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
-        '@context':'https://schema.org','@type':'SoftwareApplication',
-        name:'TallerOS',applicationCategory:'BusinessApplication',
-        description:'Software para talleres mecánicos en Colombia con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.',
-        url:'https://www.tallerosapp.com/colombia',inLanguage:'es-CO',
-        offers:{'@type':'Offer',price:'24',priceCurrency:'USD',availability:'https://schema.org/InStock'},
-        areaServed:{'@type':'Country',name:'Colombia'},
-      })}} />
-    </div>
+</div>
   )
 }

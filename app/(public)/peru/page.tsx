@@ -2,6 +2,19 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, ArrowRight, MessageCircle, Star, Monitor, Bell, Shield, Camera } from 'lucide-react'
 
+
+// Schema.org structured data for Perú
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'TallerOS',
+  applicationCategory: 'BusinessApplication',
+  description: 'Software para talleres mecánicos en Perú con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.',
+  url: 'https://www.tallerosapp.com/peru',
+  inLanguage: 'es-PE',
+  offers: { '@type': 'Offer', price: '24', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+  areaServed: { '@type': 'Country', name: 'Perú' },
+}
 export const metadata: Metadata = {
   title: 'Software para Talleres Mecánicos en Perú — TallerOS',
   description: 'TallerOS es el software #1 para talleres mecánicos en Perú. Aprobaciones por WhatsApp, portal del cliente, reseñas automáticas en Google y recordatorios de mantenimiento. 14 días gratis.',
@@ -102,15 +115,6 @@ export default function PeruPage() {
       <footer style={{borderTop:'1px solid #e2e8f0',padding:'24px',textAlign:'center'}}>
         <p style={{fontSize:12,color:'#94a3b8'}}>© 2026 TallerOS — Software para talleres mecánicos en Perú y LATAM</p>
       </footer>
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
-        '@context':'https://schema.org','@type':'SoftwareApplication',
-        name:'TallerOS',applicationCategory:'BusinessApplication',
-        description:'Software para talleres mecánicos en Perú con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.',
-        url:'https://www.tallerosapp.com/peru',inLanguage:'es-PE',
-        offers:{'@type':'Offer',price:'24',priceCurrency:'USD',availability:'https://schema.org/InStock'},
-        areaServed:{'@type':'Country',name:'Perú'},
-      })}} />
-    </div>
+</div>
   )
 }
