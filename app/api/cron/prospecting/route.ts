@@ -278,12 +278,12 @@ export async function GET(req: NextRequest) {
       // Registrar para no volver a contactar
       await registrarContacto(prospecto)
 
-      // Enviar WhatsApp si tiene teléfono
-      if (prospecto.telefono) {
-        await enviarWhatsAppFrio(prospecto)
-      }
+      // WhatsApp frío deshabilitado hasta activar WhatsApp Business API
+      // if (prospecto.telefono) {
+      //   await enviarWhatsAppFrio(prospecto)
+      // }
 
-      // Agregar a Brevo y enviar email si tiene email
+      // Agregar a Brevo y enviar email frío
       if (prospecto.email) {
         await agregarABrevo(prospecto)
       }
