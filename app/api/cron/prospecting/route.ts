@@ -151,7 +151,7 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<void> {
   try {
     const tel = prospecto.telefono.replace(/\D/g, '')
     const to  = tel.startsWith('+') ? tel : `+${tel}`
-    const msg = `Hola, ¿habla con ${prospecto.nombre}? 👋\n\nSoy Ivan de *TallerOS* — un software para talleres mecánicos que permite que tus clientes aprueben reparaciones por WhatsApp, vean el avance de su vehículo en tiempo real y te dejen reseñas en Google automáticamente.\n\n¿Te gustaría ver una demo de 10 minutos? Es completamente gratis. 🔧\n\ntalleros.com/guia`
+    const msg = `Hola, ¿habla con ${prospecto.nombre}? 👋\n\nSoy Ivan de *TallerOS* — un software para talleres mecánicos que permite que tus clientes aprueben reparaciones por WhatsApp, vean el avance de su vehículo en tiempo real y te dejen reseñas en Google automáticamente.\n\n¿Te gustaría ver una demo de 10 minutos? Es completamente gratis. 🔧\n\nwww.tallerosapp.com/guia`
 
     const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`
     await fetch(url, {
@@ -161,7 +161,7 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<void> {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From: `whatsapp:${TWILIO_FROM}`,
+        From: `whatsapp:+15559828390`,
         To:   `whatsapp:${to}`,
         Body: msg,
       }).toString(),
@@ -278,10 +278,10 @@ export async function GET(req: NextRequest) {
       // Registrar para no volver a contactar
       await registrarContacto(prospecto)
 
-      // WhatsApp frío deshabilitado hasta activar WhatsApp Business API
-      // if (prospecto.telefono) {
-      //   await enviarWhatsAppFrio(prospecto)
-      // }
+      // Enviar WhatsApp frío con número Business real
+      if (prospecto.telefono) {
+        await enviarWhatsAppFrio(prospecto)
+      }
 
       // Agregar a Brevo y enviar email frío
       if (prospecto.email) {

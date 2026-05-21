@@ -72,6 +72,7 @@ const RUTAS_PUBLICAS = [
   '/api/stripe/webhook',
   '/api/stripe',
   '/api/funnel',
+  '/api/whatsapp',
   '/guia',
   '/mexico',
   '/colombia',
