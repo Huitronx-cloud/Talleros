@@ -65,7 +65,7 @@ REGLAS:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-3-5-sonnet-20241022',
         max_tokens: 512,
         system:     SYSTEM_PROMPT,
         messages,
@@ -73,6 +73,12 @@ REGLAS:
     })
 
     const data = await res.json()
+    
+    if (!res.ok) {
+      console.error('Anthropic error:', JSON.stringify(data))
+      return NextResponse.json({ respuesta: `Error: ${data.error?.message ?? 'API error'}` })
+    }
+    
     const respuesta = data.content?.[0]?.text ?? 'Lo siento, no pude procesar tu mensaje. Intenta de nuevo.'
 
     return NextResponse.json({ respuesta })
