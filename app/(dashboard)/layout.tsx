@@ -4,6 +4,7 @@ import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
 import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
 import UpgradeSuccessModal from '@/components/upgrade-success-modal'
+import SoporteWidget from '@/components/soporte-widget'
 
 export default async function DashboardLayout({
   children,
@@ -49,6 +50,7 @@ export default async function DashboardLayout({
         <NotificacionesRealtime tallerId={usuario.taller_id} />
       )}
       <UpgradeSuccessModal />
+      <SoporteWidget />
     </div>
   )
 }
