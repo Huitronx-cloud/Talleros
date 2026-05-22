@@ -269,26 +269,20 @@ export async function GET(req: NextRequest) {
         rating:          detalles.rating ?? null,
       }
 
-      // Solo contactar si tiene teléfono (para WhatsApp)
-      if (!prospecto.telefono && !prospecto.email) {
-        omitidos.push(prospecto.nombre)
-        continue
-      }
-
-      // Registrar para no volver a contactar
+      // Registrar siempre para no volver a procesar
       await registrarContacto(prospecto)
 
-      // Enviar WhatsApp frío con número Business real
+      // Enviar WhatsApp si tiene teléfono (requiere plantilla aprobada por Meta)
       if (prospecto.telefono) {
         await enviarWhatsAppFrio(prospecto)
+        contactados.push(`${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+      } else if (prospecto.website) {
+        // Sin teléfono pero tiene website — lista para seguimiento manual
+        contactados.push(`${prospecto.nombre} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
+      } else {
+        omitidos.push(`${prospecto.nombre} (sin datos de contacto)`)
+        continue
       }
-
-      // Agregar a Brevo y enviar email frío
-      if (prospecto.email) {
-        await agregarABrevo(prospecto)
-      }
-
-      contactados.push(prospecto.nombre)
 
       // Pausa de 2 segundos entre contactos para no saturar
       await new Promise(r => setTimeout(r, 2000))
@@ -301,13 +295,30 @@ export async function GET(req: NextRequest) {
       body: JSON.stringify({
         sender:      { name: 'TallerOS Agente', email: 'hola@tallerosapp.com' },
         to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
-        subject:     `📊 Agente de prospección — ${contactados.length} talleres contactados hoy`,
+        subject:     `📊 Agente de prospección — ${contactados.length} talleres encontrados hoy en ${ciudadHoy.nombre}`,
         htmlContent: `
-          <p><strong>Ciudad:</strong> ${ciudadHoy.nombre}</p>
-          <p><strong>Término:</strong> ${terminoHoy}</p>
-          <p><strong>Contactados (${contactados.length}):</strong> ${contactados.join(', ') || 'ninguno'}</p>
-          <p><strong>Omitidos ya contactados (${omitidos.length}):</strong> ${omitidos.join(', ') || 'ninguno'}</p>
-        `,
+          <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:24px;border-radius:12px 12px 0 0;text-align:center;">
+              <p style="margin:0;color:#fff;font-size:20px;font-weight:900;">TallerOS — Agente de Prospección</p>
+            </div>
+            <div style="background:#fff;padding:28px;border:1px solid #e2e8f0;border-radius:0 0 12px 12px;">
+              <p style="color:#64748b;font-size:13px;margin-bottom:4px;">Ciudad:</p>
+              <p style="color:#0f172a;font-weight:700;margin-bottom:16px;">${ciudadHoy.nombre}</p>
+              <p style="color:#64748b;font-size:13px;margin-bottom:4px;">Término de búsqueda:</p>
+              <p style="color:#0f172a;font-weight:700;margin-bottom:20px;">${terminoHoy}</p>
+              <p style="color:#0f172a;font-size:16px;font-weight:800;margin-bottom:12px;">📋 Talleres encontrados (${contactados.length}):</p>
+              ${contactados.map(t => `<div style="background:#f8fafc;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#334155;border-left:3px solid #2563eb;">${t}</div>`).join('')}
+              ${omitidos.length > 0 ? `
+              <p style="color:#94a3b8;font-size:13px;margin-top:20px;margin-bottom:8px;">Omitidos (${omitidos.length}):</p>
+              ${omitidos.map(t => `<div style="background:#fafafa;border-radius:8px;padding:8px 14px;margin-bottom:6px;font-size:12px;color:#94a3b8;">${t}</div>`).join('')}
+              ` : ''}
+              <div style="background:#eff6ff;border-radius:10px;padding:14px;margin-top:20px;border:1px solid #bfdbfe;">
+                <p style="margin:0;font-size:13px;color:#1d4ed8;line-height:1.6;">
+                  💡 <strong>Próximos pasos:</strong> Los talleres con 🌐 website puedes visitarlos para encontrar su email y contactarlos manualmente. Los que tienen 📞 teléfono recibirán WhatsApp automático cuando Meta apruebe la plantilla.
+                </p>
+              </div>
+            </div>
+          </div>`,
       }),
     })
 
