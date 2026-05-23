@@ -57,6 +57,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
   const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
   const [horario,         setHorario]         = useState(taller.horario   ?? '')
+  const [direccion,       setDireccion]       = useState((taller as any).direccion ?? '')
   const [instagram,       setInstagram]       = useState(taller.instagram ?? '')
   const [facebook,        setFacebook]        = useState(taller.facebook  ?? '')
   const [firmaPdf,        setFirmaPdf]        = useState(taller.firma_pdf ?? '')
@@ -116,6 +117,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       logo_url:          logoUrl         || undefined,
       google_review_url: googleReviewUrl || undefined,
       horario:           horario         || undefined,
+      direccion:         direccion       || undefined,
       instagram:         instagram       || undefined,
       facebook:          facebook        || undefined,
       firma_pdf:         firmaPdf        || undefined,
@@ -268,6 +270,18 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       {/* Horario y redes sociales */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Horario y redes sociales</h2>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Dirección del taller</label>
+          <input
+            type="text"
+            value={direccion}
+            onChange={e => setDireccion(e.target.value)}
+            placeholder="Ej. Av. Insurgentes Sur 1234, Col. Del Valle, CDMX"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-400 mt-1">Se mostrará como mapa en el portal del cliente.</p>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Horario de atención</label>

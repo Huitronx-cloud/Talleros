@@ -14,7 +14,7 @@ export default async function PortalClientePage({
 
   const { data: tokenData } = await supabase
     .from('portal_tokens')
-    .select('*, ordenes(*, clientes(nombre, telefono), talleres(nombre, telefono, logo_url, horario, instagram, facebook))')
+    .select('*, ordenes(*, clientes(nombre, telefono), talleres(nombre, telefono, logo_url, horario, instagram, facebook, direccion))')
     .eq('token', params.token)
     .gt('expires_at', new Date().toISOString())
     .single()
@@ -253,6 +253,39 @@ export default async function PortalClientePage({
                   Facebook
                 </a>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Mapa del taller */}
+        {taller.direccion && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-4 pt-4 pb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">📍 Ubicación del taller</p>
+              <p className="text-sm text-gray-700 mt-1">{taller.direccion}</p>
+            </div>
+            <iframe
+              title="Ubicación del taller"
+              width="100%"
+              height="200"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(taller.direccion)}&language=es`}
+            />
+            <div className="px-4 pb-4 pt-2">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(taller.direccion)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-blue-600 font-semibold hover:underline"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                Cómo llegar
+              </a>
             </div>
           </div>
         )}
