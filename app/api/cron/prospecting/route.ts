@@ -54,9 +54,10 @@ interface Prospecto {
 async function buscarTalleres(ciudad: string, termino: string): Promise<any[]> {
   try {
     const query   = encodeURIComponent(`${termino} en ${ciudad}`)
-    const url     = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_API_KEY}&language=es&type=car_repair`
+    const url     = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_API_KEY}&language=es&type=car_repairlanguage=es`
     const res     = await fetch(url)
     const data    = await res.json()
+    console.log(`Places API status: ${data.status}, results: ${data.results?.length ?? 0}`)
     return data.results ?? []
   } catch {
     return []
