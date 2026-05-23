@@ -42,7 +42,7 @@ const ERRORES = [
   },
 ]
 
-export default function GuiaPage() {
+import { trackEvent } from '@/components/meta-pixel'
   const [nombre, setNombre]   = useState('')
   const [email, setEmail]     = useState('')
   const [loading, setLoading] = useState(false)
@@ -64,6 +64,7 @@ export default function GuiaPage() {
       const data = await res.json()
       if (data.ok) {
         setEnviado(true)
+        trackEvent('Lead', { content_name: 'Guía 5 errores TallerOS' })
       } else {
         setError('Hubo un error. Intenta de nuevo.')
       }

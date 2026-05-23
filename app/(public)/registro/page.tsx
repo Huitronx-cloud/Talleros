@@ -1,4 +1,5 @@
 'use client'
+import { trackEvent } from '@/components/meta-pixel'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -93,6 +94,7 @@ export default function RegistroPage() {
       }
 
       setExito(true)
+      trackEvent('CompleteRegistration', { content_name: 'Registro TallerOS' })
     } catch {
       setError('Error de conexión. Revisa tu internet e intenta de nuevo.')
     } finally {

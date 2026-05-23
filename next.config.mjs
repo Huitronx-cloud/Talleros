@@ -24,15 +24,15 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       // Scripts: solo nuestro dominio + inline necesario para Next.js + GA
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net",
       // Estilos: self + inline (Tailwind lo necesita)
       "style-src 'self' 'unsafe-inline'",
       // Imágenes: self + Supabase storage + Google Analytics
-      "img-src 'self' blob: data: https://kbtszjpqtoqhrfnqjaxv.supabase.co https://d8j0ntlcm91z4.cloudfront.net https://www.googletagmanager.com https://www.google-analytics.com",
+      "img-src 'self' blob: data: https://kbtszjpqtoqhrfnqjaxv.supabase.co https://d8j0ntlcm91z4.cloudfront.net https://www.googletagmanager.com https://www.google-analytics.com https://www.facebook.com",
       // Fuentes: solo self
       "font-src 'self'",
       // Conexiones: self + Supabase + Twilio + Resend + Stripe + GA
-      "connect-src 'self' https://kbtszjpqtoqhrfnqjaxv.supabase.co wss://kbtszjpqtoqhrfnqjaxv.supabase.co https://api.twilio.com https://api.resend.com https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
+      "connect-src 'self' https://kbtszjpqtoqhrfnqjaxv.supabase.co wss://kbtszjpqtoqhrfnqjaxv.supabase.co https://api.twilio.com https://api.resend.com https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com",
       // Frames: Stripe necesita iframes para el formulario de pago
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
       // Workers: para el service worker de PWA
