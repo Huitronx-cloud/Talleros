@@ -57,7 +57,6 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
   const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
   const [horario,         setHorario]         = useState(taller.horario   ?? '')
-  const [direccion,       setDireccion]       = useState((taller as any).direccion ?? '')
   const [instagram,       setInstagram]       = useState(taller.instagram ?? '')
   const [facebook,        setFacebook]        = useState(taller.facebook  ?? '')
   const [firmaPdf,        setFirmaPdf]        = useState(taller.firma_pdf ?? '')
