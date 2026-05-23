@@ -73,6 +73,7 @@ const RUTAS_PUBLICAS = [
   '/api/stripe',
   '/api/funnel',
   '/api/whatsapp',
+  '/api/google/callback',
   '/guia',
   '/mexico',
   '/colombia',
