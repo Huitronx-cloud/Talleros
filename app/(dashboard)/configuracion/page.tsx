@@ -100,7 +100,8 @@ export default async function ConfiguracionPage() {
         {googleConectado && (taller as any).gmb_location_id && (
           <div className="mt-4 bg-green-50 rounded-xl p-3 border border-green-100">
             <p className="text-xs text-green-700">
-              ✅ Tu perfil de Google My Business está conectado. Las reseñas se solicitarán automáticamente al entregar cada vehículo.
+              ✅ Google My Business conectado — reseñas automáticas activas.<br/>
+              ✅ Google Calendar conectado — citas se sincronizan automáticamente.
             </p>
           </div>
         )}
