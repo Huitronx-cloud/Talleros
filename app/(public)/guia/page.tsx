@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Check, ArrowRight, Download, AlertTriangle, MessageCircle, Star, TrendingDown, Users, ChevronRight } from 'lucide-react'
+import { trackEvent } from '@/components/meta-pixel'
 
 const ERRORES = [
   {
@@ -42,7 +43,7 @@ const ERRORES = [
   },
 ]
 
-import { trackEvent } from '@/components/meta-pixel'
+export default function GuiaPage() {
   const [nombre, setNombre]   = useState('')
   const [email, setEmail]     = useState('')
   const [loading, setLoading] = useState(false)
