@@ -3,8 +3,7 @@ import { trackEvent } from '@/components/meta-pixel'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-
+import { createClient } from '@/lib/supabase/client'
 const PAISES = [
   { code: 'MX', nombre: 'México',           bandera: '🇲🇽' },
   { code: 'CO', nombre: 'Colombia',          bandera: '🇨🇴' },
@@ -24,7 +23,7 @@ type Paso = 1 | 2
 
 export default function RegistroPage() {
   const router   = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const [paso, setPaso] = useState<Paso>(1)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
