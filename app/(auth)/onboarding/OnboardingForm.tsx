@@ -509,20 +509,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                 {
                   icon: Star,
                   label: 'Link de Google Reviews',
-                  desc: 'Para pedir reseñas automáticas',
+                  desc: 'Para pedir reseñas a tus clientes',
                   href: '/configuracion',
                   completado: false,
                 },
                 {
-                  icon: Bell,
-                  label: 'Recordatorios de mantenimiento',
-                  desc: 'Recupera clientes inactivos',
-                  href: '/recordatorios',
-                  completado: false,
-                },
-                {
                   icon: ClipboardList,
-                  label: 'Primera orden',
+                  label: 'Primera orden de trabajo',
                   desc: 'Registra tu primer vehículo',
                   href: '/ordenes/nueva',
                   completado: false,

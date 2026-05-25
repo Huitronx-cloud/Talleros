@@ -13,11 +13,17 @@ const SCOPES = [
 
 export async function GET(req: NextRequest) {
   try {
+    if (!CLIENT_ID) {
+      return NextResponse.redirect(new URL('/configuracion?error=google_not_configured', req.url))
+    }
+
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.redirect(new URL('/login', req.url))
 
-    // Obtener taller_id del usuario
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('taller_id')
@@ -28,7 +34,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/configuracion?error=no_taller', req.url))
     }
 
-    // State para verificar el callback y asociar al taller
     const state = Buffer.from(JSON.stringify({
       taller_id: usuario.taller_id,
       user_id:   user.id,
