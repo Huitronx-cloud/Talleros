@@ -70,7 +70,8 @@ export default async function DashboardPage() {
       .eq('estado', 'entregado'),
     supabase.from('usuarios')
       .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
-      .single(),
+      .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
+      .maybeSingle(),
     supabase.from('ordenes')
       .select('descripcion_problema, servicios_realizados, mecanico_asignado, estado')
       .eq('estado', 'entregado')
@@ -83,7 +84,7 @@ export default async function DashboardPage() {
     .from('suscripciones')
     .select('plan')
     .eq('taller_id', usuarioData?.taller_id ?? '')
-    .single()
+    .maybeSingle()
 
   const planActual = suscripcionData?.plan ?? 'trial'
   const tallerRaw  = usuarioData?.talleres
