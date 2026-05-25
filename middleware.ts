@@ -124,7 +124,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const esRutaPublica      = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
+  const esRutaPublica = RUTAS_PUBLICAS.some(r => {
+    if (r === '/') return pathname === '/'
+    return pathname === r || pathname.startsWith(r + '/')
+  })
   const esRutaPostRegistro = RUTAS_POST_REGISTRO.some(r => pathname.startsWith(r))
 
   // Sin sesión → login
