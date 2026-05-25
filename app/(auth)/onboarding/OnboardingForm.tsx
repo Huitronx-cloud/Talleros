@@ -37,10 +37,11 @@ const CODIGOS_PAIS = [
 ]
 
 const PASOS = [
-  { id: 1, label: 'Tu taller',   icon: Building2    },
-  { id: 2, label: 'Tu equipo',   icon: Users        },
-  { id: 3, label: 'Primera orden', icon: ClipboardList },
-  { id: 4, label: '¡Listo!',    icon: CheckCircle2 },
+  { id: 1, label: 'Tu taller',      icon: Building2    },
+  { id: 2, label: 'Tu equipo',      icon: Users        },
+  { id: 3, label: 'Primer cliente', icon: Users        },
+  { id: 4, label: 'Primera orden',  icon: ClipboardList },
+  { id: 5, label: '¡Listo!',       icon: CheckCircle2 },
 ]
 
 export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
@@ -397,8 +398,47 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
           </div>
         )}
 
-        {/* ── PASO 3: PRIMERA ORDEN ── */}
+        {/* ── PASO 3: PRIMER CLIENTE ── */}
         {paso === 3 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">Agrega tu primer cliente</h1>
+              <p className="text-slate-500 text-sm mt-1">
+                Registra un cliente real o de prueba. Lo necesitas antes de crear tu primera orden.
+              </p>
+            </div>
+
+            <div className="bg-green-50 rounded-2xl p-6 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Users className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-sm font-semibold text-green-900 mb-1">Empieza por el cliente</p>
+              <p className="text-xs text-green-700 leading-relaxed">
+                Nombre, teléfono y vehículo. TallerOS le mandará un WhatsApp de bienvenida automáticamente.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                router.push('/clientes?onboarding=true')
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Agregar mi primer cliente
+            </button>
+
+            <button
+              onClick={() => setPaso(4)}
+              className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
+            >
+              Saltar este paso
+            </button>
+          </div>
+        )}
+
+        {/* ── PASO 4: PRIMERA ORDEN ── */}
+        {paso === 4 && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
             <div>
               <h1 className="text-xl font-bold text-slate-900">Crea tu primera orden</h1>
@@ -407,7 +447,6 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
               </p>
             </div>
 
-            {/* Ilustración */}
             <div className="bg-blue-50 rounded-2xl p-6 text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <ClipboardList className="w-8 h-8 text-blue-600" />
@@ -430,7 +469,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             </button>
 
             <button
-              onClick={() => setPaso(4)}
+              onClick={() => setPaso(5)}
               className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
             >
               Ir al dashboard primero
@@ -438,8 +477,8 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
           </div>
         )}
 
-        {/* ── PASO 4: CHECKLIST DE ACTIVACIÓN ── */}
-        {paso === 4 && (
+        {/* ── PASO 5: CHECKLIST DE ACTIVACIÓN ── */}
+        {paso === 5 && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
