@@ -1,11 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
-import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
-import UpgradeSuccessModal from '@/components/upgrade-success-modal'
-import SoporteWidget from '@/components/soporte-widget'
 
 export default async function DashboardLayout({
   children,
@@ -29,8 +25,6 @@ export default async function DashboardLayout({
     .eq('id', usuario?.taller_id ?? '')
     .single()
 
-  const esRecepcion = usuario?.rol === 'recepcion'
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar
@@ -38,7 +32,6 @@ export default async function DashboardLayout({
         logoUrl={taller?.logo_url ?? null}
         rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
       />
-      {/* pt-14 en móvil (barra superior), md:ml-16 sidebar colapsado, xl:ml-64 sidebar expandido */}
       <main
         className="flex-1 pt-14 md:pt-0 md:ml-16 overflow-y-auto w-full transition-all duration-300"
         id="main-content"
@@ -47,11 +40,6 @@ export default async function DashboardLayout({
           {children}
         </div>
       </main>
-      {esRecepcion && usuario?.taller_id && (
-        <NotificacionesRealtime tallerId={usuario.taller_id} />
-      )}
-      {/* UpgradeSuccessModal temporalmente deshabilitado */}
-      <SoporteWidget />
     </div>
   )
 }
