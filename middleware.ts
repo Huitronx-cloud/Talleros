@@ -74,6 +74,8 @@ const RUTAS_PUBLICAS = [
   '/api/funnel',
   '/api/whatsapp',
   '/api/google/callback',
+  '/api/geo',
+  '/api/stats',
   '/guia',
   '/mexico',
   '/colombia',

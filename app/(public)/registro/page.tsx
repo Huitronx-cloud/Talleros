@@ -3,6 +3,7 @@ import { trackEvent } from '@/components/meta-pixel'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 const PAISES = [
   { code: 'MX', nombre: 'México',           bandera: '🇲🇽' },
@@ -22,7 +23,8 @@ const PAISES = [
 type Paso = 1 | 2
 
 export default function RegistroPage() {
-  const router = useRouter()
+  const router   = useRouter()
+  const supabase = createClientComponentClient()
   const [paso, setPaso] = useState<Paso>(1)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
@@ -95,6 +97,16 @@ export default function RegistroPage() {
 
       setExito(true)
       trackEvent('CompleteRegistration', { content_name: 'Registro TallerOS' })
+
+      // Login automático después del registro
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email:    form.email,
+        password: form.password,
+      })
+
+      if (!loginError) {
+        router.push('/onboarding')
+      }
     } catch {
       setError('Error de conexión. Revisa tu internet e intenta de nuevo.')
     } finally {
