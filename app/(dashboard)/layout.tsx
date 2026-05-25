@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
 import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
@@ -49,7 +50,9 @@ export default async function DashboardLayout({
       {esRecepcion && usuario?.taller_id && (
         <NotificacionesRealtime tallerId={usuario.taller_id} />
       )}
-      <UpgradeSuccessModal />
+      <Suspense fallback={null}>
+        <UpgradeSuccessModal />
+      </Suspense>
       <SoporteWidget />
     </div>
   )
