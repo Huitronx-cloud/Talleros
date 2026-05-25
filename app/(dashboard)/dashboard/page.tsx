@@ -40,47 +40,55 @@ export default async function DashboardPage() {
   const hora = ahora.getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
 
-  const [
-    { count: totalClientes },
-    { count: ordenesMes },
-    { count: cotizacionesAbiertas },
-    { data: ingresosMes },
-    { data: ordenesRecientes },
-    { data: ordenesRetrasadas },
-    { data: ingresosPorMes },
-    { data: usuarioData },
-    { data: ordenesTiempo },
-    { data: inventarioItems },
-  ] = await Promise.all([
-    supabase.from('clientes').select('*', { count: 'exact', head: true }),
-    supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes),
-    supabase.from('cotizaciones').select('*', { count: 'exact', head: true }).eq('estado', 'enviada'),
-    supabase.from('ordenes').select('total').gte('created_at', inicioMes).eq('estado', 'entregado'),
-    supabase.from('ordenes')
-      .select('id, descripcion_problema, estado, created_at, clientes(nombre)')
-      .order('created_at', { ascending: false })
-      .limit(5),
-    supabase.from('ordenes')
-      .select('id, numero_orden, fecha_prometida, estado, clientes(nombre)')
-      .lt('fecha_prometida', ahora.toISOString().split('T')[0])
-      .neq('estado', 'entregado')
-      .not('fecha_prometida', 'is', null)
-      .order('fecha_prometida', { ascending: true }),
-    supabase.from('ordenes')
-      .select('total, created_at')
-      .gte('created_at', inicioGrafica)
-      .eq('estado', 'entregado'),
-    supabase.from('usuarios')
-      .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
-      .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
-      .maybeSingle(),
-    supabase.from('ordenes')
-      .select('descripcion_problema, servicios_realizados, mecanico_asignado, estado')
-      .eq('estado', 'entregado')
-      .order('created_at', { ascending: false })
-      .limit(50),
-    supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
-  ])
+  let totalClientes = 0, ordenesMes = 0, cotizacionesAbiertas = 0
+  let ingresosMes: any[] = [], ordenesRecientes: any[] = [], ordenesRetrasadas: any[] = []
+  let ingresosPorMes: any[] = [], usuarioData: any = null, ordenesTiempo: any[] = [], inventarioItems: any[] = []
+
+  try {
+    const results = await Promise.all([
+      supabase.from('clientes').select('*', { count: 'exact', head: true }),
+      supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes),
+      supabase.from('cotizaciones').select('*', { count: 'exact', head: true }).eq('estado', 'enviada'),
+      supabase.from('ordenes').select('total').gte('created_at', inicioMes).eq('estado', 'entregado'),
+      supabase.from('ordenes')
+        .select('id, descripcion_problema, estado, created_at, clientes(nombre)')
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supabase.from('ordenes')
+        .select('id, numero_orden, fecha_prometida, estado, clientes(nombre)')
+        .lt('fecha_prometida', ahora.toISOString().split('T')[0])
+        .neq('estado', 'entregado')
+        .not('fecha_prometida', 'is', null)
+        .order('fecha_prometida', { ascending: true }),
+      supabase.from('ordenes')
+        .select('total, created_at')
+        .gte('created_at', inicioGrafica)
+        .eq('estado', 'entregado'),
+      supabase.from('usuarios')
+        .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
+        .maybeSingle(),
+      supabase.from('ordenes')
+        .select('descripcion_problema, servicios_realizados, mecanico_asignado, estado')
+        .eq('estado', 'entregado')
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
+    ])
+
+    totalClientes       = results[0].count ?? 0
+    ordenesMes          = results[1].count ?? 0
+    cotizacionesAbiertas = results[2].count ?? 0
+    ingresosMes         = results[3].data ?? []
+    ordenesRecientes    = results[4].data ?? []
+    ordenesRetrasadas   = results[5].data ?? []
+    ingresosPorMes      = results[6].data ?? []
+    usuarioData         = results[7].data
+    ordenesTiempo       = results[8].data ?? []
+    inventarioItems     = results[9].data ?? []
+  } catch (e) {
+    console.error('Dashboard queries error:', e)
+  }
 
   const { data: suscripcionData } = await supabase
     .from('suscripciones')
