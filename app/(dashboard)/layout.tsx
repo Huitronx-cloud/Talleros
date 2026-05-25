@@ -50,9 +50,7 @@ export default async function DashboardLayout({
       {esRecepcion && usuario?.taller_id && (
         <NotificacionesRealtime tallerId={usuario.taller_id} />
       )}
-      <Suspense fallback={null}>
-        <UpgradeSuccessModal />
-      </Suspense>
+      {/* UpgradeSuccessModal temporalmente deshabilitado */}
       <SoporteWidget />
     </div>
   )
