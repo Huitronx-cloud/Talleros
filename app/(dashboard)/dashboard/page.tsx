@@ -1,4 +1,4 @@
-import PushToggle from '@/components/push-toggle'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -10,6 +10,8 @@ import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
+
+const PushToggle = dynamic(() => import('@/components/push-toggle'), { ssr: false })
 
 const MODULOS = [
   { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
