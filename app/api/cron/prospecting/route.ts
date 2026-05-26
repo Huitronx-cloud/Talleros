@@ -54,7 +54,7 @@ interface Prospecto {
 async function buscarTalleres(ciudad: string, termino: string): Promise<any[]> {
   try {
     const query   = encodeURIComponent(`${termino} en ${ciudad}`)
-    const url     = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_API_KEY}&language=es&type=car_repairlanguage=es`
+    const url     = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_API_KEY}&language=es`
     const res     = await fetch(url)
     const data    = await res.json()
     console.log(`Places API status: ${data.status}, results: ${data.results?.length ?? 0}`)
@@ -152,8 +152,6 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<void> {
   try {
     const tel = prospecto.telefono.replace(/\D/g, '')
     const to  = tel.startsWith('+') ? tel : `+${tel}`
-    const msg = `Hola, ¿habla con ${prospecto.nombre}? 👋\n\nSoy Ivan de *TallerOS* — un software para talleres mecánicos que permite que tus clientes aprueben reparaciones por WhatsApp, vean el avance de su vehículo en tiempo real y te dejen reseñas en Google automáticamente.\n\n¿Te gustaría ver una demo de 10 minutos? Es completamente gratis. 🔧\n\nwww.tallerosapp.com/guia`
-
     const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`
     await fetch(url, {
       method: 'POST',
@@ -162,9 +160,10 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<void> {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From: `whatsapp:+15559828390`,
-        To:   `whatsapp:${to}`,
-        Body: msg,
+        From:             `whatsapp:+15559828390`,
+        To:               `whatsapp:${to}`,
+        ContentSid:       'HXbf735472bd3841f57341050e045adc3d',
+        ContentVariables: JSON.stringify({ '1': prospecto.nombre }),
       }).toString(),
     })
   } catch (e) {
