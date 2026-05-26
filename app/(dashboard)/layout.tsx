@@ -18,13 +18,13 @@ export default async function DashboardLayout({
     .from('usuarios')
     .select('taller_id, rol')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   const { data: taller } = await supabase
     .from('talleres')
     .select('nombre, logo_url')
-    .eq('id', usuario?.taller_id ?? '')
-    .single()
+    .eq('id', usuario?.taller_id ?? 'none')
+    .maybeSingle()
 
   return (
     <div className="flex min-h-screen bg-gray-50">
