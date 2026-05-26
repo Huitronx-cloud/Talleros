@@ -32,12 +32,10 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
         <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f1f5f9', marginBottom: 12 }}>
           Algo salió mal
         </h1>
-        <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.7, marginBottom: 16 }}>
+        <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.7, marginBottom: 36 }}>
           Ocurrió un error inesperado. Ya estamos trabajando en ello. Intenta de nuevo o vuelve al dashboard.
         </p>
-        <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 36, fontFamily: 'monospace', background: '#1e293b', padding: '8px 12px', borderRadius: 8 }}>
-          {error?.message ?? 'Error desconocido'}
-        </p>
+        
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={reset} style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
