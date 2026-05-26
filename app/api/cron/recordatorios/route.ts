@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       const taller = config.talleres as any
 
       // Solo talleres Pro
-      if (!taller || taller.plan !== 'pro' && taller.plan !== 'trial') continue
+      if (!taller || (taller.plan !== 'pro' && taller.plan !== 'trial')) continue
 
       const clientes = await getClientesParaRecordar(
         taller.id,
