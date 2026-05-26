@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     const taller = orden.talleres
-    if (taller?.plan !== 'pro') {
+    if (taller?.plan !== 'pro' && taller?.plan !== 'trial') {
       return NextResponse.json({ ok: false, motivo: 'Plan no Pro' })
     }
 

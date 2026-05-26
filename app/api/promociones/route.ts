@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       .eq('taller_id', tallerId)
       .single()
 
-    if (suscripcion?.plan !== 'pro') {
+    if (suscripcion?.plan !== 'pro' && suscripcion?.plan !== 'trial') {
       return NextResponse.json({ error: 'Plan Pro requerido' }, { status: 403 })
     }
 
