@@ -59,12 +59,13 @@ export default function OnboardingChecklist({ tallerNombre, tieneClientes, tiene
 
   useEffect(() => {
     const key = `onboarding_cerrado_${tallerId}`
+    if (typeof window === 'undefined') return
     const yaCerrado = localStorage.getItem(key)
     if (!yaCerrado && !todoCompleto) setVisible(true)
   }, [tallerId, todoCompleto])
 
   const handleCerrar = () => {
-    localStorage.setItem(`onboarding_cerrado_${tallerId}`, '1')
+    if (typeof window !== 'undefined') localStorage.setItem(`onboarding_cerrado_${tallerId}`, '1')
     setCerrado(true)
   }
 
