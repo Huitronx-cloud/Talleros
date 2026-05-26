@@ -232,7 +232,7 @@ export default async function DashboardPage() {
             </div>
             <div>
               <p className="text-blue-300 text-sm font-medium">{saludo}, {nombreUser}</p>
-              <h1 className="text-white text-2xl font-bold leading-tight">{taller?.nombre ?? 'Tu taller'}</h1>
+              <h1 className="text-white text-lg sm:text-2xl font-bold leading-tight">{taller?.nombre ?? 'Tu taller'}</h1>
             </div>
             <div className="ml-auto flex items-center gap-2">
               <div className="hidden sm:block">

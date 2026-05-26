@@ -185,7 +185,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
         </div>
 
         {/* Indicador de pasos */}
-        <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="flex items-center justify-center gap-1 sm:gap-2 mb-6 overflow-x-auto pb-1">
           {PASOS.map((p, i) => {
             const completado = paso > p.id
             const activo     = paso === p.id
