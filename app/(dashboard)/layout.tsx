@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
 
@@ -27,11 +28,13 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar
-        nombreTaller={taller?.nombre ?? 'Mi taller'}
-        logoUrl={taller?.logo_url ?? null}
-        rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
-      />
+      <Suspense fallback={null}>
+        <Sidebar
+          nombreTaller={taller?.nombre ?? 'Mi taller'}
+          logoUrl={taller?.logo_url ?? null}
+          rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
+        />
+      </Suspense>
       <main
         className="flex-1 pt-14 md:pt-0 md:ml-16 overflow-y-auto w-full transition-all duration-300"
         id="main-content"
