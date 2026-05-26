@@ -191,7 +191,7 @@ export default function PromocionesPage() {
   }
 
   // ── Gate Pro ──
-  if (plan !== 'pro') {
+  if (plan !== 'pro' && plan !== 'trial' && plan !== '') {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-10">

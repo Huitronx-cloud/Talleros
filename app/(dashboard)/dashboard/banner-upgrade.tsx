@@ -37,7 +37,7 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
   const urgente = dias <= 3 || esVencida
 
   return (
-    <div className={`rounded-xl border p-4 flex items-center gap-4 ${
+    <div className={`rounded-xl border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${
       urgente ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
     }`}>
       <AlertTriangle className={`w-5 h-5 shrink-0 ${urgente ? 'text-red-500' : 'text-amber-500'}`} />
