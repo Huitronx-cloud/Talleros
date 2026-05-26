@@ -31,6 +31,7 @@ const MODULOS = [
 ]
 
 export default async function DashboardPage() {
+  try {
   const supabase = createClient()
 
   const ahora         = new Date()
@@ -489,4 +490,13 @@ export default async function DashboardPage() {
       </div>
     </div>
   )
+  } catch(err: any) {
+    return (
+      <div className="p-8">
+        <h1 className="text-red-600 font-bold text-xl mb-4">Error detectado:</h1>
+        <pre className="text-sm bg-red-50 p-4 rounded">{err?.message ?? String(err)}</pre>
+        <pre className="text-xs bg-gray-100 p-4 rounded mt-2">{err?.stack}</pre>
+      </div>
+    )
+  }
 }
