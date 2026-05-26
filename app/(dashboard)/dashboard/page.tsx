@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
   const { data: usuarioData } = await supabase
     .from('usuarios')
     .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .maybeSingle()
 
   let totalClientes = 0, ordenesMes = 0, cotizacionesAbiertas = 0
@@ -102,7 +103,7 @@ export default async function DashboardPage() {
     .eq('taller_id', usuarioData?.taller_id ?? 'none')
     .maybeSingle()
 
-  const planActual = suscripcionData?.plan ?? 'trial'
+  const planActual = suscripcionData?.plan ?? 'pro'
   const tallerRaw  = usuarioData?.talleres
   const taller     = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'

@@ -162,7 +162,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
       {/* ── MENÚ MÓVIL ── */}
       {menuMovil && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/60" onClick={() => setMenuMovil(false)}>
-          <div className="absolute top-14 left-0 right-0 bg-gray-900 border-b border-gray-800 py-3 px-3 space-y-1" onClick={e => e.stopPropagation()}>
+          <div className="absolute top-14 left-0 right-0 bg-gray-900 border-b border-gray-800 py-3 px-3 space-y-1 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {NAV_ITEMS.map(item => {
               const esCitas   = item.href === '/citas'
               const showBadge = esCitas && citasPendientes > 0
