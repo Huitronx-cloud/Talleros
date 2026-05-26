@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
+import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
+import UpgradeSuccessModal from '@/components/upgrade-success-modal'
+import SoporteWidget from '@/components/soporte-widget'
 
 export default async function DashboardLayout({
   children,
@@ -26,6 +29,8 @@ export default async function DashboardLayout({
     .eq('id', usuario?.taller_id ?? 'none')
     .maybeSingle()
 
+  const esRecepcion = usuario?.rol === 'recepcion'
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Suspense fallback={null}>
@@ -43,6 +48,13 @@ export default async function DashboardLayout({
           {children}
         </div>
       </main>
+      {esRecepcion && usuario?.taller_id && (
+        <NotificacionesRealtime tallerId={usuario.taller_id} />
+      )}
+      <Suspense fallback={null}>
+        <UpgradeSuccessModal />
+      </Suspense>
+      <SoporteWidget />
     </div>
   )
 }

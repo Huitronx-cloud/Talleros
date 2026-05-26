@@ -37,41 +37,42 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
   const urgente = dias <= 3 || esVencida
 
   return (
-    <div className={`rounded-xl border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${
+    <div className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center gap-2 ${
       urgente ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
     }`}>
-      <AlertTriangle className={`w-5 h-5 shrink-0 ${urgente ? 'text-red-500' : 'text-amber-500'}`} />
-
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${urgente ? 'text-red-800' : 'text-amber-800'}`}>
-          {esVencida
-            ? 'Tu suscripción ha vencido'
-            : dias === 0
-            ? 'Tu período de prueba terminó hoy'
-            : `Tu período de prueba termina en ${dias} día${dias !== 1 ? 's' : ''}`}
-        </p>
-        <p className={`text-xs mt-0.5 ${urgente ? 'text-red-600' : 'text-amber-600'}`}>
-          Elige un plan para seguir usando TallerOS sin interrupciones.
-        </p>
+      <div className="flex items-start gap-2 flex-1 min-w-0">
+        <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${urgente ? 'text-red-500' : 'text-amber-500'}`} />
+        <div className="min-w-0">
+          <p className={`text-sm font-semibold ${urgente ? 'text-red-800' : 'text-amber-800'}`}>
+            {esVencida
+              ? 'Tu suscripción ha vencido'
+              : dias === 0
+              ? 'Tu período de prueba terminó hoy'
+              : `Tu período de prueba termina en ${dias} día${dias !== 1 ? 's' : ''}`}
+          </p>
+          <p className={`text-xs mt-0.5 ${urgente ? 'text-red-600' : 'text-amber-600'}`}>
+            Elige un plan para seguir usando TallerOS sin interrupciones.
+          </p>
+        </div>
       </div>
-
-      <button
-        onClick={() => router.push('/configuracion/plan')}
-        className={`shrink-0 flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-          urgente
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-amber-500 hover:bg-amber-600 text-white'
-        }`}
-      >
-        <Zap className="w-4 h-4" />
-        Ver planes
-      </button>
-
-      {!esVencida && (
-        <button onClick={() => setCerrado(true)} className="shrink-0 text-gray-400 hover:text-gray-600">
-          <X className="w-4 h-4" />
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => router.push('/configuracion/plan')}
+          className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+            urgente
+              ? 'bg-red-600 hover:bg-red-700 text-white'
+              : 'bg-amber-500 hover:bg-amber-600 text-white'
+          }`}
+        >
+          <Zap className="w-3 h-3" />
+          Ver planes
         </button>
-      )}
+        {!esVencida && (
+          <button onClick={() => setCerrado(true)} className="shrink-0 text-gray-400 hover:text-gray-600">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

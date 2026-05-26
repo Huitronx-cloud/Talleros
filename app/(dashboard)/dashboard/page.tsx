@@ -205,7 +205,7 @@ export default async function DashboardPage() {
       }
       return m
     }
-    if (m.upgrade && planActual === 'pro') {
+    if (m.upgrade && (planActual === 'pro' || planActual === 'trial')) {
       return { ...m, upgrade: false }
     }
     return m
