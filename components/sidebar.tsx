@@ -82,7 +82,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   useEffect(() => {
     const main = document.getElementById('main-content')
     if (!main) return
-    const esMobil = window.innerWidth < 768
+    const esMobil = typeof window !== 'undefined' && window.innerWidth < 768
     if (esMobil) { main.style.marginLeft = '0'; return }
     main.style.marginLeft = colapsado ? '4rem' : '16rem'
   }, [colapsado])
