@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 export function usePushNotifications() {
   const [soportado,  setSoportado]  = useState(false)
-  const [permiso,    setPermiso]    = useState<NotificationPermission>('default')
+  const [permiso,    setPermiso]    = useState<string>('default')
   const [activado,   setActivado]   = useState(false)
   const [cargando,   setCargando]   = useState(false)
 
