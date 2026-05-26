@@ -7,6 +7,7 @@ export function usePushNotifications() {
   const [cargando,   setCargando]   = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
     setSoportado('serviceWorker' in navigator && 'PushManager' in window)
     setPermiso(Notification.permission)
 
