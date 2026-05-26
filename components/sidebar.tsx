@@ -13,7 +13,8 @@ import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
 import PlanBadge from '@/components/plan-badge'
 import LogoFullscreen from '@/components/logo-fullscreen'
-import PushToggle from './push-toggle'
+import dynamic from 'next/dynamic'
+const PushToggle = dynamic(() => import('./push-toggle'), { ssr: false })
 
 
 const TODOS_NAV_ITEMS = [
