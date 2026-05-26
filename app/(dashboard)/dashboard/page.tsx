@@ -40,9 +40,19 @@ export default async function DashboardPage() {
   const hora = ahora.getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
 
+  // Obtener usuario primero
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: usuarioData } = await supabase
+    .from('usuarios')
+    .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
+    .eq('id', user.id)
+    .maybeSingle()
+
   let totalClientes = 0, ordenesMes = 0, cotizacionesAbiertas = 0
   let ingresosMes: any[] = [], ordenesRecientes: any[] = [], ordenesRetrasadas: any[] = []
-  let ingresosPorMes: any[] = [], usuarioData: any = null, ordenesTiempo: any[] = [], inventarioItems: any[] = []
+  let ingresosPorMes: any[] = [], ordenesTiempo: any[] = [], inventarioItems: any[] = []
 
   try {
     const results = await Promise.all([
@@ -64,10 +74,6 @@ export default async function DashboardPage() {
         .select('total, created_at')
         .gte('created_at', inicioGrafica)
         .eq('estado', 'entregado'),
-      supabase.from('usuarios')
-        .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
-        .maybeSingle(),
       supabase.from('ordenes')
         .select('descripcion_problema, servicios_realizados, mecanico_asignado, estado')
         .eq('estado', 'entregado')
@@ -76,16 +82,15 @@ export default async function DashboardPage() {
       supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
     ])
 
-    totalClientes       = results[0].count ?? 0
-    ordenesMes          = results[1].count ?? 0
+    totalClientes        = results[0].count ?? 0
+    ordenesMes           = results[1].count ?? 0
     cotizacionesAbiertas = results[2].count ?? 0
-    ingresosMes         = results[3].data ?? []
-    ordenesRecientes    = results[4].data ?? []
-    ordenesRetrasadas   = results[5].data ?? []
-    ingresosPorMes      = results[6].data ?? []
-    usuarioData         = results[7].data
-    ordenesTiempo       = results[8].data ?? []
-    inventarioItems     = results[9].data ?? []
+    ingresosMes          = results[3].data ?? []
+    ordenesRecientes     = results[4].data ?? []
+    ordenesRetrasadas    = results[5].data ?? []
+    ingresosPorMes       = results[6].data ?? []
+    ordenesTiempo        = results[7].data ?? []
+    inventarioItems      = results[8].data ?? []
   } catch (e) {
     console.error('Dashboard queries error:', e)
   }
@@ -93,7 +98,7 @@ export default async function DashboardPage() {
   const { data: suscripcionData } = await supabase
     .from('suscripciones')
     .select('plan')
-    .eq('taller_id', usuarioData?.taller_id ?? '')
+    .eq('taller_id', usuarioData?.taller_id ?? 'none')
     .maybeSingle()
 
   const planActual = suscripcionData?.plan ?? 'trial'
