@@ -232,7 +232,7 @@ export default async function DashboardPage() {
             </div>
             <div>
               <p className="text-blue-300 text-sm font-medium">{saludo}, {nombreUser}</p>
-              <h1 className="text-white text-base sm:text-2xl font-bold leading-tight truncate max-w-[180px] sm:max-w-none">{taller?.nombre ?? 'Tu taller'}</h1>
+              <h1 className="text-white text-sm sm:text-2xl font-bold leading-tight truncate max-w-[150px] xs:max-w-[180px] sm:max-w-none">{taller?.nombre ?? 'Tu taller'}</h1>
             </div>
             <div className="ml-auto flex items-center gap-2">
               <div className="hidden sm:block">
@@ -248,7 +248,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {[
               { label: 'Clientes',         valor: totalClientes ?? 0,        href: '/clientes',     color: 'text-sky-300',    ocultar: ['tecnico'] },
               { label: 'Órdenes este mes', valor: ordenesMes ?? 0,           href: '/ordenes',      color: 'text-green-300',  ocultar: [] },
@@ -367,7 +367,7 @@ export default async function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  <span className={`text-xs font-medium text-center leading-tight pb-3 px-2 ${
+                  <span className={`text-[10px] sm:text-xs font-medium text-center leading-tight pb-3 px-1 sm:px-2 ${
                     upgrade ? 'text-purple-700 font-semibold' : 'text-gray-700'
                   }`}>
                     {label}
@@ -399,9 +399,9 @@ export default async function DashboardPage() {
                         <p className="text-sm font-medium text-gray-900">
                           {(orden.clientes as any)?.nombre ?? 'Cliente'}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
                         {orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
@@ -437,9 +437,9 @@ export default async function DashboardPage() {
                         <p className="text-sm font-medium text-gray-900">
                           {(orden.clientes as any)?.nombre ?? 'Cliente'}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
                         {orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
