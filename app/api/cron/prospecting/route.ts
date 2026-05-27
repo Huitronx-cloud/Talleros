@@ -146,28 +146,68 @@ async function agregarABrevo(prospecto: Prospecto): Promise<void> {
   }
 }
 
+// ── Códigos de país por defecto ───────────────────────────────────────────────
+const CODIGO_PAIS: Record<string, string> = {
+  MX: '52',
+  CO: '57',
+  PE: '51',
+  AR: '54',
+  CL: '56',
+}
+
+function normalizarTelefono(raw: string, pais: string): string | null {
+  // Si ya tiene + o código de país largo (ej: +52 55...), limpiar y usar tal cual
+  const soloDigitos = raw.replace(/\D/g, '')
+
+  // Google a veces incluye el código de país (10-13 dígitos) o no (7-9 dígitos)
+  // Si el número tiene más de 10 dígitos, asumimos que ya tiene código de país
+  if (soloDigitos.length >= 10) {
+    return `+${soloDigitos}`
+  }
+
+  // Número local — agregar código de país según el país del prospecto
+  const codigo = CODIGO_PAIS[pais]
+  if (!codigo) return null
+
+  return `+${codigo}${soloDigitos}`
+}
+
 // ── WhatsApp frío ─────────────────────────────────────────────────────────────
-async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<void> {
-  if (!prospecto.telefono) return
+async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<{ ok: boolean; error?: string }> {
+  if (!prospecto.telefono) return { ok: false, error: 'sin_telefono' }
+
+  const to = normalizarTelefono(prospecto.telefono, prospecto.pais)
+  if (!to) return { ok: false, error: 'numero_invalido' }
+
   try {
-    const tel = prospecto.telefono.replace(/\D/g, '')
-    const to  = tel.startsWith('+') ? tel : `+${tel}`
     const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`
-    await fetch(url, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         Authorization: `Basic ${Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64')}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From:             `whatsapp:+15559828390`,
+        From:             'whatsapp:+15559828390',
         To:               `whatsapp:${to}`,
         ContentSid:       'HXbf735472bd3841f57341050e045adc3d',
         ContentVariables: JSON.stringify({ '1': prospecto.nombre }),
       }).toString(),
     })
+
+    const data = await res.json()
+
+    if (!res.ok || data.status === 'failed' || data.error_code) {
+      console.error(`WhatsApp error para ${prospecto.nombre} (${to}): code=${data.error_code} msg=${data.error_message}`)
+      return { ok: false, error: `twilio_${data.error_code ?? res.status}` }
+    }
+
+    console.log(`✅ WhatsApp enviado a ${prospecto.nombre} (${to}) — SID: ${data.sid}`)
+    return { ok: true }
+
   } catch (e) {
-    console.error('WhatsApp error:', e)
+    console.error('WhatsApp fetch error:', e)
+    return { ok: false, error: 'fetch_error' }
   }
 }
 
@@ -274,8 +314,12 @@ export async function GET(req: NextRequest) {
 
       // Enviar WhatsApp si tiene teléfono (requiere plantilla aprobada por Meta)
       if (prospecto.telefono) {
-        await enviarWhatsAppFrio(prospecto)
-        contactados.push(`${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+        const resultado = await enviarWhatsAppFrio(prospecto)
+        if (resultado.ok) {
+          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+        } else {
+          omitidos.push(`❌ ${prospecto.nombre} (WhatsApp error: ${resultado.error}) | 📞 ${prospecto.telefono}`)
+        }
       } else if (prospecto.website) {
         // Sin teléfono pero tiene website — lista para seguimiento manual
         contactados.push(`${prospecto.nombre} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
