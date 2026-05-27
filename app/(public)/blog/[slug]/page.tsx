@@ -82,7 +82,7 @@ export default function ArticuloPage() {
         </header>
 
         <article
-          className="prose prose-gray prose-lg max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3 prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-gray-900 prose-ul:text-gray-600 prose-li:my-1 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline"
+          className="blog-content"
           dangerouslySetInnerHTML={{ __html: art.contenido }}
         />
 

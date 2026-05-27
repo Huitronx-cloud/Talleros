@@ -35,3 +35,42 @@ input::placeholder, select::placeholder, textarea::placeholder {
   color: #94a3b8 !important;
   -webkit-text-fill-color: #94a3b8 !important;
 }
+
+.blog-content h2 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #111827;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.blog-content h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.blog-content p {
+  color: #374151;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+.blog-content ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+.blog-content li {
+  margin-bottom: 0.4rem;
+  line-height: 1.7;
+}
+.blog-content strong {
+  color: #111827;
+  font-weight: 700;
+}
+.blog-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
