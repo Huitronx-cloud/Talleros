@@ -741,28 +741,30 @@ export default function LandingPage() {
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
       .ltb.a{background:var(--blue);color:#fff;}
       .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
-      .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto 48px;}
+      .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
       .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
-      .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px var(--blue),var(--sh-bl);}
-      .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
+      .lplan.pop{border-color:#d97706;border-width:2px;box-shadow:0 0 0 1px #d97706,0 8px 32px rgba(217,119,6,0.18);}
+      .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
       .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
+      .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
       .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
+      .lplan.pop .lplan-pb{background:rgba(245,158,11,0.06);border-color:rgba(217,119,6,0.2);}
       .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
       .lplan-pr{display:flex;align-items:baseline;gap:6px;}
       .lplan-num{font-size:clamp(36px,5vw,52px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
+      .lplan.pop .lplan-num{color:#d97706;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
       .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
       .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
-      .lfck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);flex-shrink:0;margin-top:2px;}
       .lplan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--bdr2);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
       .lplan-cta:hover{background:var(--surf3);}
-      .lplan-cta.pop{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:var(--sh-bl);}
-      .lplan-cta.pop:hover{background:var(--blue-d);}
+      .lplan-cta.pop{background:linear-gradient(135deg,#f59e0b,#d97706);border-color:#d97706;color:#fff;box-shadow:0 4px 20px rgba(217,119,6,0.35);}
+      .lplan-cta.pop:hover{background:linear-gradient(135deg,#fbbf24,#b45309);box-shadow:0 6px 28px rgba(217,119,6,0.45);}
       .lplan-nt{text-align:center;font-size:11px;color:var(--ink4);margin-top:10px;}
       .lproof{display:flex;align-items:center;justify-content:center;gap:14px;}
       .lpavs{display:flex;}
