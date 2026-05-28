@@ -451,7 +451,7 @@ export default function LandingPage() {
             const la  = convertir(pa); const lor = convertir(por); const lan = convertir(plan.total_anual)
             const pct = Math.round((1 - pa / por) * 100)
             return (
-              <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}`}>
+              <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}${plan.nombre==='Esencial'?' esencial':''}`}>
                 {plan.popular && <div className="lplan-b">Mas popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={18}/></div>
@@ -748,6 +748,12 @@ export default function LandingPage() {
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
       .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
+      .lplan.esencial{border-color:#3b82f6;border-width:2px;box-shadow:0 0 0 1px rgba(59,130,246,0.3),0 8px 24px rgba(59,130,246,0.1);}
+      .lplan.esencial .lplan-ic{background:rgba(59,130,246,0.12);color:#2563eb;}
+      .lplan.esencial .lplan-num{color:#2563eb;}
+      .lplan.esencial .lplan-pb{background:rgba(59,130,246,0.04);border-color:rgba(59,130,246,0.15);}
+      .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
+      .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
       .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
       .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
