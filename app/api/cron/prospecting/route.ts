@@ -90,9 +90,10 @@ async function yaContactado(placeId: string): Promise<boolean> {
   }
 }
 
-async function registrarContacto(prospecto: Prospecto): Promise<void> {
+async function registrarContacto(prospecto: Prospecto, error?: string): Promise<void> {
   try {
     await supabase.from('prospectos_enviados').insert({
+    ...(error ? { error } : {}),
       nombre:          prospecto.nombre,
       telefono:        prospecto.telefono,
       email:           prospecto.email,
@@ -316,9 +317,12 @@ export async function GET(req: NextRequest) {
       if (prospecto.telefono) {
         const resultado = await enviarWhatsAppFrio(prospecto)
         if (resultado.ok) {
+          await registrarContacto(prospecto)
           contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
         } else {
-          omitidos.push(`❌ ${prospecto.nombre} (WhatsApp error: ${resultado.error}) | 📞 ${prospecto.telefono}`)
+          // Registrar fallidos también para no reintentar
+          await registrarContacto(prospecto, resultado.error)
+          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}`)
         }
       } else if (prospecto.website) {
         // Sin teléfono pero tiene website — lista para seguimiento manual
