@@ -54,15 +54,21 @@ const TESTIMONIALES = [
 
 const PLANES = [
   {
+    nombre: 'Gratuito', precio_mensual: 0, precio_anual: 0, total_anual: 0,
+    precio_original_mensual: 0, precio_original_anual: 0,
+    icono: Check, popular: false, gratis: true,
+    features: ['1 usuario','10 órdenes de trabajo al mes','Hasta 20 clientes','Cotizaciones básicas','Portal del cliente (vista limitada)'],
+  },
+  {
     nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
-    icono: Zap, popular: false,
+    icono: Zap, popular: false, gratis: false,
     features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
     nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
-    icono: Star, popular: true,
+    icono: Star, popular: true, gratis: false,
     features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Módulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
@@ -449,17 +455,29 @@ export default function LandingPage() {
                 {plan.popular && <div className="lplan-b">Mas popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={18}/></div>
-                  <div><h3 className="lplan-n">{plan.nombre}</h3><span className="lplan-pct">-{pct}% hoy</span></div>
+                  <div>
+                    <h3 className="lplan-n">{plan.nombre}</h3>
+                    {!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}
+                    {plan.gratis && <span style={{fontSize:11,color:'var(--muted)'}}>Para siempre gratis</span>}
+                  </div>
                 </div>
                 <div className="lplan-pb">
-                  <div className="lplan-or">{!cM ? lor : `$${por} USD`}</div>
-                  <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
-                  {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
+                  {plan.gratis ? (
+                    <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
+                  ) : (
+                    <>
+                      <div className="lplan-or">{!cM ? lor : `$${por} USD`}</div>
+                      <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
+                      {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
+                    </>
+                  )}
                 </div>
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
                 </ul>
-                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Empezar 14 días gratis <ArrowRight size={15}/></a>
+                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>
+                  {plan.gratis ? 'Empezar gratis' : 'Empezar 14 días gratis'} <ArrowRight size={15}/>
+                </a>
                 <p className="lplan-nt">Sin tarjeta de crédito requerida</p>
               </div>
             )
