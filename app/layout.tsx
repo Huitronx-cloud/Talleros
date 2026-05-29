@@ -76,6 +76,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        <meta name="facebook-domain-verification" content="qrpg7ptwpcrr7anrjz6zr8foz38az" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
