@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   description: 'TallerOS digitaliza tu taller mecánico con aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento. 14 días gratis.',
   keywords: ['taller mecánico', 'software taller', 'gestión taller', 'SaaS taller', 'taller LATAM', 'órdenes de trabajo', 'WhatsApp taller', 'portal cliente taller'],
   authors: [{ name: 'TallerOS' }],
+  verification: {
+    other: {
+      'facebook-domain-verification': 'qrpg7ptwpcrr7anrjz6zr8foz38az',
+    },
+  },
   creator: 'TallerOS',
   publisher: 'TallerOS',
   metadataBase: new URL('https://www.tallerosapp.com'),
