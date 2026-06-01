@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   Building2, Phone, MapPin, Users, ClipboardList,
   CheckCircle2, ChevronRight, Loader2, Upload, Mail,
-  Wrench, Shield, Coffee, Star, Bell, ArrowRight
+  Wrench, Shield, Coffee, Star, Bell, ArrowRight, Smartphone
 } from 'lucide-react'
 
 interface Props {
@@ -469,7 +469,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             </button>
 
             <button
-              onClick={() => setPaso(5)}
+              onClick={() => setPaso(55)}
               className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
             >
               Ir al dashboard primero
@@ -478,6 +478,63 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
         )}
 
         {/* ── PASO 5: CHECKLIST DE ACTIVACIÓN ── */}
+        {paso === 55 && (
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Smartphone className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 mb-2">Instala TallerOS en tu celular</h2>
+            <p className="text-slate-500 text-sm mb-6">Accede a tu taller desde cualquier lugar, sin descargar nada del App Store.</p>
+
+            <div className="space-y-4 text-left mb-6">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  🍎 iPhone (Safari)
+                </p>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Abre <strong>tallerosapp.com</strong> en Safari</li>
+                  <li>Toca el botón <strong>Compartir</strong> (cuadrado con flecha)</li>
+                  <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
+                  <li>Toca <strong>Añadir</strong></li>
+                </ol>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  🤖 Android (Chrome)
+                </p>
+                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                  <li>Abre <strong>tallerosapp.com</strong> en Chrome</li>
+                  <li>Toca los <strong>3 puntos</strong> arriba a la derecha</li>
+                  <li>Selecciona <strong>"Instalar aplicación"</strong></li>
+                  <li>Toca <strong>Instalar</strong></li>
+                </ol>
+              </div>
+            </div>
+
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Entrar al dashboard
+            </button>
+
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/ordenes/nueva')
+              }}
+              className="w-full text-slate-400 hover:text-slate-600 text-sm py-2 transition-colors"
+            >
+              Crear mi primera orden
+            </button>
+          </div>
+        )}
+
         {paso === 5 && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
             <div className="text-center">
