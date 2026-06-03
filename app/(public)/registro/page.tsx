@@ -227,6 +227,14 @@ export default function RegistroPage() {
                 >
                   Siguiente →
                 </button>
+
+                <div className="flex items-center justify-center gap-4 text-xs text-slate-400 pt-1">
+                  <span>✓ 14 días gratis</span>
+                  <span>·</span>
+                  <span>✓ Sin tarjeta</span>
+                  <span>·</span>
+                  <span>✓ Cancela cuando quieras</span>
+                </div>
               </div>
             )}
 
@@ -356,6 +364,14 @@ export default function RegistroPage() {
                     'Crear mi taller gratis'
                   )}
                 </button>
+
+                <div className="flex items-center justify-center gap-4 text-xs text-slate-400 pt-1">
+                  <span>✓ 14 días gratis</span>
+                  <span>·</span>
+                  <span>✓ Sin tarjeta</span>
+                  <span>·</span>
+                  <span>✓ Cancela cuando quieras</span>
+                </div>
 
                 <button
                   onClick={() => { setPaso(1); setError('') }}

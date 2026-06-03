@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, LayoutGrid, CalendarDays, Users, ClipboardList,
   FileText, Settings, LogOut, Wrench, ChevronLeft, ChevronRight, Menu, X, UserCog, Package, BookOpen, BarChart2, Bell, Star,
-  Smartphone, Megaphone,
+  Smartphone, Megaphone, Zap,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
@@ -32,6 +32,7 @@ const TODOS_NAV_ITEMS = [
 ]
 
 const TODOS_NAV_BOTTOM = [
+  { href: '/configuracion/plan',   label: 'Mejorar plan',  icono: Zap,        roles: ['propietario', 'admin'] },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,    roles: ['propietario', 'admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,   roles: ['propietario', 'admin'] },
   { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,   roles: ['propietario', 'admin'] },
@@ -97,6 +98,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   const NavLink = ({ href, label, icono: Icono }: { href: string; label: string; icono: any }) => {
     const activo    = pathname === href || pathname.startsWith(href + '/')
     const esCitas   = href === '/citas'
+    const esPlan    = href === '/configuracion/plan'
     const showBadge = esCitas && citasPendientes > 0
     return (
       <Link
@@ -108,6 +110,8 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
           colapsado ? 'justify-center' : '',
           activo
             ? 'bg-blue-600 text-white'
+            : esPlan
+            ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
             : 'text-gray-400 hover:text-white hover:bg-gray-800'
         )}
       >
