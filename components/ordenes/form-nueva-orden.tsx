@@ -50,9 +50,10 @@ interface Props {
   pais: string
   moneda: string
   mecanicos: { id: string; nombre: string }[]
+  clienteIdInicial?: string
 }
 
-export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda, mecanicos }: Props) {
+export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda, mecanicos, clienteIdInicial }: Props) {
   const router = useRouter()
   const [paso, setPaso]         = useState(1)
   const [cargando, setCargando] = useState(false)
@@ -60,8 +61,9 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const [ordenId, setOrdenId]   = useState<string | null>(null)
   const [preciosRaw, setPreciosRaw] = useState<string[]>([''])
 
-  const [busquedaCliente, setBusquedaCliente]         = useState('')
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
+  const clienteInicial = clienteIdInicial ? (clientes.find(c => c.id === clienteIdInicial) ?? null) : null
+  const [busquedaCliente, setBusquedaCliente]         = useState(clienteInicial?.nombre ?? '')
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(clienteInicial)
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
   const [vehiculo, setVehiculo] = useState({

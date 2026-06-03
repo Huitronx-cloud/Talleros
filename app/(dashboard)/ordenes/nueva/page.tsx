@@ -6,7 +6,7 @@ import FormRapidoOrden from '@/components/recepcion/form-rapido-orden'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
 import { redirect } from 'next/navigation'
 
-export default async function NuevaOrdenPage() {
+export default async function NuevaOrdenPage({ searchParams }: { searchParams: { cliente_id?: string } }) {
   const supabase = createClient()
   const admin    = createServiceClient()
 
@@ -91,6 +91,7 @@ export default async function NuevaOrdenPage() {
         pais={taller?.pais ?? 'México'}
         moneda={taller?.moneda ?? 'MXN'}
         mecanicos={mecanicos ?? []}
+        clienteIdInicial={searchParams.cliente_id}
       />
     </div>
   )
