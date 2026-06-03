@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
@@ -76,8 +77,58 @@ export async function POST(req: NextRequest) {
       return new NextResponse('OK', { status: 200 })
     }
 
-    // Detectar intención del mensaje
-    const mensajeLower = mensaje.toLowerCase()
+    const twimlOk = new NextResponse(
+      `<?xml version="1.0" encoding="UTF-8"?><Response></Response>`,
+      { status: 200, headers: { 'Content-Type': 'text/xml' } }
+    )
+
+    // ── Detección de aprobación/rechazo de cotización ─────────────────────────
+    const mensajeLower = mensaje.toLowerCase().trim()
+    const esAprobacion = ['si', 'sí', 'yes', 'apruebo', 'acepto', 'ok', 'dale', 'claro', 'adelante'].includes(mensajeLower)
+    const esRechazo    = ['no', 'nope', 'rechaz', 'cancel', 'nada'].some(p => mensajeLower === p || mensajeLower.startsWith(p))
+
+    if (esAprobacion || esRechazo) {
+      const supabase = createServiceClient()
+      const digitos  = de.replace(/\D/g, '')
+      const sufijo   = digitos.slice(-10)
+
+      // Buscar cliente por teléfono (últimos 10 dígitos)
+      const { data: clientes } = await supabase
+        .from('clientes')
+        .select('id')
+        .ilike('telefono', `%${sufijo}`)
+
+      if (clientes?.length) {
+        const clienteIds = clientes.map(c => c.id)
+
+        const { data: cotizacion } = await supabase
+          .from('cotizaciones')
+          .select('id, numero_cotizacion')
+          .in('cliente_id', clienteIds)
+          .eq('estado', 'enviada')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (cotizacion) {
+          const nuevoEstado = esAprobacion ? 'aprobada' : 'rechazada'
+          await supabase
+            .from('cotizaciones')
+            .update({ estado: nuevoEstado })
+            .eq('id', cotizacion.id)
+
+          const num = String(cotizacion.numero_cotizacion).padStart(4, '0')
+          const confirmacion = esAprobacion
+            ? `✅ ¡Perfecto! Tu aprobación de la cotización *#${num}* quedó registrada. Comenzamos el trabajo a la brevedad. 🔧`
+            : `Entendido. La cotización *#${num}* fue cancelada. Cualquier duda, estamos a tus órdenes.`
+
+          await responderWhatsApp(de, confirmacion)
+          return twimlOk
+        }
+      }
+    }
+
+    // ── Detectar intención del mensaje (prospecting)
     const interesado = ['si', 'sí', 'me interesa', 'interesa', 'info', 'información', 
                         'demo', 'precio', 'costo', 'cuanto', 'cuánto', 'como', 'cómo'].some(
       palabra => mensajeLower.includes(palabra)
