@@ -272,7 +272,7 @@ export default async function PortalClientePage({
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(taller.direccion)}&language=es`}
+              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ?? ''}&q=${encodeURIComponent(taller.direccion)}&language=es`}
             />
             <div className="px-4 pb-4 pt-2">
               <a

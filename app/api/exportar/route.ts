@@ -5,14 +5,25 @@ import * as XLSX from 'xlsx'
 export async function GET() {
   const supabase = createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: usuario } = await supabase
+    .from('usuarios')
+    .select('taller_id')
+    .eq('id', user.id)
+    .single()
+
+  const tallerId = usuario?.taller_id ?? ''
+
   const [
     { data: clientes },
     { data: ordenes },
     { data: cotizaciones },
   ] = await Promise.all([
-    supabase.from('clientes').select('*').order('created_at', { ascending: false }),
-    supabase.from('ordenes').select('*, clientes(nombre)').order('created_at', { ascending: false }),
-supabase.from('cotizaciones').select('*, clientes(nombre)').order('created_at', { ascending: false }),
+    supabase.from('clientes').select('*').eq('taller_id', tallerId).order('created_at', { ascending: false }),
+    supabase.from('ordenes').select('*, clientes(nombre)').eq('taller_id', tallerId).order('created_at', { ascending: false }),
+    supabase.from('cotizaciones').select('*, clientes(nombre)').eq('taller_id', tallerId).order('created_at', { ascending: false }),
   ])
 
   const wb = XLSX.utils.book_new()

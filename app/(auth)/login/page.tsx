@@ -44,10 +44,14 @@ export default function LoginPage() {
               const raw    = data?.talleres
               const taller = (Array.isArray(raw) ? raw[0] : raw) as { onboarding_completo: boolean } | null
               if (type === 'recovery') {
-  router.push('/nueva-password')
-} else {
-  router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
-}
+                router.push('/nueva-password')
+              } else {
+                router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
+              }
+            })
+            .catch(() => {
+              setError('Error al verificar tu sesión. Intenta iniciar sesión manualmente.')
+              setCargando(false)
             })
         }
       })

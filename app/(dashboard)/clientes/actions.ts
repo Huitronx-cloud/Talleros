@@ -43,7 +43,7 @@ export async function crearCliente(datos: ClienteForm) {
 
       const mensaje = `Hola ${nombreCliente} 👋 Te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. ¡Gracias por preferirnos! 🔧`
 
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/whatsapp/bienvenida`, {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/api/whatsapp/bienvenida`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telefono: telefonoLimpio, mensaje }),

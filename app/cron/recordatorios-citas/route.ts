@@ -40,7 +40,7 @@ export async function GET(request: Request) {
         .eq('id', cita.taller_id)
         .single()
 
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notificaciones`, {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/api/notificaciones`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

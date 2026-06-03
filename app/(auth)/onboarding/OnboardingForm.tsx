@@ -404,7 +404,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             <div>
               <h1 className="text-xl font-bold text-slate-900">Agrega tu primer cliente</h1>
               <p className="text-slate-500 text-sm mt-1">
-                Registra un cliente real o de prueba. Lo necesitas antes de crear tu primera orden.
+                Registra un cliente de prueba (puedes usar tu propio nombre) para ver el flujo completo.
               </p>
             </div>
 
@@ -420,12 +420,20 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
 
             <button
               onClick={() => {
-                router.push('/clientes?onboarding=true')
+                window.open('/clientes?onboarding=true', '_blank')
               }}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               <Users className="w-4 h-4" />
               Agregar mi primer cliente
+            </button>
+
+            <button
+              onClick={() => setPaso(4)}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <ChevronRight className="w-4 h-4" />
+              Ya lo agregué, continuar
             </button>
 
             <button
@@ -458,8 +466,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             </div>
 
             <button
-              onClick={async () => {
-                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+              onClick={() => {
                 router.push('/ordenes/nueva')
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -492,7 +499,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                   🍎 iPhone (Safari)
                 </p>
                 <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>tallerosapp.com</strong> en Safari</li>
+                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Safari</li>
                   <li>Toca el botón <strong>Compartir</strong> (cuadrado con flecha)</li>
                   <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
                   <li>Toca <strong>Añadir</strong></li>
@@ -504,7 +511,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                   🤖 Android (Chrome)
                 </p>
                 <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>tallerosapp.com</strong> en Chrome</li>
+                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Chrome</li>
                   <li>Toca los <strong>3 puntos</strong> arriba a la derecha</li>
                   <li>Selecciona <strong>"Instalar aplicación"</strong></li>
                   <li>Toca <strong>Instalar</strong></li>

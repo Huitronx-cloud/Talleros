@@ -94,7 +94,6 @@ export default function RegistroPage() {
         return
       }
 
-      setExito(true)
       trackEvent('CompleteRegistration', { content_name: 'Registro TallerOS' })
 
       // Login automático después del registro
@@ -105,6 +104,8 @@ export default function RegistroPage() {
 
       if (!loginError) {
         router.push('/onboarding')
+      } else {
+        setExito(true)
       }
     } catch {
       setError('Error de conexión. Revisa tu internet e intenta de nuevo.')
@@ -124,15 +125,15 @@ export default function RegistroPage() {
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">¡Taller registrado!</h2>
           <p className="text-slate-500 text-sm leading-relaxed mb-6">
-            Te enviamos un correo de bienvenida a{' '}
-            <span className="font-medium text-slate-700">{form.email}</span>.
-            <br />Haz clic en el botón del correo para configurar tu taller.
+            Tu cuenta fue creada. Inicia sesión con tu correo{' '}
+            <span className="font-medium text-slate-700">{form.email}</span>{' '}
+            para configurar tu taller.
           </p>
           <button
             onClick={() => router.push('/login')}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
           >
-            Ir al inicio de sesión
+            Iniciar sesión
           </button>
         </div>
       </main>

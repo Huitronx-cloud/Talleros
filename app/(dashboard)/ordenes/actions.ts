@@ -226,7 +226,7 @@ async function notificarMecanicoAsignado(
 
     if (!mecanico) return
 
-    await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/push/enviar`, {
+    await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/api/push/enviar`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

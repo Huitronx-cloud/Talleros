@@ -9,9 +9,6 @@ export async function POST(req: NextRequest) {
   )
 
   try {
-    console.log('SID:', process.env.TWILIO_ACCOUNT_SID)
-    console.log('TOKEN:', process.env.TWILIO_AUTH_TOKEN ? 'existe' : 'vacío')
-
     const { tipo, ordenId, servicioExtra, costoExtra, fotos, garantiaDias, garantiaKm } = await req.json()
     const supabase = createClient()
 
