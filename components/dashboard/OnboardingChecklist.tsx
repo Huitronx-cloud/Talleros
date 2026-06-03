@@ -36,7 +36,7 @@ const PASOS = [
     icon: ClipboardList,
     titulo: 'Crea tu primera orden',
     desc: 'Abre una orden de trabajo y comienza a operar.',
-    href: '/ordenes',
+    href: '/ordenes/nueva',
     cta: 'Crear orden',
     color: '#16a34a',
     bg: 'rgba(22,163,74,0.1)',
