@@ -1,13 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { Orden } from '@/types'
 import TableroKanban from '@/components/kanban/tablero-kanban'
 
 export default async function KanbanPage() {
   const supabase = createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: usuario } = await supabase
+    .from('usuarios')
+    .select('taller_id')
+    .eq('id', user.id)
+    .single()
+
   const { data: ordenes } = await supabase
     .from('ordenes')
     .select('*, clientes(nombre, telefono, foto_vehiculo_url)')
+    .eq('taller_id', usuario?.taller_id ?? '')
     .neq('estado', 'entregado')
     .order('created_at', { ascending: true })
 

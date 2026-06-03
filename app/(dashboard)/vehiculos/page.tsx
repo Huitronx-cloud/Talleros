@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Car, Calendar, DollarSign, Wrench, Clock } from 'lucide-react'
 import BadgeEstado from '@/components/ordenes/badge-estado'
@@ -10,12 +10,23 @@ export default async function HistorialVehiculoPage({
   params: { vin: string }
 }) {
   const supabase = createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: usuario } = await supabase
+    .from('usuarios')
+    .select('taller_id')
+    .eq('id', user.id)
+    .single()
+
   const vin = decodeURIComponent(params.vin).toUpperCase()
 
-  // Buscar por VIN o placas
+  // Buscar por VIN o placas dentro del taller del usuario
   const { data: ordenes } = await supabase
     .from('ordenes')
     .select('*, clientes(nombre, telefono)')
+    .eq('taller_id', usuario?.taller_id ?? '')
     .or(`vin.eq.${vin},placas.eq.${vin}`)
     .order('created_at', { ascending: false })
 
