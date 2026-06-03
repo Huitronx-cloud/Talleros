@@ -141,7 +141,7 @@ export default function RecordatoriosPage() {
           </p>
           <a
           
-            href="/precios"
+            href="/configuracion/plan"
             className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
           >
             Upgrade a Pro <ChevronRight className="w-4 h-4" />

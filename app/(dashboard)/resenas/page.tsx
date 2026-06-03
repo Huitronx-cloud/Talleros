@@ -125,10 +125,10 @@ export default function ResenasPage() {
             Las reseñas automáticas de Google están disponibles en el plan Pro.
             Al entregar una orden, el cliente recibe un mensaje automático para dejar su reseña.
           </p>
-          
-            href="/precios"
+          <a
+            href="/configuracion/plan"
             className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-xl transition-colors"
-          <a>
+          >
             Upgrade a Pro <ChevronRight className="w-4 h-4" />
           </a>
         </div>
