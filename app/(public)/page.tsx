@@ -27,12 +27,12 @@ const HF = {
 }
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.' },
-  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.' },
-  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.' },
-  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.' },
-  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.' },
-  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide una reseña automáticamente. El 97% de nuevos clientes lee primero las reseñas.' },
+  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.',        url: '/registro' },
+  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.',      url: '/registro' },
+  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.',               url: '/demo'     },
+  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.',               url: '/registro' },
+  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.',               url: '/registro' },
+  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide una reseña automáticamente. El 97% de nuevos clientes lee primero las reseñas.', url: '/registro' },
 ]
 
 const MODULOS = [
@@ -251,7 +251,7 @@ export default function LandingPage() {
           <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
-            <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
+            <a href="/demo" className="lb-out">Ver portal del cliente</a>
           </div>
           <div className="ltrust">
             {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
@@ -344,7 +344,7 @@ export default function LandingPage() {
               <div className="lfc-b">
                 <h3 className="lfc-t">{d.titulo}</h3>
                 <p className="lfc-d">{d.desc}</p>
-                <a href="/registro" className="lfc-lnk">Ver en accion <ArrowRight size={13}/></a>
+                <a href={d.url} className="lfc-lnk">Ver en accion <ArrowRight size={13}/></a>
               </div>
             </div>
           ))}
