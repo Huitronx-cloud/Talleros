@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, Loader2, Zap, Star, AlertTriangle } from 'lucide-react'
+import { trackEvent } from '@/components/meta-pixel'
 
 type Suscripcion = {
   plan:                   string
@@ -88,6 +89,11 @@ export default function PlanPage() {
   }
 
   async function handleUpgrade(precioId: string) {
+    trackEvent('InitiateCheckout', {
+      content_name: precioId.includes('pro') ? 'Pro' : 'Esencial',
+      currency: 'USD',
+      num_items: 1,
+    })
     setProcesando(precioId)
     try {
       const res  = await fetch('/api/stripe/checkout', {
