@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
       subscription_data: {
         metadata: { taller_id: usuario.taller_id },
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgrade=success`,
-      cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL}/configuracion/plan?upgrade=cancelled`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/dashboard?upgrade=success`,
+      cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/configuracion/plan?upgrade=cancelled`,
     })
 
     return NextResponse.json({ url: session.url })

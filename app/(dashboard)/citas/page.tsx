@@ -25,7 +25,7 @@ export default async function CitasPage() {
     supabase.from('citas_config').select('*').eq('taller_id', tallerId).maybeSingle(),
   ])
 
-  const linkPublico = `${process.env.NEXT_PUBLIC_APP_URL}/citas/${taller?.id}`
+  const linkPublico = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/citas/${taller?.id}`
 
   return (
     <div className="space-y-8">
