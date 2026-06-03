@@ -852,7 +852,7 @@ export default function LandingPage() {
         .lpg{grid-template-columns:1fr;}
         .lobar{flex-direction:column;gap:.5rem;text-align:center;}
         .lvrow{grid-template-columns:1fr;}
-        .lvbad{display:none;}
+        .lvbad{border-radius:0;}
         .l-toast{left:12px;right:12px;bottom:16px;}
         .lcta-bts{flex-direction:column;align-items:center;}
       }

@@ -92,8 +92,20 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
           <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
             <ClipboardList className="w-10 h-10 text-gray-200 mx-auto mb-3" />
             <p className="text-gray-400 text-sm font-medium">
-              {busqueda || tab !== 'todas' ? 'Sin resultados' : 'Sin órdenes aún'}
+              {busqueda || tab !== 'todas' ? 'Sin resultados' : 'Aún no tienes órdenes'}
             </p>
+            {!busqueda && tab === 'todas' && (
+              <>
+                <p className="text-gray-300 text-xs mt-1 mb-4">Crea tu primera orden de trabajo para empezar a operar.</p>
+                <Link
+                  href="/ordenes/nueva"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Crear primera orden
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           filtradas.map(orden => (

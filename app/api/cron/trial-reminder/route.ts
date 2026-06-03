@@ -48,6 +48,42 @@ async function enviarWhatsApp(telefono: string, mensaje: string) {
 
 // ── Email templates ───────────────────────────────────────────────────────────
 
+function emailDias7(nombre: string, tallerNombre: string): string {
+  return `
+  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:28px;text-align:center;">
+      <p style="margin:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;opacity:0.85;text-transform:uppercase;">TallerOS</p>
+      <p style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:900;">🚀 Llevas una semana — ¿cómo va?</p>
+    </div>
+    <div style="padding:36px 32px;">
+      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre},</p>
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
+        Ya llevas 7 días con <strong>${tallerNombre}</strong> en TallerOS. Muchos talleres ven su primera diferencia en esta semana: clientes que dejan de llamar porque ven su vehículo en el portal, y aprobaciones que llegan por WhatsApp sin perseguir al cliente.
+      </p>
+      <div style="background:#eff6ff;border-radius:12px;padding:16px 20px;border-left:4px solid #2563eb;margin-bottom:24px;">
+        <p style="margin:0 0 8px;color:#1e40af;font-size:14px;font-weight:700;">Lo que tienes disponible en tu prueba:</p>
+        <p style="margin:0;color:#1d4ed8;font-size:14px;line-height:1.8;">
+          ✅ Portal del cliente en tiempo real<br/>
+          ✅ Aprobación de cotizaciones por WhatsApp<br/>
+          ✅ Recordatorios automáticos de mantenimiento<br/>
+          ✅ Reportes de ingresos por mecánico<br/>
+          ✅ Reseñas automáticas en Google
+        </p>
+      </div>
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
+        Te quedan <strong>7 días de prueba</strong>. Si quieres mantener todo esto activo, elige tu plan ahora y no pierdas el ritmo.
+      </p>
+      <a href="https://www.tallerosapp.com/configuracion/plan"
+         style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
+        Ver planes y precios →
+      </a>
+      <p style="color:#94a3b8;font-size:13px;margin-top:20px;text-align:center;">
+        ¿Tienes dudas o quieres una demo en vivo? Responde este email — te contactamos hoy.
+      </p>
+    </div>
+  </div>`
+}
+
 function emailDias4(nombre: string, tallerNombre: string): string {
   return `
   <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
@@ -122,6 +158,10 @@ function emailDias1(nombre: string, tallerNombre: string): string {
 
 // ── WhatsApp messages ─────────────────────────────────────────────────────────
 
+function waDias7(nombre: string): string {
+  return `🚀 Hola ${nombre}! Ya llevas una semana con *TallerOS*.\n\nTe quedan 7 días de prueba. Para seguir usando el portal del cliente, aprobaciones por WA y recordatorios automáticos, elige tu plan aquí 👇\nhttps://www.tallerosapp.com/configuracion/plan\n\n¿Tienes dudas? Responde este mensaje.`
+}
+
 function waDias4(nombre: string): string {
   return `⚠️ Hola ${nombre}! Tu prueba de *TallerOS* termina en *4 días*.\n\nNo pierdas el acceso a tus clientes, órdenes y cotizaciones.\n\nSuscríbete hoy y tu taller sigue sin interrupciones 👇\nhttps://www.tallerosapp.com/configuracion/plan`
 }
@@ -163,6 +203,16 @@ export async function GET(req: NextRequest) {
       const nombre  = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email   = propietario.email
       const telefono = propietario.telefono
+
+      // ── 7 días restantes: punto medio — re-engagement ────────────────────
+      if (dias >= 6 && dias <= 7) {
+        await enviarEmail(email, nombre,
+          '🚀 Llevas una semana con TallerOS — te quedan 7 días de prueba',
+          emailDias7(nombre, taller.nombre)
+        )
+        if (telefono) await enviarWhatsApp(telefono, waDias7(nombre))
+        resultados.push({ taller: taller.nombre, accion: 'trial_7dias', dias })
+      }
 
       // ── 4 días restantes: urgencia media ─────────────────────────────────
       if (dias >= 3 && dias <= 4) {

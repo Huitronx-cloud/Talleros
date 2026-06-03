@@ -104,10 +104,23 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
           <div className="p-16 text-center">
             <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
             <p className="text-gray-400 text-sm font-medium">
-              {busqueda ? 'Sin resultados para tu búsqueda' : 'Sin clientes aún'}
+              {busqueda ? 'Sin resultados para tu búsqueda' : 'Aún no tienes clientes'}
             </p>
-            {!busqueda && (
-              <p className="text-gray-300 text-xs mt-1">Agrega tu primer cliente para comenzar.</p>
+            {!busqueda ? (
+              <>
+                <p className="text-gray-300 text-xs mt-1 mb-4">Agrega tu primer cliente con su vehículo para empezar.</p>
+                {puedeAgregar && (
+                  <button
+                    onClick={abrirNuevo}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar primer cliente
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-300 text-xs mt-1">Intenta con otro nombre, teléfono o placas.</p>
             )}
           </div>
         ) : (
