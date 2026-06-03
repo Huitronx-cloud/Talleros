@@ -48,11 +48,11 @@ export default async function DashboardPage() {
 
   const { data: usuarioData } = await supabase
     .from('usuarios')
-    .select('nombre, rol, taller_id, talleres(nombre, logo_url)')
+    .select('nombre, rol, taller_id, talleres(nombre, logo_url, onboarding_completo)')
     .eq('id', user!.id)
     .maybeSingle()
 
-  let totalClientes = 0, ordenesMes = 0, cotizacionesAbiertas = 0
+  let totalClientes = 0, ordenesMes = 0, totalOrdenes = 0, cotizacionesAbiertas = 0
   let ingresosMes: any[] = [], ordenesRecientes: any[] = [], ordenesRetrasadas: any[] = []
   let ingresosPorMes: any[] = [], ordenesTiempo: any[] = [], inventarioItems: any[] = []
 
@@ -60,6 +60,7 @@ export default async function DashboardPage() {
     const results = await Promise.all([
       supabase.from('clientes').select('*', { count: 'exact', head: true }),
       supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', inicioMes),
+      supabase.from('ordenes').select('*', { count: 'exact', head: true }),
       supabase.from('cotizaciones').select('*', { count: 'exact', head: true }).eq('estado', 'enviada'),
       supabase.from('ordenes').select('total').gte('created_at', inicioMes).eq('estado', 'entregado'),
       supabase.from('ordenes')
@@ -86,13 +87,14 @@ export default async function DashboardPage() {
 
     totalClientes        = results[0].count ?? 0
     ordenesMes           = results[1].count ?? 0
-    cotizacionesAbiertas = results[2].count ?? 0
-    ingresosMes          = results[3].data ?? []
-    ordenesRecientes     = results[4].data ?? []
-    ordenesRetrasadas    = results[5].data ?? []
-    ingresosPorMes       = results[6].data ?? []
-    ordenesTiempo        = results[7].data ?? []
-    inventarioItems      = results[8].data ?? []
+    totalOrdenes         = results[2].count ?? 0
+    cotizacionesAbiertas = results[3].count ?? 0
+    ingresosMes          = results[4].data ?? []
+    ordenesRecientes     = results[5].data ?? []
+    ordenesRetrasadas    = results[6].data ?? []
+    ingresosPorMes       = results[7].data ?? []
+    ordenesTiempo        = results[8].data ?? []
+    inventarioItems      = results[9].data ?? []
   } catch (e) {
     console.error('Dashboard queries error:', e)
   }
@@ -105,9 +107,10 @@ export default async function DashboardPage() {
 
   const planActual = suscripcionData?.plan ?? 'pro'
   const tallerRaw  = usuarioData?.talleres
-  const taller     = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null } | null
+  const taller     = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null; onboarding_completo: boolean } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'
   const rol        = (usuarioData?.rol ?? 'recepcion') as string
+  const onboardingCompleto = taller?.onboarding_completo ?? true
 
   const stockBajo     = (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
   const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
@@ -268,12 +271,12 @@ export default async function DashboardPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
-        {/* ── ONBOARDING ── */}
-        {rol === 'propietario' && (
+        {/* ── ONBOARDING ── solo cuando el propietario no ha completado la configuración */}
+        {rol === 'propietario' && !onboardingCompleto && (
           <OnboardingChecklist
             tallerNombre={taller?.nombre ?? 'tu taller'}
             tieneClientes={(totalClientes ?? 0) > 0}
-            tieneOrdenes={(ordenesMes ?? 0) > 0}
+            tieneOrdenes={totalOrdenes > 0}
             tallerId={usuarioData?.taller_id ?? ''}
           />
         )}

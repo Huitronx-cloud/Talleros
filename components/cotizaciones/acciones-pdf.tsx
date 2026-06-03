@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, MessageCircle, Send, Check, Trash2, X } from 'lucide-react'
+import { Download, MessageCircle, Send, Check, Trash2, X, Loader2, ShieldCheck } from 'lucide-react'
 import { cambiarEstadoCotizacion, eliminarCotizacion } from '@/app/(dashboard)/cotizaciones/actions'
 import { useRouter } from 'next/navigation'
 import { EstadoCotizacion } from '@/types'
@@ -32,11 +32,30 @@ export default function AccionesPdf({
   id, numeroCotizacion, estado, nombreCliente, telefonoCliente, emailCliente, total, moneda,
 }: Props) {
   const router = useRouter()
-  const [cargando, setCargando]           = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [modalPdf, setModalPdf]           = useState(false)
-  const [enviandoEmail, setEnviandoEmail] = useState(false)
-  const [emailEnviado, setEmailEnviado]   = useState(false)
+  const [cargando, setCargando]                 = useState(false)
+  const [confirmDelete, setConfirmDelete]       = useState(false)
+  const [modalPdf, setModalPdf]                 = useState(false)
+  const [enviandoEmail, setEnviandoEmail]       = useState(false)
+  const [emailEnviado, setEmailEnviado]         = useState(false)
+  const [enviandoAprobWa, setEnviandoAprobWa]   = useState(false)
+  const [aprobWaEnviado, setAprobWaEnviado]     = useState(false)
+  const [aprobWaError, setAprobWaError]         = useState('')
+
+  async function handleSolicitarAprobacionWa() {
+    setEnviandoAprobWa(true)
+    setAprobWaError('')
+    try {
+      const res = await fetch(`/api/cotizaciones/${id}/aprobar-whatsapp`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) { setAprobWaError(data.error ?? 'Error enviando'); return }
+      setAprobWaEnviado(true)
+      router.refresh()
+    } catch {
+      setAprobWaError('Error de conexión')
+    } finally {
+      setEnviandoAprobWa(false)
+    }
+  }
 
   const numero   = String(numeroCotizacion).padStart(4, '0')
   const totalFmt = formatMoney(total, moneda)
@@ -144,6 +163,10 @@ export default function AccionesPdf({
         </div>
       )}
 
+      {aprobWaError && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-1">{aprobWaError}</p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setModalPdf(true)}
@@ -153,14 +176,32 @@ export default function AccionesPdf({
           PDF
         </button>
 
+        {/* Solicitar aprobación vía Twilio WhatsApp — solo si tiene teléfono y está pendiente */}
+        {telefonoCliente && (estado === 'borrador' || estado === 'enviada') && (
+          <button
+            onClick={handleSolicitarAprobacionWa}
+            disabled={enviandoAprobWa || aprobWaEnviado}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+          >
+            {enviandoAprobWa
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : aprobWaEnviado
+              ? <Check className="w-4 h-4" />
+              : <ShieldCheck className="w-4 h-4" />
+            }
+            {aprobWaEnviado ? '¡Enviado!' : 'Solicitar aprobación WA'}
+          </button>
+        )}
+
+        {/* Compartir general por wa.me */}
         <a
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-white border border-green-300 hover:bg-green-50 text-green-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <MessageCircle className="w-4 h-4" />
-          WhatsApp
+          Compartir WA
         </a>
 
         {SIGUIENTE_ESTADO[estado] && (
