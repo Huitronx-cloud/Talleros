@@ -257,6 +257,12 @@ export default function LandingPage() {
             {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
+            {stats.total > 0 && (
+              <div className="ltrust-p" style={{color:'#94a3b8'}}>
+                <Users size={11} className="lck" style={{color:'#94a3b8'}}/>
+                <span>+{stats.total} talleres activos</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="lh-right">
