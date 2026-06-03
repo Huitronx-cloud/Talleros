@@ -137,7 +137,7 @@ export default function LandingPage() {
   const [anual, setAnual]           = useState(false)
   const [scrolled, setScrolled]     = useState(false)
   const [visible, setVisible]       = useState<Set<string>>(new Set())
-  const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0 })
+  const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0, ordenes: 0 })
   const [tIdx, setTIdx]             = useState(0)
   const [tChar, setTChar]           = useState(0)
   const [tDel, setTDel]             = useState(false)
@@ -190,10 +190,16 @@ export default function LandingPage() {
     <div className="lr">
 
     {/* TOAST */}
-    {toast && (stats.hoy > 0 || stats.semana > 0) && (
+    {toast && (stats.hoy > 0 || stats.semana > 0 || stats.ordenes > 0) && (
       <div className="l-toast">
         <span className="l-dot" />
-        <span className="l-toast-t">{stats.hoy > 0 ? `${stats.hoy} taller${stats.hoy>1?'es':''} se registro hoy` : `${stats.semana} talleres registrados esta semana`}</span>
+        <span className="l-toast-t">
+          {stats.ordenes > 0
+            ? `+${stats.ordenes.toLocaleString('es-MX')} órdenes procesadas en TallerOS`
+            : stats.hoy > 0
+            ? `${stats.hoy} taller${stats.hoy>1?'es':''} se registró hoy`
+            : `${stats.semana} talleres registrados esta semana`}
+        </span>
         <button className="l-toast-x" onClick={() => setToast(false)}>x</button>
       </div>
     )}
