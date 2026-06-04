@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import EquipoClient from './equipo-client'
@@ -10,7 +10,7 @@ export default async function EquipoPage() {
   const supabase = createClient()
   const admin    = createServiceClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: usuario } = await supabase

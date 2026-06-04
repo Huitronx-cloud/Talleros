@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import FormConfiguracion from '@/components/configuracion/form-configuracion'
 import { Taller } from '@/types'
 import Link from 'next/link'
@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default async function ConfiguracionPage() {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   if (!user) {
     return (

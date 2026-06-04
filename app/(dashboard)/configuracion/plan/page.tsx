@@ -44,7 +44,7 @@ export default function PlanPage() {
 
   useEffect(() => {
     async function cargar() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getAuthUser()
       if (!user) return
 
       const { data: usuario } = await supabase

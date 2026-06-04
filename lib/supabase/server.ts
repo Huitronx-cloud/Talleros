@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 
 export function createClient() {
   const cookieStore = cookies()
@@ -25,3 +26,11 @@ export function createClient() {
     }
   )
 }
+
+// Deduplica auth.getUser() dentro del mismo render pass del servidor.
+// Layout y pages que la llamen en el mismo request solo hacen 1 roundtrip.
+export const getAuthUser = cache(async () => {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+})

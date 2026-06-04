@@ -1,5 +1,5 @@
 export const revalidate = 0
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getLimites } from '@/lib/plan-limits'
 import { redirect } from 'next/navigation'
@@ -11,7 +11,7 @@ export default async function ReportesPage() {
   const supabase        = createClient()
   const supabaseService = createServiceClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: usuario } = await supabase
