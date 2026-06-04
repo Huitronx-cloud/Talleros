@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Orden } from '@/types'
 import TableroKanban from '@/components/kanban/tablero-kanban'
@@ -6,7 +6,7 @@ import TableroKanban from '@/components/kanban/tablero-kanban'
 export default async function KanbanPage() {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) redirect('/login')
 
   const { data: usuario } = await supabase

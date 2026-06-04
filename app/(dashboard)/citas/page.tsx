@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import CalendarioCitas from '@/components/citas/calendario-citas'
 import CopiarlinkCitas from '@/components/citas/copiar-link-citas'
 import ConfigCitas from '@/components/citas/ConfigCitas'
@@ -6,7 +6,7 @@ import ConfigCitas from '@/components/citas/ConfigCitas'
 export default async function CitasPage() {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   const { data: usuario } = await supabase
     .from('usuarios')
     .select('taller_id')

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { Cliente } from '@/types'
 import TablaClientes from '@/components/clientes/tabla-clientes'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
@@ -8,7 +8,7 @@ import { Users } from 'lucide-react'
 export default async function ClientesPage() {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   const { data: usuario } = await supabase
     .from('usuarios')
