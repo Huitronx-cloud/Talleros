@@ -156,14 +156,28 @@ export async function middleware(request: NextRequest) {
   }
 
   // Verificar acceso por rol en rutas protegidas
+  // El rol se cachea en cookie para evitar un query DB en cada navegación
   if (user && !esRutaPublica && !esRutaPostRegistro) {
-    const { data: usuario } = await supabase
-      .from('usuarios')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
+    let rol: string
+    const rolCookie = request.cookies.get('_u_rol')?.value
+    const [cachedUserId, cachedRol] = rolCookie?.split('|') ?? []
 
-    const rol = usuario?.rol ?? 'tecnico'
+    if (cachedUserId === user.id && cachedRol) {
+      rol = cachedRol
+    } else {
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single()
+      rol = usuario?.rol ?? 'tecnico'
+      supabaseResponse.cookies.set('_u_rol', `${user.id}|${rol}`, {
+        maxAge: 3600,
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      })
+    }
 
     if (!tieneAcceso(rol, pathname)) {
       return NextResponse.redirect(new URL('/ordenes', request.url))
