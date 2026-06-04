@@ -180,15 +180,15 @@ export default async function DashboardPage() {
 
  const WHATSAPP_SOPORTE = 'https://wa.me/16476791091?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
 
-  const soporte = planActual === 'pro' ? [{
+  const soporte = [{
     href:    WHATSAPP_SOPORTE,
-    label:   'Soporte Pro',
+    label:   planActual === 'pro' ? 'Soporte Pro' : 'Soporte',
     icono:   MessageCircle,
     color:   'from-green-500 to-green-700',
     upgrade: false,
     externo: true,
-    roles:   ['propietario', 'admin'],
-  }] : []
+    roles:   ['propietario', 'admin', 'recepcion', 'tecnico'],
+  }]
 
   const modulosVisibles = [...MODULOS.filter(m => {
     if (!m.roles.includes(rol)) return false
@@ -279,6 +279,24 @@ export default async function DashboardPage() {
             tieneOrdenes={totalOrdenes > 0}
             tallerId={usuarioData?.taller_id ?? ''}
           />
+        )}
+
+        {/* ── ACCIONES RÁPIDAS ── */}
+        {['propietario','admin','recepcion'].includes(rol) && (
+          <div className="grid grid-cols-3 gap-3">
+            <Link href="/ordenes/nueva" className="flex flex-col items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-4 transition-colors text-center">
+              <ClipboardList className="w-5 h-5" />
+              <span className="text-xs font-semibold leading-tight">Nueva orden</span>
+            </Link>
+            <Link href="/clientes" className="flex flex-col items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl py-4 transition-colors text-center">
+              <Users className="w-5 h-5" />
+              <span className="text-xs font-semibold leading-tight">Nuevo cliente</span>
+            </Link>
+            <Link href="/cotizaciones/nueva" className="flex flex-col items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl py-4 transition-colors text-center">
+              <FileText className="w-5 h-5" />
+              <span className="text-xs font-semibold leading-tight">Nueva cotización</span>
+            </Link>
+          </div>
         )}
 
         {/* ── BANNER UPGRADE ── */}

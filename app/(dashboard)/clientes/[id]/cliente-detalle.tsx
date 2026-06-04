@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Car, Phone, Mail, FileText, Clock, CheckCircle, Wrench } from 'lucide-react'
+import { ArrowLeft, User, Car, Phone, Mail, FileText, Clock, CheckCircle, Wrench, Plus } from 'lucide-react'
+import Link from 'next/link'
 import { Cliente, Orden } from '@/types'
 import { formatMoney } from '@/lib/utils'
 
@@ -26,7 +27,7 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }:
     <div className="max-w-4xl mx-auto px-4 py-8">
 
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center justify-between gap-4 mb-8">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium"
@@ -34,6 +35,13 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }:
           <ArrowLeft size={18} />
           Clientes
         </button>
+        <Link
+          href={`/ordenes/nueva?cliente_id=${cliente.id}`}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+        >
+          <Plus size={15} />
+          Nueva orden
+        </Link>
       </div>
 
       {/* Info del cliente */}
