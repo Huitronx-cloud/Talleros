@@ -180,15 +180,15 @@ export default async function DashboardPage() {
 
  const WHATSAPP_SOPORTE = 'https://wa.me/16476791091?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
 
-  const soporte = planActual === 'pro' ? [{
+  const soporte = [{
     href:    WHATSAPP_SOPORTE,
-    label:   'Soporte Pro',
+    label:   planActual === 'pro' ? 'Soporte Pro' : 'Soporte',
     icono:   MessageCircle,
     color:   'from-green-500 to-green-700',
     upgrade: false,
     externo: true,
-    roles:   ['propietario', 'admin'],
-  }] : []
+    roles:   ['propietario', 'admin', 'recepcion', 'tecnico'],
+  }]
 
   const modulosVisibles = [...MODULOS.filter(m => {
     if (!m.roles.includes(rol)) return false
