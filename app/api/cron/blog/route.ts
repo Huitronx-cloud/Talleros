@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 const TEMAS = [
   { titulo: 'Por qué los talleres mecánicos pierden clientes sin saberlo',                slug: 'talleres-mecanicos-pierden-clientes',            pais: null },
   { titulo: 'El error más caro que cometen los talleres mecánicos en México',             slug: 'error-caro-talleres-mecanicos-mexico',           pais: 'MX' },
@@ -39,7 +34,7 @@ const TEMAS = [
   { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',          slug: 'garantia-digital-taller-mecanico',               pais: null },
 ]
 
-async function slugExiste(slug: string): Promise<boolean> {
+async function slugExiste(supabase: ReturnType<typeof createClient>, slug: string): Promise<boolean> {
   const { data } = await supabase
     .from('articulos_blog')
     .select('id')

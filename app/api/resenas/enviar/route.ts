@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 function personalizar(plantilla: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce(
     (msg, [key, val]) => msg.replace(new RegExp(`{{${key}}}`, 'g'), val),
@@ -14,6 +9,11 @@ function personalizar(plantilla: string, vars: Record<string, string>): string {
 }
 
 export async function POST(req: NextRequest) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
     const { orden_id, taller_id } = await req.json()
 
