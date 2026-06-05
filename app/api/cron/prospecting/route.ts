@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY!
 const BREVO_API_KEY  = process.env.BREVO_API_KEY!
 const TWILIO_SID     = process.env.TWILIO_ACCOUNT_SID!
@@ -78,6 +73,10 @@ async function obtenerDetalles(placeId: string): Promise<any> {
 
 // ── Verificar si ya fue contactado ───────────────────────────────────────────
 async function yaContactado(placeId: string): Promise<boolean> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   try {
     const { data } = await supabase
       .from('prospectos_enviados')
@@ -91,6 +90,10 @@ async function yaContactado(placeId: string): Promise<boolean> {
 }
 
 async function registrarContacto(prospecto: Prospecto, error?: string): Promise<void> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   try {
     await supabase.from('prospectos_enviados').insert({
     ...(error ? { error } : {}),
