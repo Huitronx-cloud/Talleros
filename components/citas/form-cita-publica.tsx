@@ -152,7 +152,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     setEnviando(true)
     setError('')
 
-    const { error: err } = await supabase.from('citas').insert({
+    const { data: nuevaCita, error: err } = await supabase.from('citas').insert({
       taller_id:        tallerId,
       cliente_nombre:   form.cliente_nombre.trim(),
       cliente_telefono: form.cliente_telefono.trim(),
@@ -164,7 +164,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
       fecha:            fechaSeleccionada,
       hora:             horaSeleccionada,
       estado:           'pendiente',
-    })
+    }).select('id').single()
 
     if (err) { setError('Error al agendar. Intenta de nuevo.'); setEnviando(false); return }
 
@@ -181,6 +181,17 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
         }),
       })
     } catch {}
+
+    // Enviar acuse de recibo al cliente (WhatsApp + email)
+    if (nuevaCita?.id) {
+      try {
+        await fetch('/api/notificar-reserva-cliente', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ citaId: nuevaCita.id, tallerId }),
+        })
+      } catch {}
+    }
 
     setListo(true)
     setEnviando(false)
