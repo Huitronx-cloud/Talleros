@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 
 const TASAS_APROXIMADAS: Record<string, { moneda: string; simbolo: string; tasa: number }> = {
-  MX: { moneda: 'MXN', simbolo: '$',    tasa: 20  },
-  CO: { moneda: 'COP', simbolo: '$',    tasa: 4100 },
-  AR: { moneda: 'ARS', simbolo: '$',    tasa: 950  },
-  CL: { moneda: 'CLP', simbolo: '$',    tasa: 950  },
+  MX: { moneda: 'MXN', simbolo: '$',    tasa: 17   },
+  CO: { moneda: 'COP', simbolo: '$',    tasa: 4200 },
+  AR: { moneda: 'ARS', simbolo: '$',    tasa: 1150 },
+  CL: { moneda: 'CLP', simbolo: '$',    tasa: 970  },
   PE: { moneda: 'PEN', simbolo: 'S/',   tasa: 3.7  },
   EC: { moneda: 'USD', simbolo: '$',    tasa: 1    },
   GT: { moneda: 'GTQ', simbolo: 'Q',    tasa: 7.8  },
