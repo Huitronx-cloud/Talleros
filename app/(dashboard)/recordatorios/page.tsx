@@ -43,7 +43,7 @@ export default function RecordatoriosPage() {
   }, [])
 
   async function cargarDatos() {
-    const user = await getAuthUser()
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const { data: usuario } = await supabase

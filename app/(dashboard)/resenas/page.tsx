@@ -31,7 +31,7 @@ export default function ResenasPage() {
   useEffect(() => { cargarDatos() }, [])
 
   async function cargarDatos() {
-    const user = await getAuthUser()
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const { data: usuario } = await supabase
