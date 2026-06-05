@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN!
-const WA_FROM       = '+15559828390' // Tu número WhatsApp Business
+const WA_FROM = process.env.TWILIO_WHATSAPP_FROM ?? '+15559828390'
 
 // ── Respuesta automática cuando alguien contesta ──────────────────────────────
 async function responderWhatsApp(to: string, mensaje: string): Promise<void> {
