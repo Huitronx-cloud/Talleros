@@ -11,6 +11,7 @@ import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
+import UsageMeter from './usage-meter'
 
 const PushToggle = dynamic(() => import('@/components/push-toggle'), { ssr: false })
 
@@ -298,6 +299,9 @@ export default async function DashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* ── MEDIDOR DE USO ── */}
+        <UsageMeter plan={planActual} usadas={ordenesMes} rol={rol} />
 
         {/* ── BANNER UPGRADE ── */}
         <BannerUpgrade tallerId={usuarioData?.taller_id} rol={rol} />

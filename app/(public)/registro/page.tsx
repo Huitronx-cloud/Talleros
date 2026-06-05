@@ -28,6 +28,8 @@ export default function RegistroPage() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
   const [exito, setExito] = useState(false)
+  const [registroExitoso, setRegistroExitoso] = useState(false)
+  const [trialFin, setTrialFin] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [verPasswordConfirm, setVerPasswordConfirm] = useState(false)
 
@@ -96,6 +98,14 @@ export default function RegistroPage() {
 
       trackEvent('CompleteRegistration', { content_name: 'Registro TallerOS' })
 
+      // Calcular fecha de fin del trial (14 días)
+      const fin = new Date()
+      fin.setDate(fin.getDate() + 14)
+      const finFormateado = fin.toLocaleDateString('es-MX', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      })
+      setTrialFin(finFormateado)
+
       // Login automático después del registro
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email:    form.email,
@@ -103,7 +113,7 @@ export default function RegistroPage() {
       })
 
       if (!loginError) {
-        router.push('/onboarding')
+        setRegistroExitoso(true)
       } else {
         setExito(true)
       }
@@ -112,6 +122,42 @@ export default function RegistroPage() {
     } finally {
       setCargando(false)
     }
+  }
+
+  if (registroExitoso) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 w-full max-w-md p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-1">¡Tu taller está listo!</h2>
+          <p className="text-slate-500 text-sm mb-5">
+            Bienvenido a TallerOS — tienes <strong className="text-slate-700">14 días gratis</strong> para probar todo.
+          </p>
+
+          {/* Urgency banner */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
+            <p className="text-amber-800 text-sm font-semibold">
+              ⏳ Tu prueba gratuita termina el <span className="text-amber-900">{trialFin}</span>
+            </p>
+            <p className="text-amber-600 text-xs mt-1">
+              Configura tu taller ahora y saca el máximo provecho antes de que termine.
+            </p>
+          </div>
+
+          <button
+            onClick={() => router.push('/onboarding')}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
+          >
+            Empezar a configurar mi taller →
+          </button>
+          <p className="text-xs text-slate-400 mt-3">Sin tarjeta de crédito. Cancela cuando quieras.</p>
+        </div>
+      </main>
+    )
   }
 
   if (exito) {
