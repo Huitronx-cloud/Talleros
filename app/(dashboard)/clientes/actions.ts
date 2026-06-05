@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ClienteForm } from '@/types'
+import { enviarWhatsApp } from '@/lib/twilio'
 
 async function getTallerId() {
   const supabase = createClient()
@@ -43,11 +44,7 @@ export async function crearCliente(datos: ClienteForm) {
 
       const mensaje = `Hola ${nombreCliente} 👋 Te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. ¡Gracias por preferirnos! 🔧`
 
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/api/whatsapp/bienvenida`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefono: telefonoLimpio, mensaje }),
-      })
+      await enviarWhatsApp(telefonoLimpio, mensaje)
     } catch {
       // Si falla el WhatsApp no bloqueamos el registro del cliente
     }
