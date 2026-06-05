@@ -3,28 +3,20 @@
 import { useEffect, useState } from 'react'
 
 export default function SplashScreen() {
-  const [show,    setShow]    = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
+  const [hidden,  setHidden]  = useState(false)
   const [dots,    setDots]    = useState('.')
 
   useEffect(() => {
-    // Solo mostrar en modo PWA (standalone) o primera carga de la sesión
-    const esPWA = window.matchMedia('(display-mode: standalone)').matches
-      || (navigator as any).standalone === true
-
-    const yaVisto = sessionStorage.getItem('_splash_shown')
-
-    if (!esPWA && yaVisto) return
-
-    sessionStorage.setItem('_splash_shown', '1')
-    setShow(true)
-
     const dotsInterval = setInterval(() => {
       setDots(d => d.length >= 3 ? '.' : d + '.')
     }, 400)
 
+    // Iniciar fade-out a los 1.6s
     const fadeTimer = setTimeout(() => setFadeOut(true), 1600)
-    const hideTimer = setTimeout(() => setShow(false), 2200)
+
+    // Quitar del DOM completamente a los 2.2s
+    const hideTimer = setTimeout(() => setHidden(true), 2200)
 
     return () => {
       clearInterval(dotsInterval)
@@ -33,7 +25,7 @@ export default function SplashScreen() {
     }
   }, [])
 
-  if (!show) return null
+  if (hidden) return null
 
   return (
     <div
@@ -51,7 +43,6 @@ export default function SplashScreen() {
         pointerEvents:  fadeOut ? 'none' : 'auto',
       }}
     >
-      {/* Logo */}
       <img
         src="/icon-512.png"
         alt="TallerOS"
@@ -64,28 +55,27 @@ export default function SplashScreen() {
         }}
       />
 
-      {/* Nombre */}
       <p style={{
         fontSize:      28,
         fontWeight:    800,
         color:         '#ffffff',
         letterSpacing: '-0.5px',
         marginBottom:  6,
+        fontFamily:    'system-ui, sans-serif',
       }}>
-        Taller<span style={{ opacity: 0.65 }}>OS</span>
+        Taller<span style={{ opacity: 0.6 }}>OS</span>
       </p>
 
-      {/* Mensaje de estado */}
       <p style={{
         fontSize:      13,
-        color:         'rgba(255,255,255,0.7)',
+        color:         'rgba(255,255,255,0.72)',
         fontWeight:    500,
+        fontFamily:    'system-ui, sans-serif',
         letterSpacing: '0.02em',
       }}>
         Actualizando taller{dots}
       </p>
 
-      {/* Barra de progreso */}
       <div style={{
         marginTop:    28,
         width:        120,
@@ -95,15 +85,15 @@ export default function SplashScreen() {
         overflow:     'hidden',
       }}>
         <div style={{
-          height:     '100%',
+          height:      '100%',
           borderRadius: 99,
-          background: 'rgba(255,255,255,0.9)',
-          animation:  'splash-bar 1.6s ease-in-out forwards',
+          background:  'rgba(255,255,255,0.9)',
+          animation:   'splashBar 1.6s ease-in-out forwards',
         }} />
       </div>
 
       <style>{`
-        @keyframes splash-bar {
+        @keyframes splashBar {
           0%   { width: 0% }
           40%  { width: 55% }
           80%  { width: 85% }
