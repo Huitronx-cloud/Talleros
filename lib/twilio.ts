@@ -17,8 +17,10 @@ export async function enviarWhatsApp(telefono: string, mensaje: string): Promise
   if (!telefonoLimpio) throw new Error('Teléfono inválido')
 
   // Asegurar formato internacional
-  const to = telefonoLimpio.startsWith('1') || telefonoLimpio.length === 10
-    ? `whatsapp:+52${telefonoLimpio.slice(-10)}` // México por defecto
+  // 10 dígitos sin código de país → asumir México (+52)
+  // 11+ dígitos → ya incluye código de país
+  const to = telefonoLimpio.length === 10
+    ? `whatsapp:+52${telefonoLimpio}`
     : `whatsapp:+${telefonoLimpio}`
 
   await getClient().messages.create({
