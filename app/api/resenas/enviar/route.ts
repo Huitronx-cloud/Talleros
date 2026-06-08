@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         id,
         clientes (id, nombre, telefono, email),
         vehiculos (marca, modelo),
-        talleres (nombre, plan)
+        talleres (nombre)
       `)
       .eq('id', orden_id)
       .single() as any
@@ -52,9 +52,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
     }
 
-    const taller = orden.talleres
-    if (taller?.plan !== 'pro' && taller?.plan !== 'trial') {
-      return NextResponse.json({ ok: false, motivo: 'Plan no Pro' })
+    const { data: suscripcion } = await supabaseAdmin
+      .from('suscripciones')
+      .select('plan')
+      .eq('taller_id', taller_id)
+      .single()
+
+    const planActual = suscripcion?.plan ?? 'trial'
+    if (planActual !== 'pro' && planActual !== 'trial' && planActual !== 'esencial') {
+      return NextResponse.json({ ok: false, motivo: 'Plan no válido' })
     }
 
     const cliente = orden.clientes

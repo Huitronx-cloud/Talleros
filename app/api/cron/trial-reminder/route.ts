@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY!
-const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
-const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN!
-const TWILIO_FROM   = process.env.TWILIO_WHATSAPP_FROM!
-
 async function enviarEmail(to: string, nombre: string, subject: string, html: string) {
   try {
     await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
+      headers: { 'api-key': process.env.BREVO_API_KEY!, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sender: { name: 'TallerOS', email: 'hola@tallerosapp.com' },
         to: [{ email: to, name: nombre }],
@@ -25,15 +20,16 @@ async function enviarWhatsApp(telefono: string, mensaje: string) {
   try {
     const tel = telefono.replace(/\D/g, '')
     const to  = tel.startsWith('+') ? tel : `+${tel}`
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`
+    const sid = process.env.TWILIO_ACCOUNT_SID!
+    const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`
     await fetch(url, {
       method: 'POST',
       headers: {
-        Authorization: `Basic ${Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64')}`,
+        Authorization: `Basic ${Buffer.from(`${sid}:${process.env.TWILIO_AUTH_TOKEN!}`).toString('base64')}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From: `whatsapp:${TWILIO_FROM}`,
+        From: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM!}`,
         To:   `whatsapp:${to}`,
         Body: mensaje,
       }).toString(),

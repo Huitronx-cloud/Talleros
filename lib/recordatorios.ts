@@ -124,6 +124,7 @@ export async function registrarRecordatorioEnviado(params: {
     estado: params.estado,
     mensaje_enviado: params.mensajeEnviado,
     error_detalle: params.errorDetalle || null,
+    fecha_envio: new Date().toISOString(),
     fecha_proxima_accion: proximaAccion.toISOString(),
   })
 }

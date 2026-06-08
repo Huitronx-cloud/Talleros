@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         talleres (
           id,
           nombre,
-          plan
+          suscripciones (plan, estado)
         )
       `)
       .eq('activo', true)
@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
     for (const config of configs || []) {
       const taller = config.talleres as any
 
-      // Solo talleres Pro
-      if (!taller || (taller.plan !== 'pro' && taller.plan !== 'trial')) continue
+      const planTaller = (taller.suscripciones as any[])?.[0]?.plan ?? 'trial'
+      if (!taller || (planTaller !== 'pro' && planTaller !== 'trial' && planTaller !== 'esencial')) continue
 
       const clientes = await getClientesParaRecordar(
         taller.id,

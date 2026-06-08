@@ -33,19 +33,17 @@ const MODULOS = [
 ]
 
 export default async function DashboardPage() {
-  try {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
+  try {
   const ahora         = new Date()
   const inicioMes     = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
   const inicioGrafica = new Date(ahora.getFullYear(), ahora.getMonth() - 5, 1).toISOString()
 
   const hora = ahora.getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
-
-  // Obtener usuario primero
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
   const { data: usuarioData } = await supabase
     .from('usuarios')

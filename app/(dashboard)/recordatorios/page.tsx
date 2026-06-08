@@ -127,7 +127,7 @@ export default function RecordatoriosPage() {
     )
   }
 
-  if (plan !== 'pro' && plan !== 'trial' && plan !== '') {
+  if (plan !== 'pro' && plan !== 'trial' && plan !== 'esencial' && plan !== '') {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10">
