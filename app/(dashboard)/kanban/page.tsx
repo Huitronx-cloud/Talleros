@@ -26,9 +26,9 @@ export default async function KanbanPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tablero Kanban</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Tablero de trabajo</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Vista en tiempo real de todos los vehículos en el taller.
+            Ve en tiempo real el estado de todos los vehículos en el taller.
           </p>
         </div>
       </div>

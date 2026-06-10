@@ -23,7 +23,7 @@ const TODOS_NAV_ITEMS = [
   { href: '/recordatorios',  label: 'Recordatorios',  icono: Bell,            roles: ['propietario', 'admin'] },  // ← NUEVA LÍNEA
   { href: '/resenas',     label: 'Reseñas Google', icono: Star,      roles: ['propietario', 'admin'] },
   { href: '/promociones', label: 'Promociones',    icono: Megaphone, roles: ['propietario', 'admin'] },
-  { href: '/kanban',         label: 'Kanban',         icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/kanban', label: 'Tablero', icono: LayoutGrid, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/citas',          label: 'Citas',          icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/clientes',       label: 'Clientes',       icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
   { href: '/ordenes',        label: 'Órdenes',        icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
