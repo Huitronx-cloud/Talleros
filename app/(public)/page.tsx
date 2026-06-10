@@ -256,9 +256,12 @@ export default function LandingPage() {
           </h1>
           <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
           <div className="lh-ctas">
-            <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
-            <a href="/demo" className="lb-out">Ver portal del cliente</a>
+            <a href="/registro" className="lb-pri">Empezar gratis — 14 días <ArrowRight size={16}/></a>
           </div>
+          <p style={{fontSize:'12px', color:'#94a3b8', marginTop:'8px'}}>
+            ¿Quieres ver cómo lo ve tu cliente?{' '}
+            <a href="/demo" style={{color:'#60a5fa', textDecoration:'underline'}}>Ver demo del portal</a>
+          </p>
           <div className="ltrust">
             {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
