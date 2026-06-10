@@ -392,8 +392,14 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             >
               Siguiente <ChevronRight className="w-4 h-4" />
             </button>
-            <button onClick={() => setPaso(3)} className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors">
-              Omitir por ahora
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Ir directo al dashboard →
             </button>
           </div>
         )}
@@ -437,10 +443,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             </button>
 
             <button
-              onClick={() => setPaso(4)}
-              className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
             >
-              Saltar este paso
+              Ir directo al dashboard →
             </button>
           </div>
         )}
@@ -476,10 +485,13 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             </button>
 
             <button
-              onClick={() => setPaso(55)}
-              className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
             >
-              Ir al dashboard primero
+              Ir directo al dashboard →
             </button>
           </div>
         )}
