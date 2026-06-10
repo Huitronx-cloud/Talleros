@@ -35,7 +35,7 @@ const TODOS_NAV_BOTTOM = [
   { href: '/configuracion/plan',   label: 'Mejorar plan',  icono: Zap,        roles: ['propietario', 'admin'] },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,    roles: ['propietario', 'admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,   roles: ['propietario', 'admin'] },
-  { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,   roles: ['propietario', 'admin'] },
+  { href: '/catalogo', label: 'Servicios', icono: BookOpen, roles: ['propietario', 'admin'] },
   { href: '/ayuda/instalar',       label: 'Instalar app',  icono: Smartphone, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
 ]
 
