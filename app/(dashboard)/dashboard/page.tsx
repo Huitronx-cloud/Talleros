@@ -305,6 +305,42 @@ export default async function DashboardPage() {
         {/* ── BANNER INSTALAR PWA ── */}
         <BannerInstalar />
 
+        {/* ── BIENVENIDA NUEVO USUARIO ── */}
+        {totalOrdenes === 0 && (
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">¡Bienvenido a TallerOS!</p>
+                <h2 className="text-lg font-black mb-1">Tu taller está listo. ¿Por dónde empezamos?</h2>
+                <p className="text-blue-100 text-sm leading-relaxed">
+                  Crea tu primera orden de trabajo en menos de 2 minutos. Registra el cliente, el vehículo y el problema — TallerOS hace el resto.
+                </p>
+              </div>
+              <Link
+                href="/ordenes/nueva"
+                className="flex-shrink-0 flex items-center gap-2 bg-white text-blue-700 font-black px-5 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Crear primera orden
+              </Link>
+            </div>
+            <div className="mt-4 pt-4 border-t border-blue-500 grid grid-cols-3 gap-4 text-center">
+              {[
+                { paso: '1', texto: 'Registra el cliente y su vehículo' },
+                { paso: '2', texto: 'Manda el diagnóstico por WhatsApp' },
+                { paso: '3', texto: 'Entrega con garantía digital' },
+              ].map(({ paso, texto }) => (
+                <div key={paso}>
+                  <div className="w-7 h-7 bg-blue-500/50 rounded-full flex items-center justify-center mx-auto mb-1.5">
+                    <span className="text-white text-xs font-black">{paso}</span>
+                  </div>
+                  <p className="text-blue-100 text-xs leading-snug">{texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── ALERTAS ── */}
         {(ordenesRetrasadas && ordenesRetrasadas.length > 0) || stockBajo.length > 0 ? (
           <div className="space-y-3">
@@ -429,9 +465,14 @@ export default async function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-12 text-center">
+                <div className="p-6 text-center">
                   <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-400 text-sm">Aún no hay órdenes registradas.</p>
+                  <p className="text-gray-900 text-sm font-semibold mb-1">Crea tu primera orden</p>
+                  <p className="text-gray-400 text-xs mb-4">Registra un vehículo y empieza a usar TallerOS ahora mismo.</p>
+                  <Link href="/ordenes/nueva" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+                    <ClipboardList className="w-4 h-4" />
+                    Nueva orden de trabajo
+                  </Link>
                 </div>
               )}
             </div>
