@@ -317,18 +317,18 @@ export default async function DashboardPage() {
                 </p>
               </div>
               <Link
-                href="/ordenes/nueva"
+                href="/clientes"
                 className="flex-shrink-0 flex items-center gap-2 bg-white text-blue-700 font-black px-5 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg"
               >
-                <ClipboardList className="w-4 h-4" />
-                Crear primera orden
+                <Users className="w-4 h-4" />
+                Registrar primer cliente
               </Link>
             </div>
             <div className="mt-4 pt-4 border-t border-blue-500 grid grid-cols-3 gap-4 text-center">
               {[
                 { paso: '1', texto: 'Registra el cliente y su vehículo' },
-                { paso: '2', texto: 'Manda el diagnóstico por WhatsApp' },
-                { paso: '3', texto: 'Entrega con garantía digital' },
+                { paso: '2', texto: 'Crea la orden y manda diagnóstico por WhatsApp' },
+                { paso: '3', texto: 'Entrega con garantía digital y reseña automática' },
               ].map(({ paso, texto }) => (
                 <div key={paso}>
                   <div className="w-7 h-7 bg-blue-500/50 rounded-full flex items-center justify-center mx-auto mb-1.5">
@@ -467,11 +467,11 @@ export default async function DashboardPage() {
               ) : (
                 <div className="p-6 text-center">
                   <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-900 text-sm font-semibold mb-1">Crea tu primera orden</p>
-                  <p className="text-gray-400 text-xs mb-4">Registra un vehículo y empieza a usar TallerOS ahora mismo.</p>
-                  <Link href="/ordenes/nueva" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
-                    <ClipboardList className="w-4 h-4" />
-                    Nueva orden de trabajo
+                  <p className="text-gray-900 text-sm font-semibold mb-1">Empieza registrando un cliente</p>
+                  <p className="text-gray-400 text-xs mb-4">Primero da de alta al cliente y su vehículo, luego crea la orden.</p>
+                  <Link href="/clientes" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+                    <Users className="w-4 h-4" />
+                    Registrar primer cliente
                   </Link>
                 </div>
               )}
