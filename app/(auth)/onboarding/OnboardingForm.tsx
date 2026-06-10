@@ -503,31 +503,126 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
               <Smartphone className="w-8 h-8 text-blue-600" />
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-2">Instala TallerOS en tu celular</h2>
-            <p className="text-slate-500 text-sm mb-6">Accede a tu taller desde cualquier lugar, sin descargar nada del App Store.</p>
+            <p className="text-slate-500 text-sm mb-6">Como una app normal, pero sin pasar por el App Store. Tarda menos de 1 minuto.</p>
 
             <div className="space-y-4 text-left mb-6">
+
+              {/* iOS */}
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  🍎 iPhone (Safari)
-                </p>
-                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Safari</li>
-                  <li>Toca el botón <strong>Compartir</strong> (cuadrado con flecha)</li>
-                  <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
-                  <li>Toca <strong>Añadir</strong></li>
-                </ol>
+                <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">🍎 iPhone — Safari</p>
+                <div className="space-y-3">
+                  {[
+                    {
+                      num: '1',
+                      texto: 'Abre tallerosapp.com en Safari',
+                      icono: (
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-blue-600 text-xs font-black">Safari</span>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '2',
+                      texto: 'Toca este ícono abajo en el centro',
+                      icono: (
+                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
+                            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '3',
+                      texto: 'Selecciona "Añadir a pantalla de inicio"',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" className="w-5 h-5">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17.5 14v7" strokeLinecap="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '4',
+                      texto: 'Toca "Añadir" arriba a la derecha — ¡listo!',
+                      icono: (
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                  ].map(({ num, texto, icono }) => (
+                    <div key={num} className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{num}</span>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">{texto}</span>
+                      {icono}
+                    </div>
+                  ))}
+                </div>
               </div>
 
+              {/* Android */}
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  🤖 Android (Chrome)
-                </p>
-                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Chrome</li>
-                  <li>Toca los <strong>3 puntos</strong> arriba a la derecha</li>
-                  <li>Selecciona <strong>"Instalar aplicación"</strong></li>
-                  <li>Toca <strong>Instalar</strong></li>
-                </ol>
+                <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">🤖 Android — Chrome</p>
+                <div className="space-y-3">
+                  {[
+                    {
+                      num: '1',
+                      texto: 'Abre tallerosapp.com en Chrome',
+                      icono: (
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white border border-gray-200 flex items-center justify-center">
+                          <span className="text-xs font-black text-blue-600">Chr</span>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '2',
+                      texto: 'Toca los 3 puntos arriba a la derecha',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="flex flex-col gap-1">
+                            {[0,1,2].map(i => <div key={i} className="w-1 h-1 bg-white rounded-full"/>)}
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '3',
+                      texto: 'Toca "Instalar aplicación"',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" className="w-5 h-5">
+                            <path d="M12 2v13M7 10l5 5 5-5M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '4',
+                      texto: 'Confirma tocando "Instalar" — ¡listo!',
+                      icono: (
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                  ].map(({ num, texto, icono }) => (
+                    <div key={num} className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{num}</span>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">{texto}</span>
+                      {icono}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -539,17 +634,17 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               <ArrowRight className="w-4 h-4" />
-              Entrar al dashboard
+              Ya la instalé — entrar al dashboard
             </button>
 
             <button
               onClick={async () => {
                 await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
-                router.push('/ordenes/nueva')
+                router.push('/dashboard')
               }}
               className="w-full text-slate-400 hover:text-slate-600 text-sm py-2 transition-colors"
             >
-              Crear mi primera orden
+              Instalar después
             </button>
           </div>
         )}
