@@ -1,6 +1,36 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── RATE LIMITING ─────────────────────────────────────────────────────────────
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
+  '/api/talleres/registro':  { max: 5,  windowMs: 60 * 60 * 1000 }, // 5 registros/hora por IP
+  '/api/stripe/checkout':    { max: 10, windowMs: 60 * 60 * 1000 }, // 10 checkouts/hora por IP
+  '/api/invitaciones':       { max: 10, windowMs: 60 * 60 * 1000 }, // 10 invitaciones/hora
+  '/api/bienvenida':         { max: 20, windowMs: 60 * 60 * 1000 }, // 20 WhatsApps/hora
+}
+
+function checkRateLimit(ip: string, pathname: string): boolean {
+  const rule = Object.entries(RATE_LIMITS).find(([path]) => pathname.startsWith(path))
+  if (!rule) return true // sin límite para esta ruta
+
+  const [, { max, windowMs }] = rule
+  const key = `${ip}:${pathname}`
+  const now = Date.now()
+  const entry = rateLimitMap.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+
+  if (entry.count >= max) return false
+
+  entry.count++
+  return true
+}
+
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'https://www.tallerosapp.com',
@@ -103,6 +133,18 @@ export async function middleware(request: NextRequest) {
   // ── CORS check primero ────────────────────────────────────────────────────
   const corsResponse = handleCORS(request)
   if (corsResponse) return corsResponse
+
+  // ── RATE LIMITING ─────────────────────────────────────────────────────────
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    ?? request.headers.get('x-real-ip')
+    ?? 'unknown'
+
+  if (!checkRateLimit(ip, request.nextUrl.pathname)) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '3600' } }
+    )
+  }
 
   let supabaseResponse = NextResponse.next({ request })
 
