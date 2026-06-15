@@ -47,9 +47,9 @@ const MODULOS = [
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Antes recibía 15-20 llamadas al día de clientes preguntando por su carro. Desde TallerOS bajó a 2 o 3. Recuperé casi 2 horas diarias para trabajar.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  img: '/testi-1-roberto.png', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba el teléfono. Ahora aprueba en segundos y queda registrado.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         img: '/testi-2-camila.png',  estrellas: 5 },
-  { texto: 'Los recordatorios automáticos me trajeron 8 clientes en el primer mes que no habían venido en más de un año. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     img: '/testi-3-miguel.png',  estrellas: 5 },
+  { texto: 'Antes recibía 15-20 llamadas al día de clientes preguntando por su carro. Desde TallerOS bajó a 2 o 3. Recuperé casi 2 horas diarias para trabajar.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  color: '#2563eb', estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba el teléfono. Ahora aprueba en segundos y queda registrado.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         color: '#7c3aed', estrellas: 5 },
+  { texto: 'Los recordatorios automáticos me trajeron 8 clientes en el primer mes que no habían venido en más de un año. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     color: '#059669', estrellas: 5 },
 ]
 
 const PLANES = [
@@ -57,18 +57,21 @@ const PLANES = [
     nombre: 'Gratuito', precio_mensual: 0, precio_anual: 0, total_anual: 0,
     precio_original_mensual: 0, precio_original_anual: 0,
     icono: Check, popular: false, gratis: true,
+    ideal: 'Para conocer el sistema. Máx. 10 órdenes al mes.',
     features: ['1 usuario','10 órdenes de trabajo al mes','Hasta 20 clientes','Cotizaciones básicas','Portal del cliente (vista limitada)'],
   },
   {
     nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
     icono: Zap, popular: false, gratis: false,
+    ideal: 'Para talleres de 1-5 mecánicos. Órdenes ilimitadas.',
     features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
     nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
     icono: Star, popular: true, gratis: false,
+    ideal: 'Para talleres con equipo y clientes frecuentes.',
     features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Módulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
@@ -356,11 +359,13 @@ export default function LandingPage() {
         <div className="ltg">
           {TESTIMONIALES.map((t,i) => (
             <div key={i} id={`tes-${i}`} data-animate className={`ltc${isV(`tes-${i}`)?' v':''}`} style={{transitionDelay:`${i*100}ms`}}>
-              <div className="ltc-iw"><img src={t.img} alt={t.nombre} className="ltc-img"/><div className="ltc-iov"/></div>
               <div className="ltc-b">
                 <div className="lstr">{"★".repeat(t.estrellas)}</div>
                 <p className="ltc-txt">"{t.texto}"</p>
-                <div><p className="ltc-n">{t.nombre}</p><p className="ltc-r">{t.rol}</p></div>
+                <div className="ltc-auth">
+                  <div className="ltc-av" style={{background:t.color}}>{t.nombre.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}</div>
+                  <div><p className="ltc-n">{t.nombre}</p><p className="ltc-r">{t.rol}</p></div>
+                </div>
               </div>
             </div>
           ))}
@@ -400,6 +405,7 @@ export default function LandingPage() {
                     {plan.gratis && <span style={{fontSize:11,color:'var(--muted)'}}>Para siempre gratis</span>}
                   </div>
                 </div>
+                <p className="lplan-ideal">{plan.ideal}</p>
                 <div className="lplan-pb">
                   {plan.gratis ? (
                     <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
@@ -661,8 +667,8 @@ export default function LandingPage() {
       .ltc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--rl);overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,border-color .2s;}
       .ltc.v{opacity:1;transform:translateY(0);}
       .ltc:hover{border-color:rgba(255,255,255,0.16);}
-      .ltc-iw{position:relative;height:180px;overflow:hidden;}
-      .ltc-img{width:100%;height:100%;object-fit:cover;}
+      .ltc-auth{display:flex;align-items:center;gap:12px;margin-top:16px;}
+      .ltc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;}
       .ltc-iov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(15,23,42,0.8));}
       .ltc-b{padding:24px;}
       .lstr{color:#f59e0b;font-size:14px;letter-spacing:3px;margin-bottom:12px;}
@@ -690,6 +696,7 @@ export default function LandingPage() {
       .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
       .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
       .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
+      .lplan-ideal{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.5;}
       .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
