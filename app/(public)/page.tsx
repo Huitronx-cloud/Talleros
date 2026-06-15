@@ -481,6 +481,14 @@ export default function LandingPage() {
       </div>
     </footer>
 
+    {/* BARRA FLOTANTE MÓVIL */}
+    <div className="lmobile-cta">
+      <a href="/registro" className="lmobile-cta-btn">
+        Probar gratis 14 días →
+      </a>
+      <p className="lmobile-cta-sub">Sin tarjeta · Cancela cuando quieras</p>
+    </div>
+
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -751,6 +759,7 @@ export default function LandingPage() {
         .lgal-grid{grid-template-columns:1fr 1fr;}
         .llm .lsl{text-align:center;}
       }
+      .lmobile-cta{display:none;}
       @media(max-width:640px){
         .lh{padding:90px 16px 60px;}
         .li{padding:0 16px;}
@@ -764,6 +773,10 @@ export default function LandingPage() {
         .lvbad{border-radius:0;}
         .l-toast{left:12px;right:12px;bottom:16px;}
         .lcta-bts{flex-direction:column;align-items:center;}
+        .lfoot{padding-bottom:100px;}
+        .lmobile-cta{display:flex;flex-direction:column;align-items:center;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;padding:12px 16px 20px;box-shadow:0 -4px 20px rgba(0,0,0,0.08);z-index:100;}
+        .lmobile-cta-btn{display:block;width:100%;background:#2563eb;color:#fff;text-align:center;font-size:15px;font-weight:700;padding:13px;border-radius:12px;text-decoration:none;}
+        .lmobile-cta-sub{font-size:11px;color:#94a3b8;margin:6px 0 0;}
       }
     `}</style>
     </div>
