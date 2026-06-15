@@ -27,12 +27,12 @@ const HF = {
 }
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.',        url: '/registro' },
-  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.',      url: '/registro' },
-  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.',               url: '/demo'     },
-  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.',               url: '/registro' },
-  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.',               url: '/registro' },
-  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide una reseña automáticamente. El 97% de nuevos clientes lee primero las reseñas.', url: '/registro' },
+  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Le mandas la cotización por WhatsApp. El cliente aprueba con un toque. Sin llamadas, sin "ya ahorita te confirmo" que nunca llega. Todo queda registrado.',        url: '/registro' },
+  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Clientes que regresan solos', desc: 'TallerOS les manda un WhatsApp a tus clientes a los 3 o 6 meses: "Ya es tiempo de mantenimiento". Sin que hagas nada. Sin que se te olvide. Ingresos recurrentes sin esfuerzo.', url: '/registro' },
+  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '90% menos llamadas',   titulo: 'El cliente ve su carro en vivo', desc: 'En vez de llamarte 5 veces al día, tu cliente entra a un portal y ve exactamente en qué paso está su vehículo. Se acabaron las interrupciones cuando estás trabajando.', url: '/demo' },
+  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Toma fotos del vehículo al recibirlo. Quedan guardadas con fecha y hora. Si un cliente dice que le rompiste algo, muestras la evidencia. Fin de la discusión.',      url: '/registro' },
+  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas en Google automáticas', desc: 'Al entregar el vehículo, TallerOS le manda un mensaje al cliente pidiéndole su reseña. El 97% de personas busca reseñas antes de elegir un taller. Las tuyas crecen solas.', url: '/registro' },
+  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital firmada',  desc: 'Emite una garantía digital que el cliente firma desde su celular al recoger el carro. Queda registrada. Si hay un reclamo después, tienes el documento.', url: '/registro' },
 ]
 
 const MODULOS = [
@@ -47,9 +47,9 @@ const MODULOS = [
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  img: '/testi-1-roberto.png', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         img: '/testi-2-camila.png',  estrellas: 5 },
-  { texto: 'Los recordatorios automáticos nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     img: '/testi-3-miguel.png',  estrellas: 5 },
+  { texto: 'Antes recibía 15-20 llamadas al día de clientes preguntando por su carro. Desde TallerOS bajó a 2 o 3. Recuperé casi 2 horas diarias para trabajar.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  img: '/testi-1-roberto.png', estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba el teléfono. Ahora aprueba en segundos y queda registrado.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         img: '/testi-2-camila.png',  estrellas: 5 },
+  { texto: 'Los recordatorios automáticos me trajeron 8 clientes en el primer mes que no habían venido en más de un año. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     img: '/testi-3-miguel.png',  estrellas: 5 },
 ]
 
 const PLANES = [
@@ -80,7 +80,7 @@ const STATS_DATA = [
   { valor: '+40%', texto: 'mas ingresos con recordatorios automáticos',   icon: TrendingUp,    color: '#06b6d4' },
 ]
 
-const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
+const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Tablero de trabajos en vivo','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 
 
 export default function LandingPage() {
@@ -188,11 +188,11 @@ export default function LandingPage() {
           </h1>
           <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto.</p>
           <div className="lh-ctas">
-            <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
-            <a href="/demo" className="lb-out">Ver portal del cliente</a>
+            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
+            <a href="/demo" className="lb-out">Ver cómo lo ve el cliente</a>
           </div>
           <div className="ltrust">
-            {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
+            {['Sin tarjeta de crédito','14 días gratis','Soporte por WhatsApp','Cancela cuando quieras'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
             {stats.total > 0 && (
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <a href="/registro" className="lb-pri" style={{marginTop:'2rem',display:'inline-flex'}}>Empezar gratis - sin tarjeta <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri" style={{marginTop:'2rem',display:'inline-flex'}}>Probar gratis 14 días <ArrowRight size={16}/></a>
           </div>
         </div>
       </div>
@@ -439,9 +439,9 @@ export default function LandingPage() {
         <div className="llm-solo">
           <div className="lsl" style={{textAlign:'center',color:'#93c5fd'}}>Para tener en cuenta</div>
           <h2 className="llm-h2" style={{textAlign:'center'}}>5 errores que le cuestan clientes a tu taller mecánico</h2>
-          <p className="llm-sub" style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 28px'}}>Los errores más comunes que cometen los talleres en LATAM — y que TallerOS resuelve desde el día uno.</p>
+          <p className="llm-sub" style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 28px'}}>Si alguno de estos te suena familiar, TallerOS lo resuelve desde el primer día.</p>
           <ul className="llm-list llm-list-center">
-            {['No documentar el estado del vehículo al recibirlo','Pedir aprobación verbal sin registro digital','No pedir reseñas en Google al momento de entregar','No hacer seguimiento a clientes inactivos','Operar sin datos de desempeño'].map((item,i) => (
+            {['El cliente dice que le rompiste algo que ya estaba roto — y no tienes cómo probarlo','Aprobaste un trabajo de palabra y el cliente lo niega cuando llega la cuenta','Un cliente no regresa en 2 años y tú ni te acuerdas de él','Dejas de recibir clientes nuevos porque no tienes reseñas en Google','No sabes cuánto ganaste la semana pasada sin revisar papeles'].map((item,i) => (
               <li key={i} className="llm-item">
                 <span className="llm-num">{String(i+1).padStart(2,'0')}</span>
                 <span>{item}</span>
@@ -449,7 +449,7 @@ export default function LandingPage() {
             ))}
           </ul>
           <div style={{display:'flex',justifyContent:'center',marginTop:'2rem'}}>
-            <a href="/registro" className="lb-pri">Empezar gratis y evitar estos errores <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
           </div>
         </div>
       </div>
@@ -461,10 +461,10 @@ export default function LandingPage() {
       <div className="lcta-ov"/>
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
-        <h2 className="lcta-h2">Tu taller merece crecer.</h2>
-        <p className="lcta-sub">Únete a los talleres que ya digitalizaron su operación.<br/>14 días gratis, sin tarjeta de credito.</p>
+        <h2 className="lcta-h2">Deja de perder clientes por no tener sistema.</h2>
+        <p className="lcta-sub">14 días gratis. Sin tarjeta. Sin contratos. Cancela cuando quieras.</p>
         <div className="lcta-bts">
-          <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
+          <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
           <a href="/login" className="lb-wh">Ya tengo cuenta</a>
         </div>
       </div>

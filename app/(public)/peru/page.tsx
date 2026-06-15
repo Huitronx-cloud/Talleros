@@ -221,7 +221,7 @@ export default function PeruPage() {
             Tu taller en Perú<br/>
             merece ser <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller mecánico en Perú con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Usado por talleres en CDMX, Monterrey, Guadalajara y más.</p>
+          <p className="lh-sub">TallerOS digitaliza tu taller mecánico en Perú con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Usado por talleres en Lima, Arequipa, Trujillo y más.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
@@ -324,12 +324,12 @@ export default function PeruPage() {
         <div className="lgal-t">
           <div className="lsl">Talleres reales en Perú</div>
           <h2 className="lgal-h2">Talleres peruanos que ya dieron el salto digital</h2>
-          <p className="lgal-sub">Mecánicos y dueños de taller en Lima, Arequipa, Trujillo y toda la República Mexicana confían en TallerOS.</p>
+          <p className="lgal-sub">Mecánicos y dueños de taller en Lima, Arequipa, Trujillo y todo Perú confían en TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
         </div>
         <div className="lgal-grid">
           {[
-            { img:'/taller-garcia.png',   nombre:'Taller García',               ciudad:'Ciudad de Perú, MX' },
+            { img:'/taller-garcia.png',   nombre:'Taller García',               ciudad:'Lima, PE' },
             { img:'/taller-herrera.png',  nombre:'Servicio Automotriz Herrera',  ciudad:'Arequipa, PE'      },
             { img:'/taller-ramirez.png',  nombre:'Mecánica Automotriz Ramírez',  ciudad:'Trujillo, PE'        },
             { img:'/taller-vargas.png',   nombre:'Centro Automotriz Vargas',     ciudad:'Cusco, PE'           },

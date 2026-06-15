@@ -221,7 +221,7 @@ export default function ColombiaPage() {
             Tu taller en Colombia<br/>
             merece ser <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller mecánico en Colombia con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Usado por talleres en CDMX, Monterrey, Guadalajara y más.</p>
+          <p className="lh-sub">TallerOS digitaliza tu taller mecánico en Colombia con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Usado por talleres en Bogotá, Medellín, Cali y más.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
@@ -324,12 +324,12 @@ export default function ColombiaPage() {
         <div className="lgal-t">
           <div className="lsl">Talleres reales en Colombia</div>
           <h2 className="lgal-h2">Talleres colombianos que ya dieron el salto digital</h2>
-          <p className="lgal-sub">Mecánicos y dueños de taller en Bogotá, Medellín, Cali y toda la República Mexicana confían en TallerOS.</p>
+          <p className="lgal-sub">Mecánicos y dueños de taller en Bogotá, Medellín, Cali y todo Colombia confían en TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
         </div>
         <div className="lgal-grid">
           {[
-            { img:'/taller-garcia.png',   nombre:'Taller García',               ciudad:'Ciudad de Colombia, MX' },
+            { img:'/taller-garcia.png',   nombre:'Taller García',               ciudad:'Bogotá, CO' },
             { img:'/taller-herrera.png',  nombre:'Servicio Automotriz Herrera',  ciudad:'Medellín, CO'      },
             { img:'/taller-ramirez.png',  nombre:'Mecánica Automotriz Ramírez',  ciudad:'Cali, CO'        },
             { img:'/taller-vargas.png',   nombre:'Centro Automotriz Vargas',     ciudad:'Barranquilla, CO'           },
