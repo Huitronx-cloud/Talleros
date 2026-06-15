@@ -667,37 +667,35 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
           </div>
         )}
 
-        {/* ── PASO 5: CHECKLIST DE ACTIVACIÓN ── */}
+        {/* ── PASO PWA: INSTALAR APP ── */}
         {paso === 55 && (
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Smartphone className="w-8 h-8 text-blue-600" />
+              <span className="text-3xl">📱</span>
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-2">Instala TallerOS en tu celular</h2>
-            <p className="text-slate-500 text-sm mb-6">Accede a tu taller desde cualquier lugar, sin descargar nada del App Store.</p>
+            <p className="text-slate-500 text-sm mb-6">Accede a tu taller desde cualquier lugar, sin descargar nada del App Store ni Google Play.</p>
 
-            <div className="space-y-4 text-left mb-6">
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  🍎 iPhone (Safari)
+            <div className="space-y-3 text-left mb-6">
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <p className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  🍎 <span>iPhone — Safari</span>
                 </p>
-                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Safari</li>
-                  <li>Toca el botón <strong>Compartir</strong> (cuadrado con flecha)</li>
-                  <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
-                  <li>Toca <strong>Añadir</strong></li>
+                <ol className="text-sm text-slate-600 space-y-1.5 list-decimal list-inside">
+                  <li>Toca el botón <strong>compartir</strong> <span className="inline-block bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs">⬆ cuadrado con flecha</span></li>
+                  <li>Selecciona <strong>"Agregar a inicio"</strong></li>
+                  <li>Confirma tocando <strong>Agregar</strong></li>
                 </ol>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  🤖 Android (Chrome)
+              <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+                <p className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  🤖 <span>Android — Chrome</span>
                 </p>
-                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                  <li>Abre <strong>{typeof window !== 'undefined' ? window.location.host : 'tallerosapp.com'}</strong> en Chrome</li>
-                  <li>Toca los <strong>3 puntos</strong> arriba a la derecha</li>
-                  <li>Selecciona <strong>"Instalar aplicación"</strong></li>
-                  <li>Toca <strong>Instalar</strong></li>
+                <ol className="text-sm text-slate-600 space-y-1.5 list-decimal list-inside">
+                  <li>Toca los <strong>3 puntos del menú</strong> <span className="inline-block bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs">⋮</span> arriba a la derecha</li>
+                  <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong></li>
+                  <li>Confirma tocando <strong>Agregar</strong></li>
                 </ol>
               </div>
             </div>
@@ -707,20 +705,20 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                 await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
                 router.push('/dashboard')
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2"
             >
-              <ArrowRight className="w-4 h-4" />
-              Entrar al dashboard
+              <span>✅</span>
+              Ya la instalé, continuar
             </button>
 
             <button
               onClick={async () => {
                 await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
-                router.push('/ordenes/nueva')
+                router.push('/dashboard')
               }}
               className="w-full text-slate-400 hover:text-slate-600 text-sm py-2 transition-colors"
             >
-              Crear mi primera orden
+              Continuar sin instalar
             </button>
           </div>
         )}

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, Star, BarChart2, Megaphone
+  AlertTriangle, Clock, Wrench, MessageCircle, Bell, Star, BarChart2, Megaphone
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
@@ -26,11 +26,18 @@ const MODULOS = [
   { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
   { href: '/resenas',              label: 'Reseñas Google',icono: Star,          color: 'bg-yellow-500',  roles: ['propietario','admin'], upgrade: true },
-  { href: '/promociones',          label: 'Promociones',   icono: Megaphone,     color: 'bg-orange-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
+  { href: '/promociones',          label: 'Promociones',   icono: Megaphone,     color: 'bg-orange-500',  roles: ['propietario','admin'], upgrade: true },
 ]
+
+const estadoLabel: Record<string, string> = {
+  recibido:   'Recibido',
+  en_proceso: 'En proceso',
+  listo:      'Listo para entregar',
+  entregado:  'Entregado',
+}
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -240,13 +247,6 @@ export default async function DashboardPage() {
               <div className="hidden sm:block">
                 <PushToggle />
               </div>
-              <Link
-                href="/api/exportar"
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors border border-white/10"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Exportar</span>
-              </Link>
             </div>
           </div>
 
@@ -425,7 +425,7 @@ export default async function DashboardPage() {
                         <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
                       <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {orden.estado.replace('_', ' ')}
+                        {estadoLabel[orden.estado] ?? orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
                   ))}
@@ -463,7 +463,7 @@ export default async function DashboardPage() {
                         <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
                       <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {orden.estado.replace('_', ' ')}
+                        {estadoLabel[orden.estado] ?? orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
                   ))}

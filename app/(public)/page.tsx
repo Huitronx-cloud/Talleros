@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
-  ChevronRight, Users, FileText, BarChart2, Calendar, Package, Download,
+  ChevronRight, Users, FileText, BarChart2, Calendar, Package,
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
@@ -83,54 +83,6 @@ const STATS_DATA = [
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 const WORDS = ['más confiable','más profesional','más rentable','el favorito']
 
-function getSecsUntilEOM(): number {
-  const now = new Date()
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0)
-  return Math.floor((end.getTime() - now.getTime()) / 1000)
-}
-function fmt(s: number) { return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 } }
-
-function LeadForm() {
-  const [nombre, setNombre] = useState('')
-  const [email, setEmail]   = useState('')
-  const [loading, setLoading] = useState(false)
-  const [done, setDone]     = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      const res = await fetch('/api/funnel/suscribir', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, email }),
-      })
-      const data = await res.json()
-      if (data.ok) setDone(true)
-    } catch {}
-    setLoading(false)
-  }
-
-  if (done) return (
-    <div className="llm-done">
-      <div className="llm-done-icon">🎉</div>
-      <p className="llm-done-title">¡Listo, {nombre.split(' ')[0]}!</p>
-      <p className="llm-done-sub">Revisa tu email — te enviamos la guía ahora mismo.</p>
-      <a href="/registro" className="lb-pri" style={{marginTop:'1rem',justifyContent:'center'}}>Probar TallerOS gratis <ArrowRight size={15}/></a>
-    </div>
-  )
-
-  return (
-    <form onSubmit={handleSubmit} className="llm-form">
-      <input type="text" placeholder="Tu nombre" value={nombre} onChange={e => setNombre(e.target.value)} required className="llm-input"/>
-      <input type="email" placeholder="Tu email" value={email} onChange={e => setEmail(e.target.value)} required className="llm-input"/>
-      <button type="submit" disabled={loading} className="llm-btn">
-        {loading ? 'Enviando...' : <><Download size={15}/> Enviarme la guía gratis</>}
-      </button>
-      <p className="llm-note">Sin spam. Cancela cuando quieras.</p>
-    </form>
-  )
-}
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen]     = useState(false)
@@ -142,7 +94,6 @@ export default function LandingPage() {
   const [tChar, setTChar]           = useState(0)
   const [tDel, setTDel]             = useState(false)
   const [toast, setToast]           = useState(false)
-  const [secs, setSecs]             = useState(getSecsUntilEOM())
   const obs = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cM } = useMonedaLocal()
 
@@ -170,8 +121,6 @@ export default function LandingPage() {
     }).catch(() => {})
   }, [])
 
-  useEffect(() => { const t = setInterval(() => setSecs(s => s > 0 ? s-1 : 0), 1000); return () => clearInterval(t) }, [])
-
   useEffect(() => {
     obs.current = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) setVisible(p => new Set([...p, e.target.id])) }),
@@ -182,8 +131,6 @@ export default function LandingPage() {
   }, [])
 
   const isV = (id: string) => visible.has(id)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const { d, h, m, s } = fmt(secs)
 
   return (
     <>
@@ -439,11 +386,6 @@ export default function LandingPage() {
     {/* PRECIOS */}
     <section id="precios" className="ls lprice-s">
       <div className="li">
-        <div className="lobar">
-          <span className="lobar-f">🔥</span>
-          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% DE DESCUENTO</span>
-          <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>
-        </div>
         <div className="lsl">Precios de lanzamiento</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
         <p className="lssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
@@ -506,29 +448,23 @@ export default function LandingPage() {
       </div>
     </section>
 
-    {/* ── LEAD MAGNET ── */}
+    {/* ── 5 ERRORES ── */}
     <section className="llm">
       <div className="li">
-        <div className="llm-w">
-          <div className="llm-txt">
-            <div className="lsl" style={{textAlign:'left'}}>Guía gratuita</div>
-            <h2 className="llm-h2">5 errores que le cuestan clientes a tu taller mecánico</h2>
-            <p className="llm-sub">Descubre los errores más comunes que cometen los talleres en LATAM — y cómo eliminarlos desde hoy.</p>
-            <ul className="llm-list">
-              {['No documentar el estado del vehículo al recibirlo','Pedir aprobación verbal sin registro digital','No pedir reseñas en Google al momento de entregar','No hacer seguimiento a clientes inactivos','Operar sin datos de desempeño'].map((item,i) => (
-                <li key={i} className="llm-item">
-                  <span className="llm-num">{String(i+1).padStart(2,'0')}</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="llm-form-wrap">
-            <div className="llm-form-card">
-              <p className="llm-form-title">📥 Recibe la guía gratis ahora</p>
-              <p className="llm-form-sub">Lectura de 5 minutos. Aplica desde hoy.</p>
-              <LeadForm />
-            </div>
+        <div className="llm-solo">
+          <div className="lsl" style={{textAlign:'center',color:'#93c5fd'}}>Para tener en cuenta</div>
+          <h2 className="llm-h2" style={{textAlign:'center'}}>5 errores que le cuestan clientes a tu taller mecánico</h2>
+          <p className="llm-sub" style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 28px'}}>Los errores más comunes que cometen los talleres en LATAM — y que TallerOS resuelve desde el día uno.</p>
+          <ul className="llm-list llm-list-center">
+            {['No documentar el estado del vehículo al recibirlo','Pedir aprobación verbal sin registro digital','No pedir reseñas en Google al momento de entregar','No hacer seguimiento a clientes inactivos','Operar sin datos de desempeño'].map((item,i) => (
+              <li key={i} className="llm-item">
+                <span className="llm-num">{String(i+1).padStart(2,'0')}</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div style={{display:'flex',justifyContent:'center',marginTop:'2rem'}}>
+            <a href="/registro" className="lb-pri">Empezar gratis y evitar estos errores <ArrowRight size={16}/></a>
           </div>
         </div>
       </div>
@@ -743,11 +679,6 @@ export default function LandingPage() {
       .ltc-r{font-size:12px;color:#475569;margin-top:2px;}
 
       .lprice-s{background:var(--surf2);}
-      .lobar{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;background:linear-gradient(90deg,rgba(220,38,38,0.08),rgba(185,28,28,0.08));border:1px solid rgba(220,38,38,0.2);border-radius:14px;padding:14px 24px;margin-bottom:40px;}
-      .lobar-f{font-size:18px;}
-      .lobar-t{font-size:13px;font-weight:800;color:#dc2626;letter-spacing:.5px;}
-      .lobar-tm{font-size:13px;color:#ef4444;}
-      .lobar-c{font-family:monospace;font-weight:700;background:rgba(220,38,38,0.1);padding:2px 8px;border-radius:6px;}
       .ltog-w{display:flex;justify-content:center;margin-bottom:40px;}
       .ltog{display:inline-flex;background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:4px;}
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
@@ -806,30 +737,16 @@ export default function LandingPage() {
       .lfoot-lnks a{font-size:13px;color:var(--ink4);text-decoration:none;transition:color .15s;}
       .lfoot-lnks a:hover{color:var(--ink2);}
 
-      /* ── LEAD MAGNET ─────────────────────────────────────────────────────── */
+      /* ── 5 ERRORES ─────────────────────────────────────────────────────── */
       .llm{padding:96px 0;background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);}
       .llm .lsl{color:#93c5fd;}
-      .llm-w{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;text-align:left;}
-      .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;margin-bottom:28px;}
+      .llm-solo{max-width:680px;margin:0 auto;}
+      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;}
+      .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;}
       .llm-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
+      .llm-list-center{max-width:560px;margin:0 auto;}
       .llm-item{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#e0f2fe;line-height:1.5;}
       .llm-num{background:rgba(255,255,255,0.15);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.5px;}
-      .llm-form-wrap{display:flex;align-items:center;justify-content:center;}
-      .llm-form-card{background:#fff;border-radius:24px;padding:32px 28px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.3);}
-      .llm-form-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:6px;text-align:center;}
-      .llm-form-sub{font-size:13px;color:#64748b;text-align:center;margin-bottom:20px;}
-      .llm-form{display:flex;flex-direction:column;gap:12px;}
-      .llm-input{border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:14px;color:#0f172a;outline:none;width:100%;box-sizing:border-box;transition:border-color .15s;}
-      .llm-input:focus{border-color:#2563eb;}
-      .llm-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#2563eb;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;font-family:inherit;}
-      .llm-btn:hover{background:#1d4ed8;}
-      .llm-btn:disabled{opacity:.7;cursor:not-allowed;}
-      .llm-note{font-size:11px;color:#94a3b8;text-align:center;}
-      .llm-done{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;}
-      .llm-done-icon{font-size:48px;}
-      .llm-done-title{font-size:20px;font-weight:800;color:#0f172a;}
-      .llm-done-sub{font-size:14px;color:#64748b;line-height:1.6;}
 
       @media(max-width:1024px){
         .lstg{grid-template-columns:repeat(2,1fr);}
@@ -848,9 +765,6 @@ export default function LandingPage() {
         .ltg{grid-template-columns:1fr;}
         .lgal-i{grid-template-columns:1fr;}
         .lgal-grid{grid-template-columns:1fr 1fr;}
-        .llm-w{grid-template-columns:1fr;}
-        .llm-h2{text-align:center;}
-        .llm-sub{text-align:center;}
         .llm .lsl{text-align:center;}
       }
       @media(max-width:640px){
@@ -862,7 +776,6 @@ export default function LandingPage() {
         .lstg{grid-template-columns:1fr 1fr;}
         .lfg{grid-template-columns:1fr;}
         .lpg{grid-template-columns:1fr;}
-        .lobar{flex-direction:column;gap:.5rem;text-align:center;}
         .lvrow{grid-template-columns:1fr;}
         .lvbad{border-radius:0;}
         .l-toast{left:12px;right:12px;bottom:16px;}
