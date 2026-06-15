@@ -81,7 +81,6 @@ const STATS_DATA = [
 ]
 
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
-const WORDS = ['más confiable','más profesional','más rentable','el favorito']
 
 
 export default function LandingPage() {
@@ -90,23 +89,9 @@ export default function LandingPage() {
   const [scrolled, setScrolled]     = useState(false)
   const [visible, setVisible]       = useState<Set<string>>(new Set())
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0, ordenes: 0 })
-  const [tIdx, setTIdx]             = useState(0)
-  const [tChar, setTChar]           = useState(0)
-  const [tDel, setTDel]             = useState(false)
   const [toast, setToast]           = useState(false)
   const obs = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cM } = useMonedaLocal()
-
-  useEffect(() => {
-    const w = WORDS[tIdx]; const sp = tDel ? 38 : 75
-    const t = setTimeout(() => {
-      if (!tDel && tChar < w.length) setTChar(c => c+1)
-      else if (!tDel && tChar === w.length) setTimeout(() => setTDel(true), 1800)
-      else if (tDel && tChar > 0) setTChar(c => c-1)
-      else { setTDel(false); setTIdx(i => (i+1) % WORDS.length) }
-    }, sp)
-    return () => clearTimeout(t)
-  }, [tChar, tDel, tIdx])
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -198,10 +183,10 @@ export default function LandingPage() {
             Software de gestión para talleres mecánicos
           </div>
           <h1 className="lh1">
-            Tu taller merece ser<br/>
-            <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
+            Se acabaron las llamadas de<br/>
+            <span className="ltw" style={{fontStyle:'italic'}}>&ldquo;¿Cómo va mi carro?&rdquo;</span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
+          <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
             <a href="/demo" className="lb-out">Ver portal del cliente</a>
@@ -562,7 +547,6 @@ export default function LandingPage() {
       .ley-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s infinite;flex-shrink:0;}
       .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
       .ltw{display:block;color:#60a5fa;min-height:1.1em;}
-      .lc{color:#60a5fa;animation:blink .9s step-end infinite;font-weight:300;}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
       .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
       .lh-ctas{display:flex;gap:12px;flex-wrap:wrap;}
