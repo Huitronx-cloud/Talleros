@@ -124,23 +124,9 @@ export default function PeruPage() {
   const [scrolled, setScrolled]     = useState(false)
   const [visible, setVisible]       = useState<Set<string>>(new Set())
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0 })
-  const [tIdx, setTIdx]             = useState(0)
-  const [tChar, setTChar]           = useState(0)
-  const [tDel, setTDel]             = useState(false)
   const [secs, setSecs]             = useState(getSecsUntilEOM())
   const obs = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cM } = useMonedaLocal()
-
-  useEffect(() => {
-    const w = WORDS[tIdx]; const sp = tDel ? 38 : 75
-    const t = setTimeout(() => {
-      if (!tDel && tChar < w.length) setTChar(c => c+1)
-      else if (!tDel && tChar === w.length) setTimeout(() => setTDel(true), 1800)
-      else if (tDel && tChar > 0) setTChar(c => c-1)
-      else { setTDel(false); setTIdx(i => (i+1) % WORDS.length) }
-    }, sp)
-    return () => clearTimeout(t)
-  }, [tChar, tDel, tIdx])
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -218,12 +204,12 @@ export default function PeruPage() {
             Software de gestión para talleres mecánicos en Perú
           </div>
           <h1 className="lh1">
-            Tu taller en Perú<br/>
-            merece ser <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
+            Se acabaron las llamadas de<br/>
+            <span className="ltw" style={{fontStyle:'italic'}}>&ldquo;¿Cómo va mi carro?&rdquo;</span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller mecánico en Perú con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. Usado por talleres en Lima, Arequipa, Trujillo y más.</p>
+          <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto — en Perú.</p>
           <div className="lh-ctas">
-            <a href="/registro" className="lb-pri">Empezar demo gratis <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
           </div>
           <div className="ltrust">
@@ -458,7 +444,7 @@ export default function PeruPage() {
       <div className="lcta-ov"/>
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy en Perú</div>
-        <h2 className="lcta-h2">Tu taller en Perú merece crecer.</h2>
+        <h2 className="lcta-h2">Deja de perder clientes por no tener sistema.</h2>
         <p className="lcta-sub">Únete a los talleres peruanos que ya digitalizaron su operación.<br/>14 días gratis, sin tarjeta de crédito.</p>
         <div className="lcta-bts">
           <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
@@ -535,7 +521,6 @@ export default function PeruPage() {
       @keyframes pu{0%,100%{box-shadow:0 0 6px var(--green);}50%{box-shadow:0 0 14px var(--green);}}
       .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
       .ltw{display:block;color:#60a5fa;min-height:1.1em;}
-      .lc{color:#60a5fa;animation:blink .9s step-end infinite;font-weight:300;}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
       .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
       .lh-ctas{display:flex;gap:12px;flex-wrap:wrap;}
