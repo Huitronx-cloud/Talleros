@@ -38,6 +38,7 @@ export default function RegistroPage() {
     pais: 'MX',
     nombre_propietario: '',
     email: '',
+    telefono: '',
     password: '',
     password_confirm: '',
   })
@@ -85,6 +86,7 @@ export default function RegistroPage() {
           nombre_taller:      form.nombre_taller,
           nombre_propietario: form.nombre_propietario,
           email:              form.email,
+          telefono:           form.telefono,
           password:           form.password,
           pais:               form.pais,
         }),
@@ -322,6 +324,22 @@ export default function RegistroPage() {
                     style={{ color: '#0f172a' }}
                     className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  <p className="text-xs text-slate-400 mt-1">Para acceder al sistema y recibir notificaciones.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    WhatsApp <span className="text-slate-400 font-normal">(opcional)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.telefono}
+                    onChange={e => actualizar('telefono', e.target.value)}
+                    placeholder="Ej: +52 55 1234 5678"
+                    style={{ color: '#0f172a' }}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Para enviarte recordatorios y alertas importantes.</p>
                 </div>
 
                 <div>

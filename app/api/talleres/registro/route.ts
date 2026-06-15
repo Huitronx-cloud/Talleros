@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json()
-    const { nombre_taller, nombre_propietario, email, password, pais = 'MX' } = body
+    const { nombre_taller, nombre_propietario, email, password, pais = 'MX', telefono = '' } = body
 
     // ── Validaciones ────────────────────────────────────────────────────────
     if (!nombre_taller?.trim() || !email?.trim() || !nombre_propietario?.trim()) {
@@ -87,6 +87,14 @@ export async function POST(req: Request) {
       .from('talleres')
       .update({ nombre: nombre_taller.trim(), pais })
       .eq('id', usuario.taller_id)
+
+    // ── 4b. Guardar teléfono del propietario (para WhatsApp) ─────────────────
+    if (telefono?.trim()) {
+      await supabaseAdmin
+        .from('usuarios')
+        .update({ telefono: telefono.trim() })
+        .eq('id', userId)
+    }
 
     // ── 5. Generar magic link para acceso directo al onboarding ──────────────
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
