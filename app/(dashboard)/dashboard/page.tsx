@@ -2,56 +2,50 @@ export const dynamic = 'force-dynamic'
 import nextDynamic from 'next/dynamic'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, MessageCircle, Bell, Star, BarChart2, Megaphone
+  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, Star, BarChart2, Megaphone
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
-import UsageMeter from './usage-meter'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
 
 const MODULOS = [
-  { href: '/kanban',               label: 'Kanban',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
+  { href: '/kanban', label: 'Tablero',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/ordenes',              label: 'Órdenes',       icono: ClipboardList, color: 'bg-indigo-500',  roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/reportes',             label: 'Reportes',      icono: BarChart2,     color: 'bg-purple-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/citas',                label: 'Citas',         icono: CalendarDays,  color: 'bg-violet-500',  roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/clientes',             label: 'Clientes',      icono: Users,         color: 'bg-sky-500',     roles: ['propietario','admin','recepcion'] },
   { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
   { href: '/inventario', label: 'Inventario', icono: Package, color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'], upgrade: true },
-  { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
+  { href: '/catalogo', label: 'Servicios',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
   { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
   { href: '/resenas',              label: 'Reseñas Google',icono: Star,          color: 'bg-yellow-500',  roles: ['propietario','admin'], upgrade: true },
+  { href: '/promociones',          label: 'Promociones',   icono: Megaphone,     color: 'bg-orange-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,       color: 'bg-orange-500',  roles: ['propietario','admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
-  { href: '/promociones',          label: 'Promociones',   icono: Megaphone,     color: 'bg-orange-500',  roles: ['propietario','admin'], upgrade: true },
 ]
 
-const estadoLabel: Record<string, string> = {
-  recibido:   'Recibido',
-  en_proceso: 'En proceso',
-  listo:      'Listo para entregar',
-  entregado:  'Entregado',
-}
-
 export default async function DashboardPage() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
   try {
+  const supabase = createClient()
+
   const ahora         = new Date()
   const inicioMes     = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
   const inicioGrafica = new Date(ahora.getFullYear(), ahora.getMonth() - 5, 1).toISOString()
 
   const hora = ahora.getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
+
+  // Obtener usuario primero
+  const user = await getAuthUser()
+  if (!user) redirect('/login')
 
   const { data: usuarioData } = await supabase
     .from('usuarios')
@@ -248,6 +242,13 @@ export default async function DashboardPage() {
               <div className="hidden sm:block">
                 <PushToggle />
               </div>
+              <Link
+                href="/api/exportar"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors border border-white/10"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Exportar</span>
+              </Link>
             </div>
           </div>
 
@@ -299,14 +300,47 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* ── MEDIDOR DE USO ── */}
-        <UsageMeter plan={planActual} usadas={ordenesMes} rol={rol} />
-
         {/* ── BANNER UPGRADE ── */}
         <BannerUpgrade tallerId={usuarioData?.taller_id} rol={rol} />
 
         {/* ── BANNER INSTALAR PWA ── */}
         <BannerInstalar />
+
+        {/* ── BIENVENIDA NUEVO USUARIO ── */}
+        {totalOrdenes === 0 && (
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">¡Bienvenido a TallerOS!</p>
+                <h2 className="text-lg font-black mb-1">Tu taller está listo. ¿Por dónde empezamos?</h2>
+                <p className="text-blue-100 text-sm leading-relaxed">
+                  Crea tu primera orden de trabajo en menos de 2 minutos. Registra el cliente, el vehículo y el problema — TallerOS hace el resto.
+                </p>
+              </div>
+              <Link
+                href="/clientes"
+                className="flex-shrink-0 flex items-center gap-2 bg-white text-blue-700 font-black px-5 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg"
+              >
+                <Users className="w-4 h-4" />
+                Registrar primer cliente
+              </Link>
+            </div>
+            <div className="mt-4 pt-4 border-t border-blue-500 grid grid-cols-3 gap-4 text-center">
+              {[
+                { paso: '1', texto: 'Registra el cliente y su vehículo' },
+                { paso: '2', texto: 'Crea la orden y manda diagnóstico por WhatsApp' },
+                { paso: '3', texto: 'Entrega con garantía digital y reseña automática' },
+              ].map(({ paso, texto }) => (
+                <div key={paso}>
+                  <div className="w-7 h-7 bg-blue-500/50 rounded-full flex items-center justify-center mx-auto mb-1.5">
+                    <span className="text-white text-xs font-black">{paso}</span>
+                  </div>
+                  <p className="text-blue-100 text-xs leading-snug">{texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── ALERTAS ── */}
         {(ordenesRetrasadas && ordenesRetrasadas.length > 0) || stockBajo.length > 0 ? (
@@ -426,15 +460,20 @@ export default async function DashboardPage() {
                         <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
                       <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {estadoLabel[orden.estado] ?? orden.estado.replace('_', ' ')}
+                        {orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="p-12 text-center">
+                <div className="p-6 text-center">
                   <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-400 text-sm">Aún no hay órdenes registradas.</p>
+                  <p className="text-gray-900 text-sm font-semibold mb-1">Empieza registrando un cliente</p>
+                  <p className="text-gray-400 text-xs mb-4">Primero da de alta al cliente y su vehículo, luego crea la orden.</p>
+                  <Link href="/clientes" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+                    <Users className="w-4 h-4" />
+                    Registrar primer cliente
+                  </Link>
                 </div>
               )}
             </div>
@@ -464,7 +503,7 @@ export default async function DashboardPage() {
                         <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{orden.descripcion_problema}</p>
                       </div>
                       <span className={`text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${estadoColor[orden.estado] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {estadoLabel[orden.estado] ?? orden.estado.replace('_', ' ')}
+                        {orden.estado.replace('_', ' ')}
                       </span>
                     </Link>
                   ))}

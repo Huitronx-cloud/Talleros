@@ -193,7 +193,7 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<{ ok: boolean; 
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From:             'whatsapp:+15559828390',
+        From: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM ?? '+17242625304'}`,
         To:               `whatsapp:${to}`,
         ContentSid:       'HXbf735472bd3841f57341050e045adc3d',
         ContentVariables: JSON.stringify({ '1': prospecto.nombre }),
@@ -271,12 +271,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Elegir ciudad del día basado en el día del mes
-  const diaDelMes   = new Date().getDate()
-  const ciudadHoy   = CIUDADES[diaDelMes % CIUDADES.length]
-  const terminoHoy  = TERMINOS_BUSQUEDA[diaDelMes % TERMINOS_BUSQUEDA.length]
+  // Rotar ciudad y término por día + hora para que cada ejecución cubra combinación distinta
+  const ahora      = new Date()
+  const diaDelMes  = ahora.getDate()
+  const horaActual = ahora.getHours()
+  const indice     = (diaDelMes * 3 + Math.floor(horaActual / 4)) % CIUDADES.length
+  const terminoIdx = (diaDelMes + horaActual) % TERMINOS_BUSQUEDA.length
+  const ciudadHoy  = CIUDADES[indice]
+  const terminoHoy = TERMINOS_BUSQUEDA[terminoIdx]
 
-  console.log(`🔍 Buscando: "${terminoHoy}" en ${ciudadHoy.nombre}`)
+  console.log(`[Hora ${horaActual}h] Buscando: "${terminoHoy}" en ${ciudadHoy.nombre}`)
 
   const contactados: string[] = []
   const omitidos:    string[] = []

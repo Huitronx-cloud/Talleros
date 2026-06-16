@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
@@ -13,22 +13,18 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   if (!user) redirect('/login')
 
+  // JOIN en una sola query en vez de dos seguidas
   const { data: usuario } = await supabase
     .from('usuarios')
-    .select('taller_id, rol')
+    .select('taller_id, rol, talleres(nombre, logo_url)')
     .eq('id', user.id)
     .maybeSingle()
 
-  const { data: taller } = await supabase
-    .from('talleres')
-    .select('nombre, logo_url')
-    .eq('id', usuario?.taller_id ?? 'none')
-    .maybeSingle()
-
+  const taller = (usuario?.talleres as { nombre: string; logo_url: string | null } | null) ?? null
   const esRecepcion = usuario?.rol === 'recepcion'
 
   return (

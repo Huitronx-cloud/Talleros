@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Orden, Notificacion, RolUsuario } from '@/types'
 import DetalleOrden from '@/components/ordenes/detalle-orden'
@@ -12,7 +12,7 @@ export default async function DetalleOrdenPage({
 }) {
   const supabase = createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   const [{ data: orden }, { data: notificaciones }, { data: usuario }] = await Promise.all([
     supabase

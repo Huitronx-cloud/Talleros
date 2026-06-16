@@ -18,15 +18,26 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
 
+  // Sanitización básica — limitar longitud y limpiar espacios
+  const sanitize = (val: unknown, max = 100): string | null => {
+    if (typeof val !== 'string') return null
+    const clean = val.trim().slice(0, max)
+    return clean || null
+  }
+
+  if (!sanitize(body.nombre)) {
+    return NextResponse.json({ error: 'El nombre del cliente es obligatorio.' }, { status: 400 })
+  }
+
   const { data, error } = await supabase
     .from('clientes')
     .insert({
       taller_id:       usuario.taller_id,
-      nombre:          body.nombre,
-      telefono:        body.telefono ?? null,
-      vehiculo_marca:  body.vehiculo_marca ?? null,
-      vehiculo_modelo: body.vehiculo_modelo ?? null,
-      placas:          body.placas ?? null,
+      nombre:          sanitize(body.nombre, 100)!,
+      telefono:        sanitize(body.telefono, 20),
+      vehiculo_marca:  sanitize(body.vehiculo_marca, 50),
+      vehiculo_modelo: sanitize(body.vehiculo_modelo, 50),
+      placas:          sanitize(body.placas, 20),
     })
     .select('id')
     .single()

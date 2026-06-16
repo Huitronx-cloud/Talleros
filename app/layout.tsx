@@ -73,6 +73,14 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('load', function() {
+            setTimeout(function() {
+              var s = document.getElementById('splash-screen');
+              if (s) s.classList.add('hidden');
+            }, 800);
+          });
+        `}} />
         <meta name="facebook-domain-verification" content="qrpg7ptwpcrr7anrjz6zr8foz38az" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="manifest" href="/manifest.json" />
@@ -84,6 +92,15 @@ export default function RootLayout({
   <link rel="apple-touch-icon" href="/icon-192.png" />
 </head>
       <body className={`${inter.className} has-offer-bar`}>
+        <div id="splash-screen">
+          <div id="splash-logo">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="10" fill="#2563eb"/>
+              <path d="M12 20h6l2-6 4 12 2-6h6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <p id="splash-text">Actualizando tu taller...</p>
+        </div>
         <GoogleAnalytics />
         <MetaPixel />
         <SplashScreen />

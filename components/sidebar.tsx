@@ -23,7 +23,7 @@ const TODOS_NAV_ITEMS = [
   { href: '/recordatorios',  label: 'Recordatorios',  icono: Bell,            roles: ['propietario', 'admin'] },  // ← NUEVA LÍNEA
   { href: '/resenas',     label: 'Reseñas Google', icono: Star,      roles: ['propietario', 'admin'] },
   { href: '/promociones', label: 'Promociones',    icono: Megaphone, roles: ['propietario', 'admin'] },
-  { href: '/kanban',         label: 'Kanban',         icono: LayoutGrid,      roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
+  { href: '/kanban', label: 'Tablero', icono: LayoutGrid, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/citas',          label: 'Citas',          icono: CalendarDays,    roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
   { href: '/clientes',       label: 'Clientes',       icono: Users,           roles: ['propietario', 'admin', 'recepcion'] },
   { href: '/ordenes',        label: 'Órdenes',        icono: ClipboardList,   roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
@@ -35,7 +35,7 @@ const TODOS_NAV_BOTTOM = [
   { href: '/configuracion/plan',   label: 'Mejorar plan',  icono: Zap,        roles: ['propietario', 'admin'] },
   { href: '/configuracion/equipo', label: 'Equipo',        icono: UserCog,    roles: ['propietario', 'admin'] },
   { href: '/configuracion',        label: 'Configuración', icono: Settings,   roles: ['propietario', 'admin'] },
-  { href: '/catalogo',             label: 'Catálogo',      icono: BookOpen,   roles: ['propietario', 'admin'], descripcion: 'Servicios y precios' },
+  { href: '/catalogo', label: 'Servicios', icono: BookOpen, roles: ['propietario', 'admin'] },
   { href: '/ayuda/instalar',       label: 'Instalar app',  icono: Smartphone, roles: ['propietario', 'admin', 'tecnico', 'recepcion'] },
 ]
 
@@ -77,6 +77,11 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   const NAV_BOTTOM   = TODOS_NAV_BOTTOM.filter(i => i.roles.includes(rol))
 
   useEffect(() => {
+    const timer = setTimeout(() => setColapsado(true), 7000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
     const main = document.getElementById('main-content')
     if (!main) return
     const esMobil = typeof window !== 'undefined' && window.innerWidth < 768
@@ -90,7 +95,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
     router.refresh()
   }
 
-  const NavLink = ({ href, label, icono: Icono, descripcion }: { href: string; label: string; icono: any; descripcion?: string }) => {
+  const NavLink = ({ href, label, icono: Icono }: { href: string; label: string; icono: any }) => {
     const activo    = pathname === href || pathname.startsWith(href + '/')
     const esCitas   = href === '/citas'
     const esPlan    = href === '/configuracion/plan'
@@ -119,16 +124,9 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
           )}
         </div>
         {!colapsado && (
-          <span className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="flex flex-col min-w-0">
-              <span>{label}</span>
-              {descripcion && (
-                <span className={cn('text-[10px] font-normal leading-tight truncate', activo ? 'text-blue-200' : 'text-gray-600')}>
-                  {descripcion}
-                </span>
-              )}
-            </span>
-            {showBadge && (
+          <span className="flex items-center gap-2 flex-1">
+            {label}
+            {showBadge && !colapsado && (
               <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
                 {citasPendientes > 9 ? '9+' : citasPendientes}
               </span>

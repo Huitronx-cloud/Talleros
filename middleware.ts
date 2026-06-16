@@ -1,6 +1,36 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── RATE LIMITING ─────────────────────────────────────────────────────────────
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
+  '/api/talleres/registro':  { max: 5,  windowMs: 60 * 60 * 1000 }, // 5 registros/hora por IP
+  '/api/stripe/checkout':    { max: 10, windowMs: 60 * 60 * 1000 }, // 10 checkouts/hora por IP
+  '/api/invitaciones':       { max: 10, windowMs: 60 * 60 * 1000 }, // 10 invitaciones/hora
+  '/api/bienvenida':         { max: 20, windowMs: 60 * 60 * 1000 }, // 20 WhatsApps/hora
+}
+
+function checkRateLimit(ip: string, pathname: string): boolean {
+  const rule = Object.entries(RATE_LIMITS).find(([path]) => pathname.startsWith(path))
+  if (!rule) return true // sin límite para esta ruta
+
+  const [, { max, windowMs }] = rule
+  const key = `${ip}:${pathname}`
+  const now = Date.now()
+  const entry = rateLimitMap.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+
+  if (entry.count >= max) return false
+
+  entry.count++
+  return true
+}
+
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'https://www.tallerosapp.com',
@@ -104,6 +134,18 @@ export async function middleware(request: NextRequest) {
   const corsResponse = handleCORS(request)
   if (corsResponse) return corsResponse
 
+  // ── RATE LIMITING ─────────────────────────────────────────────────────────
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    ?? request.headers.get('x-real-ip')
+    ?? 'unknown'
+
+  if (!checkRateLimit(ip, request.nextUrl.pathname)) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '3600' } }
+    )
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -156,14 +198,28 @@ export async function middleware(request: NextRequest) {
   }
 
   // Verificar acceso por rol en rutas protegidas
+  // El rol se cachea en cookie para evitar un query DB en cada navegación
   if (user && !esRutaPublica && !esRutaPostRegistro) {
-    const { data: usuario } = await supabase
-      .from('usuarios')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
+    let rol: string
+    const rolCookie = request.cookies.get('_u_rol')?.value
+    const [cachedUserId, cachedRol] = rolCookie?.split('|') ?? []
 
-    const rol = usuario?.rol ?? 'tecnico'
+    if (cachedUserId === user.id && cachedRol) {
+      rol = cachedRol
+    } else {
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single()
+      rol = usuario?.rol ?? 'tecnico'
+      supabaseResponse.cookies.set('_u_rol', `${user.id}|${rol}`, {
+        maxAge: 3600,
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      })
+    }
 
     if (!tieneAcceso(rol, pathname)) {
       return NextResponse.redirect(new URL('/ordenes', request.url))

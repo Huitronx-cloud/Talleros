@@ -66,18 +66,6 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
   const [exitoInvitacion, setExitoInvitacion] = useState('')
   const [errorInvitacion, setErrorInvitacion] = useState('')
 
-  // Paso 3 — primer cliente
-  const [clienteNombre,   setClienteNombre]   = useState('')
-  const [clienteTelefono, setClienteTelefono] = useState('')
-  const [clienteMarca,    setClienteMarca]    = useState('')
-  const [clienteModelo,   setClienteModelo]   = useState('')
-  const [clienteId,       setClienteId]       = useState<string | null>(null)
-  const [exitoCliente,    setExitoCliente]    = useState(false)
-
-  // Paso 4 — primera orden
-  const [ordenDescripcion, setOrdenDescripcion] = useState('')
-  const [exitoOrden,       setExitoOrden]       = useState(false)
-
   const paisSeleccionado = CODIGOS_PAIS.find(p => p.code === codigoPais)
 
   function telefonoCompleto() {
@@ -93,70 +81,6 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
     setArchivoLogo(file)
     setPreviewLogo(URL.createObjectURL(file))
     setError('')
-  }
-
-  async function crearPrimerCliente() {
-    if (!clienteNombre.trim()) { setError('El nombre del cliente es obligatorio.'); return }
-    setCargando(true)
-    setError('')
-    try {
-      const { data: tallId } = await supabase.rpc('get_my_taller_id')
-      const { data: cliente, error: err } = await supabase
-        .from('clientes')
-        .insert({
-          taller_id:       tallId,
-          nombre:          clienteNombre.trim(),
-          telefono:        clienteTelefono.trim() || null,
-          vehiculo_marca:  clienteMarca.trim()    || null,
-          vehiculo_modelo: clienteModelo.trim()   || null,
-        })
-        .select('id')
-        .single()
-
-      if (err) { setError(err.message); return }
-      setClienteId(cliente?.id ?? null)
-      setExitoCliente(true)
-      // Pre-fill order form
-      if (clienteMarca.trim())  setOrdenDescripcion('')
-    } catch {
-      setError('Error guardando. Intenta de nuevo.')
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  async function crearPrimeraOrden() {
-    if (!ordenDescripcion.trim()) { setError('Describe el problema del vehículo.'); return }
-    setCargando(true)
-    setError('')
-    try {
-      const { data: tallId } = await supabase.rpc('get_my_taller_id')
-      const { data: numero }  = await supabase.rpc('siguiente_numero_orden', { p_taller_id: tallId })
-
-      const hoy = new Date().toISOString().split('T')[0]
-      const { error: err } = await supabase.from('ordenes').insert({
-        taller_id:            tallId,
-        cliente_id:           clienteId ?? null,
-        numero_orden:         numero,
-        descripcion_problema: ordenDescripcion.trim(),
-        vehiculo_marca:       clienteMarca.trim()  || null,
-        vehiculo_modelo:      clienteModelo.trim() || null,
-        estado:               'recibido',
-        fecha_entrada:        hoy,
-        servicios_realizados: [],
-        historial:            [{ estado: 'recibido', fecha: new Date().toISOString(), nota: 'Orden creada desde onboarding' }],
-        subtotal: 0, descuento: 0, impuestos: 0, tasa_iva: 16, total: 0,
-        forma_pago: 'efectivo',
-      })
-
-      if (err) { setError(err.message); return }
-      setExitoOrden(true)
-      setTimeout(() => setPaso(55), 1200)
-    } catch {
-      setError('Error guardando. Intenta de nuevo.')
-    } finally {
-      setCargando(false)
-    }
   }
 
   async function guardarPaso1() {
@@ -468,235 +392,237 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
             >
               Siguiente <ChevronRight className="w-4 h-4" />
             </button>
-            <button onClick={() => setPaso(3)} className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors">
-              Omitir por ahora
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Ir directo al dashboard →
             </button>
           </div>
         )}
 
         {/* ── PASO 3: PRIMER CLIENTE ── */}
         {paso === 3 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
             <div>
               <h1 className="text-xl font-bold text-slate-900">Agrega tu primer cliente</h1>
               <p className="text-slate-500 text-sm mt-1">
-                Usa tu propio nombre si quieres — es solo para que veas el flujo.
+                Registra un cliente de prueba (puedes usar tu propio nombre) para ver el flujo completo.
               </p>
             </div>
 
-            {exitoCliente ? (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-green-800">¡Cliente registrado!</p>
-                <p className="text-xs text-green-600 mt-1">
-                  {clienteTelefono ? 'Le enviamos un WhatsApp de bienvenida.' : 'Ahora crea tu primera orden.'}
-                </p>
+            <div className="bg-green-50 rounded-2xl p-6 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Users className="w-8 h-8 text-green-600" />
               </div>
-            ) : (
-              <>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Nombre del cliente <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={clienteNombre}
-                    onChange={e => { setClienteNombre(e.target.value); setError('') }}
-                    placeholder="Ej: Carlos García"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Teléfono (opcional — para WhatsApp)
-                  </label>
-                  <input
-                    type="tel"
-                    value={clienteTelefono}
-                    onChange={e => setClienteTelefono(e.target.value)}
-                    placeholder="+52 55 1234 5678"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Marca del auto</label>
-                    <input
-                      type="text"
-                      value={clienteMarca}
-                      onChange={e => setClienteMarca(e.target.value)}
-                      placeholder="Toyota"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Modelo</label>
-                    <input
-                      type="text"
-                      value={clienteModelo}
-                      onChange={e => setClienteModelo(e.target.value)}
-                      placeholder="Corolla"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                    />
-                  </div>
-                </div>
-
-                {error && <p className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-
-                <button
-                  onClick={crearPrimerCliente}
-                  disabled={cargando}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {cargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
-                  {cargando ? 'Guardando...' : 'Registrar cliente'}
-                </button>
-              </>
-            )}
+              <p className="text-sm font-semibold text-green-900 mb-1">Empieza por el cliente</p>
+              <p className="text-xs text-green-700 leading-relaxed">
+                Nombre, teléfono y vehículo. TallerOS le mandará un WhatsApp de bienvenida automáticamente.
+              </p>
+            </div>
 
             <button
-              onClick={() => { setError(''); setPaso(4) }}
+              onClick={() => {
+                window.open('/clientes?onboarding=true', '_blank')
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Agregar mi primer cliente
+            </button>
+
+            <button
+              onClick={() => setPaso(4)}
               className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
             >
               <ChevronRight className="w-4 h-4" />
-              {exitoCliente ? 'Continuar a crear orden →' : 'Ya lo agregué, continuar'}
+              Ya lo agregué, continuar
             </button>
 
-            {!exitoCliente && (
-              <button
-                onClick={() => { setError(''); setPaso(4) }}
-                className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
-              >
-                Saltar este paso
-              </button>
-            )}
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Ir directo al dashboard →
+            </button>
           </div>
         )}
 
         {/* ── PASO 4: PRIMERA ORDEN ── */}
         {paso === 4 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
             <div>
               <h1 className="text-xl font-bold text-slate-900">Crea tu primera orden</h1>
               <p className="text-slate-500 text-sm mt-1">
-                {clienteId
-                  ? `Orden para ${clienteNombre || 'tu cliente'} — describe el problema.`
-                  : 'Registra el problema del vehículo para ver el flujo completo.'}
+                Registra un vehículo real o de prueba para ver cómo funciona TallerOS en acción.
               </p>
             </div>
 
-            {exitoOrden ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                <CheckCircle2 className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-blue-800">¡Orden creada!</p>
-                <p className="text-xs text-blue-600 mt-1">Entrando al siguiente paso…</p>
+            <div className="bg-blue-50 rounded-2xl p-6 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <ClipboardList className="w-8 h-8 text-blue-600" />
               </div>
-            ) : (
-              <>
-                {clienteId && (clienteMarca || clienteModelo) && (
-                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                    <span className="text-sm text-green-800">
-                      Cliente: <strong>{clienteNombre}</strong>
-                      {(clienteMarca || clienteModelo) && (
-                        <> — {[clienteMarca, clienteModelo].filter(Boolean).join(' ')}</>
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                {!clienteId && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Marca del auto</label>
-                      <input
-                        type="text"
-                        value={clienteMarca}
-                        onChange={e => setClienteMarca(e.target.value)}
-                        placeholder="Toyota"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Modelo</label>
-                      <input
-                        type="text"
-                        value={clienteModelo}
-                        onChange={e => setClienteModelo(e.target.value)}
-                        placeholder="Corolla"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Problema reportado <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={ordenDescripcion}
-                    onChange={e => { setOrdenDescripcion(e.target.value); setError('') }}
-                    placeholder="Ej: Cambio de aceite y filtros, revisión de frenos…"
-                    rows={3}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 resize-none"
-                  />
-                </div>
-
-                {error && <p className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-
-                <button
-                  onClick={crearPrimeraOrden}
-                  disabled={cargando}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {cargando ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
-                  {cargando ? 'Creando orden...' : 'Crear orden de trabajo'}
-                </button>
-              </>
-            )}
+              <p className="text-sm font-semibold text-blue-900 mb-1">Flujo completo en minutos</p>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                Registra el cliente → toma fotos → asigna mecánico → notifica por WhatsApp → entrega con reseña automática
+              </p>
+            </div>
 
             <button
-              onClick={() => { setError(''); setPaso(55) }}
-              className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors"
+              onClick={() => {
+                router.push('/ordenes/nueva')
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              {exitoOrden ? '' : 'Saltar este paso'}
+              <ClipboardList className="w-4 h-4" />
+              Crear mi primera orden
+            </button>
+
+            <button
+              onClick={async () => {
+                await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
+                router.push('/dashboard')
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Ir directo al dashboard →
             </button>
           </div>
         )}
 
-        {/* ── PASO PWA: INSTALAR APP ── */}
+        {/* ── PASO 5: CHECKLIST DE ACTIVACIÓN ── */}
         {paso === 55 && (
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">📱</span>
+              <Smartphone className="w-8 h-8 text-blue-600" />
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-2">Instala TallerOS en tu celular</h2>
-            <p className="text-slate-500 text-sm mb-6">Accede a tu taller desde cualquier lugar, sin descargar nada del App Store ni Google Play.</p>
+            <p className="text-slate-500 text-sm mb-6">Como una app normal, pero sin pasar por el App Store. Tarda menos de 1 minuto.</p>
 
-            <div className="space-y-3 text-left mb-6">
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  🍎 <span>iPhone — Safari</span>
-                </p>
-                <ol className="text-sm text-slate-600 space-y-1.5 list-decimal list-inside">
-                  <li>Toca el botón <strong>compartir</strong> <span className="inline-block bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs">⬆ cuadrado con flecha</span></li>
-                  <li>Selecciona <strong>"Agregar a inicio"</strong></li>
-                  <li>Confirma tocando <strong>Agregar</strong></li>
-                </ol>
+            <div className="space-y-4 text-left mb-6">
+
+              {/* iOS */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">🍎 iPhone — Safari</p>
+                <div className="space-y-3">
+                  {[
+                    {
+                      num: '1',
+                      texto: 'Abre tallerosapp.com en Safari',
+                      icono: (
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-blue-600 text-xs font-black">Safari</span>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '2',
+                      texto: 'Toca este ícono abajo en el centro',
+                      icono: (
+                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
+                            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '3',
+                      texto: 'Selecciona "Añadir a pantalla de inicio"',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" className="w-5 h-5">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17.5 14v7" strokeLinecap="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '4',
+                      texto: 'Toca "Añadir" arriba a la derecha — ¡listo!',
+                      icono: (
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                  ].map(({ num, texto, icono }) => (
+                    <div key={num} className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{num}</span>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">{texto}</span>
+                      {icono}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-                <p className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  🤖 <span>Android — Chrome</span>
-                </p>
-                <ol className="text-sm text-slate-600 space-y-1.5 list-decimal list-inside">
-                  <li>Toca los <strong>3 puntos del menú</strong> <span className="inline-block bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs">⋮</span> arriba a la derecha</li>
-                  <li>Selecciona <strong>"Agregar a pantalla de inicio"</strong></li>
-                  <li>Confirma tocando <strong>Agregar</strong></li>
-                </ol>
+              {/* Android */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">🤖 Android — Chrome</p>
+                <div className="space-y-3">
+                  {[
+                    {
+                      num: '1',
+                      texto: 'Abre tallerosapp.com en Chrome',
+                      icono: (
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white border border-gray-200 flex items-center justify-center">
+                          <span className="text-xs font-black text-blue-600">Chr</span>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '2',
+                      texto: 'Toca los 3 puntos arriba a la derecha',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="flex flex-col gap-1">
+                            {[0,1,2].map(i => <div key={i} className="w-1 h-1 bg-white rounded-full"/>)}
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '3',
+                      texto: 'Toca "Instalar aplicación"',
+                      icono: (
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" className="w-5 h-5">
+                            <path d="M12 2v13M7 10l5 5 5-5M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                    {
+                      num: '4',
+                      texto: 'Confirma tocando "Instalar" — ¡listo!',
+                      icono: (
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    },
+                  ].map(({ num, texto, icono }) => (
+                    <div key={num} className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">{num}</span>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">{texto}</span>
+                      {icono}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -705,10 +631,10 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
                 await supabase.from('talleres').update({ onboarding_completo: true }).eq('id', tallerId)
                 router.push('/dashboard')
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              <span>✅</span>
-              Ya la instalé, continuar
+              <ArrowRight className="w-4 h-4" />
+              Ya la instalé — entrar al dashboard
             </button>
 
             <button
@@ -718,7 +644,7 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
               }}
               className="w-full text-slate-400 hover:text-slate-600 text-sm py-2 transition-colors"
             >
-              Continuar sin instalar
+              Instalar después
             </button>
           </div>
         )}

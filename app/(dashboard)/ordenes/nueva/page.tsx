@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Cliente } from '@/types'
 import FormNuevaOrden from '@/components/ordenes/form-nueva-orden'
@@ -11,7 +11,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
   const supabase = createClient()
   const admin    = createServiceClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   const { data: usuario } = await supabase
     .from('usuarios')
