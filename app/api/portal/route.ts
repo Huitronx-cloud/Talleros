@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import twilio from 'twilio'
@@ -36,9 +37,10 @@ export async function POST(req: NextRequest) {
     let tokenFinal = tokenExistente?.token
 
     if (!tokenFinal) {
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       const { data: nuevoToken, error: errorToken } = await supabase
         .from('portal_tokens')
-        .insert({ orden_id: ordenId, taller_id: orden.taller_id })
+        .insert({ orden_id: ordenId, taller_id: orden.taller_id, expires_at: expires })
         .select('token')
         .single()
 

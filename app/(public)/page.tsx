@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
-  ChevronRight, Users, FileText, BarChart2, Calendar, Package, Download,
+  ChevronRight, Users, FileText, BarChart2, Calendar, Package,
 } from 'lucide-react'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
@@ -27,12 +27,12 @@ const HF = {
 }
 
 const DIFERENCIADORES = [
-  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Tu cliente aprueba reparaciones desde su celular. Sin llamadas perdidas. Todo queda registrado.',        url: '/registro' },
-  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Documenta el estado del vehículo antes de tocar nada. Elimina disputas sobre daños preexistentes.',      url: '/registro' },
-  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '97% satisfacción',     titulo: 'Portal en tiempo real',     desc: 'Tu cliente ve el avance de su vehículo en vivo sin llamar al taller. Transparencia total.',               url: '/demo'     },
-  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital',          desc: 'Emite garantías digitales firmadas en cada entrega. Diferénciate de cualquier competidor.',               url: '/registro' },
-  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Recordatorios automáticos', desc: 'TallerOS contacta a tus clientes cada 3-6 meses para mantenimiento. Ingresos recurrentes.',               url: '/registro' },
-  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas automáticas',       desc: 'Al entregar un vehículo TallerOS pide una reseña automáticamente. El 97% de nuevos clientes lee primero las reseñas.', url: '/registro' },
+  { icon: MessageCircle, img: '/feat-1-whatsapp.png',      tag: '3x más aprobaciones', titulo: 'Aprobación por WhatsApp',   desc: 'Le mandas la cotización por WhatsApp. El cliente aprueba con un toque. Sin llamadas, sin "ya ahorita te confirmo" que nunca llega. Todo queda registrado.',        url: '/registro' },
+  { icon: Bell,          img: '/feat-5-recordatorios.png', tag: '+40% retención',       titulo: 'Clientes que regresan solos', desc: 'TallerOS les manda un WhatsApp a tus clientes a los 3 o 6 meses: "Ya es tiempo de mantenimiento". Sin que hagas nada. Sin que se te olvide. Ingresos recurrentes sin esfuerzo.', url: '/registro' },
+  { icon: Monitor,       img: '/feat-3-portal.png',        tag: '90% menos llamadas',   titulo: 'El cliente ve su carro en vivo', desc: 'En vez de llamarte 5 veces al día, tu cliente entra a un portal y ve exactamente en qué paso está su vehículo. Se acabaron las interrupciones cuando estás trabajando.', url: '/demo' },
+  { icon: Camera,        img: '/feat-2-diagnostico.png',   tag: '0 disputas',           titulo: 'Fotos del diagnóstico',     desc: 'Toma fotos del vehículo al recibirlo. Quedan guardadas con fecha y hora. Si un cliente dice que le rompiste algo, muestras la evidencia. Fin de la discusión.',      url: '/registro' },
+  { icon: Star,          img: '/feat-6-resenas.png',       tag: '5★ en Google',         titulo: 'Reseñas en Google automáticas', desc: 'Al entregar el vehículo, TallerOS le manda un mensaje al cliente pidiéndole su reseña. El 97% de personas busca reseñas antes de elegir un taller. Las tuyas crecen solas.', url: '/registro' },
+  { icon: Shield,        img: '/feat-4-garantia.png',      tag: '100% profesional',     titulo: 'Garantía digital firmada',  desc: 'Emite una garantía digital que el cliente firma desde su celular al recoger el carro. Queda registrada. Si hay un reclamo después, tienes el documento.', url: '/registro' },
 ]
 
 const MODULOS = [
@@ -47,9 +47,9 @@ const MODULOS = [
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  img: '/testi-1-roberto.png', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         img: '/testi-2-camila.png',  estrellas: 5 },
-  { texto: 'Los recordatorios automáticos nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     img: '/testi-3-miguel.png',  estrellas: 5 },
+  { texto: 'Antes recibía 15-20 llamadas al día de clientes preguntando por su carro. Desde TallerOS bajó a 2 o 3. Recuperé casi 2 horas diarias para trabajar.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  color: '#2563eb', estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba el teléfono. Ahora aprueba en segundos y queda registrado.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         color: '#7c3aed', estrellas: 5 },
+  { texto: 'Los recordatorios automáticos me trajeron 8 clientes en el primer mes que no habían venido en más de un año. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     color: '#059669', estrellas: 5 },
 ]
 
 const PLANES = [
@@ -57,18 +57,21 @@ const PLANES = [
     nombre: 'Gratuito', precio_mensual: 0, precio_anual: 0, total_anual: 0,
     precio_original_mensual: 0, precio_original_anual: 0,
     icono: Check, popular: false, gratis: true,
+    ideal: 'Para conocer el sistema. Máx. 10 órdenes al mes.',
     features: ['1 usuario','10 órdenes de trabajo al mes','Hasta 20 clientes','Cotizaciones básicas','Portal del cliente (vista limitada)'],
   },
   {
     nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
     icono: Zap, popular: false, gratis: false,
+    ideal: 'Para talleres de 1-5 mecánicos. Órdenes ilimitadas.',
     features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
   },
   {
     nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
     icono: Star, popular: true, gratis: false,
+    ideal: 'Para talleres con equipo y clientes frecuentes.',
     features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Módulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
   },
 ]
@@ -80,57 +83,8 @@ const STATS_DATA = [
   { valor: '+40%', texto: 'mas ingresos con recordatorios automáticos',   icon: TrendingUp,    color: '#06b6d4' },
 ]
 
-const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
-const WORDS = ['más confiable','más profesional','más rentable','el favorito']
+const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Tablero de trabajos en vivo','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 
-function getSecsUntilEOM(): number {
-  const now = new Date()
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0)
-  return Math.floor((end.getTime() - now.getTime()) / 1000)
-}
-function fmt(s: number) { return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 } }
-
-function LeadForm() {
-  const [nombre, setNombre] = useState('')
-  const [email, setEmail]   = useState('')
-  const [loading, setLoading] = useState(false)
-  const [done, setDone]     = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      const res = await fetch('/api/funnel/suscribir', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, email }),
-      })
-      const data = await res.json()
-      if (data.ok) setDone(true)
-    } catch {}
-    setLoading(false)
-  }
-
-  if (done) return (
-    <div className="llm-done">
-      <div className="llm-done-icon">🎉</div>
-      <p className="llm-done-title">¡Listo, {nombre.split(' ')[0]}!</p>
-      <p className="llm-done-sub">Revisa tu email — te enviamos la guía ahora mismo.</p>
-      <a href="/registro" className="lb-pri" style={{marginTop:'1rem',justifyContent:'center'}}>Probar TallerOS gratis <ArrowRight size={15}/></a>
-    </div>
-  )
-
-  return (
-    <form onSubmit={handleSubmit} className="llm-form">
-      <input type="text" placeholder="Tu nombre" value={nombre} onChange={e => setNombre(e.target.value)} required className="llm-input"/>
-      <input type="email" placeholder="Tu email" value={email} onChange={e => setEmail(e.target.value)} required className="llm-input"/>
-      <button type="submit" disabled={loading} className="llm-btn">
-        {loading ? 'Enviando...' : <><Download size={15}/> Enviarme la guía gratis</>}
-      </button>
-      <p className="llm-note">Sin spam. Cancela cuando quieras.</p>
-    </form>
-  )
-}
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen]     = useState(false)
@@ -138,24 +92,9 @@ export default function LandingPage() {
   const [scrolled, setScrolled]     = useState(false)
   const [visible, setVisible]       = useState<Set<string>>(new Set())
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0, ordenes: 0 })
-  const [tIdx, setTIdx]             = useState(0)
-  const [tChar, setTChar]           = useState(0)
-  const [tDel, setTDel]             = useState(false)
   const [toast, setToast]           = useState(false)
-  const [secs, setSecs]             = useState(getSecsUntilEOM())
   const obs = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cM } = useMonedaLocal()
-
-  useEffect(() => {
-    const w = WORDS[tIdx]; const sp = tDel ? 38 : 75
-    const t = setTimeout(() => {
-      if (!tDel && tChar < w.length) setTChar(c => c+1)
-      else if (!tDel && tChar === w.length) setTimeout(() => setTDel(true), 1800)
-      else if (tDel && tChar > 0) setTChar(c => c-1)
-      else { setTDel(false); setTIdx(i => (i+1) % WORDS.length) }
-    }, sp)
-    return () => clearTimeout(t)
-  }, [tChar, tDel, tIdx])
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -170,8 +109,6 @@ export default function LandingPage() {
     }).catch(() => {})
   }, [])
 
-  useEffect(() => { const t = setInterval(() => setSecs(s => s > 0 ? s-1 : 0), 1000); return () => clearInterval(t) }, [])
-
   useEffect(() => {
     obs.current = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) setVisible(p => new Set([...p, e.target.id])) }),
@@ -182,8 +119,6 @@ export default function LandingPage() {
   }, [])
 
   const isV = (id: string) => visible.has(id)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const { d, h, m, s } = fmt(secs)
 
   return (
     <>
@@ -251,19 +186,16 @@ export default function LandingPage() {
             Software de gestión para talleres mecánicos
           </div>
           <h1 className="lh1">
-            Tu taller merece ser<br/>
-            <span className="ltw">{WORDS[tIdx].slice(0,tChar)}<span className="lc">|</span></span>
+            Se acabaron las llamadas de<br/>
+            <span className="ltw" style={{fontStyle:'italic'}}>&ldquo;¿Cómo va mi carro?&rdquo;</span>
           </h1>
-          <p className="lh-sub">TallerOS digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google.</p>
+          <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto.</p>
           <div className="lh-ctas">
-            <a href="/registro" className="lb-pri">Empezar gratis — 14 días <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
+            <a href="/demo" className="lb-out">Ver cómo lo ve el cliente</a>
           </div>
-          <p style={{fontSize:'12px', color:'#94a3b8', marginTop:'8px'}}>
-            ¿Quieres ver cómo lo ve tu cliente?{' '}
-            <a href="/demo" style={{color:'#60a5fa', textDecoration:'underline'}}>Ver demo del portal</a>
-          </p>
           <div className="ltrust">
-            {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
+            {['Sin tarjeta de crédito','14 días gratis','Soporte por WhatsApp','Cancela cuando quieras'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
             {stats.total > 0 && (
@@ -336,7 +268,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <a href="/registro" className="lb-pri" style={{marginTop:'2rem',display:'inline-flex'}}>Empezar gratis - sin tarjeta <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri" style={{marginTop:'2rem',display:'inline-flex'}}>Probar gratis 14 días <ArrowRight size={16}/></a>
           </div>
         </div>
       </div>
@@ -427,11 +359,13 @@ export default function LandingPage() {
         <div className="ltg">
           {TESTIMONIALES.map((t,i) => (
             <div key={i} id={`tes-${i}`} data-animate className={`ltc${isV(`tes-${i}`)?' v':''}`} style={{transitionDelay:`${i*100}ms`}}>
-              <div className="ltc-iw"><img src={t.img} alt={t.nombre} className="ltc-img"/><div className="ltc-iov"/></div>
               <div className="ltc-b">
                 <div className="lstr">{"★".repeat(t.estrellas)}</div>
                 <p className="ltc-txt">"{t.texto}"</p>
-                <div><p className="ltc-n">{t.nombre}</p><p className="ltc-r">{t.rol}</p></div>
+                <div className="ltc-auth">
+                  <div className="ltc-av" style={{background:t.color}}>{t.nombre.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}</div>
+                  <div><p className="ltc-n">{t.nombre}</p><p className="ltc-r">{t.rol}</p></div>
+                </div>
               </div>
             </div>
           ))}
@@ -442,11 +376,6 @@ export default function LandingPage() {
     {/* PRECIOS */}
     <section id="precios" className="ls lprice-s">
       <div className="li">
-        <div className="lobar">
-          <span className="lobar-f">🔥</span>
-          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% DE DESCUENTO</span>
-          <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>
-        </div>
         <div className="lsl">Precios de lanzamiento</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
         <p className="lssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
@@ -476,6 +405,7 @@ export default function LandingPage() {
                     {plan.gratis && <span style={{fontSize:11,color:'var(--muted)'}}>Para siempre gratis</span>}
                   </div>
                 </div>
+                <p className="lplan-ideal">{plan.ideal}</p>
                 <div className="lplan-pb">
                   {plan.gratis ? (
                     <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
@@ -509,29 +439,23 @@ export default function LandingPage() {
       </div>
     </section>
 
-    {/* ── LEAD MAGNET ── */}
+    {/* ── 5 ERRORES ── */}
     <section className="llm">
       <div className="li">
-        <div className="llm-w">
-          <div className="llm-txt">
-            <div className="lsl" style={{textAlign:'left'}}>Guía gratuita</div>
-            <h2 className="llm-h2">5 errores que le cuestan clientes a tu taller mecánico</h2>
-            <p className="llm-sub">Descubre los errores más comunes que cometen los talleres en LATAM — y cómo eliminarlos desde hoy.</p>
-            <ul className="llm-list">
-              {['No documentar el estado del vehículo al recibirlo','Pedir aprobación verbal sin registro digital','No pedir reseñas en Google al momento de entregar','No hacer seguimiento a clientes inactivos','Operar sin datos de desempeño'].map((item,i) => (
-                <li key={i} className="llm-item">
-                  <span className="llm-num">{String(i+1).padStart(2,'0')}</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="llm-form-wrap">
-            <div className="llm-form-card">
-              <p className="llm-form-title">📥 Recibe la guía gratis ahora</p>
-              <p className="llm-form-sub">Lectura de 5 minutos. Aplica desde hoy.</p>
-              <LeadForm />
-            </div>
+        <div className="llm-solo">
+          <div className="lsl" style={{textAlign:'center',color:'#93c5fd'}}>Para tener en cuenta</div>
+          <h2 className="llm-h2" style={{textAlign:'center'}}>5 errores que le cuestan clientes a tu taller mecánico</h2>
+          <p className="llm-sub" style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 28px'}}>Si alguno de estos te suena familiar, TallerOS lo resuelve desde el primer día.</p>
+          <ul className="llm-list llm-list-center">
+            {['El cliente dice que le rompiste algo que ya estaba roto — y no tienes cómo probarlo','Aprobaste un trabajo de palabra y el cliente lo niega cuando llega la cuenta','Un cliente no regresa en 2 años y tú ni te acuerdas de él','Dejas de recibir clientes nuevos porque no tienes reseñas en Google','No sabes cuánto ganaste la semana pasada sin revisar papeles'].map((item,i) => (
+              <li key={i} className="llm-item">
+                <span className="llm-num">{String(i+1).padStart(2,'0')}</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div style={{display:'flex',justifyContent:'center',marginTop:'2rem'}}>
+            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
           </div>
         </div>
       </div>
@@ -543,10 +467,10 @@ export default function LandingPage() {
       <div className="lcta-ov"/>
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
-        <h2 className="lcta-h2">Tu taller merece crecer.</h2>
-        <p className="lcta-sub">Únete a los talleres que ya digitalizaron su operación.<br/>14 días gratis, sin tarjeta de credito.</p>
+        <h2 className="lcta-h2">Deja de perder clientes por no tener sistema.</h2>
+        <p className="lcta-sub">14 días gratis. Sin tarjeta. Sin contratos. Cancela cuando quieras.</p>
         <div className="lcta-bts">
-          <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
+          <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
           <a href="/login" className="lb-wh">Ya tengo cuenta</a>
         </div>
       </div>
@@ -558,10 +482,18 @@ export default function LandingPage() {
         <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
         <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Latinoamérica.</p>
         <div className="lfoot-lnks">
-          {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'Soporte',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
+          {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'💬 Soporte WhatsApp',h:'https://wa.me/17242625304'},{l:'✉ hola@tallerosapp.com',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
         </div>
       </div>
     </footer>
+
+    {/* BARRA FLOTANTE MÓVIL */}
+    <div className="lmobile-cta">
+      <a href="/registro" className="lmobile-cta-btn">
+        Probar gratis 14 días →
+      </a>
+      <p className="lmobile-cta-sub">Sin tarjeta · Cancela cuando quieras</p>
+    </div>
 
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -629,7 +561,6 @@ export default function LandingPage() {
       .ley-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s infinite;flex-shrink:0;}
       .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
       .ltw{display:block;color:#60a5fa;min-height:1.1em;}
-      .lc{color:#60a5fa;animation:blink .9s step-end infinite;font-weight:300;}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
       .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
       .lh-ctas{display:flex;gap:12px;flex-wrap:wrap;}
@@ -736,8 +667,8 @@ export default function LandingPage() {
       .ltc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--rl);overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,border-color .2s;}
       .ltc.v{opacity:1;transform:translateY(0);}
       .ltc:hover{border-color:rgba(255,255,255,0.16);}
-      .ltc-iw{position:relative;height:180px;overflow:hidden;}
-      .ltc-img{width:100%;height:100%;object-fit:cover;}
+      .ltc-auth{display:flex;align-items:center;gap:12px;margin-top:16px;}
+      .ltc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;}
       .ltc-iov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(15,23,42,0.8));}
       .ltc-b{padding:24px;}
       .lstr{color:#f59e0b;font-size:14px;letter-spacing:3px;margin-bottom:12px;}
@@ -746,11 +677,6 @@ export default function LandingPage() {
       .ltc-r{font-size:12px;color:#475569;margin-top:2px;}
 
       .lprice-s{background:var(--surf2);}
-      .lobar{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;background:linear-gradient(90deg,rgba(220,38,38,0.08),rgba(185,28,28,0.08));border:1px solid rgba(220,38,38,0.2);border-radius:14px;padding:14px 24px;margin-bottom:40px;}
-      .lobar-f{font-size:18px;}
-      .lobar-t{font-size:13px;font-weight:800;color:#dc2626;letter-spacing:.5px;}
-      .lobar-tm{font-size:13px;color:#ef4444;}
-      .lobar-c{font-family:monospace;font-weight:700;background:rgba(220,38,38,0.1);padding:2px 8px;border-radius:6px;}
       .ltog-w{display:flex;justify-content:center;margin-bottom:40px;}
       .ltog{display:inline-flex;background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:4px;}
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
@@ -770,6 +696,7 @@ export default function LandingPage() {
       .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
       .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
       .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
+      .lplan-ideal{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.5;}
       .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
@@ -809,30 +736,16 @@ export default function LandingPage() {
       .lfoot-lnks a{font-size:13px;color:var(--ink4);text-decoration:none;transition:color .15s;}
       .lfoot-lnks a:hover{color:var(--ink2);}
 
-      /* ── LEAD MAGNET ─────────────────────────────────────────────────────── */
+      /* ── 5 ERRORES ─────────────────────────────────────────────────────── */
       .llm{padding:96px 0;background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);}
       .llm .lsl{color:#93c5fd;}
-      .llm-w{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;text-align:left;}
-      .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;margin-bottom:28px;}
+      .llm-solo{max-width:680px;margin:0 auto;}
+      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;}
+      .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;}
       .llm-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
+      .llm-list-center{max-width:560px;margin:0 auto;}
       .llm-item{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#e0f2fe;line-height:1.5;}
       .llm-num{background:rgba(255,255,255,0.15);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.5px;}
-      .llm-form-wrap{display:flex;align-items:center;justify-content:center;}
-      .llm-form-card{background:#fff;border-radius:24px;padding:32px 28px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.3);}
-      .llm-form-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:6px;text-align:center;}
-      .llm-form-sub{font-size:13px;color:#64748b;text-align:center;margin-bottom:20px;}
-      .llm-form{display:flex;flex-direction:column;gap:12px;}
-      .llm-input{border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:14px;color:#0f172a;outline:none;width:100%;box-sizing:border-box;transition:border-color .15s;}
-      .llm-input:focus{border-color:#2563eb;}
-      .llm-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#2563eb;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;font-family:inherit;}
-      .llm-btn:hover{background:#1d4ed8;}
-      .llm-btn:disabled{opacity:.7;cursor:not-allowed;}
-      .llm-note{font-size:11px;color:#94a3b8;text-align:center;}
-      .llm-done{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;}
-      .llm-done-icon{font-size:48px;}
-      .llm-done-title{font-size:20px;font-weight:800;color:#0f172a;}
-      .llm-done-sub{font-size:14px;color:#64748b;line-height:1.6;}
 
       @media(max-width:1024px){
         .lstg{grid-template-columns:repeat(2,1fr);}
@@ -851,11 +764,9 @@ export default function LandingPage() {
         .ltg{grid-template-columns:1fr;}
         .lgal-i{grid-template-columns:1fr;}
         .lgal-grid{grid-template-columns:1fr 1fr;}
-        .llm-w{grid-template-columns:1fr;}
-        .llm-h2{text-align:center;}
-        .llm-sub{text-align:center;}
         .llm .lsl{text-align:center;}
       }
+      .lmobile-cta{display:none;}
       @media(max-width:640px){
         .lh{padding:90px 16px 60px;}
         .li{padding:0 16px;}
@@ -865,11 +776,14 @@ export default function LandingPage() {
         .lstg{grid-template-columns:1fr 1fr;}
         .lfg{grid-template-columns:1fr;}
         .lpg{grid-template-columns:1fr;}
-        .lobar{flex-direction:column;gap:.5rem;text-align:center;}
         .lvrow{grid-template-columns:1fr;}
         .lvbad{border-radius:0;}
         .l-toast{left:12px;right:12px;bottom:16px;}
         .lcta-bts{flex-direction:column;align-items:center;}
+        .lfoot{padding-bottom:100px;}
+        .lmobile-cta{display:flex;flex-direction:column;align-items:center;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;padding:12px 16px 20px;box-shadow:0 -4px 20px rgba(0,0,0,0.08);z-index:100;}
+        .lmobile-cta-btn{display:block;width:100%;background:#2563eb;color:#fff;text-align:center;font-size:15px;font-weight:700;padding:13px;border-radius:12px;text-decoration:none;}
+        .lmobile-cta-sub{font-size:11px;color:#94a3b8;margin:6px 0 0;}
       }
     `}</style>
     </div>

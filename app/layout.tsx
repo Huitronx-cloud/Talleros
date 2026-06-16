@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import GoogleAnalytics from '@/components/google-analytics'
 import MetaPixel from '@/components/meta-pixel'
+import SplashScreen from '@/components/splash-screen'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -102,6 +103,7 @@ export default function RootLayout({
         </div>
         <GoogleAnalytics />
         <MetaPixel />
+        <SplashScreen />
         {children}
       </body>
     </html>

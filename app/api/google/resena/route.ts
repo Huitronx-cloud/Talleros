@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -5,7 +6,7 @@ const CLIENT_ID     = process.env.GOOGLE_CLIENT_ID!
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN!
-const WA_FROM       = process.env.TWILIO_WHATSAPP_FROM ?? '+17242625304'
+const WA_FROM       = process.env.TWILIO_WHATSAPP_FROM ?? ''
 
 // ── Refrescar token si expiró ─────────────────────────────────────────────────
 async function refrescarToken(refreshToken: string): Promise<string | null> {

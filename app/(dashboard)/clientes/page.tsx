@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { Cliente } from '@/types'
 import TablaClientes from '@/components/clientes/tabla-clientes'

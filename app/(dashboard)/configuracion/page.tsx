@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import FormConfiguracion from '@/components/configuracion/form-configuracion'
 import { Taller } from '@/types'

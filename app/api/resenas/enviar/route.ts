@@ -1,10 +1,6 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 function personalizar(plantilla: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce(
@@ -14,6 +10,11 @@ function personalizar(plantilla: string, vars: Record<string, string>): string {
 }
 
 export async function POST(req: NextRequest) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
     const { orden_id, taller_id } = await req.json()
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
         id,
         clientes (id, nombre, telefono, email),
         vehiculos (marca, modelo),
-        talleres (nombre, plan)
+        talleres (nombre)
       `)
       .eq('id', orden_id)
       .single() as any
@@ -52,20 +53,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
     }
 
-    const taller = orden.talleres
-    if (taller?.plan !== 'pro' && taller?.plan !== 'trial') {
-      return NextResponse.json({ ok: false, motivo: 'Plan no Pro' })
+    const { data: suscripcion } = await supabaseAdmin
+      .from('suscripciones')
+      .select('plan')
+      .eq('taller_id', taller_id)
+      .single()
+
+    const planActual = suscripcion?.plan ?? 'trial'
+    if (planActual !== 'pro' && planActual !== 'trial' && planActual !== 'esencial') {
+      return NextResponse.json({ ok: false, motivo: 'Plan no válido' })
     }
 
     const cliente = orden.clientes
     const vehiculo = orden.vehiculos
+    const taller = orden.talleres as any
     const vehiculoStr = vehiculo
       ? `${vehiculo.marca || ''} ${vehiculo.modelo || ''}`.trim()
       : 'tu vehículo'
 
     const vars = {
       nombre: cliente.nombre.split(' ')[0],
-      taller: taller.nombre,
+      taller: taller?.nombre ?? '',
       vehiculo: vehiculoStr,
       link: config.google_review_url,
     }
@@ -113,7 +121,7 @@ export async function POST(req: NextRequest) {
       if (!yaEnviado?.length) {
         const asunto = personalizar(config.mensaje_email_asunto, vars)
         const cuerpo = personalizar(config.mensaje_email_cuerpo, vars)
-        const exito = await enviarEmail(cliente.email, cliente.nombre, asunto, cuerpo, taller.nombre, config.google_review_url)
+        const exito = await enviarEmail(cliente.email, cliente.nombre, asunto, cuerpo, taller?.nombre ?? '', config.google_review_url)
 
         await supabaseAdmin.from('resenas_enviadas').insert({
           taller_id,

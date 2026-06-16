@@ -1,4 +1,5 @@
-import dynamic from 'next/dynamic'
+export const dynamic = 'force-dynamic'
+import nextDynamic from 'next/dynamic'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
@@ -12,7 +13,7 @@ import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 
-const PushToggle = dynamic(() => import('@/components/push-toggle'), { ssr: false })
+const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
 
 const MODULOS = [
   { href: '/kanban', label: 'Tablero',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },

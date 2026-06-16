@@ -1,16 +1,17 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, PRECIOS_A_PLAN } from '@/lib/stripe'
+import { getStripe, PRECIOS_A_PLAN } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-const resend = new Resend(process.env.RESEND_API_KEY!)
-
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const resend = new Resend(process.env.RESEND_API_KEY!)
   const body      = await req.text()
   const signature = req.headers.get('stripe-signature')!
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
           })
           .eq('taller_id', tallerId)
 
-        // Obtener datos del taller para el email
+        // Obtener datos del taller para el email y Meta CAPI
         try {
           const { data: usuario } = await supabaseAdmin
             .from('usuarios')
@@ -85,8 +86,17 @@ export async function POST(req: NextRequest) {
               html: buildEmailBienvenidaPlan({ nombreUsuario, nombreTaller, plan }),
             })
           }
+
+          // ── Meta Conversions API — Purchase event ─────────────────────────
+          await trackMetaPurchase({
+            email:    email ?? null,
+            valor:    (session.amount_total ?? 0) / 100,
+            moneda:   (session.currency ?? 'usd').toUpperCase(),
+            plan,
+            tallerId,
+          })
         } catch (emailErr) {
-          console.error('Email error (no crítico):', emailErr)
+          console.error('Email/Meta error (no crítico):', emailErr)
         }
 
         break
@@ -153,6 +163,51 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Webhook processing error:', error)
     return NextResponse.json({ error: 'Error procesando webhook' }, { status: 500 })
+  }
+}
+
+async function trackMetaPurchase({
+  email, valor, moneda, plan, tallerId,
+}: {
+  email: string | null; valor: number; moneda: string; plan: string; tallerId: string
+}) {
+  const pixelId     = process.env.META_PIXEL_ID
+  const accessToken = process.env.META_ACCESS_TOKEN
+  if (!pixelId || !accessToken) return
+
+  const { createHash } = await import('crypto')
+  const hash = (s: string) => createHash('sha256').update(s.toLowerCase().trim()).digest('hex')
+
+  const userData: Record<string, string> = {}
+  if (email) userData.em = hash(email)
+
+  const payload = {
+    data: [{
+      event_name:  'Purchase',
+      event_time:  Math.floor(Date.now() / 1000),
+      action_source: 'website',
+      user_data:   userData,
+      custom_data: {
+        currency: moneda,
+        value:    valor,
+        content_name: `TallerOS ${plan}`,
+        content_ids: [tallerId],
+        content_type: 'product',
+      },
+    }],
+  }
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    )
+    if (!res.ok) {
+      const text = await res.text()
+      console.error('Meta CAPI error:', text)
+    }
+  } catch (e) {
+    console.error('Meta CAPI fetch error:', e)
   }
 }
 

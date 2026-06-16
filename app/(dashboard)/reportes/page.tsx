@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'

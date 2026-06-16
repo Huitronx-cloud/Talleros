@@ -171,17 +171,15 @@ export async function cambiarEstado(
         googleReviewUrl: reviewUrl,
       })
 
-      setTimeout(() => {
-        enviarNotificacion({
-          supabase,
-          tallerId:  orden.taller_id,
-          ordenId,
-          clienteId: orden.cliente_id,
-          telefono:  cliente.telefono,
-          tipo:      'seguimiento',
-          mensaje,
-        }).catch(console.error)
-      }, 7200000)
+      enviarNotificacion({
+        supabase,
+        tallerId:  orden.taller_id,
+        ordenId,
+        clienteId: orden.cliente_id,
+        telefono:  cliente.telefono,
+        tipo:      'seguimiento',
+        mensaje,
+      }).catch(console.error)
     }
   }
 

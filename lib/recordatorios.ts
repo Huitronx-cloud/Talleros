@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { ClienteParaRecordatorio, RecordatorioConfig } from '@/types/recordatorios'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function getClientesParaRecordar(
   tallerId: string,
@@ -13,6 +15,7 @@ export async function getClientesParaRecordar(
   const fechaLimite = new Date()
   fechaLimite.setMonth(fechaLimite.getMonth() - mesesIntervalo)
 
+  const supabaseAdmin = getSupabaseAdmin()
   const { data: ordenes, error } = await supabaseAdmin
     .from('ordenes')
     .select('id, fecha_entrega, cliente_id, clientes(id, nombre, telefono, email), vehiculos(marca, modelo, anio)')
@@ -68,6 +71,7 @@ async function verificarRecordatorioReciente(
   clienteId: string,
   mesesIntervalo: number
 ): Promise<boolean> {
+  const supabaseAdmin = getSupabaseAdmin()
   const fechaLimite = new Date()
   fechaLimite.setMonth(fechaLimite.getMonth() - Math.floor(mesesIntervalo / 2))
 
@@ -108,6 +112,7 @@ export async function registrarRecordatorioEnviado(params: {
   mensajeEnviado: string
   errorDetalle?: string
 }) {
+  const supabaseAdmin = getSupabaseAdmin()
   const proximaAccion = new Date()
   proximaAccion.setMonth(proximaAccion.getMonth() + 3)
 
@@ -119,6 +124,7 @@ export async function registrarRecordatorioEnviado(params: {
     estado: params.estado,
     mensaje_enviado: params.mensajeEnviado,
     error_detalle: params.errorDetalle || null,
+    fecha_envio: new Date().toISOString(),
     fecha_proxima_accion: proximaAccion.toISOString(),
   })
 }

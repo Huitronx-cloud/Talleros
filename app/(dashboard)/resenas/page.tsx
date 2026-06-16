@@ -113,7 +113,7 @@ export default function ResenasPage() {
     )
   }
 
-  if (plan !== 'pro' && plan !== 'trial' && plan !== '') {
+  if (plan !== 'pro' && plan !== 'trial' && plan !== 'esencial' && plan !== '') {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10">
@@ -136,13 +136,31 @@ export default function ResenasPage() {
     )
   }
 
-  const variables = (
-    <span className="text-xs text-slate-500">
-      Variables: <code className="bg-slate-800 px-1 rounded">{'{{nombre}}'}</code>{' '}
-      <code className="bg-slate-800 px-1 rounded">{'{{taller}}'}</code>{' '}
-      <code className="bg-slate-800 px-1 rounded">{'{{vehiculo}}'}</code>{' '}
-      <code className="bg-slate-800 px-1 rounded">{'{{link}}'}</code>
-    </span>
+  const PREVIEW_DATOS = {
+    nombre: 'Carlos',
+    vehiculo: 'Toyota Corolla',
+    taller: 'Tu Taller',
+    link: 'g.page/tu-taller',
+  }
+
+  function generarVistaPreviaWA(plantilla: string) {
+    return plantilla
+      .replace(/\{\{nombre\}\}/g, PREVIEW_DATOS.nombre)
+      .replace(/\{\{vehiculo\}\}/g, PREVIEW_DATOS.vehiculo)
+      .replace(/\{\{taller\}\}/g, PREVIEW_DATOS.taller)
+      .replace(/\{\{link\}\}/g, PREVIEW_DATOS.link)
+  }
+
+  const bloqueVariables = (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 space-y-1">
+      <p className="text-xs font-semibold text-blue-800">Puedes usar estas palabras clave en el mensaje — TallerOS las reemplaza automáticamente:</p>
+      <ul className="text-xs text-blue-700 space-y-0.5">
+        <li><code className="bg-blue-100 px-1 rounded font-mono">{'{{nombre}}'}</code> = nombre del cliente</li>
+        <li><code className="bg-blue-100 px-1 rounded font-mono">{'{{vehiculo}}'}</code> = marca y modelo del auto</li>
+        <li><code className="bg-blue-100 px-1 rounded font-mono">{'{{taller}}'}</code> = nombre de tu taller</li>
+        <li><code className="bg-blue-100 px-1 rounded font-mono">{'{{link}}'}</code> = link de Google Reviews que configures abajo</li>
+      </ul>
+    </div>
   )
 
   return (
@@ -228,7 +246,15 @@ export default function ResenasPage() {
             className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 placeholder:text-slate-600"
           />
           <p className="text-xs text-slate-500">
-            Encuéntralo en Google Business Profile → Obtener más reseñas → Copiar enlace
+            ¿No tienes tu link? Búscate en Google Maps → haz clic en tu negocio → &quot;Obtener más reseñas&quot;. Si no tienes perfil, créalo gratis en{' '}
+            <a
+              href="https://business.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-yellow-400 underline hover:text-yellow-300"
+            >
+              business.google.com
+            </a>
           </p>
         </div>
 
@@ -258,23 +284,33 @@ export default function ResenasPage() {
 
         {/* Mensaje WhatsApp */}
         {(config.canal === 'whatsapp' || config.canal === 'ambos') && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-green-500" /> Mensaje de WhatsApp
             </label>
+            {bloqueVariables}
             <textarea
               value={config.mensaje_whatsapp || ''}
               onChange={e => setConfig(c => ({ ...c, mensaje_whatsapp: e.target.value }))}
               rows={4}
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
             />
-            {variables}
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-slate-400">Vista previa — así verá el mensaje el cliente:</p>
+              <div className="flex justify-end">
+                <div className="bg-[#dcf8c6] text-gray-800 text-sm rounded-2xl rounded-tr-sm px-4 py-3 max-w-xs shadow-sm whitespace-pre-wrap leading-relaxed">
+                  {generarVistaPreviaWA(config.mensaje_whatsapp || '')}
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 text-right">Datos de ejemplo: Carlos · Toyota Corolla · g.page/tu-taller</p>
+            </div>
           </div>
         )}
 
         {/* Mensaje Email */}
         {(config.canal === 'email' || config.canal === 'ambos') && (
           <div className="space-y-4">
+            {bloqueVariables}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-yellow-400" /> Asunto del email
@@ -294,7 +330,6 @@ export default function ResenasPage() {
                 rows={5}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
               />
-              {variables}
             </div>
           </div>
         )}

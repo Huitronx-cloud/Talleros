@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import ClienteDetalle from './cliente-detalle'

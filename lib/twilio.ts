@@ -16,15 +16,14 @@ export async function enviarWhatsApp(telefono: string, mensaje: string): Promise
   const telefonoLimpio = telefono.replace(/\D/g, '')
   if (!telefonoLimpio) throw new Error('Teléfono inválido')
 
-  // Asegurar formato internacional
-  // 10 dígitos sin código de país → asumir México (+52)
-  // 11+ dígitos → ya incluye código de país
+  // 10 dígitos = México (+52), cualquier otra longitud ya trae código de país
   const to = telefonoLimpio.length === 10
     ? `whatsapp:+52${telefonoLimpio}`
     : `whatsapp:+${telefonoLimpio}`
 
+  const from = process.env.TWILIO_WHATSAPP_FROM!
   await getClient().messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM!,
+    from: from.startsWith('whatsapp:') ? from : `whatsapp:${from}`,
     to,
     body: mensaje,
   })

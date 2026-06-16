@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!
 
 // ── Obtener métricas reales de la semana ─────────────────────────────────────
 async function obtenerMetricas() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   const hace7dias = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const [

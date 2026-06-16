@@ -152,6 +152,18 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
                   <p className="text-lg font-bold text-gray-900">
                     {formatMoney(orden.total, orden.moneda)}
                   </p>
+                  {orden.total != null && Number(orden.total) > 0 && (
+                    orden.estado === 'entregado'
+                      ? (
+                        <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          Cobrado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                          Pendiente {formatMoney(orden.total, orden.moneda)}
+                        </span>
+                      )
+                  )}
                   {orden.fecha_prometida && (
                     <div className="flex items-center gap-1 text-xs text-gray-400 mt-1 justify-end">
                       <Calendar className="w-3 h-3" />

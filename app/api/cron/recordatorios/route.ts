@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import {
   getClientesParaRecordar,
@@ -6,12 +7,12 @@ import {
   registrarRecordatorioEnviado,
 } from '@/lib/recordatorios'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function GET(req: NextRequest) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   // Seguridad: solo Vercel Cron puede llamar este endpoint
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
         talleres (
           id,
           nombre,
-          plan
+          suscripciones (plan, estado)
         )
       `)
       .eq('activo', true)
@@ -44,8 +45,8 @@ export async function GET(req: NextRequest) {
     for (const config of configs || []) {
       const taller = config.talleres as any
 
-      // Solo talleres Pro
-      if (!taller || (taller.plan !== 'pro' && taller.plan !== 'trial')) continue
+      const planTaller = (taller.suscripciones as any[])?.[0]?.plan ?? 'trial'
+      if (!taller || (planTaller !== 'pro' && planTaller !== 'trial' && planTaller !== 'esencial')) continue
 
       const clientes = await getClientesParaRecordar(
         taller.id,

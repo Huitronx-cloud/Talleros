@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const TEMAS = [
   { titulo: 'Por qué los talleres mecánicos pierden clientes sin saberlo',                slug: 'talleres-mecanicos-pierden-clientes',            pais: null },
@@ -39,7 +35,7 @@ const TEMAS = [
   { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',          slug: 'garantia-digital-taller-mecanico',               pais: null },
 ]
 
-async function slugExiste(slug: string): Promise<boolean> {
+async function slugExiste(supabase: ReturnType<typeof createClient>, slug: string): Promise<boolean> {
   const { data } = await supabase
     .from('articulos_blog')
     .select('id')
@@ -94,10 +90,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
   const tema = TEMAS[diaDelAnio % TEMAS.length]
 
-  const existe = await slugExiste(tema.slug)
+  const existe = await slugExiste(supabase, tema.slug)
   if (existe) {
     return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
   }

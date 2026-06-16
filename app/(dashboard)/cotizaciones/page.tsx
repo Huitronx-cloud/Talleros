@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ListaCotizaciones from '@/components/cotizaciones/lista-cotizaciones'

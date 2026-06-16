@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Cliente } from '@/types'
