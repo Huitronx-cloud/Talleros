@@ -66,13 +66,14 @@ export async function POST(req: NextRequest) {
 
     const cliente = orden.clientes
     const vehiculo = orden.vehiculos
+    const taller = orden.talleres as any
     const vehiculoStr = vehiculo
       ? `${vehiculo.marca || ''} ${vehiculo.modelo || ''}`.trim()
       : 'tu vehículo'
 
     const vars = {
       nombre: cliente.nombre.split(' ')[0],
-      taller: taller.nombre,
+      taller: taller?.nombre ?? '',
       vehiculo: vehiculoStr,
       link: config.google_review_url,
     }
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
       if (!yaEnviado?.length) {
         const asunto = personalizar(config.mensaje_email_asunto, vars)
         const cuerpo = personalizar(config.mensaje_email_cuerpo, vars)
-        const exito = await enviarEmail(cliente.email, cliente.nombre, asunto, cuerpo, taller.nombre, config.google_review_url)
+        const exito = await enviarEmail(cliente.email, cliente.nombre, asunto, cuerpo, taller?.nombre ?? '', config.google_review_url)
 
         await supabaseAdmin.from('resenas_enviadas').insert({
           taller_id,

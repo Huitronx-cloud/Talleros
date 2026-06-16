@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN!
-const WA_FROM       = '+15559828390' // Tu número WhatsApp Business
+const WA_FROM       = process.env.TWILIO_WHATSAPP_FROM ?? ''
 
 // ── Respuesta automática cuando alguien contesta ──────────────────────────────
 async function responderWhatsApp(to: string, mensaje: string): Promise<void> {
@@ -124,6 +124,34 @@ export async function POST(req: NextRequest) {
             : `Entendido. La cotización *#${num}* fue cancelada. Cualquier duda, estamos a tus órdenes.`
 
           await responderWhatsApp(de, confirmacion)
+
+          // Notificar al mecánico/propietario del taller
+          try {
+            const { data: cotFull } = await supabase
+              .from('cotizaciones')
+              .select('taller_id, numero_cotizacion')
+              .eq('id', cotizacion.id)
+              .single()
+            if (cotFull?.taller_id) {
+              const { data: propietario } = await supabase
+                .from('usuarios')
+                .select('telefono')
+                .eq('taller_id', cotFull.taller_id)
+                .eq('rol', 'propietario')
+                .single()
+              if (propietario?.telefono) {
+                const tel = propietario.telefono.replace(/\D/g, '')
+                const toMec = tel.length === 10 ? `+52${tel}` : `+${tel}`
+                const avisoMecanico = esAprobacion
+                  ? `✅ *Cotización #${num} APROBADA*\n\nEl cliente aprobó la cotización. ¡Puedes iniciar el trabajo! 🔧`
+                  : `❌ *Cotización #${num} RECHAZADA*\n\nEl cliente rechazó la cotización.`
+                await responderWhatsApp(toMec, avisoMecanico)
+              }
+            }
+          } catch (e) {
+            console.error('Error notificando al mecánico:', e)
+          }
+
           return twimlOk
         }
       }
