@@ -189,7 +189,7 @@ async function enviarWhatsAppFrio(prospecto: Prospecto): Promise<{ ok: boolean; 
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From:             'whatsapp:+15559828390',
+        From: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM ?? '+17242625304'}`,
         To:               `whatsapp:${to}`,
         ContentSid:       'HXbf735472bd3841f57341050e045adc3d',
         ContentVariables: JSON.stringify({ '1': prospecto.nombre }),
