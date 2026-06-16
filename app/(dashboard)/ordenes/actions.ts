@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
-import { enviarNotificacion, mensajeOrdenLista, mensajeResena } from '@/lib/notificaciones'
+import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
+import { enviarResenaOrden } from '@/lib/resenas'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -156,31 +157,10 @@ export async function cambiarEstado(
     }).catch(console.error)
   }
 
-  // Reseña automática de Google al marcar como entregado (2 horas después)
+  // Reseña automática de Google al marcar como entregado, según la
+  // configuración de reseñas del taller (resenas_config: activo, canal, plantillas)
   if (nuevoEstado === 'entregado' && orden.clientes) {
-    const taller = (orden.talleres as any) as { google_review_url: string | null; nombre: string; moneda: string } | null
-    const cliente = (orden.clientes as any) as { nombre: string; telefono: string | null }
-    const reviewUrl = taller?.google_review_url
-
-    if (reviewUrl && cliente.telefono) {
-      const mensaje = mensajeResena({
-        nombre:          cliente.nombre,
-        marca:           orden.vehiculo_marca,
-        modelo:          orden.vehiculo_modelo,
-        tallerNombre:    taller?.nombre ?? 'el taller',
-        googleReviewUrl: reviewUrl,
-      })
-
-      enviarNotificacion({
-        supabase,
-        tallerId:  orden.taller_id,
-        ordenId,
-        clienteId: orden.cliente_id,
-        telefono:  cliente.telefono,
-        tipo:      'seguimiento',
-        mensaje,
-      }).catch(console.error)
-    }
+    enviarResenaOrden(ordenId, orden.taller_id).catch(console.error)
   }
 
   revalidatePath('/ordenes')

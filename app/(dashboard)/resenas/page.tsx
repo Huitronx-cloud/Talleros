@@ -65,7 +65,7 @@ export default function ResenasPage() {
       .from('resenas_enviadas')
       .select('*, clientes(nombre, telefono, email)')
       .eq('taller_id', tid)
-      .order('fecha_envio', { ascending: false })
+      .order('enviado_at', { ascending: false })
       .limit(50)
 
     if (hist) {
@@ -355,7 +355,7 @@ export default function ResenasPage() {
                   <div>
                     <p className="text-white text-sm font-medium">{cliente?.nombre || 'Cliente'}</p>
                     <p className="text-slate-500 text-xs">
-                      {r.canal} · {new Date(r.fecha_envio).toLocaleDateString('es-MX')}
+                      {r.canal} · {new Date(r.enviado_at).toLocaleDateString('es-MX')}
                     </p>
                   </div>
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${

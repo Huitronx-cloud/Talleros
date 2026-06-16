@@ -19,7 +19,7 @@ export interface ResenaEnviada {
   orden_id: string
   canal: string
   estado: 'enviado' | 'fallido'
-  fecha_envio: string
+  enviado_at: string
   mensaje_enviado: string | null
   error_detalle: string | null
   created_at: string

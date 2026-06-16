@@ -116,7 +116,6 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       logo_url:          logoUrl         || undefined,
       google_review_url: googleReviewUrl || undefined,
       horario:           horario         || undefined,
-      direccion:         direccion       || undefined,
       instagram:         instagram       || undefined,
       facebook:          facebook        || undefined,
       firma_pdf:         firmaPdf        || undefined,
