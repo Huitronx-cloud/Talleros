@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import CalendarioCitas from '@/components/citas/calendario-citas'
 import CopiarlinkCitas from '@/components/citas/copiar-link-citas'

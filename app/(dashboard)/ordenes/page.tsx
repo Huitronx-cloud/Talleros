@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { Orden, RolUsuario } from '@/types'
 import ListaOrdenes from '@/components/ordenes/lista-ordenes'
