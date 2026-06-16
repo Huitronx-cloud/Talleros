@@ -1,16 +1,18 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { enviarWhatsApp } from '@/lib/twilio'
 import { Resend } from 'resend'
 
-const supabaseAdmin = createAdmin(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-const resend = new Resend(process.env.RESEND_API_KEY!)
-
 export async function POST(req: NextRequest) {
   try {
+    const supabaseAdmin = createAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const resend = new Resend(process.env.RESEND_API_KEY!)
+
     const { citaId, tallerId } = await req.json()
     if (!citaId || !tallerId) {
       return NextResponse.json({ error: 'citaId y tallerId requeridos' }, { status: 400 })
