@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!

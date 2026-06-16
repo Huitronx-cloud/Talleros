@@ -1,8 +1,10 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2026-04-22.dahlia' as any,
-})
+export function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+    apiVersion: '2026-04-22.dahlia' as any,
+  })
+}
 
 export const PLANES = {
   esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',

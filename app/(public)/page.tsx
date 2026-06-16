@@ -482,7 +482,7 @@ export default function LandingPage() {
         <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
         <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Latinoamérica.</p>
         <div className="lfoot-lnks">
-          {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'💬 Soporte WhatsApp',h:'https://wa.me/message/TALLEROS'},{l:'✉ hola@tallerosapp.com',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
+          {[{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'💬 Soporte WhatsApp',h:'https://wa.me/17242625304'},{l:'✉ hola@tallerosapp.com',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
         </div>
       </div>
     </footer>

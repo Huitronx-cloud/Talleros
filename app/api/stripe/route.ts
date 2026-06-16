@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, PLANES } from '@/lib/stripe'
+import { getStripe, PLANES } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
+    const stripe = getStripe()
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 

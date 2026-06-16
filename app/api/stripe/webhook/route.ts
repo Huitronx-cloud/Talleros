@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, PRECIOS_A_PLAN } from '@/lib/stripe'
+import { getStripe, PRECIOS_A_PLAN } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
