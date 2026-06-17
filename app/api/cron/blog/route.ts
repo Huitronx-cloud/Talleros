@@ -35,7 +35,7 @@ const TEMAS = [
   { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',          slug: 'garantia-digital-taller-mecanico',               pais: null },
 ]
 
-async function slugExiste(supabase: ReturnType<typeof createClient>, slug: string): Promise<boolean> {
+async function slugExiste(supabase: any, slug: string): Promise<boolean> {
   const { data } = await supabase
     .from('articulos_blog')
     .select('id')
@@ -53,7 +53,7 @@ async function generarArticulo(tema: typeof TEMAS[0]): Promise<string> {
       'Content-Type':      'application/json',
     },
     body: JSON.stringify({
-      model:      'claude-opus-4-5',
+      model:      'claude-haiku-4-5',
       max_tokens: 2000,
       messages: [{
         role:    'user',
@@ -71,6 +71,42 @@ Instrucciones:
 - Formato: HTML limpio con etiquetas <h2>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, ni <head>.
 - NO uses markdown, solo HTML
 - El artículo debe posicionar en Google para la keyword principal del título`,
+      }],
+    }),
+  })
+  const data = await res.json()
+  return data.content?.[0]?.text ?? ''
+}
+
+async function generarScript(tema: typeof TEMAS[0]): Promise<string> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key':         process.env.ANTHROPIC_API_KEY!,
+      'anthropic-version': '2023-06-01',
+      'Content-Type':      'application/json',
+    },
+    body: JSON.stringify({
+      model:      'claude-haiku-4-5',
+      max_tokens: 500,
+      messages: [{
+        role:    'user',
+        content: `Escribe un script de video de 60 segundos para TikTok y YouTube Shorts en español.
+
+Tema: "${tema.titulo}"
+${tema.pais ? `País: ${tema.pais === 'MX' ? 'México' : tema.pais === 'CO' ? 'Colombia' : 'Perú'}` : 'LATAM'}
+
+Instrucciones:
+- El video lo narra un avatar de IA representando a TallerOS
+- Tono: directo, energético, como si hablaras con un amigo mecánico
+- Estructura obligatoria:
+  [GANCHO - 5 seg]: Una pregunta o dato impactante que detenga el scroll
+  [PROBLEMA - 15 seg]: El dolor real del mecánico relacionado al tema
+  [SOLUCIÓN - 25 seg]: Cómo TallerOS lo resuelve, con 2-3 beneficios concretos
+  [CTA - 15 seg]: Llamada a la acción clara a tallerosapp.com/registro
+- Máximo 150 palabras en total
+- Sin hashtags, sin emojis, solo el texto que va a decir el avatar
+- Formato: texto plano, sin etiquetas HTML`,
       }],
     }),
   })
@@ -104,24 +140,44 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const contenidoHtml = await generarArticulo(tema)
+    const [contenidoHtml, script] = await Promise.all([
+      generarArticulo(tema),
+      generarScript(tema),
+    ])
+
     if (!contenidoHtml) {
-      return NextResponse.json({ error: 'Claude no devolvió contenido' }, { status: 500 })
+      return NextResponse.json({ error: 'Claude no devolvió contenido del artículo' }, { status: 500 })
     }
 
     const excerpt = extractExcerpt(contenidoHtml)
 
-    await supabase.from('articulos_blog').insert({
-      titulo:       tema.titulo,
-      slug:         tema.slug,
-      contenido:    contenidoHtml,
-      excerpt,
-      pais:         tema.pais,
-      publicado:    true,
-      published_at: new Date().toISOString(),
-    })
+    await Promise.all([
+      supabase.from('articulos_blog').insert({
+        titulo:       tema.titulo,
+        slug:         tema.slug,
+        contenido:    contenidoHtml,
+        excerpt,
+        pais:         tema.pais,
+        publicado:    true,
+        published_at: new Date().toISOString(),
+      }),
+      supabase.from('scripts_video').insert({
+        slug:               tema.slug,
+        titulo:             tema.titulo,
+        script,
+        duracion_segundos:  60,
+        plataforma:         ['tiktok', 'youtube_shorts'],
+        publicado:          false,
+      }),
+    ])
 
-    return NextResponse.json({ ok: true, slug: tema.slug, titulo: tema.titulo, chars: contenidoHtml.length })
+    return NextResponse.json({
+      ok:     true,
+      slug:   tema.slug,
+      titulo: tema.titulo,
+      chars:  contenidoHtml.length,
+      script_chars: script.length,
+    })
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
