@@ -91,22 +91,23 @@ async function generarScript(tema: typeof TEMAS[0]): Promise<string> {
       max_tokens: 500,
       messages: [{
         role:    'user',
-        content: `Escribe un script de video de 60 segundos para TikTok y YouTube Shorts en español.
+        content: `Escribe un script de video de 60 segundos para TikTok y YouTube Shorts en español mexicano.
 
 Tema: "${tema.titulo}"
 ${tema.pais ? `País: ${tema.pais === 'MX' ? 'México' : tema.pais === 'CO' ? 'Colombia' : 'Perú'}` : 'LATAM'}
 
 Instrucciones:
-- El video lo narra un avatar de IA representando a TallerOS
-- Tono: directo, energético, como si hablaras con un amigo mecánico
-- Estructura obligatoria:
-  [GANCHO - 5 seg]: Una pregunta o dato impactante que detenga el scroll
-  [PROBLEMA - 15 seg]: El dolor real del mecánico relacionado al tema
-  [SOLUCIÓN - 25 seg]: Cómo TallerOS lo resuelve, con 2-3 beneficios concretos
-  [CTA - 15 seg]: Llamada a la acción clara a tallerosapp.com/registro
-- Máximo 150 palabras en total
+- Usa el efecto Zeigarnik: abre con una pregunta o situación sin resolver, da contenido de valor real durante el video, y termina dejando una idea incompleta que genere curiosidad para buscar más
+- El contenido debe ser 100% de valor para el mecánico, sin tono de venta ni mencionar TallerOS directamente
+- Si mencionas una herramienta o sistema, hazlo de forma natural como referencia, nunca como anuncio
+- Tono: como un colega mecánico exitoso que comparte lo que aprendió, directo y con lenguaje mexicano natural
+- Estructura:
+  [GANCHO - 5 seg]: Pregunta o dato que deja al espectador con la duda
+  [CONTENIDO - 45 seg]: 3 puntos de valor real y accionable sobre el tema
+  [CIERRE ZEIGARNIK - 10 seg]: Termina con una idea a medias o una pregunta que genera curiosidad, sin resolverla completamente
+- Máximo 150 palabras
 - Sin hashtags, sin emojis, solo el texto que va a decir el avatar
-- Formato: texto plano, sin etiquetas HTML`,
+- Formato: texto plano`,
       }],
     }),
   })

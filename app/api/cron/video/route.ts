@@ -3,8 +3,8 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 
 const HEYGEN_API_KEY = process.env.HEYGEN_API_KEY!
-const AVATAR_ID      = 'bdabbdd8148f48feba33a77e7619e65e'
-const VOICE_ID       = '82d534d580f04edb8e4701f6f00f92ea'
+const AVATAR_ID      = 'ba5663aec89b48d490599ce785fb6dcf'
+const VOICE_ID       = '2d6055a78a56492ebb6596bac583532a'
 
 async function generarVideo(script: string, titulo: string): Promise<string | null> {
   const res = await fetch('https://api.heygen.com/v2/video/generate', {
