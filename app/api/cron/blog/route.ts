@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
   )
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const tema = TEMAS[TEMAS.findIndex(t => t.slug === 'software-talleres-mecanicos-mexico-2026')]
+  const tema = TEMAS[diaDelAnio % TEMAS.length]
 
   const existe = await slugExiste(supabase, tema.slug)
   if (existe) {
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
 
     const excerpt = extractExcerpt(contenidoHtml)
 
-    await Promise.all([
+    const [blogResult, scriptResult] = await Promise.all([
       supabase.from('articulos_blog').insert({
         titulo:       tema.titulo,
         slug:         tema.slug,
@@ -163,20 +163,23 @@ export async function GET(req: NextRequest) {
         published_at: new Date().toISOString(),
       }),
       supabase.from('scripts_video').insert({
-        slug:               tema.slug,
-        titulo:             tema.titulo,
+        slug:              tema.slug,
+        titulo:            tema.titulo,
         script,
-        duracion_segundos:  60,
-        plataforma:         ['tiktok', 'youtube_shorts'],
-        publicado:          false,
+        duracion_segundos: 60,
+        plataforma:        ['tiktok', 'youtube_shorts'],
+        publicado:         false,
       }),
     ])
 
+    if (blogResult.error) throw new Error(`Blog insert error: ${blogResult.error.message}`)
+    if (scriptResult.error) throw new Error(`Script insert error: ${scriptResult.error.message}`)
+
     return NextResponse.json({
-      ok:     true,
-      slug:   tema.slug,
-      titulo: tema.titulo,
-      chars:  contenidoHtml.length,
+      ok:           true,
+      slug:         tema.slug,
+      titulo:       tema.titulo,
+      chars:        contenidoHtml.length,
       script_chars: script.length,
     })
 
