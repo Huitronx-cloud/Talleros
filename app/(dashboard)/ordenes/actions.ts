@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
 import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
 import { enviarResenaOrden } from '@/lib/resenas'
+import { getLimites, puedeCrear } from '@/lib/plan-limits'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -41,6 +42,25 @@ export async function crearOrden(datos: OrdenForm) {
   const supabase = createClient()
   const tallerId = await getTallerId()
   if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { data: suscripcion } = await supabase
+    .from('suscripciones')
+    .select('plan')
+    .eq('taller_id', tallerId)
+    .single()
+
+  const limites   = getLimites(suscripcion?.plan ?? 'trial')
+  const mesActual = new Date().toISOString().slice(0, 7)
+  const { count: ordenesEsteMes } = await supabase
+    .from('ordenes')
+    .select('*', { count: 'exact', head: true })
+    .eq('taller_id', tallerId)
+    .gte('created_at', `${mesActual}-01`)
+    .lt('created_at', `${mesActual}-31`)
+
+  if (!puedeCrear(ordenesEsteMes ?? 0, limites.ordenes_mes)) {
+    return { error: 'Alcanzaste el límite de órdenes de tu plan este mes. Actualiza tu plan para seguir creando órdenes.' }
+  }
 
   const { data: numero } = await supabase.rpc('siguiente_numero_orden', {
     p_taller_id: tallerId,
@@ -100,7 +120,7 @@ export async function cambiarEstado(
 
   const { data: orden } = await supabase
     .from('ordenes')
-    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono), talleres(google_review_url, nombre, moneda)')
+    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono)')
     .eq('id', ordenId)
     .single()
 

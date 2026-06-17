@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getLimites, puedeCrear } from '@/lib/plan-limits'
 
 export async function POST(req: NextRequest) {
   const supabase = createClient()
@@ -18,6 +19,22 @@ export async function POST(req: NextRequest) {
 
   if (!usuario || !['propietario', 'admin'].includes(usuario.rol)) {
     return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+  }
+
+  const { data: suscripcion } = await admin
+    .from('suscripciones')
+    .select('plan')
+    .eq('taller_id', usuario.taller_id)
+    .single()
+
+  const limites = getLimites(suscripcion?.plan ?? 'trial')
+  const { count: totalUsuarios } = await admin
+    .from('usuarios')
+    .select('*', { count: 'exact', head: true })
+    .eq('taller_id', usuario.taller_id)
+
+  if (!puedeCrear(totalUsuarios ?? 0, limites.usuarios)) {
+    return NextResponse.json({ error: 'Alcanzaste el límite de usuarios de tu plan. Actualiza tu plan para invitar a más miembros.' }, { status: 403 })
   }
 
   const { email, rol } = await req.json()

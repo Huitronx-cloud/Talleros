@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ClienteForm } from '@/types'
 import { enviarWhatsApp } from '@/lib/twilio'
+import { getLimites, puedeCrear } from '@/lib/plan-limits'
 
 async function getTallerId() {
   const supabase = createClient()
@@ -18,6 +19,22 @@ export async function crearCliente(datos: ClienteForm) {
   const supabase = createClient()
   const tallerId = await getTallerId()
   if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { data: suscripcion } = await supabase
+    .from('suscripciones')
+    .select('plan')
+    .eq('taller_id', tallerId)
+    .single()
+
+  const limites = getLimites(suscripcion?.plan ?? 'trial')
+  const { count: totalClientes } = await supabase
+    .from('clientes')
+    .select('*', { count: 'exact', head: true })
+    .eq('taller_id', tallerId)
+
+  if (!puedeCrear(totalClientes ?? 0, limites.clientes)) {
+    return { error: 'Alcanzaste el límite de clientes de tu plan. Actualiza tu plan para seguir agregando clientes.' }
+  }
 
   const { error } = await supabase.from('clientes').insert({
     ...datos,

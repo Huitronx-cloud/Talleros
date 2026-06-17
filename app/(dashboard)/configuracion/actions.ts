@@ -11,7 +11,6 @@ export interface ConfiguracionForm {
   moneda: string
   vigencia_dias: number
   logo_url?: string
-  google_review_url?: string
   horario?: string
   instagram?: string
   facebook?: string
@@ -33,7 +32,6 @@ export async function guardarConfiguracion(datos: ConfiguracionForm) {
       moneda:             datos.moneda,
       vigencia_dias:      datos.vigencia_dias,
       ...(datos.logo_url !== undefined          && { logo_url:          datos.logo_url }),
-      ...(datos.google_review_url !== undefined && { google_review_url: datos.google_review_url }),
       ...(datos.horario !== undefined           && { horario:           datos.horario }),
       ...(datos.instagram !== undefined         && { instagram:         datos.instagram }),
       ...(datos.facebook !== undefined          && { facebook:          datos.facebook }),
