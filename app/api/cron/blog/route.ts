@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
   )
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const tema = TEMAS[diaDelAnio % TEMAS.length]
+  const tema = TEMAS[TEMAS.findIndex(t => t.slug === 'garantia-digital-taller-mecanico')]
 
   const existe = await slugExiste(supabase, tema.slug)
   if (existe) {
