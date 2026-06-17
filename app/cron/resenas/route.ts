@@ -1,66 +1,57 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { createClient } from '@/lib/supabase/server'
-import { enviarNotificacion, mensajeResena } from '@/lib/notificaciones'
+import { createClient } from '@supabase/supabase-js'
+import { enviarResenaOrden } from '@/lib/resenas'
 
+// ── Red de seguridad: reintenta el envío de reseñas para órdenes entregadas
+// en los últimos 3 días que aún no tengan un registro en resenas_enviadas
+// (por ejemplo si el envío inmediato al marcar "entregado" falló) ────────────
 export async function GET(request: Request) {
   const auth = request.headers.get('authorization')
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
-  const supabase = createClient()
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const hace3Dias = new Date()
   hace3Dias.setDate(hace3Dias.getDate() - 3)
   const fecha3Dias = hace3Dias.toISOString().split('T')[0]
+  const hoy = new Date().toISOString().split('T')[0]
 
-  const { data: ordenes, error } = await supabase
+  const { data: ordenes, error } = await supabaseAdmin
     .from('ordenes')
-    .select('id, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, clientes(nombre, telefono), talleres(nombre, google_review_url)')
+    .select('id, taller_id')
     .eq('estado', 'entregado')
-    .eq('resena_enviada', false)
-    .lte('fecha_entrega', fecha3Dias)
-    .not('fecha_entrega', 'is', null)
+    .gte('fecha_entrega', fecha3Dias)
+    .lte('fecha_entrega', hoy)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const resultados = await Promise.allSettled(
-    (ordenes ?? []).map(async (orden) => {
-      const cliente = (Array.isArray(orden.clientes) ? orden.clientes[0] : orden.clientes) as { nombre: string; telefono: string | null } | null
-      const taller = (Array.isArray(orden.talleres) ? orden.talleres[0] : orden.talleres) as { nombre: string; google_review_url: string | null } | null
+  let enviados = 0
+  let fallidos = 0
 
-      if (!cliente || !taller?.google_review_url) return
+  for (const orden of ordenes ?? []) {
+    const { data: yaEnviado } = await supabaseAdmin
+      .from('resenas_enviadas')
+      .select('id')
+      .eq('orden_id', orden.id)
+      .limit(1)
 
-      const mensaje = mensajeResena({
-        nombre: cliente.nombre,
-        marca: orden.vehiculo_marca,
-        modelo: orden.vehiculo_modelo,
-        tallerNombre: taller.nombre,
-        googleReviewUrl: taller.google_review_url,
-      })
+    if (yaEnviado?.length) continue
 
-      await enviarNotificacion({
-        supabase,
-        tallerId: orden.taller_id,
-        ordenId: orden.id,
-        clienteId: orden.cliente_id,
-        telefono: cliente.telefono,
-        tipo: 'seguimiento',
-        mensaje,
-      })
-
-      await supabase
-        .from('ordenes')
-        .update({ resena_enviada: true })
-        .eq('id', orden.id)
-    })
-  )
-
-  const enviados = resultados.filter(r => r.status === 'fulfilled').length
-  const fallidos = resultados.filter(r => r.status === 'rejected').length
+    try {
+      const resultado = await enviarResenaOrden(orden.id, orden.taller_id)
+      if (resultado.ok) enviados++
+    } catch {
+      fallidos++
+    }
+  }
 
   return NextResponse.json({ enviados, fallidos, total: ordenes?.length ?? 0 })
 }

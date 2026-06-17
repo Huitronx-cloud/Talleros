@@ -39,6 +39,14 @@
     {
       "path": "/cron/resenas",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/cron/recordatorios",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/cron/recordatorios-citas",
+      "schedule": "0 18 * * *"
     }
   ]
 }

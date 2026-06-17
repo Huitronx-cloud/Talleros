@@ -55,7 +55,6 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const [moneda, setMoneda] = useState<string>(taller.moneda ?? 'MXN')
   const [vigencia,        setVigencia]        = useState(taller.vigencia_dias   ?? 15)
   const [logoUrl,         setLogoUrl]         = useState(taller.logo_url        ?? '')
-  const [googleReviewUrl, setGoogleReviewUrl] = useState(taller.google_review_url ?? '')
   const [horario,         setHorario]         = useState(taller.horario   ?? '')
   const [instagram,       setInstagram]       = useState(taller.instagram ?? '')
   const [facebook,        setFacebook]        = useState(taller.facebook  ?? '')
@@ -114,9 +113,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       moneda,
       vigencia_dias: vigencia,
       logo_url:          logoUrl         || undefined,
-      google_review_url: googleReviewUrl || undefined,
       horario:           horario         || undefined,
-      direccion:         direccion       || undefined,
       instagram:         instagram       || undefined,
       facebook:          facebook        || undefined,
       firma_pdf:         firmaPdf        || undefined,
@@ -238,20 +235,9 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Link de reseña en Google
-          </label>
-          <input
-            type="url"
-            value={googleReviewUrl}
-            onChange={e => setGoogleReviewUrl(e.target.value)}
-            placeholder="https://g.page/r/tu-taller/review"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Este link se enviará automáticamente al cliente para pedir reseña en Google.
-          </p>
+        <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 text-xs text-blue-700">
+          ¿Buscas el link de reseña de Google? Ahora se configura en{' '}
+          <a href="/resenas" className="underline font-semibold">Reseñas</a>, junto con el resto de la automatización de reseñas.
         </div>
 
         <div>

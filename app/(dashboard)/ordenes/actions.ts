@@ -3,7 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
-import { enviarNotificacion, mensajeOrdenLista, mensajeResena } from '@/lib/notificaciones'
+import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
+import { enviarResenaOrden } from '@/lib/resenas'
+import { getLimites, puedeCrear } from '@/lib/plan-limits'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -40,6 +42,25 @@ export async function crearOrden(datos: OrdenForm) {
   const supabase = createClient()
   const tallerId = await getTallerId()
   if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { data: suscripcion } = await supabase
+    .from('suscripciones')
+    .select('plan')
+    .eq('taller_id', tallerId)
+    .single()
+
+  const limites   = getLimites(suscripcion?.plan ?? 'trial')
+  const mesActual = new Date().toISOString().slice(0, 7)
+  const { count: ordenesEsteMes } = await supabase
+    .from('ordenes')
+    .select('*', { count: 'exact', head: true })
+    .eq('taller_id', tallerId)
+    .gte('created_at', `${mesActual}-01`)
+    .lt('created_at', `${mesActual}-31`)
+
+  if (!puedeCrear(ordenesEsteMes ?? 0, limites.ordenes_mes)) {
+    return { error: 'Alcanzaste el límite de órdenes de tu plan este mes. Actualiza tu plan para seguir creando órdenes.' }
+  }
 
   const { data: numero } = await supabase.rpc('siguiente_numero_orden', {
     p_taller_id: tallerId,
@@ -99,7 +120,7 @@ export async function cambiarEstado(
 
   const { data: orden } = await supabase
     .from('ordenes')
-    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono), talleres(google_review_url, nombre, moneda)')
+    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono)')
     .eq('id', ordenId)
     .single()
 
@@ -156,31 +177,10 @@ export async function cambiarEstado(
     }).catch(console.error)
   }
 
-  // Reseña automática de Google al marcar como entregado (2 horas después)
+  // Reseña automática de Google al marcar como entregado, según la
+  // configuración de reseñas del taller (resenas_config: activo, canal, plantillas)
   if (nuevoEstado === 'entregado' && orden.clientes) {
-    const taller = (orden.talleres as any) as { google_review_url: string | null; nombre: string; moneda: string } | null
-    const cliente = (orden.clientes as any) as { nombre: string; telefono: string | null }
-    const reviewUrl = taller?.google_review_url
-
-    if (reviewUrl && cliente.telefono) {
-      const mensaje = mensajeResena({
-        nombre:          cliente.nombre,
-        marca:           orden.vehiculo_marca,
-        modelo:          orden.vehiculo_modelo,
-        tallerNombre:    taller?.nombre ?? 'el taller',
-        googleReviewUrl: reviewUrl,
-      })
-
-      enviarNotificacion({
-        supabase,
-        tallerId:  orden.taller_id,
-        ordenId,
-        clienteId: orden.cliente_id,
-        telefono:  cliente.telefono,
-        tipo:      'seguimiento',
-        mensaje,
-      }).catch(console.error)
-    }
+    enviarResenaOrden(ordenId, orden.taller_id).catch(console.error)
   }
 
   revalidatePath('/ordenes')
