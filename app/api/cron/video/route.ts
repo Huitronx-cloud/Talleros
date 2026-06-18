@@ -59,8 +59,9 @@ async function generarVideo(script: string, titulo: string): Promise<string | nu
   url:        `${BASE_URL}/${FONDOS[Math.floor(Math.random() * FONDOS.length)]}`,
 },
       }],
-      dimension: { width: 1080, height: 1920 },
-      title: titulo,
+      dimension:  { width: 1080, height: 1920 },
+title:      titulo,
+caption:    true,
     }),
   })
 
