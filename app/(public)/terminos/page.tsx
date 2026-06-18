@@ -1,3 +1,11 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Términos de Servicio — TallerOS',
+  description: 'Términos y condiciones de uso de TallerOS, el software de gestión para talleres mecánicos.',
+  alternates: { canonical: '/terminos' },
+}
+
 export default function TerminosPage() {
   return (
     <div style={{ background: '#050a12', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#f1f5f9' }}>

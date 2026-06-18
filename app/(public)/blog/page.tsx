@@ -1,10 +1,26 @@
-'use client'
-
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Clock, BookOpen, Loader2 } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
+import { ArrowRight, Clock, BookOpen } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Blog para talleres mecánicos — Gestión, clientes y tecnología | TallerOS',
+  description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos en México, Colombia y Perú.',
+  alternates: { canonical: '/blog' },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.tallerosapp.com/blog',
+    title: 'Blog para talleres mecánicos — TallerOS',
+    description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos en México, Colombia y Perú.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Blog para talleres mecánicos — TallerOS',
+    description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos.',
+  },
+}
 
 const PAIS_LABEL: Record<string, string> = {
   MX: '🇲🇽 México',
@@ -12,16 +28,22 @@ const PAIS_LABEL: Record<string, string> = {
   PE: '🇵🇪 Perú',
 }
 
-export default function BlogPage() {
-  const [articulos, setArticulos] = useState<any[]>([])
-  const [loading, setLoading]     = useState(true)
+async function getArticulos() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data } = await supabase
+    .from('articulos_blog')
+    .select('titulo, slug, excerpt, pais, published_at')
+    .eq('publicado', true)
+    .order('published_at', { ascending: false })
+    .limit(50)
+  return data ?? []
+}
 
-  useEffect(() => {
-    fetch('/api/blog')
-      .then(r => r.json())
-      .then(data => { setArticulos(data ?? []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+export default async function BlogPage() {
+  const articulos = await getArticulos()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,11 +75,7 @@ export default function BlogPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-12">
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-          </div>
-        ) : articulos.length === 0 ? (
+        {articulos.length === 0 ? (
           <div className="text-center py-20">
             <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-400">Los artículos se están generando. Vuelve pronto.</p>

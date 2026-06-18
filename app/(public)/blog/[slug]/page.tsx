@@ -1,53 +1,96 @@
-'use client'
-
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Clock, Calendar, Loader2 } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
+import { ArrowLeft, ArrowRight, Clock, Calendar } from 'lucide-react'
+import type { Metadata } from 'next'
 
-export default function ArticuloPage() {
-  const params                      = useParams()
-  const slug                        = params.slug as string
-  const [art, setArt]               = useState<any>(null)
-  const [rel, setRel]               = useState<any[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [notFound, setNotFound]     = useState(false)
-
-  useEffect(() => {
-    if (!slug) return
-    fetch(`/api/blog/${slug}`)
-      .then(r => {
-        if (r.status === 404) { setNotFound(true); setLoading(false); return null }
-        return r.json()
-      })
-      .then(data => {
-        if (!data) return
-        setArt(data)
-        setLoading(false)
-        fetch('/api/blog')
-          .then(r => r.json())
-          .then(all => setRel((all ?? []).filter((a: any) => a.slug !== slug).slice(0, 3)))
-      })
-      .catch(() => setLoading(false))
-  }, [slug])
-
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-    </div>
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+}
 
-  if (notFound || !art) return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-      <p className="text-gray-500 text-lg font-semibold">Artículo no encontrado</p>
-      <Link href="/blog" className="text-blue-600 hover:underline text-sm">← Volver al blog</Link>
-    </div>
-  )
+async function getArticulo(slug: string) {
+  const supabase = getSupabase()
+  const { data } = await supabase
+    .from('articulos_blog')
+    .select('*')
+    .eq('slug', slug)
+    .eq('publicado', true)
+    .single()
+  return data
+}
+
+async function getRelacionados(slug: string) {
+  const supabase = getSupabase()
+  const { data } = await supabase
+    .from('articulos_blog')
+    .select('titulo, slug')
+    .eq('publicado', true)
+    .neq('slug', slug)
+    .order('published_at', { ascending: false })
+    .limit(3)
+  return data ?? []
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const art = await getArticulo(params.slug)
+  if (!art) return {}
+
+  const descripcion = art.excerpt || art.titulo
+  const url = `https://www.tallerosapp.com/blog/${art.slug}`
+
+  return {
+    title: `${art.titulo} | TallerOS`,
+    description: descripcion,
+    alternates: { canonical: `/blog/${art.slug}` },
+    openGraph: {
+      type: 'article',
+      url,
+      title: art.titulo,
+      description: descripcion,
+      publishedTime: art.published_at,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: art.titulo,
+      description: descripcion,
+    },
+  }
+}
+
+export default async function ArticuloPage({ params }: { params: { slug: string } }) {
+  const art = await getArticulo(params.slug)
+  if (!art) notFound()
+
+  const rel = await getRelacionados(params.slug)
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: art.titulo,
+    description: art.excerpt,
+    datePublished: art.published_at,
+    dateModified: art.published_at,
+    author: { '@type': 'Organization', name: 'TallerOS' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'TallerOS',
+      logo: { '@type': 'ImageObject', url: 'https://www.tallerosapp.com/icon-512.png' },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://www.tallerosapp.com/blog/${art.slug}` },
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <nav className="bg-white border-b border-gray-200 px-4 py-4 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">

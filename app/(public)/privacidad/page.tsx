@@ -1,3 +1,11 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Política de Privacidad — TallerOS',
+  description: 'Conoce cómo TallerOS recopila, usa y protege los datos de tu taller mecánico y tus clientes.',
+  alternates: { canonical: '/privacidad' },
+}
+
 export default function PrivacidadPage() {
   return (
     <div style={{ background: '#050a12', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', color: '#f1f5f9' }}>
