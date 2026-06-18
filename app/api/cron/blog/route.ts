@@ -35,6 +35,19 @@ const TEMAS = [
   { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',          slug: 'garantia-digital-taller-mecanico',               pais: null },
 ]
 
+async function limpiarArticulosExistentes(supabase: ReturnType<typeof createClient>): Promise<void> {
+  const { data: articulos } = await supabase
+    .from('articulos_blog')
+    .select('id, contenido') as { data: { id: string; contenido: string }[] | null }
+
+  for (const art of articulos ?? []) {
+    const limpio = limpiarContenidoIA(art.contenido ?? '')
+    if (limpio !== art.contenido) {
+      await supabase.from('articulos_blog').update({ contenido: limpio } as never).eq('id', art.id)
+    }
+  }
+}
+
 async function slugExiste(supabase: ReturnType<typeof createClient>, slug: string): Promise<boolean> {
   const { data } = await supabase
     .from('articulos_blog')
@@ -68,14 +81,30 @@ Instrucciones:
 - Estructura: introducción con gancho, 3-4 secciones con subtítulos H2, conclusión con CTA
 - Incluye datos reales cuando aplique (ej: "el 97% de los clientes lee reseñas antes de elegir un taller")
 - Al final menciona naturalmente que TallerOS resuelve el problema principal del artículo, con un CTA a https://www.tallerosapp.com/registro
-- Formato: HTML limpio con etiquetas <h2>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, ni <head>.
-- NO uses markdown, solo HTML
+- Formato: HTML limpio con etiquetas <h2>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, <head>, <article> ni <h1> (el título ya se muestra aparte, no lo repitas).
+- NO uses markdown, solo HTML. No envuelvas la respuesta en \`\`\`html ni en ningún code fence.
 - El artículo debe posicionar en Google para la keyword principal del título`,
       }],
     }),
   })
   const data = await res.json()
-  return data.content?.[0]?.text ?? ''
+  return limpiarContenidoIA(data.content?.[0]?.text ?? '')
+}
+
+function limpiarContenidoIA(raw: string): string {
+  let html = raw.trim()
+
+  // El modelo a veces envuelve la respuesta en un code fence de markdown pese a las instrucciones
+  html = html.replace(/^```(?:html)?\s*\n?/i, '').replace(/\n?```\s*$/, '').trim()
+
+  // El modelo a veces envuelve el contenido en su propio <article>, duplicando el que ya pone la página
+  const articleMatch = html.match(/^<article[^>]*>([\s\S]*)<\/article>\s*$/i)
+  if (articleMatch) html = articleMatch[1].trim()
+
+  // La página ya renderiza su propio <h1> con el título; quitamos el duplicado si el modelo lo agregó
+  html = html.replace(/^<h1[^>]*>[\s\S]*?<\/h1>\s*/i, '')
+
+  return html.trim()
 }
 
 function extractExcerpt(html: string): string {
@@ -94,6 +123,8 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  await limpiarArticulosExistentes(supabase)
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
   const tema = TEMAS[diaDelAnio % TEMAS.length]
