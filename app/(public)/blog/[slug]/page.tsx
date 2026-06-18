@@ -14,26 +14,36 @@ function getSupabase() {
 }
 
 async function getArticulo(slug: string) {
-  const supabase = getSupabase()
-  const { data } = await supabase
-    .from('articulos_blog')
-    .select('*')
-    .eq('slug', slug)
-    .eq('publicado', true)
-    .single()
-  return data
+  try {
+    const supabase = getSupabase()
+    const { data } = await supabase
+      .from('articulos_blog')
+      .select('*')
+      .eq('slug', slug)
+      .eq('publicado', true)
+      .single()
+    return data
+  } catch (e) {
+    console.error('Error cargando articulo:', e)
+    return null
+  }
 }
 
 async function getRelacionados(slug: string) {
-  const supabase = getSupabase()
-  const { data } = await supabase
-    .from('articulos_blog')
-    .select('titulo, slug')
-    .eq('publicado', true)
-    .neq('slug', slug)
-    .order('published_at', { ascending: false })
-    .limit(3)
-  return data ?? []
+  try {
+    const supabase = getSupabase()
+    const { data } = await supabase
+      .from('articulos_blog')
+      .select('titulo, slug')
+      .eq('publicado', true)
+      .neq('slug', slug)
+      .order('published_at', { ascending: false })
+      .limit(3)
+    return data ?? []
+  } catch (e) {
+    console.error('Error cargando relacionados:', e)
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {

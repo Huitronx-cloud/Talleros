@@ -6,15 +6,20 @@ export const dynamic = 'force-dynamic'
 const BASE_URL = 'https://www.tallerosapp.com'
 
 async function getArticulos() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-  const { data } = await supabase
-    .from('articulos_blog')
-    .select('slug, published_at')
-    .eq('publicado', true)
-  return data ?? []
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data } = await supabase
+      .from('articulos_blog')
+      .select('slug, published_at')
+      .eq('publicado', true)
+    return data ?? []
+  } catch (e) {
+    console.error('Error cargando articulos_blog para sitemap:', e)
+    return []
+  }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

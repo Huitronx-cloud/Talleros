@@ -29,17 +29,22 @@ const PAIS_LABEL: Record<string, string> = {
 }
 
 async function getArticulos() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-  const { data } = await supabase
-    .from('articulos_blog')
-    .select('titulo, slug, excerpt, pais, published_at')
-    .eq('publicado', true)
-    .order('published_at', { ascending: false })
-    .limit(50)
-  return data ?? []
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data } = await supabase
+      .from('articulos_blog')
+      .select('titulo, slug, excerpt, pais, published_at')
+      .eq('publicado', true)
+      .order('published_at', { ascending: false })
+      .limit(50)
+    return data ?? []
+  } catch (e) {
+    console.error('Error cargando articulos_blog:', e)
+    return []
+  }
 }
 
 export default async function BlogPage() {
