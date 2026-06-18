@@ -1,5 +1,6 @@
 {
   "crons": [
+    { "path": "/api/cron/script-email", "schedule": "0 13 * * *" },
     {
       "path": "/api/cron/recordatorios",
       "schedule": "0 10 * * *"
