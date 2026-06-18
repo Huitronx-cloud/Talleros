@@ -173,15 +173,14 @@ export async function GET(req: NextRequest) {
   )
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const tema = TEMAS[TEMAS.findIndex(t => t.slug === 'software-talleres-mecanicos-colombia-2026')]
+  const tema = TEMAS[diaDelAnio % TEMAS.length]
 
   const existe = await slugExiste(supabase, tema.slug)
   if (existe) {
     return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
   }
 
-  const diaSemana = new Date().getDay()
-  const esDiaLargo = diaSemana === 1 || diaSemana === 3 || diaSemana === 5
+  const esDiaLargo = diaDelAnio % 2 === 0
 
   try {
     const [contenidoHtml, script, scriptLargo] = await Promise.all([
