@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
+export const dynamic = 'force-dynamic'
+
 const BASE_URL = 'https://www.tallerosapp.com'
 
 async function getArticulos() {
