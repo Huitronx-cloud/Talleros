@@ -42,10 +42,11 @@ async function generarVideo(script: string, titulo: string): Promise<string | nu
     body: JSON.stringify({
       video_inputs: [{
         character: {
-  type:                'avatar',
-  avatar_id:           AVATAR_ID,
-  scale:               1,
-  matting:             true,
+  type:      'avatar',
+  avatar_id: AVATAR_ID,
+  scale:     1.8,
+  matting:   true,
+  offset:    { x: 0, y: 0.15 },
 },
         voice: {
           type:     'text',
