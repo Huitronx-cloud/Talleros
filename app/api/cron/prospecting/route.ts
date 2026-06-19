@@ -47,16 +47,22 @@ interface Prospecto {
 }
 
 // ── Google Places API ─────────────────────────────────────────────────────────
-async function buscarTalleres(ciudad: string, termino: string): Promise<any[]> {
+interface ResultadoBusqueda {
+  results: any[]
+  status: string
+  errorMessage?: string
+}
+
+async function buscarTalleres(ciudad: string, termino: string): Promise<ResultadoBusqueda> {
   try {
     const query   = encodeURIComponent(`${termino} en ${ciudad}`)
     const url     = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_API_KEY}&language=es`
     const res     = await fetch(url)
     const data    = await res.json()
-    console.log(`Places API status: ${data.status}, results: ${data.results?.length ?? 0}`)
-    return data.results ?? []
-  } catch {
-    return []
+    console.log(`Places API status: ${data.status}, results: ${data.results?.length ?? 0}${data.error_message ? `, error: ${data.error_message}` : ''}`)
+    return { results: data.results ?? [], status: data.status ?? 'UNKNOWN', errorMessage: data.error_message }
+  } catch (e: any) {
+    return { results: [], status: 'FETCH_ERROR', errorMessage: e.message }
   }
 }
 
@@ -286,10 +292,14 @@ export async function GET(req: NextRequest) {
   const omitidos:    string[] = []
 
   try {
-    const lugares = await buscarTalleres(ciudadHoy.nombre, terminoHoy)
+    const busqueda = await buscarTalleres(ciudadHoy.nombre, terminoHoy)
+
+    if (busqueda.status !== 'OK' && busqueda.status !== 'ZERO_RESULTS') {
+      console.error(`Places API falló: ${busqueda.status} — ${busqueda.errorMessage ?? 'sin detalle'}`)
+    }
 
     // Limitar a 10 por ejecución para no quemar el presupuesto
-    const lugaresLimitados = lugares.slice(0, 10)
+    const lugaresLimitados = busqueda.results.slice(0, 10)
 
     for (const lugar of lugaresLimitados) {
       const placeId = lugar.place_id
@@ -362,6 +372,13 @@ export async function GET(req: NextRequest) {
               <p style="color:#0f172a;font-weight:700;margin-bottom:16px;">${ciudadHoy.nombre}</p>
               <p style="color:#64748b;font-size:13px;margin-bottom:4px;">Término de búsqueda:</p>
               <p style="color:#0f172a;font-weight:700;margin-bottom:20px;">${terminoHoy}</p>
+              ${busqueda.status !== 'OK' && busqueda.status !== 'ZERO_RESULTS' ? `
+              <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin-bottom:20px;">
+                <p style="margin:0;font-size:13px;color:#b91c1c;line-height:1.6;">
+                  ⚠️ <strong>Google Places API falló</strong> (status: ${busqueda.status}). ${busqueda.errorMessage ?? 'Sin detalle adicional.'} Revisa la API key en Google Cloud Console (Places API habilitada, billing activo, sin restricciones de referrer).
+                </p>
+              </div>
+              ` : ''}
               <p style="color:#0f172a;font-size:16px;font-weight:800;margin-bottom:12px;">📋 Talleres encontrados (${contactados.length}):</p>
               ${contactados.map(t => `<div style="background:#f8fafc;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#334155;border-left:3px solid #2563eb;">${t}</div>`).join('')}
               ${omitidos.length > 0 ? `
@@ -379,12 +396,14 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json({
-      ok:          true,
-      ciudad:      ciudadHoy.nombre,
-      termino:     terminoHoy,
-      contactados: contactados.length,
-      omitidos:    omitidos.length,
-      detalle:     contactados,
+      ok:             true,
+      ciudad:         ciudadHoy.nombre,
+      termino:        terminoHoy,
+      places_status:  busqueda.status,
+      places_error:   busqueda.errorMessage ?? null,
+      contactados:    contactados.length,
+      omitidos:       omitidos.length,
+      detalle:        contactados,
     })
 
   } catch (error: any) {
