@@ -120,6 +120,33 @@ async function registrarContacto(prospecto: Prospecto, error?: string): Promise<
   }
 }
 
+// ── CRM interno — sincronizar lead unificado ─────────────────────────────────
+async function sincronizarLeadCRM(prospecto: Prospecto, etapa: 'nuevo' | 'contactado'): Promise<void> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const telefonoNormalizado = prospecto.telefono
+    ? normalizarTelefono(prospecto.telefono, prospecto.pais)
+    : null
+
+  try {
+    await supabase.from('crm_leads').upsert({
+      nombre:          prospecto.nombre,
+      telefono:        telefonoNormalizado,
+      direccion:       prospecto.direccion,
+      ciudad:          prospecto.ciudad,
+      pais:            prospecto.pais,
+      google_place_id: prospecto.google_place_id,
+      website:         prospecto.website,
+      origen:          'prospeccion',
+      etapa,
+    }, { onConflict: telefonoNormalizado ? 'telefono' : 'google_place_id' })
+  } catch (e) {
+    console.error('Error sincronizando lead CRM:', e)
+  }
+}
+
 // ── Agregar a Brevo ───────────────────────────────────────────────────────────
 async function agregarABrevo(prospecto: Prospecto): Promise<void> {
   if (!prospecto.email) return
@@ -336,16 +363,20 @@ export async function GET(req: NextRequest) {
         const resultado = await enviarWhatsAppFrio(prospecto)
         if (resultado.ok) {
           await registrarContacto(prospecto)
+          await sincronizarLeadCRM(prospecto, 'contactado')
           contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
         } else {
           // Registrar fallidos también para no reintentar
           await registrarContacto(prospecto, resultado.error)
+          await sincronizarLeadCRM(prospecto, 'nuevo')
           omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}`)
         }
       } else if (prospecto.website) {
         // Sin teléfono pero tiene website — lista para seguimiento manual
+        await sincronizarLeadCRM(prospecto, 'nuevo')
         contactados.push(`${prospecto.nombre} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
       } else {
+        // Sin teléfono ni website — no es un lead gestionable, no se sincroniza al CRM
         omitidos.push(`${prospecto.nombre} (sin datos de contacto)`)
         continue
       }
