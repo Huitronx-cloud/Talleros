@@ -130,6 +130,8 @@ function tieneAcceso(rol: string, pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
   // ── CORS check primero ────────────────────────────────────────────────────
   const corsResponse = handleCORS(request)
   if (corsResponse) return corsResponse
@@ -139,11 +141,29 @@ export async function middleware(request: NextRequest) {
     ?? request.headers.get('x-real-ip')
     ?? 'unknown'
 
-  if (!checkRateLimit(ip, request.nextUrl.pathname)) {
+  if (!checkRateLimit(ip, pathname)) {
     return new NextResponse(
       JSON.stringify({ error: 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.' }),
       { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '3600' } }
     )
+  }
+
+  // ── ADMIN INTERNO ──────────────────────────────────────────────────────────
+  // CRM de prospección del equipo TallerOS. Totalmente separado del sistema
+  // multi-tenant (usuarios/taller_id/rol) — gateado por secreto compartido,
+  // no usa sesión de Supabase.
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    if (pathname === '/admin/login' || pathname === '/api/admin/login') {
+      return NextResponse.next()
+    }
+    const sesionAdmin = request.cookies.get('admin_session')?.value
+    if (!process.env.ADMIN_SECRET || sesionAdmin !== process.env.ADMIN_SECRET) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+      }
+      return NextResponse.redirect(new URL('/admin/login', request.url))
+    }
+    return NextResponse.next()
   }
 
   let supabaseResponse = NextResponse.next({ request })
@@ -166,7 +186,6 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { pathname } = request.nextUrl
 
   const esRutaPublica = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
   const esRutaPostRegistro = RUTAS_POST_REGISTRO.some(r => pathname.startsWith(r))

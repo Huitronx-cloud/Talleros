@@ -28,6 +28,54 @@ async function responderWhatsApp(to: string, mensaje: string): Promise<void> {
   }
 }
 
+// ── CRM interno — registrar conversación con el lead ──────────────────────────
+// Solo aplica al flujo de prospección/dudas sobre TallerOS (no a los clientes
+// de los talleres, que se filtran antes por la aprobación de cotización).
+async function sincronizarLeadEntrante(telefono: string, mensaje: string, nombrePerfil: string | null): Promise<string | null> {
+  const supabase = createServiceClient()
+  try {
+    const { data: existente } = await supabase
+      .from('crm_leads')
+      .select('id, etapa')
+      .eq('telefono', telefono)
+      .maybeSingle()
+
+    let leadId: string | null = null
+
+    if (existente) {
+      leadId = existente.id
+      if (existente.etapa === 'nuevo') {
+        await supabase.from('crm_leads').update({ etapa: 'contactado' }).eq('id', existente.id)
+      }
+    } else {
+      const { data: nuevo } = await supabase
+        .from('crm_leads')
+        .insert({ telefono, nombre: nombrePerfil, origen: 'whatsapp_inbound', etapa: 'contactado' })
+        .select('id')
+        .single()
+      leadId = nuevo?.id ?? null
+    }
+
+    if (leadId) {
+      await supabase.from('crm_mensajes').insert({ lead_id: leadId, sentido: 'entrante', mensaje })
+    }
+    return leadId
+  } catch (e) {
+    console.error('Error sincronizando lead entrante CRM:', e)
+    return null
+  }
+}
+
+async function registrarMensajeSaliente(leadId: string | null, mensaje: string): Promise<void> {
+  if (!leadId) return
+  try {
+    const supabase = createServiceClient()
+    await supabase.from('crm_mensajes').insert({ lead_id: leadId, sentido: 'saliente', mensaje })
+  } catch (e) {
+    console.error('Error registrando mensaje saliente CRM:', e)
+  }
+}
+
 // ── Notificar a Ivan por email ────────────────────────────────────────────────
 async function notificarIvan(de: string, mensaje: string): Promise<void> {
   try {
@@ -71,6 +119,7 @@ export async function POST(req: NextRequest) {
     const de       = (formData.get('From') as string ?? '').replace('whatsapp:', '')
     const mensaje  = formData.get('Body') as string ?? ''
     const to       = formData.get('To') as string ?? ''
+    const perfil   = formData.get('ProfileName') as string ?? null
 
     console.log(`WhatsApp recibido de ${de}: ${mensaje}`)
 
@@ -157,17 +206,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── CRM interno — este punto solo se alcanza si el mensaje no era una
+    // aprobación/rechazo de cotización de un cliente de taller, así que
+    // corresponde a un prospecto o alguien con dudas sobre TallerOS.
+    const leadId = await sincronizarLeadEntrante(de, mensaje, perfil)
+
     // ── Detectar intención del mensaje (prospecting)
-    const interesado = ['si', 'sí', 'me interesa', 'interesa', 'info', 'información', 
+    const interesado = ['si', 'sí', 'me interesa', 'interesa', 'info', 'información',
                         'demo', 'precio', 'costo', 'cuanto', 'cuánto', 'como', 'cómo'].some(
       palabra => mensajeLower.includes(palabra)
     )
 
     if (interesado) {
       // Respuesta automática para interesados
-      await responderWhatsApp(de, 
-        `¡Hola! 👋 Gracias por tu interés en *TallerOS*.\n\nPuedes ver una demo completa y empezar tu prueba gratuita de 14 días aquí:\n\n👉 https://www.tallerosapp.com/registro\n\nSin tarjeta de crédito. Si tienes dudas, responde este mensaje y te contactamos en minutos. 🔧`
-      )
+      const respuesta = `¡Hola! 👋 Gracias por tu interés en *TallerOS*.\n\nPuedes ver una demo completa y empezar tu prueba gratuita de 14 días aquí:\n\n👉 https://www.tallerosapp.com/registro\n\nSin tarjeta de crédito. Si tienes dudas, responde este mensaje y te contactamos en minutos. 🔧`
+      await responderWhatsApp(de, respuesta)
+      await registrarMensajeSaliente(leadId, respuesta)
       // Notificar a Ivan con prioridad alta
       await notificarIvan(de, `⭐ INTERESADO: ${mensaje}`)
     } else {

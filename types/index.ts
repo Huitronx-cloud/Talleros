@@ -106,6 +106,36 @@ export interface Notificacion {
   created_at: string
 }
 
+// ── CRM interno TallerOS (prospección + WhatsApp entrante) ──
+export type OrigenLead = 'prospeccion' | 'whatsapp_inbound'
+export type EtapaLead  = 'nuevo' | 'contactado' | 'interesado' | 'negociacion' | 'cliente' | 'descartado'
+export type SentidoMensaje = 'entrante' | 'saliente'
+
+export interface Lead {
+  id: string
+  nombre: string | null
+  telefono: string | null
+  email: string | null
+  direccion: string | null
+  ciudad: string | null
+  pais: string | null
+  google_place_id: string | null
+  website: string | null
+  origen: OrigenLead
+  etapa: EtapaLead
+  notas: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MensajeCRM {
+  id: string
+  lead_id: string
+  sentido: SentidoMensaje
+  mensaje: string
+  created_at: string
+}
+
 export interface Orden {
   id: string
   taller_id: string
