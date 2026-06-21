@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Pause length="30"/>
+  <Pause length="60"/>
 </Response>`
 
   return new NextResponse(twiml, {
