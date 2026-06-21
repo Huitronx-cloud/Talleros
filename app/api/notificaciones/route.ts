@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import twilio from 'twilio'
 import { createClient } from '@/lib/supabase/server'
+import { mapearErrorTwilio, normalizarTelefonoWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   const client = twilio(
@@ -56,36 +57,53 @@ if (garantiaKm) orden.garantia_km = garantiaKm
       return NextResponse.json({ error: 'Tipo de mensaje inválido' }, { status: 400 })
     }
 
-    if (tipo === 'fotos_diagnostico' && fotos && fotos.length > 0) {
-  // Primer mensaje con texto
-  await client.messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM,
-    to: `whatsapp:+${telefono}`,
-    body: `Hola ${cliente.nombre} 📸 Le compartimos fotos del diagnóstico de su ${orden.vehiculo_marca} ${orden.vehiculo_modelo} en ${taller.nombre}:`,
-  })
-  // Una imagen por mensaje
-  for (const foto of fotos) {
-    await client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_FROM,
-      to: `whatsapp:+${telefono}`,
-      body: `🔧 ${foto.descripcion}`,
-      mediaUrl: [foto.url],
-    })
-  }
-} else {
-  await client.messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM,
-    to: `whatsapp:+${telefono}`,
-    body: mensaje,
-  })
-}
+    const to = normalizarTelefonoWhatsApp(telefono)
+    const from = process.env.TWILIO_WHATSAPP_FROM!
 
-    await supabase.from('notificaciones').insert({
+    try {
+      if (tipo === 'fotos_diagnostico' && fotos && fotos.length > 0) {
+        // Primer mensaje con texto
+        await client.messages.create({
+          from,
+          to,
+          body: `Hola ${cliente.nombre} 📸 Le compartimos fotos del diagnóstico de su ${orden.vehiculo_marca} ${orden.vehiculo_modelo} en ${taller.nombre}:`,
+        })
+        // Una imagen por mensaje
+        for (const foto of fotos) {
+          await client.messages.create({
+            from,
+            to,
+            body: `🔧 ${foto.descripcion}`,
+            mediaUrl: [foto.url],
+          })
+        }
+      } else {
+        await client.messages.create({ from, to, body: mensaje })
+      }
+    } catch (twilioError: any) {
+      const mensajeError = mapearErrorTwilio(twilioError)
+      const { error: insertError } = await supabase.from('notificaciones').insert({
+        taller_id: orden.taller_id,
+        cliente_id: orden.cliente_id,
+        orden_id: ordenId,
+        tipo,
+        mensaje,
+        estado: 'fallida',
+        error_mensaje: mensajeError,
+      })
+      if (insertError) console.error('Error guardando notificación fallida:', insertError)
+      return NextResponse.json({ error: mensajeError }, { status: 500 })
+    }
+
+    const { error: insertError } = await supabase.from('notificaciones').insert({
+      taller_id: orden.taller_id,
+      cliente_id: orden.cliente_id,
       orden_id: ordenId,
       tipo,
       mensaje,
       estado: 'enviada',
     })
+    if (insertError) console.error('Error guardando notificación:', insertError)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

@@ -96,10 +96,12 @@ export async function enviarResenaOrden(ordenId: string, tallerId: string): Prom
     if (!yaEnviado?.length) {
       const mensaje = personalizar(config.mensaje_whatsapp, vars)
       let exito = true
+      let errorMensaje: string | null = null
       try {
         await enviarWhatsApp(cliente.telefono, mensaje)
-      } catch {
+      } catch (err: any) {
         exito = false
+        errorMensaje = err?.message ?? 'Error desconocido enviando WhatsApp'
       }
 
       await admin.from('resenas_enviadas').insert({
@@ -111,6 +113,7 @@ export async function enviarResenaOrden(ordenId: string, tallerId: string): Prom
         tipo: 'google_my_business',
         url_resena: config.google_review_url,
         mensaje_enviado: mensaje,
+        error_mensaje: errorMensaje,
       })
 
       resultados.whatsapp = exito ? 'enviado' : 'fallido'
@@ -141,6 +144,7 @@ export async function enviarResenaOrden(ordenId: string, tallerId: string): Prom
         tipo: 'google_my_business',
         url_resena: config.google_review_url,
         mensaje_enviado: asunto,
+        error_mensaje: exito ? null : 'Error enviando el correo vía Resend',
       })
 
       resultados.email = exito ? 'enviado' : 'fallido'
@@ -174,8 +178,12 @@ async function enviarEmail(
       }),
     })
 
+    if (!res.ok) {
+      console.error('Resend error:', await res.text())
+    }
     return res.ok
-  } catch {
+  } catch (err) {
+    console.error('Error enviando email de reseña:', err)
     return false
   }
 }

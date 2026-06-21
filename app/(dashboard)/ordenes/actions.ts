@@ -72,6 +72,18 @@ export async function crearOrden(datos: OrdenForm) {
     nota: 'Orden creada',
   }]
 
+  // Recalculamos los totales en el servidor en vez de confiar en los que
+  // mandó el cliente — solo se confía en servicios_realizados y la tasa de
+  // IVA (acotada a un rango razonable, ya que varía por país).
+  const subtotalCalc = Math.round(
+    datos.servicios_realizados.reduce((acc, s) => acc + s.cantidad * s.precio_unitario, 0) * 100
+  ) / 100
+  const tasaIvaCalc   = Math.min(Math.max(datos.tasa_iva || 0, 0), 0.3)
+  const descuentoCalc = Math.min(Math.max(datos.descuento || 0, 0), subtotalCalc)
+  const baseIvaCalc   = Math.max(0, subtotalCalc - descuentoCalc)
+  const impuestosCalc = Math.round(baseIvaCalc * tasaIvaCalc * 100) / 100
+  const totalCalc     = Math.round((baseIvaCalc + impuestosCalc) * 100) / 100
+
   const { error, data } = await supabase.from('ordenes').insert({
     taller_id:            tallerId,
     cliente_id:           datos.cliente_id || null,
@@ -88,11 +100,11 @@ export async function crearOrden(datos: OrdenForm) {
     estado:               datos.estado,
     fecha_entrada:        datos.fecha_entrada,
     fecha_prometida:      datos.fecha_prometida  || null,
-    subtotal:             datos.subtotal,
-    descuento:            datos.descuento,
-    impuestos:            datos.impuestos,
-    tasa_iva:             datos.tasa_iva,
-    total:                datos.total,
+    subtotal:             subtotalCalc,
+    descuento:            descuentoCalc,
+    impuestos:            impuestosCalc,
+    tasa_iva:             tasaIvaCalc,
+    total:                totalCalc,
     forma_pago:           datos.forma_pago,
     notas_internas:       datos.notas_internas   || null,
     historial:            historialInicial,
@@ -148,6 +160,7 @@ export async function cambiarEstado(
     .from('ordenes')
     .update(actualizacion)
     .eq('id', ordenId)
+    .eq('taller_id', orden.taller_id)
 
   if (error) return { error: error.message }
 

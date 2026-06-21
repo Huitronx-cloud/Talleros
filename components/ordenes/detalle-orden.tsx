@@ -77,12 +77,15 @@ export default function DetalleOrden({
   const [costoExtra, setCostoExtra]             = useState('')
   const [enviandoPdf, setEnviandoPdf] = useState(false)
 const [pdfEnviado, setPdfEnviado]   = useState(false)
+  const [errorEstado, setErrorEstado] = useState('')
+  const [errorComunicacion, setErrorComunicacion] = useState('')
 
   const siguienteEstado = ESTADOS_SIGUIENTE[estadoActual]
 
   const handleCambiarEstado = async () => {
   if (!siguienteEstado) return
   setCambiando(true)
+  setErrorEstado('')
   const resultado = await cambiarEstado(orden.id, siguienteEstado)
   if (!resultado.error) {
     setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
@@ -92,6 +95,8 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
       fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
         .catch(console.error)
     }
+  } else {
+    setErrorEstado(resultado.error)
   }
   setCambiando(false)
 }
@@ -104,12 +109,19 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
 
   const handleEnviarWhatsApp = async () => {
     setEnviandoWA(true)
+    setErrorComunicacion('')
     try {
-      await fetch('/api/notificaciones', {
+      const res = await fetch('/api/notificaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo: 'orden_lista', ordenId: orden.id }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErrorComunicacion(data.error ?? 'No se pudo enviar el WhatsApp.')
+      }
+    } catch {
+      setErrorComunicacion('No se pudo enviar el WhatsApp.')
     } finally { setEnviandoWA(false) }
   }
 
@@ -128,50 +140,80 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
   const handleSolicitarAprobacion = async () => {
     if (!servicioExtra || !costoExtra) return
     setEnviandoAprobacion(true)
+    setErrorComunicacion('')
     try {
-      await fetch('/api/notificaciones', {
+      const res = await fetch('/api/notificaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo: 'aprobacion_extra', ordenId: orden.id, servicioExtra, costoExtra }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErrorComunicacion(data.error ?? 'No se pudo enviar la solicitud.')
+        return
+      }
       setServicioExtra('')
       setCostoExtra('')
+    } catch {
+      setErrorComunicacion('No se pudo enviar la solicitud.')
     } finally { setEnviandoAprobacion(false) }
   }
 
   const handleEnviarPortal = async () => {
     setEnviandoPortal(true)
+    setErrorComunicacion('')
     try {
       const res = await fetch('/api/portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ordenId: orden.id }),
       })
-      const data = await res.json()
-      if (data.url) setPortalUrl(data.url)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.url) {
+        setErrorComunicacion(data.error ?? 'No se pudo generar el link del portal.')
+        return
+      }
+      setPortalUrl(data.url)
+    } catch {
+      setErrorComunicacion('No se pudo generar el link del portal.')
     } finally { setEnviandoPortal(false) }
   }
 
   const handleEnviarGarantia = async () => {
     setEnviandoGarantia(true)
+    setErrorComunicacion('')
     try {
-      await fetch('/api/notificaciones', {
+      const res = await fetch('/api/notificaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo: 'garantia', ordenId: orden.id, garantiaDias, garantiaKm }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErrorComunicacion(data.error ?? 'No se pudo enviar la garantía.')
+      }
+    } catch {
+      setErrorComunicacion('No se pudo enviar la garantía.')
     } finally { setEnviandoGarantia(false) }
   }
 
   const handleProgramarRecordatorio = async () => {
     setProgramandoRecordatorio(true)
+    setErrorComunicacion('')
     try {
-      await fetch('/api/recordatorio', {
+      const res = await fetch('/api/recordatorio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ordenId: orden.id, meses: mesesRecordatorio }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErrorComunicacion(data.error ?? 'No se pudo programar el recordatorio.')
+        return
+      }
       setRecordatorioProgramado(true)
+    } catch {
+      setErrorComunicacion('No se pudo programar el recordatorio.')
     } finally { setProgramandoRecordatorio(false) }
   }
 
@@ -202,14 +244,19 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
 
         {/* Botón cambio de estado — siempre visible y prominente */}
         {siguienteEstado && (
-          <button
-            onClick={handleCambiarEstado}
-            disabled={cambiando}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-sm"
-          >
-            {cambiando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {LABEL_SIGUIENTE[estadoActual]}
-          </button>
+          <div className="flex flex-col items-end gap-1.5">
+            <button
+              onClick={handleCambiarEstado}
+              disabled={cambiando}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-sm"
+            >
+              {cambiando && <Loader2 className="w-4 h-4 animate-spin" />}
+              {LABEL_SIGUIENTE[estadoActual]}
+            </button>
+            {errorEstado && (
+              <p className="text-xs text-red-600 max-w-[220px] text-right">{errorEstado}</p>
+            )}
+          </div>
         )}
       </div>
 
@@ -435,6 +482,10 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
       ══════════════════════════════════════════ */}
       {tabActivo === 'comunicacion' && (
         <div className="space-y-5">
+
+          {errorComunicacion && (
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{errorComunicacion}</p>
+          )}
 
           {/* Fotos de diagnóstico */}
           <FotosDiagnostico ordenId={orden.id} tallerId={orden.taller_id as string} />

@@ -32,6 +32,7 @@ export default function RegistroClient() {
   const [registroExitoso, setRegistroExitoso] = useState(false)
   const [trialFin, setTrialFin] = useState('')
   const [verPassword, setVerPassword] = useState(false)
+  const [cuentaDuplicada, setCuentaDuplicada] = useState(false)
 
   const [form, setForm] = useState({
     nombre_taller: '',
@@ -45,6 +46,7 @@ export default function RegistroClient() {
   function actualizar(campo: keyof typeof form, valor: string) {
     setForm(prev => ({ ...prev, [campo]: valor }))
     setError('')
+    setCuentaDuplicada(false)
   }
 
   function validarPaso1() {
@@ -57,6 +59,9 @@ export default function RegistroClient() {
     if (!form.nombre_propietario.trim()) return 'Escribe tu nombre completo.'
     if (!form.email.trim()) return 'Escribe tu correo electrónico.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'El correo no es válido.'
+    if (form.telefono.trim() && form.telefono.replace(/\D/g, '').length < 8) {
+      return 'El número de WhatsApp no es válido. Déjalo vacío si no lo tienes a la mano.'
+    }
     if (!form.password) return 'Crea una contraseña.'
     if (form.password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
     return ''
@@ -75,6 +80,7 @@ export default function RegistroClient() {
 
     setCargando(true)
     setError('')
+    setCuentaDuplicada(false)
 
     try {
       const res = await fetch('/api/talleres/registro', {
@@ -93,6 +99,7 @@ export default function RegistroClient() {
 
       if (!res.ok) {
         setError(data.error ?? 'Error al registrar. Intenta de nuevo.')
+        setCuentaDuplicada(res.status === 409)
         return
       }
 
@@ -374,7 +381,14 @@ export default function RegistroClient() {
                 </div>
 
                 {error && (
-                  <p className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>
+                  <div className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">
+                    <p>{error}</p>
+                    {cuentaDuplicada && (
+                      <a href="/login" className="font-semibold underline underline-offset-2">
+                        Ir a iniciar sesión →
+                      </a>
+                    )}
+                  </div>
                 )}
 
                 <button

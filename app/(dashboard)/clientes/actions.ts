@@ -36,6 +36,25 @@ export async function crearCliente(datos: ClienteForm) {
     return { error: 'Alcanzaste el límite de clientes de tu plan. Actualiza tu plan para seguir agregando clientes.' }
   }
 
+  if (datos.telefono?.trim()) {
+    const { data: porTelefono } = await supabase
+      .from('clientes')
+      .select('id')
+      .eq('taller_id', tallerId)
+      .eq('telefono', datos.telefono.trim())
+      .limit(1)
+    if (porTelefono?.length) return { error: 'Ya existe un cliente con ese teléfono.' }
+  }
+  if (datos.email?.trim()) {
+    const { data: porEmail } = await supabase
+      .from('clientes')
+      .select('id')
+      .eq('taller_id', tallerId)
+      .eq('email', datos.email.trim())
+      .limit(1)
+    if (porEmail?.length) return { error: 'Ya existe un cliente con ese correo.' }
+  }
+
   const { error } = await supabase.from('clientes').insert({
     ...datos,
     vehiculo_año: datos.vehiculo_año ? Number(datos.vehiculo_año) : null,
@@ -62,8 +81,10 @@ export async function crearCliente(datos: ClienteForm) {
       const mensaje = `Hola ${nombreCliente} 👋 Te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. ¡Gracias por preferirnos! 🔧`
 
       await enviarWhatsApp(telefonoLimpio, mensaje)
-    } catch {
-      // Si falla el WhatsApp no bloqueamos el registro del cliente
+    } catch (err) {
+      // Si falla el WhatsApp no bloqueamos el registro del cliente,
+      // pero dejamos rastro del error para poder diagnosticarlo.
+      console.error('Error enviando WhatsApp de bienvenida:', err)
     }
   }
 
@@ -73,6 +94,8 @@ export async function crearCliente(datos: ClienteForm) {
 
 export async function editarCliente(id: string, datos: ClienteForm) {
   const supabase = createClient()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
 
   const { error } = await supabase
     .from('clientes')
@@ -81,6 +104,7 @@ export async function editarCliente(id: string, datos: ClienteForm) {
       vehiculo_año: datos.vehiculo_año ? Number(datos.vehiculo_año) : null,
     })
     .eq('id', id)
+    .eq('taller_id', tallerId)
 
   if (error) return { error: error.message }
   revalidatePath('/clientes')
@@ -89,11 +113,14 @@ export async function editarCliente(id: string, datos: ClienteForm) {
 
 export async function eliminarCliente(id: string) {
   const supabase = createClient()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
 
   const { error } = await supabase
     .from('clientes')
     .delete()
     .eq('id', id)
+    .eq('taller_id', tallerId)
 
   if (error) return { error: error.message }
   revalidatePath('/clientes')

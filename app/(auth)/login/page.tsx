@@ -40,19 +40,22 @@ export default function LoginPage() {
             .from('usuarios')
             .select('talleres(onboarding_completo)')
             .single()
-            .then(({ data }) => {
-              const raw    = data?.talleres
-              const taller = (Array.isArray(raw) ? raw[0] : raw) as { onboarding_completo: boolean } | null
-              if (type === 'recovery') {
-                router.push('/nueva-password')
-              } else {
-                router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
+            .then(
+              ({ data }) => {
+                const raw    = data?.talleres
+                const taller = (Array.isArray(raw) ? raw[0] : raw) as { onboarding_completo: boolean } | null
+                if (type === 'recovery') {
+                  router.push('/nueva-password')
+                } else {
+                  router.push(taller?.onboarding_completo === false ? '/onboarding' : '/dashboard')
+                }
+              },
+              () => {
+                // La sesión ya quedó establecida arriba; si esta consulta falla
+                // no tiene sentido mostrar un error — simplemente vamos al dashboard.
+                router.push('/dashboard')
               }
-            })
-            .catch(() => {
-              setError('Error al verificar tu sesión. Intenta iniciar sesión manualmente.')
-              setCargando(false)
-            })
+            )
         }
       })
     }

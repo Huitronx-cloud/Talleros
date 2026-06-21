@@ -120,18 +120,27 @@ function KanbanMovil({ ordenes }: { ordenes: Orden[] }) {
   const router = useRouter()
   const [tabActivo, setTabActivo]   = useState<EstadoOrden>('recibido')
   const [moviendo, setMoviendo]     = useState<string | null>(null)
+  const [error, setError]           = useState('')
 
   const tarjetas = ordenes.filter(o => o.estado === tabActivo)
 
   const moverOrden = async (ordenId: string, nuevoEstado: EstadoOrden) => {
     setMoviendo(ordenId)
-    await cambiarEstado(ordenId, nuevoEstado)
+    setError('')
+    const resultado = await cambiarEstado(ordenId, nuevoEstado)
     setMoviendo(null)
+    if (resultado.error) {
+      setError(resultado.error)
+      return
+    }
     router.refresh()
   }
 
   return (
     <div className="space-y-3">
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+      )}
       {/* Tabs */}
       <div className="flex rounded-xl border border-gray-200 bg-gray-50 p-1 gap-1">
         {COLUMNAS.map(col => {
@@ -213,6 +222,7 @@ function KanbanDesktop({ ordenes }: { ordenes: Orden[] }) {
   const [arrastrando, setArrastrando]   = useState<string | null>(null)
   const [sobreColumna, setSobreColumna] = useState<EstadoOrden | null>(null)
   const [moviendo, setMoviendo]         = useState<string | null>(null)
+  const [error, setError]               = useState('')
 
   const handleDragStart = (e: React.DragEvent, ordenId: string) => {
     e.dataTransfer.setData('ordenId', ordenId)
@@ -234,12 +244,21 @@ function KanbanDesktop({ ordenes }: { ordenes: Orden[] }) {
       return
     }
 
+    const estadoAnterior = orden.estado
+    setError('')
     setOrdenesState(prev => prev.map(o => o.id === ordenId ? { ...o, estado: nuevoEstado } : o))
     setArrastrando(null)
     setSobreColumna(null)
     setMoviendo(ordenId)
-    await cambiarEstado(ordenId, nuevoEstado)
+    const resultado = await cambiarEstado(ordenId, nuevoEstado)
     setMoviendo(null)
+
+    if (resultado.error) {
+      // Revertimos el cambio óptimista si la actualización falló de verdad
+      setOrdenesState(prev => prev.map(o => o.id === ordenId ? { ...o, estado: estadoAnterior } : o))
+      setError(resultado.error)
+      return
+    }
     router.refresh()
   }
 
@@ -249,7 +268,11 @@ function KanbanDesktop({ ordenes }: { ordenes: Orden[] }) {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="space-y-3">
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+      )}
+      <div className="flex gap-4 overflow-x-auto pb-4">
       {COLUMNAS.map(col => {
         const tarjetas = ordenesState.filter(o => o.estado === col.id)
         const esSobre  = sobreColumna === col.id
@@ -303,6 +326,7 @@ function KanbanDesktop({ ordenes }: { ordenes: Orden[] }) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

@@ -65,18 +65,22 @@ export async function POST(req: Request) {
 
     const userId = authData.user.id
 
-    // ── 2. Esperar trigger ───────────────────────────────────────────────────
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    // ── 3. Obtener taller_id que creó el trigger ─────────────────────────────
-    const { data: usuario } = await supabaseAdmin
-      .from('usuarios')
-      .select('taller_id')
-      .eq('id', userId)
-      .single()
+    // ── 2. Esperar al trigger que crea taller/usuario (reintentos con backoff) ─
+    let usuario: { taller_id: string | null } | null = null
+    const ESPERAS_MS = [200, 300, 500, 800, 1200]
+    for (const espera of ESPERAS_MS) {
+      await new Promise(resolve => setTimeout(resolve, espera))
+      const { data } = await supabaseAdmin
+        .from('usuarios')
+        .select('taller_id')
+        .eq('id', userId)
+        .single()
+      if (data?.taller_id) { usuario = data; break }
+    }
 
     if (!usuario?.taller_id) {
-      console.error('No se encontró taller_id después del trigger')
+      console.error('No se encontró taller_id después del trigger — revirtiendo usuario', userId)
+      await supabaseAdmin.auth.admin.deleteUser(userId)
       return NextResponse.json(
         { error: 'Error al configurar el taller. Intenta de nuevo.' },
         { status: 500 }
@@ -84,17 +88,20 @@ export async function POST(req: Request) {
     }
 
     // ── 4. Actualizar taller con datos reales ────────────────────────────────
-    await supabaseAdmin
+    const { error: tallerUpdateError } = await supabaseAdmin
       .from('talleres')
       .update({ nombre: nombre_taller.trim(), pais })
       .eq('id', usuario.taller_id)
+    if (tallerUpdateError) console.error('Error actualizando taller:', tallerUpdateError)
 
     // ── 4b. Guardar teléfono del propietario (para WhatsApp) ─────────────────
-    if (telefono?.trim()) {
-      await supabaseAdmin
+    const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
+    if (telefonoLimpio.length >= 8) {
+      const { error: telefonoUpdateError } = await supabaseAdmin
         .from('usuarios')
         .update({ telefono: telefono.trim() })
         .eq('id', userId)
+      if (telefonoUpdateError) console.error('Error guardando teléfono:', telefonoUpdateError)
     }
 
     // ── 5. Generar magic link para acceso directo al onboarding ──────────────

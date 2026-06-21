@@ -4,40 +4,64 @@ import { useState, useRef } from 'react'
 import { Camera, Loader2, Send } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
+const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+const TAMAÑO_MAXIMO_MB = 5
+
 export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: string; tallerId: string }) {
   const [fotos, setFotos] = useState<{ url: string; descripcion: string }[]>([])
   const [subiendo, setSubiendo] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [descripcion, setDescripcion] = useState('')
+  const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   const handleSubirFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    setError('')
+
+    if (!TIPOS_PERMITIDOS.includes(file.type)) {
+      setError('Formato no soportado. Sube una foto en JPG, PNG, WEBP o HEIC.')
+      return
+    }
+    if (file.size > TAMAÑO_MAXIMO_MB * 1024 * 1024) {
+      setError(`La foto pesa demasiado. El máximo es ${TAMAÑO_MAXIMO_MB} MB.`)
+      return
+    }
+
     setSubiendo(true)
 
     const ext = file.name.split('.').pop()
     const path = `${tallerId}/${ordenId}/${Date.now()}.${ext}`
 
-    const { error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('diagnosticos')
       .upload(path, file)
 
-    if (error) {
-      console.error('Error subiendo foto:', error)
+    if (uploadError) {
+      console.error('Error subiendo foto:', uploadError)
+      setError('No se pudo subir la foto. Intenta de nuevo.')
       setSubiendo(false)
       return
     }
 
     const { data } = supabase.storage.from('diagnosticos').getPublicUrl(path)
 
-    await supabase.from('fotos_diagnostico').insert({
+    const { error: insertError } = await supabase.from('fotos_diagnostico').insert({
       orden_id: ordenId,
       taller_id: tallerId,
       url: data.publicUrl,
       descripcion,
     })
+
+    if (insertError) {
+      console.error('Error guardando foto:', insertError)
+      await supabase.storage.from('diagnosticos').remove([path])
+      setError('No se pudo guardar la foto. Intenta de nuevo.')
+      setSubiendo(false)
+      return
+    }
 
     setFotos(prev => [...prev, { url: data.publicUrl, descripcion }])
     setDescripcion('')
@@ -47,8 +71,9 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
   const handleEnviarFotos = async () => {
     if (fotos.length === 0) return
     setEnviando(true)
+    setError('')
     try {
-      await fetch('/api/notificaciones', {
+      const res = await fetch('/api/notificaciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -57,8 +82,13 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
           fotos,
         }),
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error ?? 'No se pudieron enviar las fotos por WhatsApp.')
+      }
     } catch (error) {
       console.error('Error:', error)
+      setError('No se pudieron enviar las fotos por WhatsApp.')
     } finally {
       setEnviando(false)
     }
@@ -71,6 +101,10 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
         <h3 className="text-sm font-semibold text-gray-900">Fotos del diagnóstico</h3>
       </div>
       <p className="text-xs text-gray-400 mb-4">Sube fotos del problema y envíaselas al cliente por WhatsApp.</p>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg mb-3">{error}</p>
+      )}
 
       <div className="space-y-3 mb-4">
         <input
