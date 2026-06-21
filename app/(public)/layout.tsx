@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic'
 
-const SoporteWidget    = dynamic(() => import('@/components/soporte-widget'), { ssr: false })
 const WhatsappFlotante = dynamic(() => import('@/components/whatsapp-flotante'), { ssr: false })
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -8,7 +7,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <>
       {children}
       <WhatsappFlotante />
-      <SoporteWidget />
     </>
   )
 }
