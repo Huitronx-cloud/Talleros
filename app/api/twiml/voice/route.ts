@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Pause length="60"/>
+  <Record maxLength="30" transcribe="true" transcribeCallback="https://tallerosapp.com/api/twiml/transcribe"/>
 </Response>`
 
   return new NextResponse(twiml, {
@@ -14,7 +14,7 @@ export async function GET() {
 export async function POST() {
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Pause length="30"/>
+  <Record maxLength="30" transcribe="true" transcribeCallback="https://tallerosapp.com/api/twiml/transcribe"/>
 </Response>`
 
   return new NextResponse(twiml, {
