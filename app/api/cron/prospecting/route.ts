@@ -17,13 +17,27 @@ const CIUDADES = [
   { nombre: 'Guadalajara, Jalisco',        pais: 'MX', idioma: 'es' },
   { nombre: 'Puebla, México',              pais: 'MX', idioma: 'es' },
   { nombre: 'Tijuana, Baja California',    pais: 'MX', idioma: 'es' },
+  { nombre: 'León, Guanajuato',            pais: 'MX', idioma: 'es' },
+  { nombre: 'Querétaro, México',           pais: 'MX', idioma: 'es' },
+  { nombre: 'Mérida, Yucatán',             pais: 'MX', idioma: 'es' },
   // Colombia
   { nombre: 'Bogotá, Colombia',            pais: 'CO', idioma: 'es' },
   { nombre: 'Medellín, Colombia',          pais: 'CO', idioma: 'es' },
   { nombre: 'Cali, Colombia',              pais: 'CO', idioma: 'es' },
+  { nombre: 'Barranquilla, Colombia',      pais: 'CO', idioma: 'es' },
+  { nombre: 'Bucaramanga, Colombia',       pais: 'CO', idioma: 'es' },
   // Perú
   { nombre: 'Lima, Perú',                  pais: 'PE', idioma: 'es' },
   { nombre: 'Arequipa, Perú',              pais: 'PE', idioma: 'es' },
+  { nombre: 'Trujillo, Perú',              pais: 'PE', idioma: 'es' },
+  // Argentina
+  { nombre: 'Buenos Aires, Argentina',     pais: 'AR', idioma: 'es' },
+  { nombre: 'Córdoba, Argentina',          pais: 'AR', idioma: 'es' },
+  { nombre: 'Rosario, Argentina',          pais: 'AR', idioma: 'es' },
+  // Chile
+  { nombre: 'Santiago, Chile',             pais: 'CL', idioma: 'es' },
+  { nombre: 'Valparaíso, Chile',           pais: 'CL', idioma: 'es' },
+  { nombre: 'Concepción, Chile',           pais: 'CL', idioma: 'es' },
 ]
 
 const TERMINOS_BUSQUEDA = [
@@ -31,6 +45,12 @@ const TERMINOS_BUSQUEDA = [
   'taller automotriz',
   'mecánica automotriz',
   'servicio automotriz',
+  'taller de frenos',
+  'alineación y balanceo',
+  'taller eléctrico automotriz',
+  'taller de transmisiones',
+  'hojalatería y pintura',
+  'taller de suspensión',
 ]
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
