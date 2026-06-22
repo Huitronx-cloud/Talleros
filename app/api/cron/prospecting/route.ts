@@ -134,6 +134,7 @@ async function sincronizarLeadCRM(prospecto: Prospecto, etapa: 'nuevo' | 'contac
     await supabase.from('crm_leads').upsert({
       nombre:          prospecto.nombre,
       telefono:        telefonoNormalizado,
+      email:           prospecto.email,
       direccion:       prospecto.direccion,
       ciudad:          prospecto.ciudad,
       pais:            prospecto.pais,
@@ -144,6 +145,40 @@ async function sincronizarLeadCRM(prospecto: Prospecto, etapa: 'nuevo' | 'contac
     }, { onConflict: telefonoNormalizado ? 'telefono' : 'google_place_id' })
   } catch (e) {
     console.error('Error sincronizando lead CRM:', e)
+  }
+}
+
+// ── Extraer email del sitio web del prospecto ────────────────────────────────
+// Google Places no devuelve email — lo buscamos en el HTML del sitio (mailto:
+// primero, luego cualquier email visible en el texto).
+const DOMINIOS_EMAIL_IGNORADOS = ['sentry.io', 'wixpress.com', 'example.com', 'godaddy.com', 'cloudflare.com', 'schema.org']
+
+function emailValido(email: string): boolean {
+  const dominio = email.toLowerCase()
+  return !DOMINIOS_EMAIL_IGNORADOS.some(d => dominio.endsWith(`@${d}`) || dominio.includes(`.${d}`))
+}
+
+async function extraerEmailDeWebsite(url: string): Promise<string | null> {
+  try {
+    const controller = new AbortController()
+    const timeoutId   = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch(url, {
+      signal:  controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TallerOSBot/1.0)' },
+    })
+    clearTimeout(timeoutId)
+    if (!res.ok) return null
+
+    const html = await res.text()
+
+    const mailto = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i)
+    if (mailto && emailValido(mailto[1])) return mailto[1].toLowerCase()
+
+    const enTexto = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) ?? []
+    const valido  = enTexto.find(emailValido)
+    return valido?.toLowerCase() ?? null
+  } catch {
+    return null
   }
 }
 
@@ -346,7 +381,7 @@ export async function GET(req: NextRequest) {
       const prospecto: Prospecto = {
         nombre:          detalles.name ?? lugar.name,
         telefono:        detalles.formatted_phone_number ?? null,
-        email:           null, // Google Maps no da email — se puede extraer del website
+        email:           null, // Google Maps no da email — se busca en el website
         direccion:       detalles.formatted_address ?? null,
         ciudad:          ciudadHoy.nombre,
         pais:            ciudadHoy.pais,
@@ -355,8 +390,17 @@ export async function GET(req: NextRequest) {
         rating:          detalles.rating ?? null,
       }
 
+      if (prospecto.website) {
+        prospecto.email = await extraerEmailDeWebsite(prospecto.website)
+      }
+
       // Registrar siempre para no volver a procesar
       await registrarContacto(prospecto)
+
+      // Canal de email — independiente del canal de WhatsApp
+      if (prospecto.email) {
+        await agregarABrevo(prospecto)
+      }
 
       // Enviar WhatsApp si tiene teléfono (requiere plantilla aprobada por Meta)
       if (prospecto.telefono) {
@@ -364,17 +408,17 @@ export async function GET(req: NextRequest) {
         if (resultado.ok) {
           await registrarContacto(prospecto)
           await sincronizarLeadCRM(prospecto, 'contactado')
-          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
         } else {
           // Registrar fallidos también para no reintentar
           await registrarContacto(prospecto, resultado.error)
           await sincronizarLeadCRM(prospecto, 'nuevo')
-          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}`)
+          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''}`)
         }
       } else if (prospecto.website) {
-        // Sin teléfono pero tiene website — lista para seguimiento manual
-        await sincronizarLeadCRM(prospecto, 'nuevo')
-        contactados.push(`${prospecto.nombre} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
+        // Sin teléfono pero tiene website — lista para seguimiento manual (o ya contactado por email)
+        await sincronizarLeadCRM(prospecto, prospecto.email ? 'contactado' : 'nuevo')
+        contactados.push(`${prospecto.nombre}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
       } else {
         // Sin teléfono ni website — no es un lead gestionable, no se sincroniza al CRM
         omitidos.push(`${prospecto.nombre} (sin datos de contacto)`)
@@ -418,7 +462,7 @@ export async function GET(req: NextRequest) {
               ` : ''}
               <div style="background:#eff6ff;border-radius:10px;padding:14px;margin-top:20px;border:1px solid #bfdbfe;">
                 <p style="margin:0;font-size:13px;color:#1d4ed8;line-height:1.6;">
-                  💡 <strong>Próximos pasos:</strong> Los talleres con 🌐 website puedes visitarlos para encontrar su email y contactarlos manualmente. Los que tienen 📞 teléfono recibirán WhatsApp automático cuando Meta apruebe la plantilla.
+                  💡 <strong>Próximos pasos:</strong> Los que tienen 📧 email ya recibieron el correo de prospección automático. Los talleres con 🌐 website pero sin 📧 no tenían un email visible en su sitio — puedes visitarlos para buscarlo manualmente.
                 </p>
               </div>
             </div>
