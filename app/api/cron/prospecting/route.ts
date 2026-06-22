@@ -447,22 +447,24 @@ export async function GET(req: NextRequest) {
         : ''
 
       // Enviar WhatsApp si tiene teléfono (requiere plantilla aprobada por Meta)
+      let whatsappEnviado = false
+      let tagWhatsapp = ''
       if (prospecto.telefono) {
         const resultado = await enviarWhatsAppFrio(prospecto)
-        if (resultado.ok) {
-          await registrarContacto(prospecto)
-          await sincronizarLeadCRM(prospecto, 'contactado')
-          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${tagEmail}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
-        } else {
-          // Registrar fallidos también para no reintentar
-          await registrarContacto(prospecto, resultado.error)
-          await sincronizarLeadCRM(prospecto, emailEnviado ? 'contactado' : 'nuevo')
-          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}${tagEmail}`)
-        }
-      } else if (prospecto.website) {
-        // Sin teléfono pero tiene website — lista para seguimiento manual (o ya contactado por email)
-        await sincronizarLeadCRM(prospecto, emailEnviado ? 'contactado' : 'nuevo')
-        contactados.push(`${prospecto.nombre}${tagEmail} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
+        whatsappEnviado = resultado.ok
+        await registrarContacto(prospecto, resultado.ok ? undefined : resultado.error)
+        tagWhatsapp = resultado.ok ? ` | 📞 ${prospecto.telefono}` : ` | ⚠️ whatsapp falló (${resultado.error})`
+      }
+
+      // "Contactado" = al menos un canal (email o WhatsApp) tuvo éxito. Antes solo
+      // contaba si WhatsApp funcionaba, y casi todo negocio en Google Maps tiene
+      // teléfono, así que un email exitoso quedaba enterrado en "omitidos".
+      if (emailEnviado || whatsappEnviado) {
+        await sincronizarLeadCRM(prospecto, 'contactado')
+        contactados.push(`${prospecto.nombre}${tagEmail}${tagWhatsapp}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+      } else if (prospecto.telefono || prospecto.website) {
+        await sincronizarLeadCRM(prospecto, 'nuevo')
+        omitidos.push(`${prospecto.nombre} (sin canal exitoso)${tagEmail}${tagWhatsapp}`)
       } else {
         // Sin teléfono ni website — no es un lead gestionable, no se sincroniza al CRM
         omitidos.push(`${prospecto.nombre} (sin datos de contacto)`)
