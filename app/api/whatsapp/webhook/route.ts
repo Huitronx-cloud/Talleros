@@ -243,8 +243,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET para verificación de Twilio
-export async function GET() {
+// GET para verificación de Meta WhatsApp Cloud API y Twilio
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const mode      = searchParams.get('hub.mode')
+  const token     = searchParams.get('hub.verify_token')
+  const challenge = searchParams.get('hub.challenge')
+
+  if (mode === 'subscribe' && token === process.env.CRON_SECRET) {
+    return new NextResponse(challenge, { status: 200 })
+  }
+
   return new NextResponse(
     `<?xml version="1.0" encoding="UTF-8"?><Response></Response>`,
     { status: 200, headers: { 'Content-Type': 'text/xml' } }
