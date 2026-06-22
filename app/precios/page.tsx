@@ -11,11 +11,13 @@ export default async function PreciosPage() {
 
   const { data: usuario } = await supabase
     .from('usuarios')
-    .select('taller_id')
+    .select('taller_id, talleres(pais)')
     .eq('id', user.id)
     .single()
 
   if (!usuario?.taller_id) redirect('/login')
 
-  return <PreciosClient tallerId={usuario.taller_id} />
+  const pais = (usuario.talleres as unknown as { pais: string | null } | null)?.pais ?? null
+
+  return <PreciosClient tallerId={usuario.taller_id} pais={pais} />
 }

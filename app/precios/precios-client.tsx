@@ -12,6 +12,19 @@ const MONEDAS = [
   { codigo: 'CLP', bandera: '🇨🇱', factor: 930 },
 ]
 
+const PAIS_A_MONEDA: Record<string, string> = {
+  MX: 'MXN',
+  CO: 'COP',
+  PE: 'PEN',
+  AR: 'ARS',
+  CL: 'CLP',
+}
+
+function monedaPorPais(pais: string | null | undefined) {
+  const codigo = pais ? PAIS_A_MONEDA[pais] : undefined
+  return MONEDAS.find(m => m.codigo === codigo) ?? MONEDAS[0]
+}
+
 const BASE_MENSUAL = { esencial: 19, pro: 39 }
 const BASE_ANUAL   = { esencial: 15, pro: 31 }
 
@@ -59,8 +72,8 @@ function formatPrecio(usd: number, moneda: typeof MONEDAS[0]): string {
   return base.toLocaleString('es', { maximumFractionDigits: grande ? 0 : 0 })
 }
 
-export default function PreciosClient({ tallerId }: { tallerId: string }) {
-  const [moneda,  setMoneda]  = useState(MONEDAS[1])
+export default function PreciosClient({ tallerId, pais }: { tallerId: string; pais?: string | null }) {
+  const [moneda,  setMoneda]  = useState(() => monedaPorPais(pais))
   const [anual,   setAnual]   = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [error,   setError]   = useState<string | null>(null)
