@@ -203,10 +203,12 @@ async function extraerEmailDeWebsite(url: string): Promise<string | null> {
 }
 
 // ── Agregar a Brevo ───────────────────────────────────────────────────────────
-async function agregarABrevo(prospecto: Prospecto): Promise<void> {
-  if (!prospecto.email) return
+async function agregarABrevo(prospecto: Prospecto): Promise<{ ok: boolean; error?: string }> {
+  if (!prospecto.email) return { ok: false, error: 'sin_email' }
+
+  // Sincronizar a la lista de contactos — no crítico, solo se loguea si falla
   try {
-    await fetch('https://api.brevo.com/v3/contacts', {
+    const resContacto = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -222,9 +224,16 @@ async function agregarABrevo(prospecto: Prospecto): Promise<void> {
         updateEnabled: true,
       }),
     })
+    if (!resContacto.ok) {
+      console.error(`Brevo contacto error (${resContacto.status}) para ${prospecto.email}: ${await resContacto.text().catch(() => '')}`)
+    }
+  } catch (e) {
+    console.error('Brevo contacto fetch error:', e)
+  }
 
-    // Enviar email de prospección frío
-    await fetch('https://api.brevo.com/v3/smtp/email', {
+  // Enviar email de prospección frío — esto es lo que realmente importa
+  try {
+    const resEmail = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -234,8 +243,15 @@ async function agregarABrevo(prospecto: Prospecto): Promise<void> {
         htmlContent: emailFrio(prospecto),
       }),
     })
-  } catch (e) {
-    console.error('Brevo error:', e)
+    if (!resEmail.ok) {
+      const detalle = await resEmail.text().catch(() => '')
+      console.error(`Brevo email error (${resEmail.status}) para ${prospecto.email}: ${detalle}`)
+      return { ok: false, error: `brevo_${resEmail.status}` }
+    }
+    return { ok: true }
+  } catch (e: any) {
+    console.error('Brevo email fetch error:', e)
+    return { ok: false, error: 'fetch_error' }
   }
 }
 
@@ -418,9 +434,17 @@ export async function GET(req: NextRequest) {
       await registrarContacto(prospecto)
 
       // Canal de email — independiente del canal de WhatsApp
+      let emailEnviado = false
       if (prospecto.email) {
-        await agregarABrevo(prospecto)
+        const resultadoEmail = await agregarABrevo(prospecto)
+        emailEnviado = resultadoEmail.ok
+        if (!resultadoEmail.ok) {
+          console.error(`Email frío falló para ${prospecto.nombre} (${prospecto.email}): ${resultadoEmail.error}`)
+        }
       }
+      const tagEmail = prospecto.email
+        ? (emailEnviado ? ` | 📧 ${prospecto.email}` : ` | ⚠️ email falló (${prospecto.email})`)
+        : ''
 
       // Enviar WhatsApp si tiene teléfono (requiere plantilla aprobada por Meta)
       if (prospecto.telefono) {
@@ -428,17 +452,17 @@ export async function GET(req: NextRequest) {
         if (resultado.ok) {
           await registrarContacto(prospecto)
           await sincronizarLeadCRM(prospecto, 'contactado')
-          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
+          contactados.push(`✅ ${prospecto.nombre} | 📞 ${prospecto.telefono}${tagEmail}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
         } else {
           // Registrar fallidos también para no reintentar
           await registrarContacto(prospecto, resultado.error)
-          await sincronizarLeadCRM(prospecto, 'nuevo')
-          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''}`)
+          await sincronizarLeadCRM(prospecto, emailEnviado ? 'contactado' : 'nuevo')
+          omitidos.push(`❌ ${prospecto.nombre} (error: ${resultado.error}) | 📞 ${prospecto.telefono}${tagEmail}`)
         }
       } else if (prospecto.website) {
         // Sin teléfono pero tiene website — lista para seguimiento manual (o ya contactado por email)
-        await sincronizarLeadCRM(prospecto, prospecto.email ? 'contactado' : 'nuevo')
-        contactados.push(`${prospecto.nombre}${prospecto.email ? ` | 📧 ${prospecto.email}` : ''} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
+        await sincronizarLeadCRM(prospecto, emailEnviado ? 'contactado' : 'nuevo')
+        contactados.push(`${prospecto.nombre}${tagEmail} | 🌐 ${prospecto.website} | 📍 ${prospecto.direccion ?? prospecto.ciudad} (sin teléfono)`)
       } else {
         // Sin teléfono ni website — no es un lead gestionable, no se sincroniza al CRM
         omitidos.push(`${prospecto.nombre} (sin datos de contacto)`)
@@ -482,7 +506,7 @@ export async function GET(req: NextRequest) {
               ` : ''}
               <div style="background:#eff6ff;border-radius:10px;padding:14px;margin-top:20px;border:1px solid #bfdbfe;">
                 <p style="margin:0;font-size:13px;color:#1d4ed8;line-height:1.6;">
-                  💡 <strong>Próximos pasos:</strong> Los que tienen 📧 email ya recibieron el correo de prospección automático. Los talleres con 🌐 website pero sin 📧 no tenían un email visible en su sitio — puedes visitarlos para buscarlo manualmente.
+                  💡 <strong>Próximos pasos:</strong> Los que tienen 📧 ya recibieron el correo de prospección (confirmado por Brevo). Los que tienen ⚠️ tenían email pero Brevo rechazó el envío — revisa la API key o el dominio remitente. Los talleres con 🌐 website pero sin 📧 ni ⚠️ no tenían un email visible en su sitio — puedes visitarlos para buscarlo manualmente.
                 </p>
               </div>
             </div>
