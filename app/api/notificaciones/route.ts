@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import twilio from 'twilio'
 import { createClient } from '@/lib/supabase/server'
-import { mapearErrorTwilio, normalizarTelefonoWhatsApp } from '@/lib/twilio'
+import { mapearErrorTwilio, normalizarTelefonoWhatsApp, normalizarFromWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   const client = twilio(
@@ -58,7 +58,7 @@ if (garantiaKm) orden.garantia_km = garantiaKm
     }
 
     const to = normalizarTelefonoWhatsApp(telefono)
-    const from = process.env.TWILIO_WHATSAPP_FROM!
+    const from = normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!)
 
     try {
       if (tipo === 'fotos_diagnostico' && fotos && fotos.length > 0) {

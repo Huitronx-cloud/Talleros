@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import twilio from 'twilio'
+import { normalizarFromWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
       : `whatsapp:+${telefono}`
 
     await client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_FROM!,
+      from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
       to:   numeroDestino,
       body: mensaje,
     })

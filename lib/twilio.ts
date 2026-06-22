@@ -33,16 +33,23 @@ export function normalizarTelefonoWhatsApp(telefono: string): string {
     : `whatsapp:+${telefonoLimpio}`
 }
 
+// El From y el To de Twilio deben usar el mismo "canal" (whatsapp:+... en ambos
+// lados) o falla con "Invalid From and To pair". TWILIO_WHATSAPP_FROM se guarda
+// sin el prefijo, así que hay que añadirlo siempre antes de usarlo como From.
+export function normalizarFromWhatsApp(from: string): string {
+  return from.startsWith('whatsapp:') ? from : `whatsapp:${from}`
+}
+
 export async function enviarWhatsApp(telefono: string, mensaje: string): Promise<void> {
   const telefonoLimpio = telefono.replace(/\D/g, '')
   if (!telefonoLimpio) throw new Error('Teléfono inválido')
 
   const to   = normalizarTelefonoWhatsApp(telefono)
-  const from = process.env.TWILIO_WHATSAPP_FROM!
+  const from = normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!)
 
   try {
     await getClient().messages.create({
-      from: from.startsWith('whatsapp:') ? from : `whatsapp:${from}`,
+      from,
       to,
       body: mensaje,
     })
