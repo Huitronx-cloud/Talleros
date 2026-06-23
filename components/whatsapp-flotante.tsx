@@ -2,7 +2,7 @@
 
 import { MessageCircle } from 'lucide-react'
 
-const NUMERO = '17242625304'
+const NUMERO = '14284362377'
 const TEXTO  = encodeURIComponent('Hola, tengo una duda sobre TallerOS')
 
 export default function WhatsappFlotante() {

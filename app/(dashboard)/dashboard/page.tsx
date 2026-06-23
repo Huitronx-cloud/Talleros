@@ -179,7 +179,7 @@ export default async function DashboardPage() {
     entregado:  'bg-purple-100 text-purple-600',
   }
 
- const WHATSAPP_SOPORTE = 'https://wa.me/16476791091?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
+ const WHATSAPP_SOPORTE = 'https://wa.me/14284362377?text=Hola%2C%20necesito%20soporte%20con%20TallerOS'
 
   const soporte = [{
     href:    WHATSAPP_SOPORTE,

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { EtapaLead } from '@/types'
 import twilio from 'twilio'
 
-const TWILIO_FROM = process.env.TWILIO_WHATSAPP_FROM ?? '+17242625304'
+const TWILIO_FROM = process.env.TWILIO_WHATSAPP_FROM ?? '+14284362377'
 
 export async function cambiarEtapa(leadId: string, etapa: EtapaLead) {
   const supabase = createServiceClient()
