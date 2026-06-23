@@ -1,6 +1,4 @@
-import dynamic from 'next/dynamic'
-
-const WhatsappFlotante = dynamic(() => import('@/components/whatsapp-flotante'), { ssr: false })
+import WhatsappFlotante from '@/components/whatsapp-flotante'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
