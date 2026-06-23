@@ -261,6 +261,7 @@ export async function GET(req: NextRequest) {
         duracion_segundos: 60,
         plataforma:        ['tiktok', 'youtube_shorts'],
         publicado:         false,
+        email_enviado:     false,
       }),
     ])
 
