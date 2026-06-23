@@ -88,7 +88,7 @@ async function buscarTalleres(ciudad: string, termino: string): Promise<Resultad
 
 async function obtenerDetalles(placeId: string): Promise<any> {
   try {
-    const fields = 'name,formatted_phone_number,website,rating,formatted_address,url'
+    const fields = 'name,formatted_phone_number,international_phone_number,website,rating,formatted_address,url'
     const url    = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${GOOGLE_API_KEY}&language=es`
     const res    = await fetch(url)
     const data   = await res.json()
@@ -416,7 +416,7 @@ export async function GET(req: NextRequest) {
 
       const prospecto: Prospecto = {
         nombre:          detalles.name ?? lugar.name,
-        telefono:        detalles.formatted_phone_number ?? null,
+        telefono:        detalles.international_phone_number ?? detalles.formatted_phone_number ?? null,
         email:           null, // Google Maps no da email — se busca en el website
         direccion:       detalles.formatted_address ?? null,
         ciudad:          ciudadHoy.nombre,
