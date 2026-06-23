@@ -36,6 +36,17 @@ input::placeholder, select::placeholder, textarea::placeholder {
   -webkit-text-fill-color: #94a3b8 !important;
 }
 
+/* Inputs sobre fondo oscuro (ej. CRM admin) — más específico que la regla
+   de arriba para poder ganarle pese a que ambas usan !important. */
+input.input-on-dark, textarea.input-on-dark {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+input.input-on-dark::placeholder, textarea.input-on-dark::placeholder {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+
 .blog-content h2 {
   font-size: 1.25rem;
   font-weight: 900;

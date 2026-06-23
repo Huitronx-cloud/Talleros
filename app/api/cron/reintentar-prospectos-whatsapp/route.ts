@@ -87,7 +87,19 @@ export async function GET(req: NextRequest) {
     if (resultado.ok) {
       enviados++
       await supabase.from('prospectos_enviados').update({ telefono: telefonoOk }).eq('id', p.id)
-      await supabase.from('crm_leads').update({ telefono: telefonoOk }).eq('google_place_id', p.google_place_id)
+      const { data: lead } = await supabase
+        .from('crm_leads')
+        .update({ telefono: telefonoOk })
+        .eq('google_place_id', p.google_place_id)
+        .select('id')
+        .maybeSingle()
+      if (lead?.id) {
+        await supabase.from('crm_mensajes').insert({
+          lead_id: lead.id,
+          sentido: 'saliente',
+          mensaje: '📲 WhatsApp de prospección reenviado (plantilla aprobada por Meta)',
+        })
+      }
       resultados.push(`✅ ${p.nombre} (${telefonoOk})`)
     } else {
       resultados.push(`⚠️ ${p.nombre} (${telefonoOk}): falló — ${resultado.error}`)
