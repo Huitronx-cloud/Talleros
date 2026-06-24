@@ -45,7 +45,7 @@ export default function PlanPage() {
   useEffect(() => {
     async function cargar() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setCargando(false); return }
 
       const { data: usuario } = await supabase
         .from('usuarios')
@@ -53,7 +53,7 @@ export default function PlanPage() {
         .eq('id', user.id)
         .single()
 
-      if (!usuario) return
+      if (!usuario) { setCargando(false); return }
 
       const { data } = await supabase
         .from('suscripciones')

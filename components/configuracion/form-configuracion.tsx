@@ -100,6 +100,11 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!nombre.trim()) { setError('El nombre del taller es obligatorio'); return }
+    const telDigitos = numeroTel.replace(/\D/g, '')
+    if (telDigitos && (telDigitos.length < 8 || telDigitos.length > 15)) {
+      setError('El teléfono no es válido')
+      return
+    }
 
     setCargando(true)
     setError('')
