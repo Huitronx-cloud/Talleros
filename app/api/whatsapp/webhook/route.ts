@@ -203,6 +203,60 @@ export async function POST(req: NextRequest) {
 
           return twimlOk
         }
+
+        // ── Detección de aprobación/rechazo de trabajo extra en una orden ────
+        const { data: ordenExtra } = await supabase
+          .from('ordenes')
+          .select('id, taller_id, numero_orden, servicio_extra, costo_extra, total, vehiculo_marca, vehiculo_modelo')
+          .in('cliente_id', clienteIds)
+          .eq('extra_estado', 'pendiente')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (ordenExtra) {
+          const nuevoExtraEstado = esAprobacion ? 'aprobado' : 'rechazado'
+          const nuevoTotal = esAprobacion
+            ? (Number(ordenExtra.total) || 0) + (Number(ordenExtra.costo_extra) || 0)
+            : ordenExtra.total
+
+          await supabase
+            .from('ordenes')
+            .update({
+              extra_estado: nuevoExtraEstado,
+              total: nuevoTotal,
+            })
+            .eq('id', ordenExtra.id)
+
+          const vehiculo = `${ordenExtra.vehiculo_marca ?? ''} ${ordenExtra.vehiculo_modelo ?? ''}`.trim()
+          const confirmacionExtra = esAprobacion
+            ? `✅ ¡Perfecto! Tu autorización para el trabajo adicional en tu ${vehiculo} quedó registrada. Continuamos con el servicio. 🔧`
+            : `Entendido. El trabajo adicional en tu ${vehiculo} fue cancelado. Continuamos solo con lo ya acordado.`
+
+          await responderWhatsApp(de, confirmacionExtra)
+
+          // Notificar al mecánico/propietario del taller
+          try {
+            const { data: propietario } = await supabase
+              .from('usuarios')
+              .select('telefono')
+              .eq('taller_id', ordenExtra.taller_id)
+              .eq('rol', 'propietario')
+              .single()
+            if (propietario?.telefono) {
+              const tel = propietario.telefono.replace(/\D/g, '')
+              const toMec = tel.length === 10 ? `+52${tel}` : `+${tel}`
+              const avisoMecanico = esAprobacion
+                ? `✅ *Trabajo extra orden #${ordenExtra.numero_orden} APROBADO*\n\nEl cliente autorizó: ${ordenExtra.servicio_extra ?? ''}`
+                : `❌ *Trabajo extra orden #${ordenExtra.numero_orden} RECHAZADO*\n\nEl cliente rechazó el trabajo adicional.`
+              await responderWhatsApp(toMec, avisoMecanico)
+            }
+          } catch (e) {
+            console.error('Error notificando al mecánico:', e)
+          }
+
+          return twimlOk
+        }
       }
     }
 
