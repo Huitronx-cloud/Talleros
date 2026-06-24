@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Loader2, Send } from 'lucide-react'
+import { Camera, CheckCircle2, Loader2, Send } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
@@ -13,6 +13,7 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
   const [enviando, setEnviando] = useState(false)
   const [descripcion, setDescripcion] = useState('')
   const [error, setError] = useState('')
+  const [exito, setExito] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -20,6 +21,7 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
     const file = e.target.files?.[0]
     if (!file) return
     setError('')
+    setExito(false)
 
     if (!TIPOS_PERMITIDOS.includes(file.type)) {
       setError('Formato no soportado. Sube una foto en JPG, PNG, WEBP o HEIC.')
@@ -72,6 +74,7 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
     if (fotos.length === 0) return
     setEnviando(true)
     setError('')
+    setExito(false)
     try {
       const res = await fetch('/api/notificaciones', {
         method: 'POST',
@@ -85,6 +88,9 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         setError(data.error ?? 'No se pudieron enviar las fotos por WhatsApp.')
+      } else {
+        setExito(true)
+        setTimeout(() => setExito(false), 5000)
       }
     } catch (error) {
       console.error('Error:', error)
@@ -104,6 +110,13 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
 
       {error && (
         <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg mb-3">{error}</p>
+      )}
+
+      {exito && (
+        <p className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg mb-3 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          Fotos enviadas con éxito por WhatsApp
+        </p>
       )}
 
       <div className="space-y-3 mb-4">
