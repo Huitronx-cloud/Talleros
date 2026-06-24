@@ -105,6 +105,18 @@ if (garantiaKm) orden.garantia_km = garantiaKm
     })
     if (insertError) console.error('Error guardando notificación:', insertError)
 
+    if (tipo === 'aprobacion_extra') {
+      const { error: extraError } = await supabase
+        .from('ordenes')
+        .update({
+          servicio_extra: orden.servicio_extra,
+          costo_extra: orden.costo_extra,
+          extra_estado: 'pendiente',
+        })
+        .eq('id', ordenId)
+      if (extraError) console.error('Error guardando trabajo extra pendiente:', extraError)
+    }
+
     return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Error WhatsApp:', error)
