@@ -208,6 +208,23 @@ function extractExcerpt(html: string): string {
   return match[1].replace(/<[^>]+>/g, '').slice(0, 200).trim() + '...'
 }
 
+async function enviarAlertaError(detalle: string): Promise<void> {
+  try {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': process.env.BREVO_API_KEY!, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:      { name: 'TallerOS Alertas', email: 'hola@tallerosapp.com' },
+        to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+        subject:     '⚠️ El agente de blog/scripts falló hoy — TallerOS',
+        htmlContent: `<p>El cron de blog (<code>/api/cron/blog</code>) tuvo un problema hoy:</p><p style="color:#dc2626;">${detalle}</p>`,
+      }),
+    })
+  } catch {
+    // Si la alerta misma falla no hay más que hacer — ya se perdió la visibilidad de este error
+  }
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -219,77 +236,89 @@ export async function GET(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  await limpiarArticulosExistentes(supabase)
-
-  const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const tema = TEMAS[diaDelAnio % TEMAS.length]
-
-  const existe = await slugExiste(supabase, tema.slug)
-  if (existe) {
-    return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
-  }
-
-  const esDiaLargo = diaDelAnio % 2 === 0
-
   try {
-    const [contenidoHtml, script, scriptLargo] = await Promise.all([
+    await limpiarArticulosExistentes(supabase)
+
+    const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+    const tema = TEMAS[diaDelAnio % TEMAS.length]
+
+    const existe = await slugExiste(supabase, tema.slug)
+    if (existe) {
+      return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
+    }
+
+    const esDiaLargo = diaDelAnio % 2 === 0
+
+    // Promise.allSettled en vez de Promise.all: si la generación del artículo falla,
+    // el guion del video corto/largo se sigue guardando — no deben depender uno del otro.
+    const [articuloR, scriptR, scriptLargoR] = await Promise.allSettled([
       generarArticulo(tema),
       generarScript(tema),
       esDiaLargo ? generarScriptLargo(tema) : Promise.resolve(''),
     ])
 
-    if (!contenidoHtml) {
-      return NextResponse.json({ error: 'Claude no devolvió contenido del artículo' }, { status: 500 })
-    }
+    const errores: string[] = []
 
-    const excerpt = extractExcerpt(contenidoHtml)
-
-    const [blogResult, scriptResult] = await Promise.all([
-      supabase.from('articulos_blog').insert({
+    if (articuloR.status === 'fulfilled' && articuloR.value) {
+      const contenidoHtml = articuloR.value
+      const { error } = await supabase.from('articulos_blog').insert({
         titulo:       tema.titulo,
         slug:         tema.slug,
         contenido:    contenidoHtml,
-        excerpt,
+        excerpt:      extractExcerpt(contenidoHtml),
         pais:         tema.pais,
         publicado:    true,
         published_at: new Date().toISOString(),
-      }),
-      supabase.from('scripts_video').insert({
+      })
+      if (error) errores.push(`Artículo de blog: ${error.message}`)
+    } else {
+      errores.push(`Artículo de blog: ${articuloR.status === 'rejected' ? articuloR.reason : 'Claude no devolvió contenido'}`)
+    }
+
+    if (scriptR.status === 'fulfilled' && scriptR.value) {
+      const { error } = await supabase.from('scripts_video').insert({
         slug:              tema.slug,
         titulo:            tema.titulo,
-        script,
+        script:            scriptR.value,
         duracion_segundos: 60,
         plataforma:        ['tiktok', 'youtube_shorts'],
         publicado:         false,
         email_enviado:     false,
-      }),
-    ])
-
-    if (blogResult.error) throw new Error(`Blog insert error: ${blogResult.error.message}`)
-    if (scriptResult.error) throw new Error(`Script insert error: ${scriptResult.error.message}`)
-
-    if (esDiaLargo && scriptLargo) {
-      const { error: largoError } = await supabase.from('scripts_video_largo').insert({
-        slug:             tema.slug,
-        titulo:           tema.titulo,
-        script:           scriptLargo,
-        duracion_minutos: 5,
-        email_enviado:    false,
       })
-      if (largoError) throw new Error(`Script largo insert error: ${largoError.message}`)
+      if (error) errores.push(`Script corto: ${error.message}`)
+    } else {
+      errores.push(`Script corto: ${scriptR.status === 'rejected' ? scriptR.reason : 'Claude no devolvió script'}`)
+    }
+
+    if (esDiaLargo) {
+      if (scriptLargoR.status === 'fulfilled' && scriptLargoR.value) {
+        const { error } = await supabase.from('scripts_video_largo').insert({
+          slug:             tema.slug,
+          titulo:           tema.titulo,
+          script:           scriptLargoR.value,
+          duracion_minutos: 5,
+          email_enviado:    false,
+        })
+        if (error) errores.push(`Script largo: ${error.message}`)
+      } else {
+        errores.push(`Script largo: ${scriptLargoR.status === 'rejected' ? scriptLargoR.reason : 'Claude no devolvió script largo'}`)
+      }
+    }
+
+    if (errores.length > 0) {
+      await enviarAlertaError(errores.join(' | '))
     }
 
     return NextResponse.json({
-      ok:                 true,
-      slug:               tema.slug,
-      titulo:             tema.titulo,
-      chars:              contenidoHtml.length,
-      script_chars:       script.length,
-      script_largo_chars: scriptLargo.length,
-      dia_largo:          esDiaLargo,
+      ok:        errores.length === 0,
+      slug:      tema.slug,
+      titulo:    tema.titulo,
+      dia_largo: esDiaLargo,
+      errores,
     })
 
   } catch (error: any) {
+    await enviarAlertaError(error.message)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

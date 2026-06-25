@@ -74,6 +74,23 @@ function emailScript(titulo: string, script: string, scriptLargo?: string): stri
   `
 }
 
+async function enviarAlertaError(detalle: string): Promise<void> {
+  try {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:      { name: 'TallerOS Alertas', email: 'hola@tallerosapp.com' },
+        to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+        subject:     '⚠️ El envío del script del día falló — TallerOS',
+        htmlContent: `<p>El cron de envío de scripts (<code>/api/cron/script-email</code>) tuvo un problema hoy:</p><p style="color:#dc2626;">${detalle}</p>`,
+      }),
+    })
+  } catch {
+    // Si la alerta misma falla no hay más que hacer — ya se perdió la visibilidad de este error
+  }
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -91,7 +108,12 @@ export async function GET(req: NextRequest) {
     .eq('email_enviado', false)
     .order('created_at', { ascending: true })
 
-  if (error || !scripts || scripts.length === 0) {
+  if (error) {
+    await enviarAlertaError(`No se pudo consultar scripts_video: ${error.message}`)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (!scripts || scripts.length === 0) {
     return NextResponse.json({ ok: true, mensaje: 'No hay scripts pendientes de enviar' })
   }
 
@@ -147,5 +169,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, resultados })
+  const fallidos = resultados.filter(r => !r.ok)
+  if (fallidos.length > 0) {
+    await enviarAlertaError(
+      fallidos.map(f => `"${f.titulo}": ${f.error}`).join(' | ')
+    )
+  }
+
+  return NextResponse.json({ ok: fallidos.length === 0, resultados })
 }
