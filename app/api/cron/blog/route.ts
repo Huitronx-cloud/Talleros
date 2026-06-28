@@ -240,11 +240,21 @@ export async function GET(req: NextRequest) {
     await limpiarArticulosExistentes(supabase)
 
     const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-    const tema = TEMAS[diaDelAnio % TEMAS.length]
 
-    const existe = await slugExiste(supabase, tema.slug)
-    if (existe) {
-      return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
+    // Avanza por la lista hasta encontrar un tema que no se haya publicado todavía.
+    // Antes esto se saltaba el día entero si el tema rotado ya existía, así que el
+    // correo del script dejó de llegar cuando ~60% de los temas ya estaban tomados.
+    let tema: typeof TEMAS[0] | null = null
+    for (let i = 0; i < TEMAS.length; i++) {
+      const candidato = TEMAS[(diaDelAnio + i) % TEMAS.length]
+      if (!(await slugExiste(supabase, candidato.slug))) {
+        tema = candidato
+        break
+      }
+    }
+    if (!tema) {
+      await enviarAlertaError('Se agotaron los temas del array TEMAS — ya no quedan slugs nuevos. Hay que agregar temas o permitir versiones.')
+      return NextResponse.json({ ok: false, mensaje: 'Se agotaron los temas disponibles.' })
     }
 
     const esDiaLargo = diaDelAnio % 2 === 0
