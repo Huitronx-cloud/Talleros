@@ -127,12 +127,24 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
 
   const handleEnviarPdfWhatsApp = async () => {
   setEnviandoPdf(true)
+  setErrorComunicacion('')
+  const ctrl = new AbortController()
+  const timeout = setTimeout(() => ctrl.abort(), 15_000)
   try {
-    const res = await fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
-    if (res.ok) setPdfEnviado(true)
-  } catch (e) {
+    const res = await fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST', signal: ctrl.signal })
+    if (res.ok) {
+      setPdfEnviado(true)
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setErrorComunicacion(data.error ?? 'No se pudo enviar el PDF por WhatsApp.')
+    }
+  } catch (e: any) {
     console.error(e)
+    setErrorComunicacion(e?.name === 'AbortError'
+      ? 'El envío del PDF tardó demasiado (más de 15 s). Revisa tu cuenta de Twilio: saldo, sender de WhatsApp y mensajes recientes.'
+      : 'No se pudo enviar el PDF por WhatsApp.')
   } finally {
+    clearTimeout(timeout)
     setEnviandoPdf(false)
   }
 }
@@ -162,11 +174,14 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
   const handleEnviarPortal = async () => {
     setEnviandoPortal(true)
     setErrorComunicacion('')
+    const ctrl = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 15_000)
     try {
       const res = await fetch('/api/portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ordenId: orden.id }),
+        signal: ctrl.signal,
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok || !data.url) {
@@ -174,9 +189,14 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
         return
       }
       setPortalUrl(data.url)
-    } catch {
-      setErrorComunicacion('No se pudo generar el link del portal.')
-    } finally { setEnviandoPortal(false) }
+    } catch (e: any) {
+      setErrorComunicacion(e?.name === 'AbortError'
+        ? 'El envío del portal tardó demasiado (más de 15 s). Revisa tu cuenta de Twilio: saldo, sender de WhatsApp y mensajes recientes.'
+        : 'No se pudo generar el link del portal.')
+    } finally {
+      clearTimeout(timeout)
+      setEnviandoPortal(false)
+    }
   }
 
   const handleEnviarGarantia = async () => {
