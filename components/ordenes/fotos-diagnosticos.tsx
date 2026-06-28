@@ -75,6 +75,10 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
     setEnviando(true)
     setError('')
     setExito(false)
+
+    const ctrl = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 15_000)
+
     try {
       const res = await fetch('/api/notificaciones', {
         method: 'POST',
@@ -84,6 +88,7 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
           ordenId,
           fotos,
         }),
+        signal: ctrl.signal,
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -92,10 +97,13 @@ export default function FotosDiagnostico({ ordenId, tallerId }: { ordenId: strin
         setExito(true)
         setTimeout(() => setExito(false), 5000)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error)
-      setError('No se pudieron enviar las fotos por WhatsApp.')
+      setError(error?.name === 'AbortError'
+        ? 'El envío tardó demasiado (más de 15 s). Revisa tu cuenta de Twilio: saldo, sender de WhatsApp y mensajes recientes.'
+        : 'No se pudieron enviar las fotos por WhatsApp.')
     } finally {
+      clearTimeout(timeout)
       setEnviando(false)
     }
   }
