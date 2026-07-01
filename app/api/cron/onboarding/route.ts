@@ -23,7 +23,7 @@ async function enviarWhatsApp(telefono: string, mensaje: string) {
   try {
     const sid = process.env.TWILIO_ACCOUNT_SID!
     const tel = telefono.replace(/\D/g, '')
-    const to  = tel.startsWith('+') ? tel : `+${tel}`
+    const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
     const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`
     await fetch(url, {
       method: 'POST',
