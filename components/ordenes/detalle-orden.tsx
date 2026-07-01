@@ -12,6 +12,7 @@ import { cambiarEstado, agregarNotaInterna } from '@/app/(dashboard)/ordenes/act
 import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
 import PanelPagos from './panel-pagos'
+import BotonWhatsAppLink from './whatsapp-link-modal'
 import { formatMoney } from '@/lib/utils'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
@@ -506,6 +507,18 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
           {errorComunicacion && (
             <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{errorComunicacion}</p>
           )}
+
+          {/* Enviar por WhatsApp — link wa.me, sin depender de Twilio/Meta */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageCircle className="w-4 h-4" style={{ color: '#25D366' }} />
+              <h3 className="text-sm font-semibold text-gray-900">Enviar por WhatsApp</h3>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">
+              Genera el mensaje según el estatus de la orden y lo envías tú mismo desde tu propio WhatsApp — sin depender de ninguna API externa.
+            </p>
+            <BotonWhatsAppLink ordenId={orden.id} estado={estadoActual} />
+          </div>
 
           {/* Fotos de diagnóstico */}
           <FotosDiagnostico ordenId={orden.id} tallerId={orden.taller_id as string} />

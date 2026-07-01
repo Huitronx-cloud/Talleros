@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Car, Clock, AlertTriangle, User, Wrench, Package, CheckCircle2 } from 'lucide-react'
 import { Orden, EstadoOrden } from '@/types'
 import { cambiarEstado } from '@/app/(dashboard)/ordenes/actions'
+import BotonWhatsAppLink from '@/components/ordenes/whatsapp-link-modal'
 
 const COLUMNAS: { id: EstadoOrden; label: string; color: string; bg: string; border: string; icono: any }[] = [
   { id: 'recibido',   label: 'Recibido',   color: 'text-gray-600',  bg: 'bg-gray-50',   border: 'border-gray-200',  icono: Package      },
@@ -44,12 +45,15 @@ function TarjetaOrden({
           <span className="text-xs font-mono font-bold text-gray-400">
             #{String(orden.numero_orden).padStart(4, '0')}
           </span>
-          {retraso && (
-            <span className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
-              <AlertTriangle className="w-3 h-3" />
-              {retraso}d retraso
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {retraso && (
+              <span className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                <AlertTriangle className="w-3 h-3" />
+                {retraso}d retraso
+              </span>
+            )}
+            <BotonWhatsAppLink ordenId={orden.id} estado={orden.estado} compacto />
+          </div>
         </div>
 
         {cliente?.foto_vehiculo_url && (

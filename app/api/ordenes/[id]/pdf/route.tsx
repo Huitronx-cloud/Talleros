@@ -2,6 +2,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { Orden, Taller } from '@/types'
 import OrdenDocumento from '@/lib/pdf/orden-documento'
+import { generarQrOptInWhatsApp } from '@/lib/whatsapp-qr'
 
 export async function GET(
   _request: Request,
@@ -25,11 +26,20 @@ export async function GET(
 
   if (!taller) return new Response('Taller no encontrado', { status: 404 })
 
+  const { data: whatsappRow } = await supabase
+    .from('talleres')
+    .select('whatsapp_numero')
+    .eq('id', orden.taller_id)
+    .single()
+
   try {
+    const qrOptInUrl = await generarQrOptInWhatsApp(whatsappRow?.whatsapp_numero)
+
     const buffer = await renderToBuffer(
       <OrdenDocumento
         orden={orden as Orden}
         taller={taller as Taller}
+        qrOptInUrl={qrOptInUrl}
       />
     )
 

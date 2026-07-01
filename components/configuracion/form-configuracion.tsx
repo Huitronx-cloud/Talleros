@@ -46,10 +46,13 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const supabase = createClient()
 
   const telefonoParseado = parsearTelefono(taller.telefono ?? '')
+  const whatsappParseado = parsearTelefono(taller.whatsapp_numero ?? '')
 
   const [nombre,          setNombre]          = useState(taller.nombre          ?? '')
   const [codigoPais,      setCodigoPais]      = useState(telefonoParseado.codigoPais)
   const [numeroTel,       setNumeroTel]       = useState(telefonoParseado.numero)
+  const [codigoPaisWa,    setCodigoPaisWa]    = useState(whatsappParseado.codigoPais)
+  const [numeroWa,        setNumeroWa]        = useState(whatsappParseado.numero)
   const [direccion,       setDireccion]       = useState(taller.direccion       ?? '')
   const [email,           setEmail]           = useState(taller.email           ?? '')
   const [moneda, setMoneda] = useState<string>(taller.moneda ?? 'MXN')
@@ -67,12 +70,19 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
 
   const inputFile = useRef<HTMLInputElement>(null)
 
-  const paisSeleccionado = CODIGOS_PAIS.find(p => p.code === codigoPais)
+  const paisSeleccionado   = CODIGOS_PAIS.find(p => p.code === codigoPais)
+  const paisSeleccionadoWa = CODIGOS_PAIS.find(p => p.code === codigoPaisWa)
 
   function telefonoCompleto() {
     const numero = numeroTel.trim()
     if (!numero) return ''
     return `${paisSeleccionado?.dial} ${numero}`
+  }
+
+  function whatsappCompleto() {
+    const numero = numeroWa.trim()
+    if (!numero) return ''
+    return `${paisSeleccionadoWa?.dial} ${numero}`
   }
 
   async function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -105,6 +115,11 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       setError('El teléfono no es válido')
       return
     }
+    const waDigitos = numeroWa.replace(/\D/g, '')
+    if (waDigitos && (waDigitos.length < 8 || waDigitos.length > 15)) {
+      setError('El número de WhatsApp no es válido')
+      return
+    }
 
     setCargando(true)
     setError('')
@@ -122,6 +137,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
       instagram:         instagram       || undefined,
       facebook:          facebook        || undefined,
       firma_pdf:         firmaPdf        || undefined,
+      whatsapp_numero:   whatsappCompleto(),
     })
 
     setCargando(false)
@@ -227,6 +243,39 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
               Se guardará como: <span className="text-gray-600 font-medium">{paisSeleccionado?.dial} {numeroTel}</span>
             </p>
           )}
+        </div>
+
+        {/* WhatsApp del taller — para el QR de opt-in en el PDF */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp del taller</label>
+          <div className="flex gap-2">
+            <div className="relative">
+              <select
+                value={codigoPaisWa}
+                onChange={e => setCodigoPaisWa(e.target.value)}
+                className="appearance-none border border-gray-300 rounded-lg pl-3 pr-8 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                {CODIGOS_PAIS.map(p => (
+                  <option key={p.code} value={p.code}>
+                    {p.bandera} {p.dial}
+                  </option>
+                ))}
+              </select>
+              <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <input
+              type="tel"
+              value={numeroWa}
+              onChange={e => setNumeroWa(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+              placeholder={codigoPaisWa === 'CA' || codigoPaisWa === 'US' ? '416 123 4567' : '55 1234 5678'}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            El número donde recibes mensajes de WhatsApp. Se usa para el código QR que aparece en el PDF de tus órdenes ("Escanea para recibir actualizaciones de tu auto"). Si lo dejas vacío, el QR no se muestra.
+          </p>
         </div>
 
         <div>

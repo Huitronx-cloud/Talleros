@@ -8,6 +8,12 @@ const TWILIO_SID     = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN   = process.env.TWILIO_AUTH_TOKEN!
 const TWILIO_FROM    = process.env.TWILIO_WHATSAPP_FROM!
 
+// Apagado por defecto: el agente estaba gastando presupuesto de Twilio en
+// mensajes que casi nunca se entregaban (WhatsApp de prospección fría sin que
+// el destinatario le haya escrito antes al número del taller). Para
+// reactivarlo, poner PROSPECTING_AGENT_ENABLED=true en las env vars de Vercel.
+const PROSPECTING_AGENT_ENABLED = process.env.PROSPECTING_AGENT_ENABLED === 'true'
+
 // ── Ciudades objetivo ─────────────────────────────────────────────────────────
 // El agente rota entre ciudades cada día para maximizar cobertura
 const CIUDADES = [
@@ -400,6 +406,15 @@ export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!PROSPECTING_AGENT_ENABLED) {
+    console.log('[Prospecting] Agente deshabilitado (PROSPECTING_AGENT_ENABLED != "true") — saltando ejecución, no se llama a Google Places ni se envía ningún WhatsApp/email.')
+    return NextResponse.json({
+      ok:      true,
+      enabled: false,
+      mensaje: 'Agente de prospección deshabilitado. Activar con PROSPECTING_AGENT_ENABLED=true.',
+    })
   }
 
   // Rotar ciudad y término por día + hora para que cada ejecución cubra combinación distinta

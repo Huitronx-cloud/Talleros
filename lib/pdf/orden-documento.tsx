@@ -75,6 +75,12 @@ const s = StyleSheet.create({
   footer:       { position: 'absolute', bottom: 22, left: 40, right: 40, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   footerText:   { fontSize: 7.5, color: BORDE },
   footerBrand:  { fontSize: 7.5, color: MEDIO },
+  // QR de opt-in a WhatsApp
+  qrRow:        { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14, backgroundColor: CLARO, borderRadius: 6, padding: 10 },
+  qrImg:        { width: 50, height: 50 },
+  qrTextBox:    { flex: 1 },
+  qrLabel:      { fontSize: 8.5, color: OSCURO, fontFamily: 'Helvetica-Bold', marginBottom: 2 },
+  qrSub:        { fontSize: 7.5, color: MEDIO },
 })
 
 function fmt(n: number, moneda?: string) {
@@ -92,9 +98,10 @@ function fmtFecha(f: string | null) {
 interface Props {
   orden: Orden & { firma_url?: string | null }
   taller: Taller
+  qrOptInUrl?: string | null
 }
 
-export default function OrdenDocumento({ orden, taller }: Props) {
+export default function OrdenDocumento({ orden, taller, qrOptInUrl }: Props) {
   const moneda    = (taller as any).moneda ?? 'MXN'
   const pais      = (taller as any).pais   ?? 'México'
   const ivaLabel  = IVA_ETIQUETA[pais] ?? 'IVA 16%'
@@ -251,6 +258,17 @@ export default function OrdenDocumento({ orden, taller }: Props) {
             </View>
           ) : <View style={{ flex: 1 }} />}
         </View>
+
+        {/* ── QR OPT-IN WHATSAPP ── */}
+        {qrOptInUrl && (
+          <View style={s.qrRow}>
+            <Image src={qrOptInUrl} style={s.qrImg} />
+            <View style={s.qrTextBox}>
+              <Text style={s.qrLabel}>Escanea para recibir actualizaciones de tu auto</Text>
+              <Text style={s.qrSub}>Te escribimos por WhatsApp cuando tu vehículo tenga novedades.</Text>
+            </View>
+          </View>
+        )}
 
         {/* ── FOOTER ── */}
         <View style={s.footer}>
