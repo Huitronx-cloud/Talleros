@@ -218,7 +218,7 @@ export default function ColombiaClient() {
         </div>
         <div className="lh-right">
           <div className="lmock">
-            <img src="/hero-dashboard.png" alt="TallerOS Dashboard Colombia" className="lmock-s" />
+            <img src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard Colombia" className="lmock-s" />
             <div className="lfl lfl-wa">
               <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
               <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
