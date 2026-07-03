@@ -7,6 +7,7 @@ import OrdenDocumento from '@/lib/pdf/orden-documento'
 import twilio from 'twilio'
 import { formatMoney } from '@/lib/utils'
 import { normalizarFromWhatsApp, mapearErrorTwilio } from '@/lib/twilio'
+import { generarQrOptInWhatsApp } from '@/lib/whatsapp-qr'
 
 export async function POST(
   _req: NextRequest,
@@ -32,13 +33,21 @@ export async function POST(
 
   if (!taller) return NextResponse.json({ error: 'Taller no encontrado' }, { status: 404 })
 
+  const { data: whatsappRow } = await supabase
+    .from('talleres')
+    .select('whatsapp_numero')
+    .eq('id', orden.taller_id)
+    .single()
+
   try {
    // 1. Generar PDF en memoria
     const { createElement } = await import('react')
+    const qrOptInUrl = await generarQrOptInWhatsApp(whatsappRow?.whatsapp_numero)
     const buffer = await renderToBuffer(
       createElement(OrdenDocumento, {
         orden: orden as Orden,
         taller: taller as Taller,
+        qrOptInUrl,
       }) as any
     )
 

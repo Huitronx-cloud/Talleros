@@ -19,6 +19,7 @@ export interface Taller {
   instagram: string | null
   facebook: string | null
   firma_pdf: string | null
+  whatsapp_numero: string | null
   created_at: string
 }
 

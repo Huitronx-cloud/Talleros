@@ -15,6 +15,7 @@ export interface ConfiguracionForm {
   instagram?: string
   facebook?: string
   firma_pdf?: string
+  whatsapp_numero?: string
 }
 
 export async function guardarConfiguracion(datos: ConfiguracionForm) {
@@ -36,6 +37,7 @@ export async function guardarConfiguracion(datos: ConfiguracionForm) {
       ...(datos.instagram !== undefined         && { instagram:         datos.instagram }),
       ...(datos.facebook !== undefined          && { facebook:          datos.facebook }),
       ...(datos.firma_pdf !== undefined         && { firma_pdf:         datos.firma_pdf }),
+      ...(datos.whatsapp_numero !== undefined   && { whatsapp_numero:   datos.whatsapp_numero || null }),
     })
     .eq('id', tallerId)
 

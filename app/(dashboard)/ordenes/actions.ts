@@ -6,6 +6,7 @@ import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
 import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
 import { enviarResenaOrden } from '@/lib/resenas'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
+import { PlantillaWhatsApp, construirMensajeWhatsApp } from '@/lib/whatsapp-templates'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -218,6 +219,114 @@ export async function eliminarOrden(id: string) {
   const { error } = await supabase.from('ordenes').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/ordenes')
+  return { error: null }
+}
+
+// ── Comunicación por WhatsApp vía link wa.me (sin Twilio/Meta) ────────────────
+// El mensaje se genera aquí (necesita datos de cliente/taller + token del
+// portal, protegidos por RLS), pero el envío real lo hace el empleado del
+// taller con un tap desde su propio WhatsApp — nunca se manda nada solo.
+
+export interface DatosMensajeWhatsApp {
+  telefono:   string
+  mensaje:    string
+  paisTaller: string | null
+  plantilla:  PlantillaWhatsApp
+}
+
+async function obtenerOCrearTokenPortal(
+  supabase: ReturnType<typeof createClient>,
+  ordenId: string,
+  tallerId: string
+): Promise<string | null> {
+  const { data: existente } = await supabase
+    .from('portal_tokens')
+    .select('token')
+    .eq('orden_id', ordenId)
+    .gt('expires_at', new Date().toISOString())
+    .single()
+
+  if (existente?.token) return existente.token
+
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: nuevo } = await supabase
+    .from('portal_tokens')
+    .insert({ orden_id: ordenId, taller_id: tallerId, expires_at: expires })
+    .select('token')
+    .single()
+
+  return nuevo?.token ?? null
+}
+
+export async function generarMensajeWhatsApp(
+  ordenId: string,
+  plantilla: PlantillaWhatsApp,
+  opts?: { garantiaDias?: number; garantiaKm?: number }
+): Promise<{ error: string | null; datos?: DatosMensajeWhatsApp }> {
+  const supabase = createClient()
+
+  const { data: orden, error } = await supabase
+    .from('ordenes')
+    .select('id, taller_id, vehiculo_marca, vehiculo_modelo, placas, clientes(nombre, telefono), talleres(nombre, pais)')
+    .eq('id', ordenId)
+    .single()
+
+  if (error || !orden) return { error: 'Orden no encontrada' }
+
+  const cliente = orden.clientes as any
+  const taller  = orden.talleres as any
+
+  if (!cliente?.telefono) return { error: 'El cliente no tiene teléfono registrado' }
+  if (!taller) return { error: 'No se pudo obtener la información del taller' }
+
+  const token     = await obtenerOCrearTokenPortal(supabase, ordenId, orden.taller_id)
+  const baseUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+  const portalUrl = token ? `${baseUrl}/portal/${token}` : null
+
+  const mensaje = construirMensajeWhatsApp(plantilla, {
+    clienteNombre:  cliente.nombre,
+    vehiculoMarca:  orden.vehiculo_marca,
+    vehiculoModelo: orden.vehiculo_modelo,
+    placas:         orden.placas,
+    tallerNombre:   taller.nombre,
+    portalUrl,
+    garantiaDias:   opts?.garantiaDias,
+    garantiaKm:     opts?.garantiaKm,
+  })
+
+  return {
+    error: null,
+    datos: {
+      telefono:   cliente.telefono,
+      mensaje,
+      paisTaller: taller.pais ?? null,
+      plantilla,
+    },
+  }
+}
+
+export async function registrarEnvioWhatsApp(params: {
+  ordenId:   string
+  plantilla: PlantillaWhatsApp
+  telefono:  string
+  mensaje:   string
+}): Promise<{ error: string | null }> {
+  const supabase = createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { error } = await supabase.from('mensajes_whatsapp_log').insert({
+    orden_id:   params.ordenId,
+    taller_id:  tallerId,
+    usuario_id: user?.id ?? null,
+    plantilla:  params.plantilla,
+    telefono:   params.telefono,
+    mensaje:    params.mensaje,
+  })
+
+  if (error) return { error: error.message }
   return { error: null }
 }
 
