@@ -2,6 +2,10 @@ import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Clock, CheckCircle2, Package, Wrench, Phone } from 'lucide-react'
 
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 export default async function PortalClientePage({
   params,
 }: {

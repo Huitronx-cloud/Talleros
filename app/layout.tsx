@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   creator: 'TallerOS',
   publisher: 'TallerOS',
   metadataBase: new URL('https://www.tallerosapp.com'),
-  alternates: {
-    canonical: '/',
-  },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
   openGraph: {
     type: 'website',
     locale: 'es_MX',
