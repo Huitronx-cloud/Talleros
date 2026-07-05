@@ -95,3 +95,57 @@ export const PLANTILLAS_WHATSAPP: Record<PlantillaWhatsApp, (d: DatosPlantillaWh
 export function construirMensajeWhatsApp(plantilla: PlantillaWhatsApp, datos: DatosPlantillaWhatsApp): string {
   return PLANTILLAS_WHATSAPP[plantilla](datos)
 }
+
+// ── Contextos — envíos wa.me atados a una acción concreta, no al estatus ─────
+// Mismo esquema que las plantillas por estado: el mensaje se pre-llena, el
+// empleado lo edita si quiere y lo manda desde su propio WhatsApp.
+
+export type ContextoWhatsApp =
+  | 'fotos_diagnostico'
+  | 'portal_cliente'
+  | 'pdf_servicio'
+  | 'aprobacion_extra'
+
+export interface DatosContextoWhatsApp extends DatosPlantillaWhatsApp {
+  fotos?:         { url: string; descripcion: string }[]
+  pdfUrl?:        string | null
+  totalFmt?:      string | null
+  servicioExtra?: string | null
+  costoExtraFmt?: string | null
+}
+
+function mensajeFotosDiagnostico(d: DatosContextoWhatsApp): string {
+  const vehiculo = conPlacas(nombreVehiculo(d.vehiculoMarca, d.vehiculoModelo), d.placas)
+  const lista = (d.fotos ?? [])
+    .map((f, i) => `${i + 1}. ${f.descripcion || 'Foto del diagnóstico'}\n${f.url}`)
+    .join('\n\n')
+  return `Hola ${primerNombre(d.clienteNombre)} 📷 Te compartimos las fotos del diagnóstico de tu ${vehiculo} en *${d.tallerNombre}*:\n\n${lista}\n\nCualquier duda, respóndenos por este medio.${lineaPortal(d.portalUrl)}${firma(d.tallerNombre)}`
+}
+
+function mensajePortalCliente(d: DatosContextoWhatsApp): string {
+  const vehiculo = conPlacas(nombreVehiculo(d.vehiculoMarca, d.vehiculoModelo), d.placas)
+  return `Hola ${primerNombre(d.clienteNombre)} 👋 *${d.tallerNombre}* ya está atendiendo tu ${vehiculo}.\n\nSigue el estado de tu servicio en tiempo real aquí:\n🔗 ${d.portalUrl ?? ''}\n\nCualquier duda, respóndenos por este medio.${firma(d.tallerNombre)}`
+}
+
+function mensajePdfServicio(d: DatosContextoWhatsApp): string {
+  const vehiculo = conPlacas(nombreVehiculo(d.vehiculoMarca, d.vehiculoModelo), d.placas)
+  const total = d.totalFmt ? `\n\n💰 Total: ${d.totalFmt}` : ''
+  return `Hola ${primerNombre(d.clienteNombre)} 📄 Aquí está el reporte de servicio de tu ${vehiculo} en *${d.tallerNombre}*.${total}\n\nDescarga el PDF con el detalle completo aquí:\n${d.pdfUrl ?? ''}\n\n¡Gracias por preferirnos! 🙏${firma(d.tallerNombre)}`
+}
+
+function mensajeAprobacionExtra(d: DatosContextoWhatsApp): string {
+  const vehiculo = conPlacas(nombreVehiculo(d.vehiculoMarca, d.vehiculoModelo), d.placas)
+  const costo = d.costoExtraFmt ? `\n💰 Costo adicional: ${d.costoExtraFmt}` : ''
+  return `Hola ${primerNombre(d.clienteNombre)} 🔧 Durante el servicio de tu ${vehiculo} en *${d.tallerNombre}* detectamos un trabajo adicional necesario:\n\n*${d.servicioExtra ?? ''}*${costo}\n\n¿Nos autorizas a realizarlo? Responde *SÍ* o *NO* a este mensaje.${lineaPortal(d.portalUrl)}${firma(d.tallerNombre)}`
+}
+
+export const PLANTILLAS_CONTEXTO: Record<ContextoWhatsApp, (d: DatosContextoWhatsApp) => string> = {
+  fotos_diagnostico: mensajeFotosDiagnostico,
+  portal_cliente:    mensajePortalCliente,
+  pdf_servicio:      mensajePdfServicio,
+  aprobacion_extra:  mensajeAprobacionExtra,
+}
+
+export function construirMensajeContexto(contexto: ContextoWhatsApp, datos: DatosContextoWhatsApp): string {
+  return PLANTILLAS_CONTEXTO[contexto](datos)
+}
