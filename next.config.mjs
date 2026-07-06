@@ -10,8 +10,6 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   // Evita que el navegador adivine el tipo de contenido (MIME sniffing)
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  // Activa protección XSS en navegadores legacy
-  { key: 'X-XSS-Protection', value: '1; mode=block' },
   // Controla qué info se manda en el Referer header
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   // Solo HTTPS, por 1 año, incluye subdominios
@@ -23,8 +21,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // Scripts: solo nuestro dominio + inline necesario para Next.js + GA
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net",
+      // Scripts: solo nuestro dominio + inline necesario para Next.js + GA.
+      // unsafe-eval solo en dev: HMR/react-refresh lo requieren; producción no.
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net`,
       // Estilos: self + inline (Tailwind lo necesita)
       "style-src 'self' 'unsafe-inline'",
       // Imágenes: self + Supabase storage + Google Analytics
@@ -42,6 +41,7 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,
   },

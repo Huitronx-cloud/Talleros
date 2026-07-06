@@ -1,24 +1,41 @@
 {
+  "id": "/",
   "name": "TallerOS",
   "short_name": "TallerOS",
   "description": "Gestión inteligente para tu taller",
   "start_url": "/dashboard",
+  "scope": "/",
+  "lang": "es",
+  "dir": "ltr",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#2563eb",
   "orientation": "portrait",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
