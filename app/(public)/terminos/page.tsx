@@ -4,6 +4,11 @@ export const metadata: Metadata = {
   title: 'Términos de Servicio — TallerOS',
   description: 'Términos y condiciones de uso de TallerOS, el software de gestión para talleres mecánicos.',
   alternates: { canonical: '/terminos' },
+  openGraph: {
+    title: 'Términos de Servicio — TallerOS',
+    description: 'Términos y condiciones de uso de TallerOS, el software de gestión para talleres mecánicos.',
+    url: '/terminos',
+  },
 }
 
 export default function TerminosPage() {

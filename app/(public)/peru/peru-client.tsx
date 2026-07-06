@@ -37,8 +37,8 @@ const MODULOS = [
 ]
 
 const TESTIMONIALES = [
-  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica.', nombre: 'Roberto Garza',    rol: 'Taller Garza, Monterrey MX',  img: '/testi-1-roberto.png', estrellas: 5 },
-  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                   nombre: 'Camila Restrepo', rol: 'AutoFix, Medellín CO',         img: '/testi-2-camila.png',  estrellas: 5 },
+  { texto: 'Desde que usamos TallerOS los clientes ya no llaman a preguntar cómo va su carro. El portal en tiempo real nos ahorró horas de atención telefónica.', nombre: 'Roberto Chávez',   rol: 'Taller Chávez, Arequipa PE',  img: '/testi-1-roberto.png', estrellas: 5 },
+  { texto: 'Las aprobaciones por WhatsApp cambiaron todo. Antes perdíamos trabajos porque el cliente no contestaba. Ahora aprueba en segundos.',                   nombre: 'Camila Torres',   rol: 'AutoFix, Trujillo PE',         img: '/testi-2-camila.png',  estrellas: 5 },
   { texto: 'Los recordatorios automáticos nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Quispe',   rol: 'Mecánica Quispe, Lima PE',     img: '/testi-3-miguel.png',  estrellas: 5 },
 ]
 

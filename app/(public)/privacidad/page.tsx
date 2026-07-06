@@ -4,6 +4,11 @@ export const metadata: Metadata = {
   title: 'Política de Privacidad — TallerOS',
   description: 'Conoce cómo TallerOS recopila, usa y protege los datos de tu taller mecánico y tus clientes.',
   alternates: { canonical: '/privacidad' },
+  openGraph: {
+    title: 'Política de Privacidad — TallerOS',
+    description: 'Conoce cómo TallerOS recopila, usa y protege los datos de tu taller mecánico y tus clientes.',
+    url: '/privacidad',
+  },
 }
 
 export default function PrivacidadPage() {
