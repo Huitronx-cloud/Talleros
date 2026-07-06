@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ArrowRight, Clock, BookOpen } from 'lucide-react'
@@ -55,7 +56,7 @@ export default async function BlogPage() {
       <nav className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/icon-512.png" alt="TallerOS" className="w-7 h-7 rounded-lg" />
+            <Image src="/icon-512.png" alt="TallerOS" width={56} height={56} className="w-7 h-7 rounded-lg" />
             <span className="font-bold text-gray-900">TallerOS</span>
           </Link>
           <Link href="/registro" className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
