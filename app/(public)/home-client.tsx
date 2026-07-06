@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
@@ -141,7 +143,7 @@ export default function LandingPage() {
     <nav className={`ln${scrolled?' sc':''}`}>
       <div className="ln-i">
         <a href="/" className="ll">
-          <img src="/icon-512.png" alt="TallerOS" className="ll-img" />
+          <Image src="/icon-512.png" alt="TallerOS" width={72} height={72} className="ll-img" />
           <span className="ll-t">Taller<em>OS</em></span>
         </a>
         <div className="ln-links">
@@ -206,7 +208,7 @@ export default function LandingPage() {
         </div>
         <div className="lh-right">
           <div className="lmock">
-            <img src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard" className="lmock-s" />
+            <Image src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard" width={895} height={1200} priority sizes="(max-width: 900px) 92vw, 44vw" className="lmock-s" />
             <div className="lfl lfl-wa">
               <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
               <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
@@ -246,7 +248,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lver-w">
           <div className="lver-img">
-            <img src={HF.mechanic2} alt="Sin sistema" className="lvimg"/>
+            <img src={HF.mechanic2} alt="Sin sistema" loading="lazy" decoding="async" className="lvimg"/>
             <div className="lvimg-c bad">Sin TallerOS</div>
           </div>
           <div className="lver-cnt">
@@ -282,7 +284,7 @@ export default function LandingPage() {
           {DIFERENCIADORES.map((d,i) => (
             <div key={i} id={`dif-${i}`} data-animate className={`lfc${isV(`dif-${i}`)?' v':''}`} style={{transitionDelay:`${i*70}ms`}}>
               <div className="lfc-iw">
-                <img src={d.img} alt={d.titulo} className="lfc-img"/>
+                <Image src={d.img} alt={d.titulo} width={896} height={640} sizes="(max-width: 768px) 92vw, 30vw" className="lfc-img"/>
                 <div className="lfc-iov"/>
                 <span className="lfc-tag">{d.tag}</span>
               </div>
@@ -306,8 +308,8 @@ export default function LandingPage() {
         <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día uno.</p>
         <div className="lmw">
           <div className="lmimgs">
-            <img src="/mod-img1.png" alt="Recepcion taller con TallerOS" className="lmimg"/>
-            <img src="/mod-img2.png" alt="Mecánicos usando TallerOS" className="lmimg lmimg2"/>
+            <Image src="/mod-img1.png" alt="Recepcion taller con TallerOS" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg"/>
+            <Image src="/mod-img2.png" alt="Mecánicos usando TallerOS" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg lmimg2"/>
           </div>
           <div className="lmgrid">
             {MODULOS.map((m,i) => (
@@ -338,7 +340,7 @@ export default function LandingPage() {
             { img:'/taller-vargas.png',   nombre:'Centro Automotriz Vargas',     ciudad:'Lima, PE'             },
           ].map((t,i) => (
             <div key={i} className="lgal-card">
-              <img src={t.img} alt={t.nombre} className="lgal-card-img"/>
+              <Image src={t.img} alt={t.nombre} width={1024} height={1024} sizes="(max-width: 768px) 46vw, 23vw" className="lgal-card-img"/>
               <div className="lgal-card-info">
                 <p className="lgal-card-name">{t.nombre}</p>
                 <p className="lgal-card-city">{t.ciudad}</p>
@@ -429,7 +431,7 @@ export default function LandingPage() {
         <div className="lproof">
           <div className="lpavs">
             {[HF.mechanic1, HF.customer, HF.team1, HF.workshop1].map((src,i) => (
-              <img key={i} src={src} alt="" className="lpav" style={{marginLeft:i===0?0:-10}}/>
+              <img key={i} src={src} alt="" loading="lazy" decoding="async" className="lpav" style={{marginLeft:i===0?0:-10}}/>
             ))}
           </div>
           <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> ya digitalizaron su operación</p>
@@ -477,7 +479,7 @@ export default function LandingPage() {
     {/* FOOTER */}
     <footer className="lfoot">
       <div className="lfoot-i">
-        <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
+        <div className="lfoot-l"><Image src="/icon-512.png" alt="TallerOS" width={72} height={72} className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
         <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Latinoamérica.</p>
         <div className="lfoot-lnks">
           {[{l:'Blog',h:'/blog'},{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'💬 Soporte WhatsApp',h:'https://wa.me/14284362377'},{l:'✉ hola@tallerosapp.com',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}

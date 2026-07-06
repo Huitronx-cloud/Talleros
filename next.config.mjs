@@ -49,12 +49,19 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'kbtszjpqtoqhrfnqjaxv.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'd8j0ntlcm91z4.cloudfront.net',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

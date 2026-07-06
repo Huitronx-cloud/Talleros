@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import { useState, useEffect, useRef } from 'react'
 import {
   MessageCircle, Camera, Monitor, Shield, Bell, Star,
@@ -159,7 +161,7 @@ export default function PeruClient() {
     <nav className={`ln${scrolled?' sc':''}`}>
       <div className="ln-i">
         <a href="/" className="ll">
-          <img src="/icon-512.png" alt="TallerOS" className="ll-img" />
+          <Image src="/icon-512.png" alt="TallerOS" width={72} height={72} className="ll-img" />
           <span className="ll-t">Taller<em>OS</em></span>
         </a>
         <div className="ln-links">
@@ -218,7 +220,7 @@ export default function PeruClient() {
         </div>
         <div className="lh-right">
           <div className="lmock">
-            <img src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard Perú" className="lmock-s" />
+            <Image src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard Perú" width={895} height={1200} priority sizes="(max-width: 900px) 92vw, 44vw" className="lmock-s" />
             <div className="lfl lfl-wa">
               <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
               <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
@@ -263,7 +265,7 @@ export default function PeruClient() {
           {DIFERENCIADORES.map((d,i) => (
             <div key={i} id={`dif-${i}`} data-animate className={`lfc${isV(`dif-${i}`)?' v':''}`} style={{transitionDelay:`${i*70}ms`}}>
               <div className="lfc-iw">
-                <img src={d.img} alt={d.titulo} className="lfc-img"/>
+                <Image src={d.img} alt={d.titulo} width={896} height={640} sizes="(max-width: 768px) 92vw, 30vw" className="lfc-img"/>
                 <div className="lfc-iov"/>
                 <span className="lfc-tag">{d.tag}</span>
               </div>
@@ -287,8 +289,8 @@ export default function PeruClient() {
         <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día uno.</p>
         <div className="lmw">
           <div className="lmimgs">
-            <img src="/mod-img1.png" alt="Recepcion taller con TallerOS Perú" className="lmimg"/>
-            <img src="/mod-img2.png" alt="Mecánicos usando TallerOS en Perú" className="lmimg lmimg2"/>
+            <Image src="/mod-img1.png" alt="Recepcion taller con TallerOS Perú" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg"/>
+            <Image src="/mod-img2.png" alt="Mecánicos usando TallerOS en Perú" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg lmimg2"/>
           </div>
           <div className="lmgrid">
             {MODULOS.map((m,i) => (
@@ -319,7 +321,7 @@ export default function PeruClient() {
             { img:'/taller-vargas.png',   nombre:'Centro Automotriz Vargas',     ciudad:'Cusco, PE'           },
           ].map((t,i) => (
             <div key={i} className="lgal-card">
-              <img src={t.img} alt={t.nombre} className="lgal-card-img"/>
+              <Image src={t.img} alt={t.nombre} width={1024} height={1024} sizes="(max-width: 768px) 46vw, 23vw" className="lgal-card-img"/>
               <div className="lgal-card-info">
                 <p className="lgal-card-name">{t.nombre}</p>
                 <p className="lgal-card-city">{t.ciudad}</p>
@@ -338,7 +340,7 @@ export default function PeruClient() {
         <div className="ltg">
           {TESTIMONIALES.map((t,i) => (
             <div key={i} id={`tes-${i}`} data-animate className={`ltc${isV(`tes-${i}`)?' v':''}`} style={{transitionDelay:`${i*100}ms`}}>
-              <div className="ltc-iw"><img src={t.img} alt={t.nombre} className="ltc-img"/><div className="ltc-iov"/></div>
+              <div className="ltc-iw"><Image src={t.img} alt={t.nombre} width={1024} height={1024} sizes="(max-width: 768px) 92vw, 30vw" className="ltc-img"/><div className="ltc-iov"/></div>
               <div className="ltc-b">
                 <div className="lstr">{"★".repeat(t.estrellas)}</div>
                 <p className="ltc-txt">"{t.texto}"</p>
@@ -400,7 +402,7 @@ export default function PeruClient() {
         <div className="lproof">
           <div className="lpavs">
             {[HF.mechanic1, HF.customer, HF.team1, HF.workshop1].map((src,i) => (
-              <img key={i} src={src} alt="" className="lpav" style={{marginLeft:i===0?0:-10}}/>
+              <img key={i} src={src} alt="" loading="lazy" decoding="async" className="lpav" style={{marginLeft:i===0?0:-10}}/>
             ))}
           </div>
           <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> en Perú ya digitalizaron su operación</p>
@@ -454,7 +456,7 @@ export default function PeruClient() {
     {/* FOOTER */}
     <footer className="lfoot">
       <div className="lfoot-i">
-        <div className="lfoot-l"><img src="/icon-512.png" alt="TallerOS" className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
+        <div className="lfoot-l"><Image src="/icon-512.png" alt="TallerOS" width={72} height={72} className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
         <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Perú.</p>
         <div className="lfoot-lnks">
           {[{l:'Blog',h:'/blog'},{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'Soporte',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}

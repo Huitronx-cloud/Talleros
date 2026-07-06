@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import GoogleAnalytics from '@/components/google-analytics'
-import MetaPixel from '@/components/meta-pixel'
+import CookieConsent from '@/components/cookie-consent'
 import SplashScreen from '@/components/splash-screen'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,7 +26,7 @@ export const metadata: Metadata = {
     description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis, sin tarjeta.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'TallerOS — Gestión inteligente para talleres mecánicos',
@@ -38,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'TallerOS — Gestión inteligente para talleres mecánicos',
     description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis.',
-    images: ['/og-image.png'],
+    images: ['/og-image.jpg'],
   },
   manifest: '/manifest.json',
   appleWebApp: {
@@ -93,8 +92,7 @@ export default function RootLayout({
           </div>
           <p id="splash-text">Actualizando tu taller...</p>
         </div>
-        <GoogleAnalytics />
-        <MetaPixel />
+        <CookieConsent />
         <SplashScreen />
         {children}
       </body>
