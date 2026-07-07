@@ -6,7 +6,16 @@ import MexicoClient from './mexico-client'
 export const metadata: Metadata = {
   title: 'Software para talleres mecánicos en México — TallerOS',
   description: 'Digitaliza tu taller mecánico en México con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis, sin tarjeta.',
-  alternates: { canonical: '/mexico' },
+  alternates: {
+    canonical: '/mexico',
+    languages: {
+      'es':    'https://www.tallerosapp.com/',
+      'es-MX': 'https://www.tallerosapp.com/mexico',
+      'es-CO': 'https://www.tallerosapp.com/colombia',
+      'es-PE': 'https://www.tallerosapp.com/peru',
+      'x-default': 'https://www.tallerosapp.com/',
+    },
+  },
   openGraph: {
     type: 'website',
     url: 'https://www.tallerosapp.com/mexico',
