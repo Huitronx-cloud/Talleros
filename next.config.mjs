@@ -73,6 +73,15 @@ const nextConfig = {
         headers: securityHeaders,
       },
       {
+        // Imágenes de /public: cache de 30 días. No immutable porque los
+        // nombres no llevan hash — si se reemplaza una imagen con el mismo
+        // nombre, expira en máximo 30 días.
+        source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' },
+        ],
+      },
+      {
         // CORS para las API routes — solo acepta peticiones de tallerosapp.com
         source: '/api/(.*)',
         headers: [
