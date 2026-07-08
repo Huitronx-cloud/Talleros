@@ -58,6 +58,30 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // Cluster: retención
+      { source: '/blog/clientes-recurrentes-taller-mecanico', destination: '/blog/fidelizar-clientes-taller-mecanico', permanent: true },
+      { source: '/blog/clientes-regresen-taller-mecanico', destination: '/blog/fidelizar-clientes-taller-mecanico', permanent: true },
+
+      // Cluster: clientes difíciles
+      { source: '/blog/manejar-cliente-enojado-taller', destination: '/blog/clientes-dificiles-taller-mecanico', permanent: true },
+      { source: '/blog/evitar-conflictos-clientes-taller-mecanico', destination: '/blog/clientes-dificiles-taller-mecanico', permanent: true },
+
+      // Cluster: reseñas Google
+      { source: '/blog/cuantas-resenas-google-taller-mecanico', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
+      { source: '/blog/conseguir-resenas-google-taller-mecanico', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
+      { source: '/blog/talleres-sin-resenas-pierden-competencia', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
+
+      // Cluster: WhatsApp
+      { source: '/blog/mensajes-whatsapp-clientes-taller', destination: '/blog/whatsapp-ventas-taller-mecanico', permanent: true },
+
+      // Cluster: conseguir/perder clientes
+      { source: '/blog/talleres-mecanicos-pierden-clientes', destination: '/blog/taller-no-consigue-clientes-nuevos', permanent: true },
+      { source: '/blog/taller-mecanico-conseguir-clientes-tecnologia', destination: '/blog/taller-no-consigue-clientes-nuevos', permanent: true },
+    ]
+  },
+
   async headers() {
     return [
       {

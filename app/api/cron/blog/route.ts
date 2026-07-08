@@ -3,7 +3,46 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 
 const TEMAS = [
-  // Negocio y administración del taller
+  // Administración
+  { titulo: 'Cómo administrar un taller mecánico sin perder el control',                          slug: 'administrar-taller-mecanico-sin-perder-control',        pais: null },
+  { titulo: 'Los errores de administración que más le cuestan a un taller mecánico',              slug: 'errores-administracion-taller-mecanico',                pais: null },
+  { titulo: 'Cómo organizar el día a día de un taller con varios mecánicos',                      slug: 'organizar-dia-taller-varios-mecanicos',                 pais: null },
+
+  // Rentabilidad
+  { titulo: 'Cuánto debería ganar realmente un taller mecánico al mes',                           slug: 'cuanto-debe-ganar-taller-mecanico',                     pais: null },
+  { titulo: 'Por qué tu taller trabaja mucho y gana poco',                                        slug: 'taller-trabaja-mucho-gana-poco',                        pais: null },
+  { titulo: 'Cómo saber si tu taller mecánico es rentable de verdad',                             slug: 'taller-mecanico-rentable-de-verdad',                    pais: null },
+
+  // Personas
+  { titulo: 'Cómo delegar tareas en tu taller mecánico y dejar de hacerlo todo tú',              slug: 'delegar-tareas-taller-mecanico',                        pais: null },
+  { titulo: 'Cómo contratar al mecánico correcto para tu taller',                                 slug: 'contratar-mecanico-correcto-taller',                    pais: null },
+
+  // Digitalización
+  { titulo: 'Digitalizar tu taller mecánico: por dónde empezar',                                  slug: 'digitalizar-taller-mecanico-por-donde-empezar',         pais: null },
+  { titulo: 'Órdenes de trabajo digitales vs papel: qué conviene más',                            slug: 'ordenes-trabajo-digitales-vs-papel-taller',             pais: null },
+
+  // Marketing
+  { titulo: 'Marketing de boca en boca: cómo activarlo en tu taller mecánico',                   slug: 'marketing-boca-en-boca-taller-mecanico',               pais: null },
+  { titulo: 'Redes sociales para talleres mecánicos: qué publicar para generar confianza',        slug: 'redes-sociales-taller-mecanico-confianza',              pais: null },
+  { titulo: 'Marketing para talleres mecánicos: por dónde empezar sin gastar en publicidad',      slug: 'marketing-taller-mecanico-sin-publicidad',              pais: null },
+  { titulo: 'Cómo conseguir más clientes para tu taller mecánico sin bajar precios',              slug: 'conseguir-clientes-taller-mecanico-sin-bajar-precios',  pais: null },
+
+  // ── Fondo de embudo (intención comercial) ──────────────────────────────────
+  { titulo: 'Sistema de gestión para taller mecánico: qué es y cómo elegir el mejor',            slug: 'sistema-gestion-taller-mecanico-como-elegir',           pais: null },
+  { titulo: 'Cuánto cuesta un software para taller mecánico en México',                           slug: 'cuanto-cuesta-software-taller-mecanico-mexico',         pais: 'MX' },
+  { titulo: 'TallerOS vs Excel: por qué una hoja de cálculo no alcanza para gestionar un taller', slug: 'tallerados-vs-excel-gestion-taller',                    pais: null },
+  { titulo: 'Los mejores software para talleres mecánicos en LATAM: comparativa 2026',            slug: 'mejores-software-talleres-mecanicos-latam-2026',        pais: null },
+  { titulo: 'Cómo hacer una orden de trabajo profesional en tu taller mecánico',                  slug: 'orden-trabajo-profesional-taller-mecanico',             pais: null },
+  { titulo: 'Cómo cobrar mejor en tu taller: facturación digital sin errores',                    slug: 'cobrar-mejor-taller-mecanico-facturacion-digital',      pais: null },
+
+  // ── Geolocalización ────────────────────────────────────────────────────────
+  { titulo: 'Cómo digitalizar un taller mecánico en Guadalajara',                                 slug: 'digitalizar-taller-mecanico-guadalajara',               pais: 'MX' },
+  { titulo: 'Cómo digitalizar un taller mecánico en Bogotá',                                      slug: 'digitalizar-taller-mecanico-bogota',                    pais: 'CO' },
+  { titulo: 'Cómo digitalizar un taller mecánico en Lima',                                        slug: 'digitalizar-taller-mecanico-lima',                      pais: 'PE' },
+  { titulo: 'Software para talleres mecánicos en Guadalajara: guía 2026',                         slug: 'software-talleres-mecanicos-guadalajara-2026',          pais: 'MX' },
+  { titulo: 'Software para talleres mecánicos en Monterrey: guía 2026',                           slug: 'software-talleres-mecanicos-monterrey-2026',            pais: 'MX' },
+
+  // ── Nuevos temas ──────────────────────────────────────────────────────────
   { titulo: 'Por qué los talleres mecánicos pierden clientes sin saberlo',                       slug: 'talleres-mecanicos-pierden-clientes',                pais: null },
   { titulo: 'El error más caro que cometen los talleres mecánicos',                              slug: 'error-mas-caro-talleres-mecanicos',                  pais: null },
   { titulo: 'Cómo administrar un taller mecánico sin perder el control',                         slug: 'administrar-taller-mecanico-sin-perder-control',     pais: null },
@@ -50,8 +89,7 @@ const TEMAS = [
   { titulo: 'Cómo fidelizar clientes en un taller mecánico',                                     slug: 'fidelizar-clientes-taller-mecanico',                 pais: null },
   { titulo: 'Recordatorios de mantenimiento: la estrategia que recupera clientes',                slug: 'recordatorios-mantenimiento-clientes-taller',        pais: null },
   { titulo: 'Cómo hacer que tus clientes regresen a tu taller mecánico',                         slug: 'clientes-regresen-taller-mecanico',                  pais: null },
-  { titulo: 'Portal del cliente para talleres mecánicos: qué es y por qué importa',              slug: 'portal-cliente-taller-mecanico',                     pais: null },
-]
+  ]
 
 async function limpiarArticulosExistentes(supabase: any): Promise<void> {
   const { data: articulos } = await supabase
@@ -84,24 +122,27 @@ async function generarArticulo(tema: typeof TEMAS[0]): Promise<string> {
       'Content-Type':      'application/json',
     },
     body: JSON.stringify({
-      model:      'claude-haiku-4-5',
+      model:      'claude-sonnet-4-6',
       max_tokens: 2000,
       messages: [{
         role:    'user',
-        content: `Escribe un artículo de blog en español para dueños de talleres mecánicos en Latinoamérica.
+        content: `Escribe un artículo de blog SEO-optimizado en español para dueños de talleres mecánicos en Latinoamérica.
 
 Título: "${tema.titulo}"
+Keyword principal: "${tema.slug.replace(/-/g, ' ')}"
 ${tema.pais ? `País objetivo: ${tema.pais === 'MX' ? 'México' : tema.pais === 'CO' ? 'Colombia' : 'Perú'}` : ''}
 
 Instrucciones:
-- Tono: directo, práctico, sin rodeos. Habla de tú a tú con el dueño de taller.
-- Longitud: 700-900 palabras
-- Estructura: introducción con gancho, 3-4 secciones con subtítulos H2, conclusión con CTA
-- Incluye datos reales cuando aplique (ej: "el 97% de los clientes lee reseñas antes de elegir un taller")
-- Al final menciona naturalmente que TallerOS resuelve el problema principal del artículo, con un CTA a https://www.tallerosapp.com/registro
-- Formato: HTML limpio con etiquetas <h2>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, <head>, <article> ni <h1> (el título ya se muestra aparte, no lo repitas).
-- NO uses markdown, solo HTML. No envuelvas la respuesta en \`\`\`html ni en ningún code fence.
-- El artículo debe posicionar en Google para la keyword principal del título`,
+- Tono: directo, como un colega dueño de taller que ya resolvió el problema. Sin condescendencia.
+- Longitud: 1200-1500 palabras
+- La keyword principal debe aparecer en el primer párrafo de forma natural
+- Estructura: introducción directa (sin "en este artículo veremos"), 4-5 secciones H2, 1-2 subsecciones H3, conclusión con CTA
+- Incluye datos reales cuando aplique
+- Usa ejemplos concretos de situaciones en talleres de LATAM
+- Al final menciona naturalmente que TallerOS resuelve el problema, con CTA a https://www.tallerosapp.com/registro
+- Formato: HTML limpio con <h2>, <h3>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, <head>, <article> ni <h1>.
+- NO uses markdown. No envuelvas la respuesta en backticks ni code fences.
+- PROHIBIDO empezar con frases como: "Seamos honestos", "Vamos directo al grano", "En este artículo", "Si eres dueño de taller". Entra directo al tema desde la primera oración.`,
       }],
     }),
   })
@@ -219,7 +260,6 @@ export async function GET(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  await limpiarArticulosExistentes(supabase)
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
   const tema = TEMAS[diaDelAnio % TEMAS.length]
