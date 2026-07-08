@@ -8,6 +8,12 @@ const TWILIO_SID     = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN   = process.env.TWILIO_AUTH_TOKEN!
 const TWILIO_FROM    = process.env.TWILIO_WHATSAPP_FROM!
 
+// Apagado por defecto: el agente estaba gastando presupuesto de Twilio en
+// mensajes que casi nunca se entregaban (WhatsApp de prospección fría sin que
+// el destinatario le haya escrito antes al número del taller). Para
+// reactivarlo, poner PROSPECTING_AGENT_ENABLED=true en las env vars de Vercel.
+const PROSPECTING_AGENT_ENABLED = process.env.PROSPECTING_AGENT_ENABLED === 'true'
+
 // ── Ciudades objetivo ─────────────────────────────────────────────────────────
 // El agente rota entre ciudades cada día para maximizar cobertura
 const CIUDADES = [
@@ -141,7 +147,13 @@ async function registrarContacto(prospecto: Prospecto, error?: string): Promise<
 }
 
 // ── CRM interno — sincronizar lead unificado ─────────────────────────────────
-async function sincronizarLeadCRM(prospecto: Prospecto, etapa: 'nuevo' | 'contactado'): Promise<void> {
+// Registra también el mensaje saliente que se mandó, para que la conversación
+// en /admin/leads nunca se vea vacía aunque el prospecto no haya respondido.
+async function sincronizarLeadCRM(
+  prospecto: Prospecto,
+  etapa: 'nuevo' | 'contactado',
+  canales?: { whatsapp?: boolean; email?: boolean }
+): Promise<void> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -151,18 +163,39 @@ async function sincronizarLeadCRM(prospecto: Prospecto, etapa: 'nuevo' | 'contac
     : null
 
   try {
-    await supabase.from('crm_leads').upsert({
-      nombre:          prospecto.nombre,
-      telefono:        telefonoNormalizado,
-      email:           prospecto.email,
-      direccion:       prospecto.direccion,
-      ciudad:          prospecto.ciudad,
-      pais:            prospecto.pais,
-      google_place_id: prospecto.google_place_id,
-      website:         prospecto.website,
-      origen:          'prospeccion',
-      etapa,
-    }, { onConflict: telefonoNormalizado ? 'telefono' : 'google_place_id' })
+    const { data: lead } = await supabase
+      .from('crm_leads')
+      .upsert({
+        nombre:          prospecto.nombre,
+        telefono:        telefonoNormalizado,
+        email:           prospecto.email,
+        direccion:       prospecto.direccion,
+        ciudad:          prospecto.ciudad,
+        pais:            prospecto.pais,
+        google_place_id: prospecto.google_place_id,
+        website:         prospecto.website,
+        origen:          'prospeccion',
+        etapa,
+      }, { onConflict: telefonoNormalizado ? 'telefono' : 'google_place_id' })
+      .select('id')
+      .single()
+
+    if (lead?.id) {
+      if (canales?.whatsapp) {
+        await supabase.from('crm_mensajes').insert({
+          lead_id: lead.id,
+          sentido: 'saliente',
+          mensaje: '📲 WhatsApp de prospección enviado (plantilla aprobada por Meta)',
+        })
+      }
+      if (canales?.email) {
+        await supabase.from('crm_mensajes').insert({
+          lead_id: lead.id,
+          sentido: 'saliente',
+          mensaje: `📧 Email de prospección enviado a ${prospecto.email}`,
+        })
+      }
+    }
   } catch (e) {
     console.error('Error sincronizando lead CRM:', e)
   }
@@ -375,6 +408,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  if (!PROSPECTING_AGENT_ENABLED) {
+    console.log('[Prospecting] Agente deshabilitado (PROSPECTING_AGENT_ENABLED != "true") — saltando ejecución, no se llama a Google Places ni se envía ningún WhatsApp/email.')
+    return NextResponse.json({
+      ok:      true,
+      enabled: false,
+      mensaje: 'Agente de prospección deshabilitado. Activar con PROSPECTING_AGENT_ENABLED=true.',
+    })
+  }
+
   // Rotar ciudad y término por día + hora para que cada ejecución cubra combinación distinta
   const ahora      = new Date()
   const diaDelMes  = ahora.getDate()
@@ -460,7 +502,7 @@ export async function GET(req: NextRequest) {
       // contaba si WhatsApp funcionaba, y casi todo negocio en Google Maps tiene
       // teléfono, así que un email exitoso quedaba enterrado en "omitidos".
       if (emailEnviado || whatsappEnviado) {
-        await sincronizarLeadCRM(prospecto, 'contactado')
+        await sincronizarLeadCRM(prospecto, 'contactado', { whatsapp: whatsappEnviado, email: emailEnviado })
         contactados.push(`${prospecto.nombre}${tagEmail}${tagWhatsapp}${prospecto.website ? ` | 🌐 ${prospecto.website}` : ''} | 📍 ${prospecto.direccion ?? prospecto.ciudad}`)
       } else if (prospecto.telefono || prospecto.website) {
         await sincronizarLeadCRM(prospecto, 'nuevo')

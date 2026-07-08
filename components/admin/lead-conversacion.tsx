@@ -109,7 +109,7 @@ export default function LeadConversacion({ lead, mensajes }: { lead: Lead; mensa
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleEnviar()}
                 placeholder={lead.telefono ? 'Escribe una respuesta...' : 'Este lead no tiene teléfono'}
                 disabled={!lead.telefono || enviando}
-                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
+                className="input-on-dark flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
               />
               <button
                 onClick={handleEnviar}
@@ -179,7 +179,7 @@ export default function LeadConversacion({ lead, mensajes }: { lead: Lead; mensa
               onChange={e => setNotas(e.target.value)}
               rows={5}
               placeholder="Agrega notas sobre este lead..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="input-on-dark w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
             <button
               onClick={handleGuardarNotas}

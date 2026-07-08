@@ -6,7 +6,8 @@ import { Orden, Taller } from '@/types'
 import OrdenDocumento from '@/lib/pdf/orden-documento'
 import twilio from 'twilio'
 import { formatMoney } from '@/lib/utils'
-import { normalizarFromWhatsApp } from '@/lib/twilio'
+import { normalizarFromWhatsApp, mapearErrorTwilio } from '@/lib/twilio'
+import { generarQrOptInWhatsApp } from '@/lib/whatsapp-qr'
 
 export async function POST(
   _req: NextRequest,
@@ -32,13 +33,21 @@ export async function POST(
 
   if (!taller) return NextResponse.json({ error: 'Taller no encontrado' }, { status: 404 })
 
+  const { data: whatsappRow } = await supabase
+    .from('talleres')
+    .select('whatsapp_numero')
+    .eq('id', orden.taller_id)
+    .single()
+
   try {
    // 1. Generar PDF en memoria
     const { createElement } = await import('react')
+    const qrOptInUrl = await generarQrOptInWhatsApp(whatsappRow?.whatsapp_numero)
     const buffer = await renderToBuffer(
       createElement(OrdenDocumento, {
         orden: orden as Orden,
         taller: taller as Taller,
+        qrOptInUrl,
       }) as any
     )
 
@@ -79,12 +88,16 @@ const { error: uploadError } = await adminClient.storage
     const vehiculo = [orden.vehiculo_marca, orden.vehiculo_modelo].filter(Boolean).join(' ') || 'su vehículo'
     const totalFmt = formatMoney(orden.total ?? 0, (taller as any).moneda)
 
-    await client.messages.create({
-      from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-      to,
-     body: `Hola ${cliente?.nombre} 👋 Aquí está el reporte de servicio de su ${vehiculo} en ${(taller as any).nombre}.\n\n💰 Total: ${totalFmt}\n\nAdjunto encontrará el PDF con el detalle completo. ¡Gracias por preferirnos! 🙏`,
-      mediaUrl: [pdfUrl],
-    })
+    try {
+      await client.messages.create({
+        from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
+        to,
+       body: `Hola ${cliente?.nombre} 👋 Aquí está el reporte de servicio de su ${vehiculo} en ${(taller as any).nombre}.\n\n💰 Total: ${totalFmt}\n\nAdjunto encontrará el PDF con el detalle completo. ¡Gracias por preferirnos! 🙏`,
+        mediaUrl: [pdfUrl],
+      })
+    } catch (twilioError: any) {
+      return NextResponse.json({ error: mapearErrorTwilio(twilioError) }, { status: 500 })
+    }
 
     // 5. Registrar notificación
     await supabase.from('notificaciones').insert({

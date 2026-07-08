@@ -7,6 +7,7 @@ import {
 export const metadata = {
   title: 'Demo en vivo — TallerOS',
   description: 'Así ve tu cliente el estado de su vehículo en tiempo real. Sin llamadas, sin WhatsApps de ida y vuelta.',
+  alternates: { canonical: '/demo' },
 }
 
 const DEMO_TALLER = {

@@ -6,6 +6,8 @@ import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
 import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
 import { enviarResenaOrden } from '@/lib/resenas'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
+import { PlantillaWhatsApp, construirMensajeWhatsApp, ContextoWhatsApp, construirMensajeContexto } from '@/lib/whatsapp-templates'
+import { formatMoney } from '@/lib/utils'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -218,6 +220,257 @@ export async function eliminarOrden(id: string) {
   const { error } = await supabase.from('ordenes').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/ordenes')
+  return { error: null }
+}
+
+// ── Comunicación por WhatsApp vía link wa.me (sin Twilio/Meta) ────────────────
+// El mensaje se genera aquí (necesita datos de cliente/taller + token del
+// portal, protegidos por RLS), pero el envío real lo hace el empleado del
+// taller con un tap desde su propio WhatsApp — nunca se manda nada solo.
+
+export interface DatosMensajeWhatsApp {
+  telefono:   string
+  mensaje:    string
+  paisTaller: string | null
+  plantilla:  PlantillaWhatsApp
+}
+
+async function obtenerOCrearTokenPortal(
+  supabase: ReturnType<typeof createClient>,
+  ordenId: string,
+  tallerId: string
+): Promise<string | null> {
+  const { data: existente } = await supabase
+    .from('portal_tokens')
+    .select('token')
+    .eq('orden_id', ordenId)
+    .gt('expires_at', new Date().toISOString())
+    .single()
+
+  if (existente?.token) return existente.token
+
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: nuevo } = await supabase
+    .from('portal_tokens')
+    .insert({ orden_id: ordenId, taller_id: tallerId, expires_at: expires })
+    .select('token')
+    .single()
+
+  return nuevo?.token ?? null
+}
+
+export async function generarMensajeWhatsApp(
+  ordenId: string,
+  plantilla: PlantillaWhatsApp,
+  opts?: { garantiaDias?: number; garantiaKm?: number }
+): Promise<{ error: string | null; datos?: DatosMensajeWhatsApp }> {
+  const supabase = createClient()
+
+  const { data: orden, error } = await supabase
+    .from('ordenes')
+    .select('id, taller_id, vehiculo_marca, vehiculo_modelo, placas, clientes(nombre, telefono), talleres(nombre, pais)')
+    .eq('id', ordenId)
+    .single()
+
+  if (error || !orden) return { error: 'Orden no encontrada' }
+
+  const cliente = orden.clientes as any
+  const taller  = orden.talleres as any
+
+  if (!cliente?.telefono) return { error: 'El cliente no tiene teléfono registrado' }
+  if (!taller) return { error: 'No se pudo obtener la información del taller' }
+
+  const token     = await obtenerOCrearTokenPortal(supabase, ordenId, orden.taller_id)
+  const baseUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+  const portalUrl = token ? `${baseUrl}/portal/${token}` : null
+
+  const mensaje = construirMensajeWhatsApp(plantilla, {
+    clienteNombre:  cliente.nombre,
+    vehiculoMarca:  orden.vehiculo_marca,
+    vehiculoModelo: orden.vehiculo_modelo,
+    placas:         orden.placas,
+    tallerNombre:   taller.nombre,
+    portalUrl,
+    garantiaDias:   opts?.garantiaDias,
+    garantiaKm:     opts?.garantiaKm,
+  })
+
+  return {
+    error: null,
+    datos: {
+      telefono:   cliente.telefono,
+      mensaje,
+      paisTaller: taller.pais ?? null,
+      plantilla,
+    },
+  }
+}
+
+export interface DatosMensajeContexto {
+  telefono:   string
+  mensaje:    string
+  paisTaller: string | null
+  portalUrl?: string | null
+  pdfUrl?:    string | null
+}
+
+// Genera el mensaje wa.me para un envío atado a una acción concreta (fotos de
+// diagnóstico, portal, PDF de servicio, aprobación de trabajo extra). Para
+// pdf_servicio además renderiza el PDF y lo sube a Storage para incluir el
+// link en el mensaje — wa.me no permite adjuntar archivos.
+export async function generarMensajeWhatsAppContexto(
+  ordenId: string,
+  contexto: ContextoWhatsApp,
+  extra?: {
+    fotos?:         { url: string; descripcion: string }[]
+    servicioExtra?: string
+    costoExtra?:    string
+  }
+): Promise<{ error: string | null; datos?: DatosMensajeContexto }> {
+  const supabase = createClient()
+
+  const { data: orden, error } = await supabase
+    .from('ordenes')
+    .select('*, clientes(nombre, telefono), talleres(nombre, pais)')
+    .eq('id', ordenId)
+    .single()
+
+  if (error || !orden) return { error: 'Orden no encontrada' }
+
+  const cliente = orden.clientes as any
+  const taller  = orden.talleres as any
+
+  if (!cliente?.telefono) return { error: 'El cliente no tiene teléfono registrado' }
+  if (!taller) return { error: 'No se pudo obtener la información del taller' }
+
+  if (contexto === 'fotos_diagnostico' && !extra?.fotos?.length) {
+    return { error: 'No hay fotos para enviar' }
+  }
+  if (contexto === 'aprobacion_extra' && (!extra?.servicioExtra || !extra?.costoExtra)) {
+    return { error: 'Falta la descripción o el costo del trabajo adicional' }
+  }
+
+  // El portal acompaña a todos los contextos excepto el PDF (ahí el link
+  // protagonista es el del archivo).
+  let portalUrl: string | null = null
+  if (contexto !== 'pdf_servicio') {
+    const token = await obtenerOCrearTokenPortal(supabase, ordenId, orden.taller_id)
+    if (contexto === 'portal_cliente' && !token) {
+      return { error: 'No se pudo generar el link del portal' }
+    }
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+    portalUrl = token ? `${baseUrl}/portal/${token}` : null
+  }
+
+  let pdfUrl: string | null = null
+  if (contexto === 'pdf_servicio') {
+    const res = await generarYSubirPdfOrden(supabase, orden)
+    if (res.error || !res.url) return { error: res.error ?? 'No se pudo generar el PDF' }
+    pdfUrl = res.url
+  }
+
+  const mensaje = construirMensajeContexto(contexto, {
+    clienteNombre:  cliente.nombre,
+    vehiculoMarca:  orden.vehiculo_marca,
+    vehiculoModelo: orden.vehiculo_modelo,
+    placas:         orden.placas,
+    tallerNombre:   taller.nombre,
+    portalUrl,
+    fotos:          extra?.fotos,
+    pdfUrl,
+    totalFmt:       formatMoney(orden.total ?? 0, orden.moneda),
+    servicioExtra:  extra?.servicioExtra,
+    costoExtraFmt:  extra?.costoExtra ? formatMoney(Number(extra.costoExtra), orden.moneda) : null,
+  })
+
+  return {
+    error: null,
+    datos: {
+      telefono:   cliente.telefono,
+      mensaje,
+      paisTaller: taller.pais ?? null,
+      portalUrl,
+      pdfUrl,
+    },
+  }
+}
+
+// Renderiza el PDF de la orden y lo sube a Storage (bucket público
+// pdfs-ordenes), igual que /api/ordenes/[id]/pdf-whatsapp pero sin Twilio.
+// Imports dinámicos: @react-pdf/renderer es pesado y solo se necesita aquí.
+async function generarYSubirPdfOrden(
+  supabase: ReturnType<typeof createClient>,
+  orden: any
+): Promise<{ url: string | null; error?: string }> {
+  try {
+    const { data: taller } = await supabase
+      .rpc('get_taller_para_pdf', { p_taller_id: orden.taller_id })
+    if (!taller) return { url: null, error: 'Taller no encontrado' }
+
+    const { data: whatsappRow } = await supabase
+      .from('talleres')
+      .select('whatsapp_numero')
+      .eq('id', orden.taller_id)
+      .single()
+
+    const [{ renderToBuffer }, { createElement }, { default: OrdenDocumento }, { generarQrOptInWhatsApp }] =
+      await Promise.all([
+        import('@react-pdf/renderer'),
+        import('react'),
+        import('@/lib/pdf/orden-documento'),
+        import('@/lib/whatsapp-qr'),
+      ])
+
+    const qrOptInUrl = await generarQrOptInWhatsApp(whatsappRow?.whatsapp_numero)
+    const buffer = await renderToBuffer(
+      createElement(OrdenDocumento as any, { orden, taller, qrOptInUrl }) as any
+    )
+
+    const numero   = String(orden.numero_orden).padStart(4, '0')
+    const filename = `orden-${numero}-${Date.now()}.pdf`
+
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { error: uploadError } = await adminClient.storage
+      .from('pdfs-ordenes')
+      .upload(filename, buffer, { contentType: 'application/pdf', upsert: true })
+
+    if (uploadError) return { url: null, error: `Error subiendo PDF: ${uploadError.message}` }
+
+    const { data: urlData } = adminClient.storage.from('pdfs-ordenes').getPublicUrl(filename)
+    return { url: urlData.publicUrl }
+  } catch (e: any) {
+    console.error('[PDF wa.me]', e)
+    return { url: null, error: 'No se pudo generar el PDF' }
+  }
+}
+
+export async function registrarEnvioWhatsApp(params: {
+  ordenId:   string
+  plantilla: PlantillaWhatsApp | ContextoWhatsApp
+  telefono:  string
+  mensaje:   string
+}): Promise<{ error: string | null }> {
+  const supabase = createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { error } = await supabase.from('mensajes_whatsapp_log').insert({
+    orden_id:   params.ordenId,
+    taller_id:  tallerId,
+    usuario_id: user?.id ?? null,
+    plantilla:  params.plantilla,
+    telefono:   params.telefono,
+    mensaje:    params.mensaje,
+  })
+
+  if (error) return { error: error.message }
   return { error: null }
 }
 

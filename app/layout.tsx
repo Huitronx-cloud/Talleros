@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import GoogleAnalytics from '@/components/google-analytics'
-import MetaPixel from '@/components/meta-pixel'
+import CookieConsent from '@/components/cookie-consent'
+import RegistrarSW from '@/components/registrar-sw'
 import SplashScreen from '@/components/splash-screen'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -10,15 +10,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'TallerOS — Gestión inteligente para talleres mecánicos',
   description: 'TallerOS digitaliza tu taller mecánico con aprobaciones por WhatsApp, portal del cliente en tiempo real, reseñas automáticas en Google y recordatorios de mantenimiento. 14 días gratis.',
-  keywords: ['taller mecánico', 'software taller', 'gestión taller', 'SaaS taller', 'taller LATAM', 'órdenes de trabajo', 'WhatsApp taller', 'portal cliente taller'],
   authors: [{ name: 'TallerOS' }],
   
   creator: 'TallerOS',
   publisher: 'TallerOS',
   metadataBase: new URL('https://www.tallerosapp.com'),
-  alternates: {
-    canonical: '/',
-  },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
   openGraph: {
     type: 'website',
     locale: 'es_MX',
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
     description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis, sin tarjeta.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'TallerOS — Gestión inteligente para talleres mecánicos',
@@ -39,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'TallerOS — Gestión inteligente para talleres mecánicos',
     description: 'Digitaliza tu taller con aprobaciones por WhatsApp, portal del cliente en tiempo real y reseñas automáticas en Google. 14 días gratis.',
-    images: ['/og-image.png'],
+    images: ['/og-image.jpg'],
   },
   manifest: '/manifest.json',
   appleWebApp: {
@@ -62,8 +61,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  themeColor: '#2563eb',
 }
 export default function RootLayout({
   children,
@@ -82,13 +80,7 @@ export default function RootLayout({
           });
         `}} />
         <meta name="facebook-domain-verification" content="qrpg7ptwpcrr7anrjz6zr8foz38az" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#1d4ed8" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="TallerOS" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
 </head>
       <body className={`${inter.className} has-offer-bar`}>
@@ -101,8 +93,8 @@ export default function RootLayout({
           </div>
           <p id="splash-text">Actualizando tu taller...</p>
         </div>
-        <GoogleAnalytics />
-        <MetaPixel />
+        <CookieConsent />
+        <RegistrarSW />
         <SplashScreen />
         {children}
       </body>

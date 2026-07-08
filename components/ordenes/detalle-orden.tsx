@@ -12,6 +12,8 @@ import { cambiarEstado, agregarNotaInterna } from '@/app/(dashboard)/ordenes/act
 import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
 import PanelPagos from './panel-pagos'
+import BotonWhatsAppLink from './whatsapp-link-modal'
+import BotonWhatsAppContexto from './whatsapp-contexto-modal'
 import { formatMoney } from '@/lib/utils'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
@@ -63,8 +65,6 @@ export default function DetalleOrden({
   const [estadoActual, setEstadoActual]         = useState<EstadoOrden>(orden.estado)
   const [historial, setHistorial]               = useState(orden.historial ?? [])
   const [enviandoWA, setEnviandoWA]             = useState(false)
-  const [enviandoAprobacion, setEnviandoAprobacion] = useState(false)
-  const [enviandoPortal, setEnviandoPortal]     = useState(false)
   const [enviandoGarantia, setEnviandoGarantia] = useState(false)
   const [garantiaDias, setGarantiaDias]         = useState(30)
   const [garantiaKm, setGarantiaKm]             = useState(1000)
@@ -75,8 +75,7 @@ export default function DetalleOrden({
   const [portalUrl, setPortalUrl]               = useState('')
   const [servicioExtra, setServicioExtra]       = useState('')
   const [costoExtra, setCostoExtra]             = useState('')
-  const [enviandoPdf, setEnviandoPdf] = useState(false)
-const [pdfEnviado, setPdfEnviado]   = useState(false)
+  const [pdfEnviado, setPdfEnviado]   = useState(false)
   const [errorEstado, setErrorEstado] = useState('')
   const [errorComunicacion, setErrorComunicacion] = useState('')
 
@@ -90,11 +89,6 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
   if (!resultado.error) {
     setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
     setEstadoActual(siguienteEstado)
-    // Envío automático de PDF al entregar
-    if (siguienteEstado === 'entregado') {
-      fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
-        .catch(console.error)
-    }
   } else {
     setErrorEstado(resultado.error)
   }
@@ -123,60 +117,6 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
     } catch {
       setErrorComunicacion('No se pudo enviar el WhatsApp.')
     } finally { setEnviandoWA(false) }
-  }
-
-  const handleEnviarPdfWhatsApp = async () => {
-  setEnviandoPdf(true)
-  try {
-    const res = await fetch(`/api/ordenes/${orden.id}/pdf-whatsapp`, { method: 'POST' })
-    if (res.ok) setPdfEnviado(true)
-  } catch (e) {
-    console.error(e)
-  } finally {
-    setEnviandoPdf(false)
-  }
-}
-
-  const handleSolicitarAprobacion = async () => {
-    if (!servicioExtra || !costoExtra) return
-    setEnviandoAprobacion(true)
-    setErrorComunicacion('')
-    try {
-      const res = await fetch('/api/notificaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'aprobacion_extra', ordenId: orden.id, servicioExtra, costoExtra }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setErrorComunicacion(data.error ?? 'No se pudo enviar la solicitud.')
-        return
-      }
-      setServicioExtra('')
-      setCostoExtra('')
-    } catch {
-      setErrorComunicacion('No se pudo enviar la solicitud.')
-    } finally { setEnviandoAprobacion(false) }
-  }
-
-  const handleEnviarPortal = async () => {
-    setEnviandoPortal(true)
-    setErrorComunicacion('')
-    try {
-      const res = await fetch('/api/portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ordenId: orden.id }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data.url) {
-        setErrorComunicacion(data.error ?? 'No se pudo generar el link del portal.')
-        return
-      }
-      setPortalUrl(data.url)
-    } catch {
-      setErrorComunicacion('No se pudo generar el link del portal.')
-    } finally { setEnviandoPortal(false) }
   }
 
   const handleEnviarGarantia = async () => {
@@ -487,6 +427,18 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
             <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{errorComunicacion}</p>
           )}
 
+          {/* Enviar por WhatsApp — link wa.me, sin depender de Twilio/Meta */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageCircle className="w-4 h-4" style={{ color: '#25D366' }} />
+              <h3 className="text-sm font-semibold text-gray-900">Enviar por WhatsApp</h3>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">
+              Genera el mensaje según el estatus de la orden y lo envías tú mismo desde tu propio WhatsApp — sin depender de ninguna API externa.
+            </p>
+            <BotonWhatsAppLink ordenId={orden.id} estado={estadoActual} />
+          </div>
+
           {/* Fotos de diagnóstico */}
           <FotosDiagnostico ordenId={orden.id} tallerId={orden.taller_id as string} />
 
@@ -518,23 +470,21 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
               <h3 className="text-sm font-semibold text-gray-900">Portal del cliente</h3>
             </div>
             <p className="text-xs text-gray-400 mb-4">
-              Envía al cliente un link para que vea el estado de su vehículo en tiempo real.
+              Envía al cliente el link del portal desde tu propio WhatsApp para que vea el estado de su vehículo en tiempo real.
             </p>
-            {portalUrl ? (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                <p className="text-xs text-purple-600 font-medium mb-1">✅ Link enviado al cliente</p>
+            {portalUrl && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+                <p className="text-xs text-purple-600 font-medium mb-1">🔗 Link del portal del cliente</p>
                 <p className="text-xs text-purple-500 break-all">{portalUrl}</p>
               </div>
-            ) : (
-              <button
-                onClick={handleEnviarPortal}
-                disabled={enviandoPortal}
-                className="flex items-center gap-2 text-sm font-medium bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                {enviandoPortal ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
-                Enviar portal por WhatsApp
-              </button>
             )}
+            <BotonWhatsAppContexto
+              ordenId={orden.id}
+              contexto="portal_cliente"
+              label="Enviar portal por WhatsApp"
+              onDatos={d => { if (d.portalUrl) setPortalUrl(d.portalUrl) }}
+              className="flex items-center gap-2 text-sm font-medium bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white px-4 py-2 rounded-lg transition-colors"
+            />
           </div>
 
           {/* Reporte PDF por WhatsApp */}
@@ -544,8 +494,7 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
     <h3 className="text-sm font-semibold text-gray-900">Reporte PDF de servicio</h3>
   </div>
   <p className="text-xs text-gray-400 mb-4">
-    Envía el reporte completo del servicio al cliente por WhatsApp como archivo PDF.
-    {estadoActual === 'entregado' && ' Se envía automáticamente al marcar como entregado.'}
+    Genera el reporte completo del servicio y envíale el link del PDF al cliente desde tu propio WhatsApp.
   </p>
   <div className="flex items-center gap-3">
     {pdfEnviado ? (
@@ -553,16 +502,15 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
         <CheckCircle2 className="w-4 h-4" /> PDF enviado correctamente
       </div>
     ) : (
-      <button
-        onClick={handleEnviarPdfWhatsApp}
-        disabled={enviandoPdf}
+      <BotonWhatsAppContexto
+        ordenId={orden.id}
+        contexto="pdf_servicio"
+        label="Enviar PDF por WhatsApp"
+        labelCargando="Generando el PDF del reporte..."
+        icono={FileDown}
+        onEnviado={() => setPdfEnviado(true)}
         className="flex items-center gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg transition-colors"
-      >
-        {enviandoPdf
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando PDF...</>
-          : <><FileDown className="w-4 h-4" /> Enviar PDF por WhatsApp</>
-        }
-      </button>
+      />
     )}
     <a
       href={`/api/ordenes/${orden.id}/pdf`}
@@ -582,7 +530,7 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
                 <h3 className="text-sm font-semibold text-gray-900">Solicitar aprobación de trabajo adicional</h3>
               </div>
               <p className="text-xs text-gray-400 mb-4">
-                El cliente recibirá un WhatsApp con los detalles y podrá responder SÍ o NO.
+                Envías la solicitud desde tu propio WhatsApp y el cliente responde SÍ o NO directo en el chat.
               </p>
               <div className="space-y-3">
                 <input
@@ -599,14 +547,15 @@ const [pdfEnviado, setPdfEnviado]   = useState(false)
                   placeholder="Costo adicional (ej. 850)"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder:text-gray-400"
                 />
-                <button
-                  onClick={handleSolicitarAprobacion}
-                  disabled={enviandoAprobacion || !servicioExtra || !costoExtra}
+                <BotonWhatsAppContexto
+                  ordenId={orden.id}
+                  contexto="aprobacion_extra"
+                  label="Enviar solicitud por WhatsApp"
+                  disabled={!servicioExtra || !costoExtra}
+                  obtenerExtra={() => ({ servicioExtra, costoExtra })}
+                  onEnviado={() => { setServicioExtra(''); setCostoExtra('') }}
                   className="flex items-center gap-2 text-sm font-medium bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  {enviandoAprobacion ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
-                  Enviar solicitud por WhatsApp
-                </button>
+                />
               </div>
             </div>
           )}

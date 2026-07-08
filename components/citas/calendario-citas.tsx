@@ -330,7 +330,9 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
               )}
               {citaSeleccionada.estado !== 'cancelada' && citaSeleccionada.estado !== 'completada' && (
                 <button
-                  onClick={() => cambiarEstado(citaSeleccionada.id, 'cancelada')}
+                  onClick={() => {
+                    if (confirm('¿Cancelar esta cita?')) cambiarEstado(citaSeleccionada.id, 'cancelada')
+                  }}
                   disabled={actualizando}
                   className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 text-sm font-medium py-2 rounded-lg transition-colors"
                 >

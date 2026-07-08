@@ -1,3 +1,67 @@
+// ── Service worker de TallerOS ────────────────────────────────────────────────
+// 1. Push notifications (lógica original)
+// 2. Soporte offline CONSERVADOR:
+//    - Navegaciones: red primero; si no hay conexión, página /offline.
+//    - Estáticos de Next (/_next/static, con hash en el nombre): cache-first.
+//    - Nada más se cachea. El HTML y los datos del dashboard SIEMPRE van a la
+//      red — un taller nunca debe ver órdenes o pagos desactualizados.
+
+const CACHE = 'talleros-v1'
+const OFFLINE_URL = '/offline'
+const PRECACHE = [OFFLINE_URL, '/icon-192.png', '/icon-512.png', '/manifest.json']
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+  )
+})
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  )
+})
+
+self.addEventListener('fetch', function(event) {
+  const req = event.request
+  if (req.method !== 'GET') return
+
+  const url = new URL(req.url)
+  if (url.origin !== self.location.origin) return
+
+  // Navegaciones: red primero, /offline como respaldo
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).catch(() =>
+        caches.match(OFFLINE_URL).then(res => res ?? Response.error())
+      )
+    )
+    return
+  }
+
+  // Estáticos con hash de Next + iconos precacheados: cache-first
+  const esEstatico = url.pathname.startsWith('/_next/static/') || PRECACHE.includes(url.pathname)
+  if (esEstatico) {
+    event.respondWith(
+      caches.match(req).then(hit => {
+        if (hit) return hit
+        return fetch(req).then(res => {
+          if (res.ok) {
+            const copia = res.clone()
+            caches.open(CACHE).then(cache => cache.put(req, copia))
+          }
+          return res
+        })
+      })
+    )
+  }
+  // Todo lo demás (API, datos, imágenes dinámicas): directo a la red
+})
+
+// ── Push notifications ────────────────────────────────────────────────────────
+
 self.addEventListener('push', function(event) {
   if (!event.data) return
 

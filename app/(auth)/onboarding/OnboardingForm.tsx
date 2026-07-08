@@ -84,6 +84,11 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
   }
 
   async function guardarPaso1() {
+    const telDigitos = numeroTel.replace(/\D/g, '')
+    if (telDigitos && (telDigitos.length < 8 || telDigitos.length > 15)) {
+      setError('El teléfono no es válido')
+      return
+    }
     setCargando(true)
     setError('')
     try {

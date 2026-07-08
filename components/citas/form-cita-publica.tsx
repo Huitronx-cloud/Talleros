@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Loader2, Calendar, Clock, User, Phone, Car, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -73,33 +73,6 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     placas:           '',
     descripcion:      '',
   })
-
-  // Suscripción realtime a nuevas citas
-  useEffect(() => {
-    const channel = supabase
-      .channel('citas-publicas')
-      .on('postgres_changes', {
-        event:  '*',
-        schema: 'public',
-        table:  'citas',
-        filter: `taller_id=eq.${tallerId}`,
-      }, async () => {
-        // Refrescar citas ocupadas
-        const hoyStr    = new Date().toISOString().split('T')[0]
-        const en30dias  = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        const { data }  = await supabase
-          .from('citas')
-          .select('fecha, hora')
-          .eq('taller_id', tallerId)
-          .gte('fecha', hoyStr)
-          .lte('fecha', en30dias)
-          .neq('estado', 'cancelada')
-        if (data) setCitasOcupadas(data)
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [tallerId])
 
   const horariosOcupados = (fecha: string) =>
     citasOcupadas.filter(c => c.fecha === fecha).map(c => c.hora.slice(0, 5))

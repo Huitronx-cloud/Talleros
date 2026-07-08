@@ -57,7 +57,7 @@ async function enviarWhatsAppResena(
 ): Promise<void> {
   try {
     const tel = telefono.replace(/\D/g, '')
-    const to  = tel.startsWith('+') ? tel : `+${tel}`
+    const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
     const msg = `¡Hola ${nombreCliente}! 😊\n\nGracias por confiar en *${nombreTaller}*. Esperamos que tu vehículo esté funcionando perfecto.\n\n¿Podrías dejarnos una reseña en Google? Solo toma 1 minuto y nos ayuda mucho:\n\n⭐ ${urlResena}\n\n¡Muchas gracias!`
 
     await fetch(

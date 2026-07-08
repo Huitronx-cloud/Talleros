@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import twilio from 'twilio'
-import { normalizarFromWhatsApp } from '@/lib/twilio'
+import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,14 +16,9 @@ export async function POST(req: NextRequest) {
       process.env.TWILIO_AUTH_TOKEN!
     )
 
-    // Asegurar formato internacional
-    const numeroDestino = telefono.startsWith('+')
-      ? `whatsapp:${telefono}`
-      : `whatsapp:+${telefono}`
-
     await client.messages.create({
       from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-      to:   numeroDestino,
+      to:   normalizarTelefonoWhatsApp(telefono),
       body: mensaje,
     })
 

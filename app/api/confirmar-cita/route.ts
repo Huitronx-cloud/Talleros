@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import twilio from 'twilio'
 import { Resend } from 'resend'
-import { normalizarFromWhatsApp } from '@/lib/twilio'
+import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = createAdmin(
@@ -45,14 +45,9 @@ export async function POST(req: NextRequest) {
           process.env.TWILIO_ACCOUNT_SID!,
           process.env.TWILIO_AUTH_TOKEN!
         )
-        const telefonoLimpio = cita.cliente_telefono.replace(/\D/g, '')
-        const numeroDestino  = telefonoLimpio.startsWith('+')
-          ? `whatsapp:${telefonoLimpio}`
-          : `whatsapp:+${telefonoLimpio}`
-
         await twilioClient.messages.create({
           from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-          to:   numeroDestino,
+          to:   normalizarTelefonoWhatsApp(cita.cliente_telefono),
           body: `✅ *¡Tu cita está confirmada!*\n\n📅 *Fecha:* ${fechaFormateada}\n🕐 *Hora:* ${cita.hora.slice(0, 5)} hrs\n🔧 *Taller:* ${nombreTaller}${telefonoTaller ? `\n📞 *Teléfono:* ${telefonoTaller}` : ''}\n\n¡Te esperamos! Si necesitas cambiar tu cita, contáctanos.`,
         })
       } catch (e) {

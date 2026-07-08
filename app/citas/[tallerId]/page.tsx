@@ -28,14 +28,10 @@ export default async function CitaPublicaPage({
     { data: citasOcupadas },
     { data: citasConfig },
   ] = await Promise.all([
-    supabase.from('citas').select('fecha, hora')
-      .eq('taller_id', params.tallerId)
-      .gte('fecha', hoy)
-      .lte('fecha', en30dias)
-      .neq('estado', 'cancelada'),
-    supabase.from('citas_config').select('*')
-      .eq('taller_id', params.tallerId)
-      .single(),
+    supabase.rpc('get_citas_ocupadas_publicas', {
+      p_taller_id: params.tallerId, p_desde: hoy, p_hasta: en30dias,
+    }),
+    supabase.rpc('get_citas_config_publica', { p_taller_id: params.tallerId }),
   ])
 
   return (

@@ -16,5 +16,10 @@ Disallow: /promociones
 Disallow: /citas
 Disallow: /ayuda
 Disallow: /api/
+Disallow: /admin
+Disallow: /vehiculos
+Disallow: /onboarding
+Disallow: /nueva-password
+Disallow: /recuperar-password
 
 Sitemap: https://www.tallerosapp.com/sitemap.xml

@@ -2,6 +2,10 @@ import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Clock, CheckCircle2, Package, Wrench, Phone } from 'lucide-react'
 
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 export default async function PortalClientePage({
   params,
 }: {
@@ -12,24 +16,15 @@ export default async function PortalClientePage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data: tokenData } = await supabase
-    .from('portal_tokens')
-    .select('*, ordenes(*, clientes(nombre, telefono), talleres(nombre, telefono, logo_url, horario, instagram, facebook, direccion))')
-    .eq('token', params.token)
-    .gt('expires_at', new Date().toISOString())
-    .single()
+  const { data: portalData } = await supabase
+    .rpc('get_portal_data', { p_token: params.token })
 
-  if (!tokenData) notFound()
+  if (!portalData) notFound()
 
-  const orden   = tokenData.ordenes as any
-  const cliente = orden?.clientes ?? {}
-  const taller  = orden?.talleres ?? {}
-
-  const { data: todasFotos } = await supabase
-    .from('fotos_diagnostico')
-    .select('*')
-    .eq('orden_id', orden.id)
-    .order('created_at', { ascending: true })
+  const orden   = portalData.orden as any
+  const cliente = portalData.cliente ?? {}
+  const taller  = portalData.taller ?? {}
+  const todasFotos = portalData.fotos as any[]
 
   const fotosRecepcion   = todasFotos?.filter((f: any) => f.tipo === 'recepcion') ?? []
   const fotosDiagnostico = todasFotos?.filter((f: any) => f.tipo !== 'recepcion' && f.tipo !== 'firma') ?? []

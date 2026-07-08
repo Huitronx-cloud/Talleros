@@ -10,8 +10,6 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   // Evita que el navegador adivine el tipo de contenido (MIME sniffing)
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  // Activa protección XSS en navegadores legacy
-  { key: 'X-XSS-Protection', value: '1; mode=block' },
   // Controla qué info se manda en el Referer header
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   // Solo HTTPS, por 1 año, incluye subdominios
@@ -23,8 +21,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // Scripts: solo nuestro dominio + inline necesario para Next.js + GA
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net",
+      // Scripts: solo nuestro dominio + inline necesario para Next.js + GA.
+      // unsafe-eval solo en dev: HMR/react-refresh lo requieren; producción no.
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net`,
       // Estilos: self + inline (Tailwind lo necesita)
       "style-src 'self' 'unsafe-inline'",
       // Imágenes: self + Supabase storage + Google Analytics
@@ -42,6 +41,7 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -49,12 +49,19 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'kbtszjpqtoqhrfnqjaxv.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'd8j0ntlcm91z4.cloudfront.net',
+        port: '',
+        pathname: '/**',
       },
     ],
   },
@@ -88,6 +95,15 @@ const nextConfig = {
         // Security headers para todas las rutas
         source: '/(.*)',
         headers: securityHeaders,
+      },
+      {
+        // Imágenes de /public: cache de 30 días. No immutable porque los
+        // nombres no llevan hash — si se reemplaza una imagen con el mismo
+        // nombre, expira en máximo 30 días.
+        source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' },
+        ],
       },
       {
         // CORS para las API routes — solo acepta peticiones de tallerosapp.com

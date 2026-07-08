@@ -97,6 +97,11 @@ export default function ModalCliente({ cliente, onCerrar }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
+    const telDigitos = (form.telefono ?? '').replace(/\D/g, '')
+    if (telDigitos && (telDigitos.length < 8 || telDigitos.length > 15)) {
+      setError('El teléfono no es válido')
+      return
+    }
     setCargando(true)
     setError('')
 

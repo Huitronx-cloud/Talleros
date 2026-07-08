@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { normalizarFromWhatsApp } from '@/lib/twilio'
+import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp, mapearErrorTwilio } from '@/lib/twilio'
 import twilio from 'twilio'
 
 export async function POST(req: NextRequest) {
@@ -61,13 +61,19 @@ export async function POST(req: NextRequest) {
 
     const mensaje = `¡Hola ${cliente.nombre}! 👋\n\n*${taller.nombre}* ya recibió tu *${vehiculo}*.\n\nSigue el estado de tu servicio en tiempo real aquí:\n🔗 ${url}\n\nCualquier duda, responde este mensaje. 🔧`
 
-    const telefonoLimpio = cliente.telefono?.replace(/\D/g, '')
+    if (!cliente.telefono) {
+      return NextResponse.json({ error: 'El cliente no tiene teléfono registrado' }, { status: 400 })
+    }
 
-    await client.messages.create({
-      from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-      to:   `whatsapp:+${telefonoLimpio}`,
-      body: mensaje,
-    })
+    try {
+      await client.messages.create({
+        from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
+        to:   normalizarTelefonoWhatsApp(cliente.telefono),
+        body: mensaje,
+      })
+    } catch (twilioError: any) {
+      return NextResponse.json({ error: mapearErrorTwilio(twilioError) }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true, url })
   } catch (error: any) {

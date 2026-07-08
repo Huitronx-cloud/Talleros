@@ -74,6 +74,23 @@ function emailScript(titulo: string, script: string, scriptLargo?: string): stri
   `
 }
 
+async function enviarAlertaError(detalle: string): Promise<void> {
+  try {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:      { name: 'TallerOS Alertas', email: 'hola@tallerosapp.com' },
+        to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+        subject:     '⚠️ El envío del script del día falló — TallerOS',
+        htmlContent: `<p>El cron de envío de scripts (<code>/api/cron/script-email</code>) tuvo un problema hoy:</p><p style="color:#dc2626;">${detalle}</p>`,
+      }),
+    })
+  } catch {
+    // Si la alerta misma falla no hay más que hacer — ya se perdió la visibilidad de este error
+  }
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -89,58 +106,75 @@ export async function GET(req: NextRequest) {
     .from('scripts_video')
     .select('*')
     .eq('email_enviado', false)
-    .order('created_at', { ascending: false })
-    .limit(1)
+    .order('created_at', { ascending: true })
 
-  if (error || !scripts || scripts.length === 0) {
+  if (error) {
+    await enviarAlertaError(`No se pudo consultar scripts_video: ${error.message}`)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (!scripts || scripts.length === 0) {
     return NextResponse.json({ ok: true, mensaje: 'No hay scripts pendientes de enviar' })
   }
 
-  const scriptRow = scripts[0]
+  const resultados = []
 
-  // Buscar script largo del mismo slug si existe
-  const { data: scriptLargoRow } = await supabase
-    .from('scripts_video_largo')
-    .select('*')
-    .eq('slug', scriptRow.slug)
-    .eq('email_enviado', false)
-    .single()
+  for (const scriptRow of scripts) {
+    // Buscar script largo del mismo slug si existe
+    const { data: scriptLargoRow } = await supabase
+      .from('scripts_video_largo')
+      .select('*')
+      .eq('slug', scriptRow.slug)
+      .eq('email_enviado', false)
+      .maybeSingle()
 
-  try {
-    await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sender:      { name: 'TallerOS Agente', email: 'hola@tallerosapp.com' },
-        to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
-        subject:     `📹 Script del día — ${scriptRow.titulo}`,
-        htmlContent: emailScript(
-          scriptRow.titulo,
-          scriptRow.script,
-          scriptLargoRow?.script
-        ),
-      }),
-    })
+    try {
+      const respuesta = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender:      { name: 'TallerOS Agente', email: 'hola@tallerosapp.com' },
+          to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+          subject:     `📹 Script del día — ${scriptRow.titulo}`,
+          htmlContent: emailScript(
+            scriptRow.titulo,
+            scriptRow.script,
+            scriptLargoRow?.script
+          ),
+        }),
+      })
 
-    await supabase
-      .from('scripts_video')
-      .update({ email_enviado: true })
-      .eq('id', scriptRow.id)
+      if (!respuesta.ok) {
+        const detalle = await respuesta.text()
+        resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: false, error: detalle })
+        continue
+      }
 
-    if (scriptLargoRow) {
       await supabase
-        .from('scripts_video_largo')
+        .from('scripts_video')
         .update({ email_enviado: true })
-        .eq('id', scriptLargoRow.id)
+        .eq('id', scriptRow.id)
+
+      if (scriptLargoRow) {
+        await supabase
+          .from('scripts_video_largo')
+          .update({ email_enviado: true })
+          .eq('id', scriptLargoRow.id)
+      }
+
+      resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: true, script_largo: !!scriptLargoRow })
+
+    } catch (error: any) {
+      resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: false, error: error.message })
     }
-
-    return NextResponse.json({
-      ok:           true,
-      titulo:       scriptRow.titulo,
-      script_largo: !!scriptLargoRow,
-    })
-
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  const fallidos = resultados.filter(r => !r.ok)
+  if (fallidos.length > 0) {
+    await enviarAlertaError(
+      fallidos.map(f => `"${f.titulo}": ${f.error}`).join(' | ')
+    )
+  }
+
+  return NextResponse.json({ ok: fallidos.length === 0, resultados })
 }

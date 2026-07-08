@@ -1,9 +1,15 @@
 import type { Metadata } from 'next'
+import GestionarCookies from '@/components/gestionar-cookies'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad — TallerOS',
   description: 'Conoce cómo TallerOS recopila, usa y protege los datos de tu taller mecánico y tus clientes.',
   alternates: { canonical: '/privacidad' },
+  openGraph: {
+    title: 'Política de Privacidad — TallerOS',
+    description: 'Conoce cómo TallerOS recopila, usa y protege los datos de tu taller mecánico y tus clientes.',
+    url: '/privacidad',
+  },
 }
 
 export default function PrivacidadPage() {
@@ -45,8 +51,8 @@ export default function PrivacidadPage() {
             contenido: `De conformidad con la Ley de Protección de Información Personal y Documentos Electrónicos (PIPEDA) de Canadá, usted tiene derecho a: acceder a su información personal que tenemos almacenada; corregir información inexacta; retirar su consentimiento para el uso de su información (lo que puede resultar en la cancelación del servicio); y presentar una queja ante el Comisionado de Privacidad de Canadá. Para ejercer estos derechos, contáctenos en hola@tallerosapp.com.`,
           },
           {
-            titulo: '7. Cookies',
-            contenido: `TallerOS utiliza cookies esenciales para el funcionamiento del servicio, como la gestión de sesiones de usuario. No utilizamos cookies de seguimiento publicitario ni compartimos datos con redes publicitarias.`,
+            titulo: '7. Cookies y tecnologías de seguimiento',
+            contenido: `TallerOS utiliza tres tipos de cookies y tecnologías similares. (1) Esenciales: necesarias para el funcionamiento del servicio, como la gestión de sesiones de usuario; no requieren consentimiento. (2) Analítica: Google Analytics (Google LLC) nos ayuda a entender cómo se usa el sitio (páginas visitadas, dispositivo, ubicación aproximada) para mejorarlo. (3) Marketing: Meta Pixel (Meta Platforms, Inc.) nos permite medir la efectividad de nuestra publicidad. Las cookies de analítica y marketing solo se activan si usted las acepta en el aviso de cookies, y puede retirar su consentimiento en cualquier momento con el botón "Gestionar preferencias de cookies" al final de esta página. Estos proveedores pueden procesar datos en Estados Unidos conforme a sus propias políticas de privacidad.`,
           },
           {
             titulo: '8. Transferencias internacionales de datos',
@@ -66,6 +72,8 @@ export default function PrivacidadPage() {
             <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.8 }}>{seccion.contenido}</p>
           </div>
         ))}
+
+        <GestionarCookies />
 
       </div>
     </div>
