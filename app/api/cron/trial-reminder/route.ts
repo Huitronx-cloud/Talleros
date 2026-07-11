@@ -2,41 +2,48 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 
-async function enviarEmail(to: string, nombre: string, subject: string, html: string) {
+// Email vía Resend (migrado desde Brevo): va a dueños de taller, no a
+// clientes finales, por eso sí puede ser automático.
+async function enviarEmail(to: string, _nombre: string, subject: string, html: string) {
   try {
-    await fetch('https://api.brevo.com/v3/smtp/email', {
+    await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { 'api-key': process.env.BREVO_API_KEY!, 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
-        sender: { name: 'TallerOS', email: 'hola@tallerosapp.com' },
-        to: [{ email: to, name: nombre }],
+        from: 'TallerOS <notificaciones@tallerosapp.com>',
+        to: [to],
         subject,
-        htmlContent: html,
+        html,
       }),
     })
   } catch (e) { console.error('Email error:', e) }
 }
 
-async function enviarWhatsApp(telefono: string, mensaje: string) {
-  try {
-    const tel = telefono.replace(/\D/g, '')
-    const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
-    const sid = process.env.TWILIO_ACCOUNT_SID!
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`
-    await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${sid}:${process.env.TWILIO_AUTH_TOKEN!}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        From: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM!}`,
-        To:   `whatsapp:${to}`,
-        Body: mensaje,
-      }).toString(),
-    })
-  } catch (e) { console.error('WhatsApp error:', e) }
-}
+// DEPRECATED: canal migrado a wa.me — Twilio ya no se usa para WhatsApp.
+// Los dueños de taller reciben el recordatorio de trial solo por email.
+// async function enviarWhatsApp(telefono: string, mensaje: string) {
+//   try {
+//     const tel = telefono.replace(/\D/g, '')
+//     const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
+//     const sid = process.env.TWILIO_ACCOUNT_SID!
+//     const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`
+//     await fetch(url, {
+//       method: 'POST',
+//       headers: {
+//         Authorization: `Basic ${Buffer.from(`${sid}:${process.env.TWILIO_AUTH_TOKEN!}`).toString('base64')}`,
+//         'Content-Type': 'application/x-www-form-urlencoded',
+//       },
+//       body: new URLSearchParams({
+//         From: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM!}`,
+//         To:   `whatsapp:${to}`,
+//         Body: mensaje,
+//       }).toString(),
+//     })
+//   } catch (e) { console.error('WhatsApp error:', e) }
+// }
 
 // ── Email templates ───────────────────────────────────────────────────────────
 
@@ -149,6 +156,9 @@ function emailDias1(nombre: string, tallerNombre: string): string {
 }
 
 // ── WhatsApp messages ─────────────────────────────────────────────────────────
+// DEPRECATED: canal migrado a wa.me — estas plantillas ya no se envían
+// automáticamente (Twilio deshabilitado); se conservan por si se reutilizan
+// en un flujo manual.
 
 function waDias7(nombre: string): string {
   return `🚀 Hola ${nombre}! Ya llevas una semana con *TallerOS*.\n\nTe quedan 7 días de prueba. Para seguir usando el portal del cliente, aprobaciones por WA y recordatorios automáticos, elige tu plan aquí 👇\nhttps://www.tallerosapp.com/configuracion/plan\n\n¿Tienes dudas? Responde este mensaje.`
@@ -182,11 +192,24 @@ export async function GET(req: NextRequest) {
       .from('talleres')
       .select(`
         id, nombre,
-        suscripciones(plan, estado, trial_fin),
+        suscripciones(id, plan, estado, trial_fin, trial_reminder_etapas),
         usuarios!inner(nombre, email, telefono, rol)
       `)
 
     if (!talleres) return NextResponse.json({ ok: true, procesados: 0 })
+
+    // Límite global por ejecución — protección contra la cola acumulada
+    const LIMITE_POR_EJECUCION = 50
+    let pendientesRestantes = 0
+
+    // Deduplicación: cada etapa (7dias/4dias/1dia) se manda UNA sola vez por
+    // suscripción — antes la ventana de 2 días duplicaba cada correo.
+    async function marcarEtapa(suscripcionId: string, etapas: string[], etapa: string) {
+      await supabase
+        .from('suscripciones')
+        .update({ trial_reminder_etapas: [...etapas, etapa] })
+        .eq('id', suscripcionId)
+    }
 
     for (const taller of talleres) {
       const suscripcion = (taller.suscripciones as any[])?.[0]
@@ -196,40 +219,51 @@ export async function GET(req: NextRequest) {
       const propietario = (taller.usuarios as any[]).find((u: any) => u.rol === 'propietario')
       if (!propietario?.email) continue
 
+      const etapas: string[] = suscripcion.trial_reminder_etapas ?? []
       const dias    = Math.ceil((new Date(suscripcion.trial_fin).getTime() - Date.now()) / 86400000)
       const nombre  = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email   = propietario.email
       const telefono = propietario.telefono
 
+      if (resultados.length >= LIMITE_POR_EJECUCION) {
+        pendientesRestantes++
+        continue
+      }
+
       // ── 7 días restantes: punto medio — re-engagement ────────────────────
-      if (dias >= 6 && dias <= 7) {
+      if (dias >= 6 && dias <= 7 && !etapas.includes('7dias')) {
         await enviarEmail(email, nombre,
           '🚀 Llevas una semana con TallerOS — te quedan 7 días de prueba',
           emailDias7(nombre, taller.nombre)
         )
-        if (telefono) await enviarWhatsApp(telefono, waDias7(nombre))
+        // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
+        // if (telefono) await enviarWhatsApp(telefono, waDias7(nombre))
+        await marcarEtapa(suscripcion.id, etapas, '7dias')
         resultados.push({ taller: taller.nombre, accion: 'trial_7dias', dias })
       }
 
       // ── 4 días restantes: urgencia media ─────────────────────────────────
-      if (dias >= 3 && dias <= 4) {
+      if (dias >= 3 && dias <= 4 && !etapas.includes('4dias')) {
         await enviarEmail(email, nombre,
           `⚠️ Te quedan ${dias} días de prueba — TallerOS`,
           emailDias4(nombre, taller.nombre)
         )
-        if (telefono) await enviarWhatsApp(telefono, waDias4(nombre))
+        // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
+        // if (telefono) await enviarWhatsApp(telefono, waDias4(nombre))
+        await marcarEtapa(suscripcion.id, etapas, '4dias')
         resultados.push({ taller: taller.nombre, accion: 'trial_4dias', dias })
       }
 
       // ── 1 día restante: urgencia máxima + alerta a Ivan ──────────────────
-      if (dias >= 0 && dias <= 1) {
+      if (dias >= 0 && dias <= 1 && !etapas.includes('1dia')) {
         await enviarEmail(email, nombre,
           dias === 0
             ? '🔴 Tu prueba de TallerOS termina hoy — actúa ahora'
             : '🔴 Mañana termina tu prueba de TallerOS',
           emailDias1(nombre, taller.nombre)
         )
-        if (telefono) await enviarWhatsApp(telefono, waDias1(nombre))
+        // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
+        // if (telefono) await enviarWhatsApp(telefono, waDias1(nombre))
 
         // Aviso a Ivan para seguimiento personal
         await enviarEmail(
@@ -241,11 +275,13 @@ export async function GET(req: NextRequest) {
             <p>Es el momento ideal para contacto personal. Tienen <strong>${dias === 0 ? 'pocas horas' : '1 día'}</strong> para convertir.</p>
           </div>`
         )
+        await marcarEtapa(suscripcion.id, etapas, '1dia')
         resultados.push({ taller: taller.nombre, accion: `trial_${dias}dia`, dias })
       }
     }
 
-    return NextResponse.json({ ok: true, procesados: talleres.length, acciones: resultados })
+    console.log(`[cron trial-reminder] acciones=${resultados.length} pendientes_restantes=${pendientesRestantes}`)
+    return NextResponse.json({ ok: true, procesados: talleres.length, acciones: resultados, pendientes_restantes: pendientesRestantes })
   } catch (error: any) {
     console.error('Trial reminder error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -6,6 +6,11 @@ import {
   personalizarMensaje,
   registrarRecordatorioEnviado,
 } from '@/lib/recordatorios'
+import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
+
+// Límite global por ejecución — protege contra la cola acumulada de semanas
+// sin crons. Lo que no alcance hoy sale en la corrida de mañana.
+const LIMITE_POR_EJECUCION = 50
 
 export async function GET(req: NextRequest) {
   const supabaseAdmin = createClient(
@@ -28,6 +33,7 @@ export async function GET(req: NextRequest) {
         talleres (
           id,
           nombre,
+          pais,
           suscripciones (plan, estado)
         )
       `)
@@ -39,6 +45,7 @@ export async function GET(req: NextRequest) {
       procesados: 0,
       enviados: 0,
       fallidos: 0,
+      pendientes_restantes: 0,
       talleres: [] as any[],
     }
 
@@ -62,9 +69,15 @@ export async function GET(req: NextRequest) {
       }
 
       for (const cliente of clientes) {
+        // Límite global por ejecución: lo que sobra queda para mañana
+        if (resultados.procesados >= LIMITE_POR_EJECUCION) {
+          resultados.pendientes_restantes++
+          continue
+        }
         resultados.procesados++
 
-        // Enviar por WhatsApp
+        // WhatsApp: canal migrado a wa.me — se encola en mensajes_pendientes
+        // y el taller lo envía con un tap desde su propio WhatsApp
         if (
           (config.canal === 'whatsapp' || config.canal === 'ambos') &&
           cliente.telefono
@@ -76,16 +89,25 @@ export async function GET(req: NextRequest) {
             meses: cliente.meses_desde_ultima_visita,
           })
 
-          const exito = await enviarWhatsApp(cliente.telefono, mensaje)
+          const exito = await encolarMensajeWhatsApp(supabaseAdmin, {
+            tallerId:   taller.id,
+            clienteId:  cliente.cliente_id,
+            tipo:       'recordatorio',
+            telefono:   cliente.telefono,
+            mensaje,
+            paisTaller: taller.pais ?? null,
+          })
+          // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
+          // const exito = await enviarWhatsApp(cliente.telefono, mensaje)
 
           await registrarRecordatorioEnviado({
             tallerId: taller.id,
             clienteId: cliente.cliente_id,
             ordenId: cliente.ultima_orden_id,
             canal: 'whatsapp',
-            estado: exito ? 'enviado' : 'fallido',
+            estado: exito ? 'encolado' : 'fallido',
             mensajeEnviado: mensaje,
-            errorDetalle: exito ? undefined : 'Error Twilio',
+            errorDetalle: exito ? undefined : 'No se pudo encolar en mensajes_pendientes',
           })
 
           if (exito) {
@@ -147,6 +169,7 @@ export async function GET(req: NextRequest) {
       resultados.talleres.push(tallerResultado)
     }
 
+    console.log(`[cron recordatorios] procesados=${resultados.procesados} encolados/enviados=${resultados.enviados} fallidos=${resultados.fallidos} pendientes_restantes=${resultados.pendientes_restantes}`)
     return NextResponse.json({ ok: true, resultados })
   } catch (error: any) {
     console.error('Error cron recordatorios:', error)
@@ -154,43 +177,45 @@ export async function GET(req: NextRequest) {
   }
 }
 
-async function enviarWhatsApp(
-  telefono: string,
-  mensaje: string
-): Promise<boolean> {
-  try {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID!
-    const authToken = process.env.TWILIO_AUTH_TOKEN!
-    const from = process.env.TWILIO_WHATSAPP_FROM!
-
-    // Normalizar teléfono
-    const telefonoLimpio = telefono.replace(/\D/g, '')
-    const telefonoFull = telefonoLimpio.startsWith('1')
-      ? `+${telefonoLimpio}`
-      : `+52${telefonoLimpio}` // Default México, ajustar según país
-
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
-
-    const body = new URLSearchParams({
-      From: `whatsapp:${from}`,
-      To: `whatsapp:${telefonoFull}`,
-      Body: mensaje,
-    })
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    })
-
-    return res.ok
-  } catch {
-    return false
-  }
-}
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio,
+// se encola en mensajes_pendientes (ver encolarMensajeWhatsApp arriba).
+// async function enviarWhatsApp(
+//   telefono: string,
+//   mensaje: string
+// ): Promise<boolean> {
+//   try {
+//     const accountSid = process.env.TWILIO_ACCOUNT_SID!
+//     const authToken = process.env.TWILIO_AUTH_TOKEN!
+//     const from = process.env.TWILIO_WHATSAPP_FROM!
+//
+//     // Normalizar teléfono
+//     const telefonoLimpio = telefono.replace(/\D/g, '')
+//     const telefonoFull = telefonoLimpio.startsWith('1')
+//       ? `+${telefonoLimpio}`
+//       : `+52${telefonoLimpio}` // Default México, ajustar según país
+//
+//     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
+//
+//     const body = new URLSearchParams({
+//       From: `whatsapp:${from}`,
+//       To: `whatsapp:${telefonoFull}`,
+//       Body: mensaje,
+//     })
+//
+//     const res = await fetch(url, {
+//       method: 'POST',
+//       headers: {
+//         Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
+//         'Content-Type': 'application/x-www-form-urlencoded',
+//       },
+//       body: body.toString(),
+//     })
+//
+//     return res.ok
+//   } catch {
+//     return false
+//   }
+// }
 
 async function enviarEmail(
   email: string,

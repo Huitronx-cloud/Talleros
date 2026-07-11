@@ -80,7 +80,7 @@ async function verificarRecordatorioReciente(
     .select('id')
     .eq('taller_id', tallerId)
     .eq('cliente_id', clienteId)
-    .eq('estado', 'enviado')
+    .in('estado', ['enviado', 'encolado'])
     .gte('fecha_envio', fechaLimite.toISOString())
     .limit(1)
 
@@ -108,7 +108,7 @@ export async function registrarRecordatorioEnviado(params: {
   clienteId: string
   ordenId: string | null
   canal: string
-  estado: 'enviado' | 'fallido'
+  estado: 'enviado' | 'fallido' | 'encolado'
   mensajeEnviado: string
   errorDetalle?: string
 }) {
