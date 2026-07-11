@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { enviarWhatsApp } from './twilio'
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio,
+// se encola en mensajes_pendientes y el taller lo manda desde su propio chat.
+// import { enviarWhatsApp } from './twilio'
+import { encolarMensajeWhatsApp } from './mensajes-pendientes'
 
 function personalizar(plantilla: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce(
@@ -55,7 +58,7 @@ export async function enviarResenaOrden(ordenId: string, tallerId: string): Prom
       id,
       clientes (id, nombre, telefono, email),
       vehiculos (marca, modelo),
-      talleres (nombre)
+      talleres (nombre, pais)
     `)
     .eq('id', ordenId)
     .single() as any
@@ -95,28 +98,34 @@ export async function enviarResenaOrden(ordenId: string, tallerId: string): Prom
 
     if (!yaEnviado?.length) {
       const mensaje = personalizar(config.mensaje_whatsapp, vars)
-      let exito = true
-      let errorMensaje: string | null = null
-      try {
-        await enviarWhatsApp(cliente.telefono, mensaje)
-      } catch (err: any) {
-        exito = false
-        errorMensaje = err?.message ?? 'Error desconocido enviando WhatsApp'
-      }
+
+      // Canal wa.me: se encola para envío manual desde el WhatsApp del taller.
+      const exito = await encolarMensajeWhatsApp(admin, {
+        tallerId,
+        clienteId: cliente.id,
+        tipo: 'resena',
+        telefono: cliente.telefono,
+        mensaje,
+        paisTaller: taller?.pais ?? null,
+      })
+      // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
+      // try {
+      //   await enviarWhatsApp(cliente.telefono, mensaje)
+      // } catch (err: any) { ... }
 
       await admin.from('resenas_enviadas').insert({
         taller_id: tallerId,
         cliente_id: cliente.id,
         orden_id: ordenId,
         canal: 'whatsapp',
-        estado: exito ? 'enviado' : 'fallido',
+        estado: exito ? 'encolado' : 'fallido',
         tipo: 'google_my_business',
         url_resena: config.google_review_url,
         mensaje_enviado: mensaje,
-        error_mensaje: errorMensaje,
+        error_mensaje: exito ? null : 'No se pudo encolar en mensajes_pendientes',
       })
 
-      resultados.whatsapp = exito ? 'enviado' : 'fallido'
+      resultados.whatsapp = exito ? 'encolado' : 'fallido'
     } else {
       resultados.whatsapp = 'ya_enviado'
     }

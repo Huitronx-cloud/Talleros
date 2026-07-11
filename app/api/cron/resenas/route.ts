@@ -33,8 +33,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Límite global por ejecución — protege contra la cola acumulada de
+  // semanas sin crons. Lo que no alcance hoy sale en la corrida de mañana.
+  const LIMITE_POR_EJECUCION = 50
+
   let enviados = 0
   let fallidos = 0
+  let procesados = 0
+  let pendientesRestantes = 0
 
   for (const orden of ordenes ?? []) {
     const { data: yaEnviado } = await supabaseAdmin
@@ -45,6 +51,12 @@ export async function GET(request: Request) {
 
     if (yaEnviado?.length) continue
 
+    if (procesados >= LIMITE_POR_EJECUCION) {
+      pendientesRestantes++
+      continue
+    }
+    procesados++
+
     try {
       const resultado = await enviarResenaOrden(orden.id, orden.taller_id)
       if (resultado.ok) enviados++
@@ -53,5 +65,6 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ enviados, fallidos, total: ordenes?.length ?? 0 })
+  console.log(`[cron resenas] encolados=${enviados} fallidos=${fallidos} pendientes_restantes=${pendientesRestantes}`)
+  return NextResponse.json({ enviados, fallidos, total: ordenes?.length ?? 0, pendientes_restantes: pendientesRestantes })
 }
