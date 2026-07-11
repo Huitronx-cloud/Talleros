@@ -204,7 +204,7 @@ export async function GET(req: NextRequest) {
 
     // Deduplicación: cada etapa (7dias/4dias/1dia) se manda UNA sola vez por
     // suscripción — antes la ventana de 2 días duplicaba cada correo.
-    async function marcarEtapa(suscripcionId: string, etapas: string[], etapa: string) {
+    const marcarEtapa = async (suscripcionId: string, etapas: string[], etapa: string) => {
       await supabase
         .from('suscripciones')
         .update({ trial_reminder_etapas: [...etapas, etapa] })
