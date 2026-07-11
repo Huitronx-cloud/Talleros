@@ -14,6 +14,7 @@ import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
+const MensajesPendientes = nextDynamic(() => import('@/components/dashboard/mensajes-pendientes'), { ssr: false })
 
 const MODULOS = [
   { href: '/kanban', label: 'Tablero',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -281,6 +282,9 @@ export default async function DashboardPage() {
             tallerId={usuarioData?.taller_id ?? ''}
           />
         )}
+
+        {/* ── MENSAJES POR ENVIAR ── cola wa.me generada por los crons */}
+        {['propietario','admin','recepcion'].includes(rol) && <MensajesPendientes />}
 
         {/* ── ACCIONES RÁPIDAS ── */}
         {['propietario','admin','recepcion'].includes(rol) && (
