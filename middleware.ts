@@ -88,6 +88,8 @@ function handleCORS(request: NextRequest): NextResponse | null {
 
 const RUTAS_PUBLICAS = [
   '/',
+  '/abriendo', // página puente de arranque de la PWA — debe cachearse sin sesión
+  '/offline',
   '/privacidad',
   '/terminos',
   '/login',
