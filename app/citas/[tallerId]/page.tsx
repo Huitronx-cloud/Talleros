@@ -59,8 +59,8 @@ export default async function CitaPublicaPage({
               </span>
             </div>
           )}
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">{taller.nombre}</h1>
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-gray-900 break-words">{taller.nombre}</h1>
             <p className="text-sm text-gray-500">Agenda tu cita en línea</p>
           </div>
         </div>
