@@ -86,6 +86,13 @@ input.input-on-dark::placeholder, textarea.input-on-dark::placeholder {
   text-decoration: underline;
 }
 /* ── Splash Screen ── */
+/* En la PWA instalada, el fondo base es oscuro desde el primer frame: así
+   nunca hay flash blanco entre el splash nativo y el splash HTML. */
+@media (display-mode: standalone) {
+  html {
+    background: #0f172a;
+  }
+}
 #splash-screen {
   position: fixed;
   inset: 0;
