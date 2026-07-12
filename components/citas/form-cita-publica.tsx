@@ -86,7 +86,9 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     citasConfig?.dias_bloqueados?.includes(fecha) ?? false
 
   const esDiaCerrado = (dia: number) => {
-    if (!citasConfig) return false
+    // horario?.: defensa contra configs incompletas (el RPC puede devolver
+    // un objeto con horario null si el taller nunca configuró sus citas)
+    if (!citasConfig?.horario) return false
     const fecha   = new Date(añoVista, mesVista, dia)
     const diaSem  = DIAS_SEMANA[fecha.getDay()]
     return citasConfig.horario[diaSem] === null
@@ -98,7 +100,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
     horariosOcupados(fecha).length >= limitePorDia
 
   const horariosDisponibles = (fecha: string) => {
-    if (!citasConfig) return HORARIOS
+    if (!citasConfig?.horario) return HORARIOS
     const fechaObj = new Date(fecha + 'T12:00:00')
     const diaSem   = DIAS_SEMANA[fechaObj.getDay()]
     const horario  = citasConfig.horario[diaSem]

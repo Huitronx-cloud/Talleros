@@ -26,13 +26,19 @@ export default async function CitaPublicaPage({
 
   const [
     { data: citasOcupadas },
-    { data: citasConfig },
+    { data: citasConfigRaw },
   ] = await Promise.all([
     supabase.rpc('get_citas_ocupadas_publicas', {
       p_taller_id: params.tallerId, p_desde: hoy, p_hasta: en30dias,
     }),
     supabase.rpc('get_citas_config_publica', { p_taller_id: params.tallerId }),
   ])
+
+  // El RPC devuelve un tipo compuesto: si el taller NO tiene fila en
+  // citas_config, PostgREST regresa un objeto con TODOS los campos en null
+  // (no un null). Sin esta normalización, el formulario truena al leer
+  // horario[dia] de null y la página se queda colgada en el splash.
+  const citasConfig = citasConfigRaw?.horario ? citasConfigRaw : null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
