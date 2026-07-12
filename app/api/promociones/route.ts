@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
 
 export async function POST(req: NextRequest) {
   const supabase      = createClient()
@@ -53,6 +54,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No se encontraron clientes' }, { status: 404 })
     }
 
+    // País del taller para armar los links wa.me
+    const { data: tallerRow } = await supabaseAdmin
+      .from('talleres')
+      .select('pais')
+      .eq('id', tallerId)
+      .single()
+
     let enviados = 0
     let fallidos = 0
 
@@ -63,9 +71,20 @@ export async function POST(req: NextRequest) {
         `Hola ${primerNombre}`
       )
 
-      // Enviar WhatsApp
+      // WhatsApp: canal migrado a wa.me — se encola en mensajes_pendientes y
+      // el taller envía cada mensaje con un tap desde su propio WhatsApp
+      // (aparecen en "Mensajes por enviar" del dashboard)
       if ((canal === 'whatsapp' || canal === 'ambos') && cliente.telefono) {
-        const ok = await enviarWhatsApp(cliente.telefono, mensajePersonalizado)
+        const ok = await encolarMensajeWhatsApp(supabaseAdmin, {
+          tallerId,
+          clienteId:  cliente.id,
+          tipo:       'promocion',
+          telefono:   cliente.telefono,
+          mensaje:    mensajePersonalizado,
+          paisTaller: tallerRow?.pais ?? null,
+        })
+        // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
+        // const ok = await enviarWhatsApp(cliente.telefono, mensajePersonalizado)
         ok ? enviados++ : fallidos++
       }
 
@@ -117,40 +136,42 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function enviarWhatsApp(telefono: string, mensaje: string): Promise<boolean> {
-  try {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID!
-    const authToken  = process.env.TWILIO_AUTH_TOKEN!
-    const from       = process.env.TWILIO_WHATSAPP_FROM!
-
-    const telefonoLimpio = telefono.replace(/\D/g, '')
-    const telefonoFull   = telefonoLimpio.startsWith('1')
-      ? `+${telefonoLimpio}`
-      : telefonoLimpio.startsWith('52')
-        ? `+${telefonoLimpio}`
-        : `+52${telefonoLimpio}`
-
-    const url  = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
-    const body = new URLSearchParams({
-      From: `whatsapp:${from}`,
-      To:   `whatsapp:${telefonoFull}`,
-      Body: mensaje,
-    })
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    })
-
-    return res.ok
-  } catch {
-    return false
-  }
-}
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio,
+// se encola en mensajes_pendientes (ver encolarMensajeWhatsApp arriba).
+// async function enviarWhatsApp(telefono: string, mensaje: string): Promise<boolean> {
+//   try {
+//     const accountSid = process.env.TWILIO_ACCOUNT_SID!
+//     const authToken  = process.env.TWILIO_AUTH_TOKEN!
+//     const from       = process.env.TWILIO_WHATSAPP_FROM!
+//
+//     const telefonoLimpio = telefono.replace(/\D/g, '')
+//     const telefonoFull   = telefonoLimpio.startsWith('1')
+//       ? `+${telefonoLimpio}`
+//       : telefonoLimpio.startsWith('52')
+//         ? `+${telefonoLimpio}`
+//         : `+52${telefonoLimpio}`
+//
+//     const url  = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
+//     const body = new URLSearchParams({
+//       From: `whatsapp:${from}`,
+//       To:   `whatsapp:${telefonoFull}`,
+//       Body: mensaje,
+//     })
+//
+//     const res = await fetch(url, {
+//       method: 'POST',
+//       headers: {
+//         Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
+//         'Content-Type': 'application/x-www-form-urlencoded',
+//       },
+//       body: body.toString(),
+//     })
+//
+//     return res.ok
+//   } catch {
+//     return false
+//   }
+// }
 
 async function enviarEmail(
   email: string,

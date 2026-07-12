@@ -1,7 +1,16 @@
-import { SupabaseClient } from '@supabase/supabase-js'
-import { enviarWhatsApp } from './twilio'
+import { SupabaseClient, createClient as createAdminClient } from '@supabase/supabase-js'
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio,
+// se encola en mensajes_pendientes y el taller lo manda desde su propio chat.
+// import { enviarWhatsApp } from './twilio'
+import { encolarMensajeWhatsApp, TipoMensajePendiente } from './mensajes-pendientes'
 
 type TipoNotificacion = 'orden_lista' | 'recordatorio' | 'seguimiento'
+
+const TIPO_QUEUE: Record<TipoNotificacion, TipoMensajePendiente> = {
+  orden_lista:  'aviso',
+  recordatorio: 'recordatorio',
+  seguimiento:  'seguimiento',
+}
 
 interface EnviarNotificacionParams {
   supabase: SupabaseClient
@@ -38,15 +47,33 @@ export async function enviarNotificacion({
 
   if (!notif) return
 
-  // Intentar envío
+  // Encolar en mensajes_pendientes (canal wa.me): el taller lo envía con un
+  // tap desde su propio WhatsApp. El registro en notificaciones queda en
+  // 'pendiente' — la entrega real es manual.
   try {
     if (!telefono) throw new Error('El cliente no tiene teléfono registrado')
-    await enviarWhatsApp(telefono, mensaje)
 
-    await supabase
-      .from('notificaciones')
-      .update({ estado: 'enviada' })
-      .eq('id', notif.id)
+    const admin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: taller } = await admin
+      .from('talleres')
+      .select('pais')
+      .eq('id', tallerId)
+      .single()
+
+    const ok = await encolarMensajeWhatsApp(admin, {
+      tallerId,
+      clienteId,
+      tipo:       TIPO_QUEUE[tipo],
+      telefono,
+      mensaje,
+      paisTaller: taller?.pais ?? null,
+    })
+    if (!ok) throw new Error('No se pudo encolar en mensajes_pendientes')
+    // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
+    // await enviarWhatsApp(telefono, mensaje)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     await supabase

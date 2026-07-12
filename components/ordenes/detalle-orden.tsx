@@ -64,8 +64,6 @@ export default function DetalleOrden({
   const [nota, setNota]                         = useState(orden.notas_internas ?? '')
   const [estadoActual, setEstadoActual]         = useState<EstadoOrden>(orden.estado)
   const [historial, setHistorial]               = useState(orden.historial ?? [])
-  const [enviandoWA, setEnviandoWA]             = useState(false)
-  const [enviandoGarantia, setEnviandoGarantia] = useState(false)
   const [garantiaDias, setGarantiaDias]         = useState(30)
   const [garantiaKm, setGarantiaKm]             = useState(1000)
   const [tieneGarantia, setTieneGarantia]       = useState(false)
@@ -99,42 +97,6 @@ export default function DetalleOrden({
     setGuardando(true)
     await agregarNotaInterna(orden.id, nota)
     setGuardando(false)
-  }
-
-  const handleEnviarWhatsApp = async () => {
-    setEnviandoWA(true)
-    setErrorComunicacion('')
-    try {
-      const res = await fetch('/api/notificaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'orden_lista', ordenId: orden.id }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setErrorComunicacion(data.error ?? 'No se pudo enviar el WhatsApp.')
-      }
-    } catch {
-      setErrorComunicacion('No se pudo enviar el WhatsApp.')
-    } finally { setEnviandoWA(false) }
-  }
-
-  const handleEnviarGarantia = async () => {
-    setEnviandoGarantia(true)
-    setErrorComunicacion('')
-    try {
-      const res = await fetch('/api/notificaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'garantia', ordenId: orden.id, garantiaDias, garantiaKm }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setErrorComunicacion(data.error ?? 'No se pudo enviar la garantía.')
-      }
-    } catch {
-      setErrorComunicacion('No se pudo enviar la garantía.')
-    } finally { setEnviandoGarantia(false) }
   }
 
   const handleProgramarRecordatorio = async () => {
@@ -450,16 +412,14 @@ export default function DetalleOrden({
                 <h3 className="text-sm font-semibold text-gray-900">Avisar al cliente</h3>
               </div>
               <p className="text-xs text-gray-400 mb-4">
-                Envía un WhatsApp al cliente avisando que su vehículo está listo para recoger.
+                Avisa al cliente desde tu propio WhatsApp que su vehículo está listo para recoger.
               </p>
-              <button
-                onClick={handleEnviarWhatsApp}
-                disabled={enviandoWA}
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-              >
-                {enviandoWA ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-                Avisar por WhatsApp
-              </button>
+              <BotonWhatsAppLink
+                ordenId={orden.id}
+                estado={estadoActual}
+                plantillaInicial="listo_entrega"
+                label="Avisar por WhatsApp"
+              />
             </div>
           )}
 
@@ -611,14 +571,13 @@ export default function DetalleOrden({
                         />
                       </div>
                     </div>
-                    <button
-                      onClick={handleEnviarGarantia}
-                      disabled={enviandoGarantia}
-                      className="flex items-center gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      {enviandoGarantia ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                      Enviar garantía por WhatsApp
-                    </button>
+                    <BotonWhatsAppLink
+                      ordenId={orden.id}
+                      estado={estadoActual}
+                      plantillaInicial="garantia"
+                      opts={{ garantiaDias, garantiaKm }}
+                      label="Enviar garantía por WhatsApp"
+                    />
                   </div>
                 )}
               </div>

@@ -2,11 +2,11 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+import { createServiceClient } from '@/lib/supabase/service'
+import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
+
 const CLIENT_ID     = process.env.GOOGLE_CLIENT_ID!
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!
-const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
-const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN!
-const WA_FROM       = process.env.TWILIO_WHATSAPP_FROM ?? ''
 
 // ── Refrescar token si expiró ─────────────────────────────────────────────────
 async function refrescarToken(refreshToken: string): Promise<string | null> {
@@ -48,36 +48,21 @@ async function obtenerUrlResena(accessToken: string, locationId: string): Promis
   }
 }
 
-// ── Enviar WhatsApp con link de reseña ────────────────────────────────────────
-async function enviarWhatsAppResena(
-  telefono: string,
-  nombreCliente: string,
-  nombreTaller: string,
-  urlResena: string
-): Promise<void> {
-  try {
-    const tel = telefono.replace(/\D/g, '')
-    const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
-    const msg = `¡Hola ${nombreCliente}! 😊\n\nGracias por confiar en *${nombreTaller}*. Esperamos que tu vehículo esté funcionando perfecto.\n\n¿Podrías dejarnos una reseña en Google? Solo toma 1 minuto y nos ayuda mucho:\n\n⭐ ${urlResena}\n\n¡Muchas gracias!`
+// DEPRECATED: canal migrado a wa.me — la solicitud de reseña ya no se envía
+// por Twilio, se encola en mensajes_pendientes (tipo 'resena') y el taller la
+// manda con un tap desde su propio WhatsApp.
+// async function enviarWhatsAppResena(telefono, nombreCliente, nombreTaller, urlResena) {
+//   const tel = telefono.replace(/\D/g, '')
+//   const to  = tel.length === 10 ? `+52${tel}` : `+${tel}`
+//   await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
+//     method: 'POST',
+//     headers: { Authorization: `Basic ...`, 'Content-Type': 'application/x-www-form-urlencoded' },
+//     body: new URLSearchParams({ From: `whatsapp:${WA_FROM}`, To: `whatsapp:${to}`, Body: msg }).toString(),
+//   })
+// }
 
-    await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64')}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          From: `whatsapp:${WA_FROM}`,
-          To:   `whatsapp:${to}`,
-          Body: msg,
-        }).toString(),
-      }
-    )
-  } catch (e) {
-    console.error('WhatsApp reseña error:', e)
-  }
+function mensajeResena(nombreCliente: string, nombreTaller: string, urlResena: string): string {
+  return `¡Hola ${nombreCliente}! 😊\n\nGracias por confiar en *${nombreTaller}*. Esperamos que tu vehículo esté funcionando perfecto.\n\n¿Podrías dejarnos una reseña en Google? Solo toma 1 minuto y nos ayuda mucho:\n\n⭐ ${urlResena}\n\n¡Muchas gracias!`
 }
 
 export async function POST(req: NextRequest) {
@@ -131,7 +116,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No se pudo obtener la URL de reseña' }, { status: 500 })
     }
 
-    // Obtener datos del cliente
+    // Obtener datos del cliente (incluye país del taller para el link wa.me)
     const { data: cliente } = await supabase
       .from('clientes')
       .select('nombre, telefono')
@@ -142,15 +127,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cliente sin teléfono' }, { status: 400 })
     }
 
-    // Enviar WhatsApp con link de reseña de Google
-    await enviarWhatsAppResena(
-      cliente.telefono,
-      cliente.nombre.split(' ')[0],
-      taller.nombre,
-      urlResena
-    )
+    const { data: tallerPais } = await supabase
+      .from('talleres')
+      .select('pais')
+      .eq('id', usuario?.taller_id)
+      .single()
 
-    // Registrar que se envió la reseña
+    // Canal wa.me: se encola y el taller la envía desde su propio WhatsApp
+    const admin = createServiceClient()
+    await encolarMensajeWhatsApp(admin, {
+      tallerId:   usuario?.taller_id,
+      clienteId:  cliente_id,
+      tipo:       'resena',
+      telefono:   cliente.telefono,
+      mensaje:    mensajeResena(cliente.nombre.split(' ')[0], taller.nombre, urlResena),
+      paisTaller: tallerPais?.pais ?? null,
+    })
+
+    // Registrar que se encoló la reseña
     await supabase.from('resenas_enviadas').insert({
       taller_id:  usuario?.taller_id,
       cliente_id,

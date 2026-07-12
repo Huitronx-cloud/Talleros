@@ -1,8 +1,12 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
-import twilio from 'twilio'
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio.
+// Esta ruta ahora GENERA el mensaje y lo devuelve; el componente abre wa.me
+// con el texto pre-llenado y el empleado lo manda desde su propio WhatsApp.
+// El cliente responde SÍ/NO directo en el chat del taller.
+// import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
+// import twilio from 'twilio'
 
 export async function POST(
   _req: NextRequest,
@@ -15,7 +19,7 @@ export async function POST(
 
   const { data: cotizacion } = await supabase
     .from('cotizaciones')
-    .select('*, clientes(nombre, telefono), talleres(nombre)')
+    .select('*, clientes(nombre, telefono), talleres(nombre, pais)')
     .eq('id', params.id)
     .single()
 
@@ -48,24 +52,23 @@ export async function POST(
     `Responde *NO* para rechazar ❌\n\n` +
     `_Sin tu aprobación no iniciamos ningún trabajo._`
 
-  try {
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID!,
-      process.env.TWILIO_AUTH_TOKEN!
-    )
-    await client.messages.create({
-      from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-      to:   normalizarTelefonoWhatsApp(cliente.telefono),
-      body: mensaje,
-    })
-  } catch (err: any) {
-    return NextResponse.json({ error: `Error enviando WhatsApp: ${err.message}` }, { status: 500 })
-  }
+  // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
+  // const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!)
+  // await client.messages.create({
+  //   from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
+  //   to:   normalizarTelefonoWhatsApp(cliente.telefono),
+  //   body: mensaje,
+  // })
 
   await supabase
     .from('cotizaciones')
     .update({ estado: 'enviada' })
     .eq('id', params.id)
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({
+    ok: true,
+    telefono:   cliente.telefono,
+    mensaje,
+    paisTaller: taller?.pais ?? null,
+  })
 }

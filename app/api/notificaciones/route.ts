@@ -1,15 +1,24 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import twilio from 'twilio'
+// DEPRECATED: canal migrado a wa.me — el WhatsApp ya no se envía por Twilio,
+// se encola en mensajes_pendientes y el taller lo manda desde su propio chat.
+// import twilio from 'twilio'
+// import { mapearErrorTwilio, normalizarTelefonoWhatsApp, normalizarFromWhatsApp } from '@/lib/twilio'
 import { createClient } from '@/lib/supabase/server'
-import { mapearErrorTwilio, normalizarTelefonoWhatsApp, normalizarFromWhatsApp } from '@/lib/twilio'
+import { createServiceClient } from '@/lib/supabase/service'
+import { encolarMensajeWhatsApp, TipoMensajePendiente } from '@/lib/mensajes-pendientes'
+
+const TIPO_QUEUE: Record<string, TipoMensajePendiente> = {
+  orden_lista:               'aviso',
+  recordatorio:              'recordatorio',
+  seguimiento:               'seguimiento',
+  aprobacion_extra:          'aviso',
+  garantia:                  'garantia',
+  recordatorio_mantenimiento: 'recordatorio',
+  fotos_diagnostico:         'aviso',
+}
 
 export async function POST(req: NextRequest) {
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
-    process.env.TWILIO_AUTH_TOKEN!
-  )
-
   try {
     const { tipo, ordenId, servicioExtra, costoExtra, fotos, garantiaDias, garantiaKm } = await req.json()
     const supabase = createClient()
@@ -19,7 +28,7 @@ export async function POST(req: NextRequest) {
       .select(`
         *,
         clientes(nombre, telefono),
-        talleres(nombre)
+        talleres(nombre, pais)
       `)
       .eq('id', ordenId)
       .single()
@@ -57,31 +66,19 @@ if (garantiaKm) orden.garantia_km = garantiaKm
       return NextResponse.json({ error: 'Tipo de mensaje inválido' }, { status: 400 })
     }
 
-    const to = normalizarTelefonoWhatsApp(telefono)
-    const from = normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!)
+    // Canal wa.me: se encola en mensajes_pendientes y el taller lo envía con
+    // un tap desde su propio WhatsApp (las fotos van como links en el texto).
+    const admin = createServiceClient()
+    const encolado = await encolarMensajeWhatsApp(admin, {
+      tallerId:   orden.taller_id,
+      clienteId:  orden.cliente_id,
+      tipo:       TIPO_QUEUE[tipo] ?? 'aviso',
+      telefono,
+      mensaje,
+      paisTaller: taller?.pais ?? null,
+    })
 
-    try {
-      if (tipo === 'fotos_diagnostico' && fotos && fotos.length > 0) {
-        // Primer mensaje con texto
-        await client.messages.create({
-          from,
-          to,
-          body: `Hola ${cliente.nombre} 📸 Le compartimos fotos del diagnóstico de su ${orden.vehiculo_marca} ${orden.vehiculo_modelo} en ${taller.nombre}:`,
-        })
-        // Una imagen por mensaje
-        for (const foto of fotos) {
-          await client.messages.create({
-            from,
-            to,
-            body: `🔧 ${foto.descripcion}`,
-            mediaUrl: [foto.url],
-          })
-        }
-      } else {
-        await client.messages.create({ from, to, body: mensaje })
-      }
-    } catch (twilioError: any) {
-      const mensajeError = mapearErrorTwilio(twilioError)
+    if (!encolado) {
       const { error: insertError } = await supabase.from('notificaciones').insert({
         taller_id: orden.taller_id,
         cliente_id: orden.cliente_id,
@@ -89,10 +86,10 @@ if (garantiaKm) orden.garantia_km = garantiaKm
         tipo,
         mensaje,
         estado: 'fallida',
-        error_mensaje: mensajeError,
+        error_mensaje: 'No se pudo encolar en mensajes_pendientes',
       })
       if (insertError) console.error('Error guardando notificación fallida:', insertError)
-      return NextResponse.json({ error: mensajeError }, { status: 500 })
+      return NextResponse.json({ error: 'No se pudo encolar el mensaje' }, { status: 500 })
     }
 
     const { error: insertError } = await supabase.from('notificaciones').insert({
@@ -101,7 +98,7 @@ if (garantiaKm) orden.garantia_km = garantiaKm
       orden_id: ordenId,
       tipo,
       mensaje,
-      estado: 'enviada',
+      estado: 'pendiente',
     })
     if (insertError) console.error('Error guardando notificación:', insertError)
 

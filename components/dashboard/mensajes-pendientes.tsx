@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageCircle, Send, X, Bell, Star, CalendarDays, Loader2 } from 'lucide-react'
+import { MessageCircle, Send, X, Bell, Star, CalendarDays, Loader2, Megaphone, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 // Cola de WhatsApp generada por los crons (recordatorios, reseñas, citas).
@@ -10,9 +10,13 @@ import { createClient } from '@/lib/supabase/client'
 const ROLES_PERMITIDOS = ['propietario', 'admin', 'recepcion']
 
 const TIPO_META: Record<string, { label: string; icon: typeof Bell; color: string; bg: string }> = {
-  recordatorio: { label: 'Recordatorio', icon: Bell,         color: '#0284c7', bg: 'rgba(2,132,199,0.08)'  },
-  resena:       { label: 'Reseña',       icon: Star,         color: '#d97706', bg: 'rgba(217,119,6,0.08)'  },
-  cita:         { label: 'Cita',         icon: CalendarDays, color: '#7c3aed', bg: 'rgba(124,58,237,0.08)' },
+  recordatorio: { label: 'Recordatorio', icon: Bell,          color: '#0284c7', bg: 'rgba(2,132,199,0.08)'  },
+  resena:       { label: 'Reseña',       icon: Star,          color: '#d97706', bg: 'rgba(217,119,6,0.08)'  },
+  cita:         { label: 'Cita',         icon: CalendarDays,  color: '#7c3aed', bg: 'rgba(124,58,237,0.08)' },
+  promocion:    { label: 'Promoción',    icon: Megaphone,     color: '#ea580c', bg: 'rgba(234,88,12,0.08)'  },
+  aviso:        { label: 'Aviso',        icon: MessageCircle, color: '#16a34a', bg: 'rgba(22,163,74,0.08)'  },
+  garantia:     { label: 'Garantía',     icon: ShieldCheck,   color: '#2563eb', bg: 'rgba(37,99,235,0.08)'  },
+  seguimiento:  { label: 'Seguimiento',  icon: MessageCircle, color: '#64748b', bg: 'rgba(100,116,139,0.08)' },
 }
 
 interface MensajePendiente {

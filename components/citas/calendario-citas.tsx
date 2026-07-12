@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
 type EstadoCita = 'pendiente' | 'confirmada' | 'cancelada' | 'completada'
 
@@ -45,6 +46,36 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   const [citas, setCitas]           = useState<Cita[]>(citasIniciales)
   const [actualizando, setActualizando] = useState(false)
   const [vista, setVista]           = useState<'mes' | 'lista'>('mes')
+  const [tallerInfo, setTallerInfo] = useState<{ nombre: string; pais: string | null }>({ nombre: 'el taller', pais: null })
+
+  useEffect(() => {
+    supabase
+      .from('talleres')
+      .select('nombre, pais')
+      .eq('id', tallerId)
+      .single()
+      .then(({ data }) => {
+        if (data) setTallerInfo({ nombre: data.nombre, pais: data.pais ?? null })
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tallerId])
+
+  // ── Mensajes wa.me (el empleado los envía desde su propio WhatsApp) ────────
+  function fechaLarga(c: Cita) {
+    return new Date(c.fecha + 'T12:00:00').toLocaleDateString('es-MX', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    })
+  }
+
+  function linkConfirmacion(c: Cita) {
+    const mensaje = `✅ *¡Tu cita está confirmada!*\n\nHola ${c.cliente_nombre} 👋\n\n📅 *Fecha:* ${fechaLarga(c)}\n🕐 *Hora:* ${c.hora.slice(0, 5)} hrs\n🔧 *Taller:* ${tallerInfo.nombre}\n\n¡Te esperamos! Si necesitas cambiar tu cita, respóndenos por este medio.`
+    return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
+  }
+
+  function linkSugerirOtroDia(c: Cita) {
+    const mensaje = `Hola ${c.cliente_nombre} 👋 Recibimos tu solicitud de cita para el ${fechaLarga(c)} a las ${c.hora.slice(0, 5)} en *${tallerInfo.nombre}*.\n\nEse horario no lo tenemos disponible 🙏 ¿Te funcionaría otro día u horario? Respóndenos con la opción que te acomode y la agendamos de inmediato.`
+    return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
+  }
 
   // Días del mes actual
   const primerDia = new Date(año, mes, 1).getDay()
@@ -66,6 +97,14 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   const mesSiguiente = () => {
     if (mes === 11) { setMes(0); setAño(a => a + 1) }
     else setMes(m => m + 1)
+  }
+
+  // Confirma la cita y abre wa.me con el mensaje de confirmación listo — la
+  // pestaña se abre ANTES de los awaits (Safari/iOS bloquea popups tardíos).
+  const confirmarYAvisar = async (cita: Cita) => {
+    const ventana = cita.cliente_telefono ? window.open('', '_blank') : null
+    await cambiarEstado(cita.id, 'confirmada')
+    if (ventana) ventana.location.href = linkConfirmacion(cita)
   }
 
   const cambiarEstado = async (citaId: string, nuevoEstado: EstadoCita) => {
@@ -309,14 +348,25 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
             {/* Acciones */}
             <div className="space-y-2">
               {citaSeleccionada.estado === 'pendiente' && (
-                <button
-                  onClick={() => cambiarEstado(citaSeleccionada.id, 'confirmada')}
-                  disabled={actualizando}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition-colors"
-                >
-                  {actualizando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  Confirmar cita
-                </button>
+                <>
+                  <button
+                    onClick={() => confirmarYAvisar(citaSeleccionada)}
+                    disabled={actualizando}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                  >
+                    {actualizando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    Confirmar y avisar por WhatsApp
+                  </button>
+                  <a
+                    href={linkSugerirOtroDia(citaSeleccionada)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full flex items-center justify-center gap-2 border border-green-300 text-green-700 hover:bg-green-50 text-sm font-medium py-2 rounded-lg transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Sugerir otro día por WhatsApp
+                  </a>
+                </>
               )}
               {citaSeleccionada.estado === 'confirmada' && (
                 <button
