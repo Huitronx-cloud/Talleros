@@ -3,7 +3,7 @@
   "name": "TallerOS",
   "short_name": "TallerOS",
   "description": "Gestión inteligente para tu taller",
-  "start_url": "/dashboard",
+  "start_url": "/abriendo",
   "scope": "/",
   "lang": "es",
   "dir": "ltr",
