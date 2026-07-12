@@ -6,6 +6,7 @@ import { cambiarEstadoCotizacion, eliminarCotizacion } from '@/app/(dashboard)/c
 import { useRouter } from 'next/navigation'
 import { EstadoCotizacion } from '@/types'
 import { formatMoney } from '@/lib/utils'
+import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
 interface Props {
   id: string
@@ -42,15 +43,27 @@ export default function AccionesPdf({
   const [aprobWaError, setAprobWaError]         = useState('')
 
   async function handleSolicitarAprobacionWa() {
+    // Canal wa.me: la ruta genera el mensaje y aquí se abre WhatsApp para que
+    // el empleado lo envíe desde su propio chat. La pestaña se abre ANTES de
+    // cualquier await — Safari/iOS bloquea popups fuera del gesto del usuario.
+    const ventana = window.open('', '_blank')
     setEnviandoAprobWa(true)
     setAprobWaError('')
     try {
       const res = await fetch(`/api/cotizaciones/${id}/aprobar-whatsapp`, { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) { setAprobWaError(data.error ?? 'Error enviando'); return }
+      if (!res.ok || !data.telefono) {
+        ventana?.close()
+        setAprobWaError(data.error ?? 'Error generando el mensaje')
+        return
+      }
+      const link = buildWhatsAppLink(data.telefono, data.mensaje, data.paisTaller)
+      if (ventana) ventana.location.href = link
+      else window.location.href = link
       setAprobWaEnviado(true)
       router.refresh()
     } catch {
+      ventana?.close()
       setAprobWaError('Error de conexión')
     } finally {
       setEnviandoAprobWa(false)

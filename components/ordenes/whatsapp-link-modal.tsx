@@ -13,10 +13,16 @@ export default function BotonWhatsAppLink({
   ordenId,
   estado,
   compacto = false,
+  plantillaInicial,
+  opts,
+  label = 'Enviar por WhatsApp',
 }: {
   ordenId: string
   estado: EstadoOrden
   compacto?: boolean
+  plantillaInicial?: PlantillaWhatsApp
+  opts?: { garantiaDias?: number; garantiaKm?: number }
+  label?: string
 }) {
   const [abierto, setAbierto]     = useState(false)
   const [cargando, setCargando]   = useState(false)
@@ -24,7 +30,7 @@ export default function BotonWhatsAppLink({
   const [enviado, setEnviado]     = useState(false)
   const [error, setError]         = useState('')
   const [avisoLog, setAvisoLog]   = useState('')
-  const [plantilla, setPlantilla] = useState<PlantillaWhatsApp>(ESTADO_PLANTILLA_DEFAULT[estado])
+  const [plantilla, setPlantilla] = useState<PlantillaWhatsApp>(plantillaInicial ?? ESTADO_PLANTILLA_DEFAULT[estado])
   const [telefono, setTelefono]   = useState('')
   const [paisTaller, setPaisTaller] = useState<string | null>(null)
   const [mensaje, setMensaje]     = useState('')
@@ -32,7 +38,7 @@ export default function BotonWhatsAppLink({
   async function cargarMensaje(p: PlantillaWhatsApp) {
     setCargando(true)
     setError('')
-    const res = await generarMensajeWhatsApp(ordenId, p)
+    const res = await generarMensajeWhatsApp(ordenId, p, opts)
     setCargando(false)
     if (res.error || !res.datos) {
       setError(res.error ?? 'No se pudo generar el mensaje')
@@ -50,7 +56,7 @@ export default function BotonWhatsAppLink({
     setAbierto(true)
     setEnviado(false)
     setAvisoLog('')
-    cargarMensaje(ESTADO_PLANTILLA_DEFAULT[estado])
+    cargarMensaje(plantillaInicial ?? ESTADO_PLANTILLA_DEFAULT[estado])
   }
 
   function cerrar(e?: React.MouseEvent) {
@@ -104,7 +110,7 @@ export default function BotonWhatsAppLink({
         onMouseLeave={e => (e.currentTarget.style.background = VERDE)}
       >
         <MessageCircle className="w-4 h-4" />
-        {!compacto && 'Enviar por WhatsApp'}
+        {!compacto && label}
       </button>
 
       {abierto && (

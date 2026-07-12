@@ -1,7 +1,14 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { buildWhatsAppLink } from './whatsapp-link'
 
-export type TipoMensajePendiente = 'recordatorio' | 'resena' | 'cita'
+export type TipoMensajePendiente =
+  | 'recordatorio'
+  | 'resena'
+  | 'cita'
+  | 'promocion'
+  | 'aviso'
+  | 'garantia'
+  | 'seguimiento'
 
 // Encola un WhatsApp en mensajes_pendientes para que el equipo del taller lo
 // envíe con un tap desde su propio WhatsApp (links wa.me requieren gesto

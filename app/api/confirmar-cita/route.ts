@@ -1,9 +1,12 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
-import twilio from 'twilio'
+// DEPRECATED: canal migrado a wa.me — la confirmación por WhatsApp ya no sale
+// por Twilio: al confirmar, el calendario abre wa.me con el mensaje listo y el
+// empleado lo envía desde su propio chat. Esta ruta conserva solo el email.
+// import twilio from 'twilio'
+// import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
 import { Resend } from 'resend'
-import { normalizarFromWhatsApp, normalizarTelefonoWhatsApp } from '@/lib/twilio'
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = createAdmin(
@@ -38,22 +41,15 @@ export async function POST(req: NextRequest) {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
 
-    // ── WHATSAPP ──
-    if (cita.cliente_telefono) {
-      try {
-        const twilioClient = twilio(
-          process.env.TWILIO_ACCOUNT_SID!,
-          process.env.TWILIO_AUTH_TOKEN!
-        )
-        await twilioClient.messages.create({
-          from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
-          to:   normalizarTelefonoWhatsApp(cita.cliente_telefono),
-          body: `✅ *¡Tu cita está confirmada!*\n\n📅 *Fecha:* ${fechaFormateada}\n🕐 *Hora:* ${cita.hora.slice(0, 5)} hrs\n🔧 *Taller:* ${nombreTaller}${telefonoTaller ? `\n📞 *Teléfono:* ${telefonoTaller}` : ''}\n\n¡Te esperamos! Si necesitas cambiar tu cita, contáctanos.`,
-        })
-      } catch (e) {
-        console.error('WhatsApp error (no crítico):', e)
-      }
-    }
+    // DEPRECATED: canal migrado a wa.me — confirmación por WhatsApp vía Twilio:
+    // if (cita.cliente_telefono) {
+    //   const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!)
+    //   await twilioClient.messages.create({
+    //     from: normalizarFromWhatsApp(process.env.TWILIO_WHATSAPP_FROM!),
+    //     to:   normalizarTelefonoWhatsApp(cita.cliente_telefono),
+    //     body: `✅ *¡Tu cita está confirmada!*\n\n📅 *Fecha:* ${fechaFormateada}...`,
+    //   })
+    // }
 
     // ── EMAIL ──
     if (cita.cliente_email) {

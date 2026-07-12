@@ -2,7 +2,10 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
-import { enviarWhatsApp } from '@/lib/twilio'
+// DEPRECATED: canal migrado a wa.me — el acuse por WhatsApp al cliente ya no
+// sale por Twilio. El cliente recibe el acuse por email, y el TALLER recibe
+// una notificación push para aprobar la cita o sugerir otro día.
+// import { enviarWhatsApp } from '@/lib/twilio'
 import { Resend } from 'resend'
 
 export async function POST(req: NextRequest) {
@@ -32,16 +35,37 @@ export async function POST(req: NextRequest) {
     })
     const hora = cita.hora.slice(0, 5)
 
-    // ── WHATSAPP al cliente ──
-    if (cita.cliente_telefono) {
-      try {
-        await enviarWhatsApp(
-          cita.cliente_telefono,
-          `📅 *¡Recibimos tu cita!*\n\nHola ${cita.cliente_nombre}, tu solicitud ha sido registrada en *${nombreTaller}*.\n\n📅 *Fecha:* ${fechaFormateada}\n🕐 *Hora:* ${hora} hrs\n\nTe confirmaremos en breve. Si necesitas cambiar algo, contáctanos.${telefonoTaller ? `\n📞 ${telefonoTaller}` : ''}`
+    // DEPRECATED: canal migrado a wa.me — acuse por WhatsApp vía Twilio:
+    // if (cita.cliente_telefono) {
+    //   await enviarWhatsApp(cita.cliente_telefono, `📅 *¡Recibimos tu cita!*\n\nHola ${cita.cliente_nombre}...`)
+    // }
+
+    // ── PUSH al equipo del taller ── para que apruebe la cita o sugiera otro
+    // día desde /citas (los botones abren wa.me con el mensaje al cliente)
+    try {
+      const { data: staff } = await supabaseAdmin
+        .from('usuarios')
+        .select('id')
+        .eq('taller_id', tallerId)
+        .in('rol', ['propietario', 'admin', 'recepcion'])
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+      await Promise.allSettled(
+        (staff ?? []).map(u =>
+          fetch(`${baseUrl}/api/push/enviar`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              usuarioId: u.id,
+              titulo:    '📅 Nueva solicitud de cita',
+              cuerpo:    `${cita.cliente_nombre} pidió cita el ${fechaFormateada} a las ${hora}. Entra para confirmarla o sugerir otro día.`,
+              url:       '/citas',
+            }),
+          })
         )
-      } catch (e) {
-        console.error('[notificar-reserva-cliente] WhatsApp error:', e)
-      }
+      )
+    } catch (e) {
+      console.error('[notificar-reserva-cliente] push al taller error:', e)
     }
 
     // ── EMAIL al cliente ──
