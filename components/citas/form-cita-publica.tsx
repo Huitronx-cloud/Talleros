@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Loader2, Calendar, Clock, User, Phone, Car, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -62,6 +62,12 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
 
   // Disponibilidad en tiempo real
   const [citasOcupadas, setCitasOcupadas] = useState(citasIniciales)
+
+  // En móvil, al cambiar de paso el scroll quedaba donde estaba el botón
+  // "Continuar" y el inicio del formulario quedaba fuera de vista
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [paso])
 
   // Datos del cliente
   const [form, setForm] = useState({
@@ -175,7 +181,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
   // ── CONFIRMACIÓN ──
   if (listo) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 text-center">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-8 h-8 text-green-600" />
         </div>
@@ -197,17 +203,18 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
   return (
     <div className="space-y-4">
 
-      {/* Indicador de pasos */}
-      <div className="flex items-center gap-2 mb-2">
+      {/* Indicador de pasos — en móvil solo se muestra el label del paso
+          activo: los 3 labels juntos no caben y se cortaban las palabras */}
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
         {[1, 2, 3].map(n => (
-          <div key={n} className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+          <div key={n} className={`flex items-center gap-1.5 sm:gap-2 ${n < 3 ? 'flex-1 sm:flex-initial' : ''}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-colors ${
               paso >= n ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400'
             }`}>{n}</div>
-            <span className={`text-xs font-medium ${paso >= n ? 'text-gray-700' : 'text-gray-400'}`}>
+            <span className={`text-xs font-medium whitespace-nowrap ${paso >= n ? 'text-gray-700' : 'text-gray-400'} ${paso === n ? '' : 'hidden sm:inline'}`}>
               {n === 1 ? 'Fecha y hora' : n === 2 ? 'Tus datos' : 'Confirmar'}
             </span>
-            {n < 3 && <div className={`h-px w-6 ${paso > n ? 'bg-blue-600' : 'bg-gray-200'}`} />}
+            {n < 3 && <div className={`h-px flex-1 sm:flex-initial sm:w-6 ${paso > n ? 'bg-blue-600' : 'bg-gray-200'}`} />}
           </div>
         ))}
       </div>
@@ -267,7 +274,16 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
                 return (
                   <button
                     key={i}
-                    onClick={() => { if (!deshabilitado) { setFechaSeleccionada(fecha); setHoraSeleccionada('') } }}
+                    onClick={() => {
+                      if (deshabilitado) return
+                      setFechaSeleccionada(fecha)
+                      setHoraSeleccionada('')
+                      // En móvil los horarios aparecen abajo del calendario y
+                      // quedaban fuera de vista
+                      setTimeout(() => {
+                        document.getElementById('horarios-disponibles')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                      }, 100)
+                    }}
                     disabled={deshabilitado}
                     className={`aspect-square rounded-lg text-sm font-medium transition-all ${
                       seleccionado
@@ -301,7 +317,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
 
           {/* Horarios disponibles */}
           {fechaSeleccionada && (
-            <div>
+            <div id="horarios-disponibles">
               <p className="text-sm font-semibold text-gray-700 mb-3">
                 Horarios disponibles —{' '}
                 <span className="text-blue-600">
@@ -360,7 +376,7 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
             <label className={LABEL}>Nombre completo <span className="text-red-500">*</span></label>
             <input type="text" value={form.cliente_nombre}
               onChange={e => setForm(p => ({ ...p, cliente_nombre: e.target.value }))}
-              placeholder="Tu nombre" className={INPUT} autoFocus />
+              placeholder="Tu nombre" className={INPUT} />
           </div>
           <div>
             <label className={LABEL}>WhatsApp <span className="text-red-500">*</span></label>
@@ -435,29 +451,29 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
           <h2 className="text-base font-bold text-gray-900">Confirma tu cita</h2>
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <span className="font-semibold text-blue-900">
+            <div className="flex items-start gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <span className="font-semibold text-blue-900 min-w-0 break-words">
                 {new Date(fechaSeleccionada + 'T12:00:00').toLocaleDateString('es-MX', {
                   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
                 })}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-blue-600" />
+              <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span className="font-semibold text-blue-900">{horaSeleccionada} hrs</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <User className="w-4 h-4 text-blue-600" />
+              <User className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span className="text-blue-800">{form.cliente_nombre}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Phone className="w-4 h-4 text-blue-600" />
+              <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span className="text-blue-800">{form.cliente_telefono}</span>
             </div>
             {(form.vehiculo_marca || form.vehiculo_modelo) && (
               <div className="flex items-center gap-2 text-sm">
-                <Car className="w-4 h-4 text-blue-600" />
+                <Car className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="text-blue-800">
                   {[form.vehiculo_marca, form.vehiculo_modelo, form.placas].filter(Boolean).join(' · ')}
                 </span>
