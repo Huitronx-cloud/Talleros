@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 // La generación con Claude (artículo + scripts) tarda más que el default:
 // sin esto la función puede morir a medias (artículo sin script).
-export const maxDuration = 300
+export const maxDuration = 60
 import { createClient } from '@supabase/supabase-js'
 
 // Errores no fatales (artículo publicado pero script fallido, banco de temas
