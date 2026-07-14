@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY! // misma key sirve para YouTube
 const BREVO_API_KEY  = process.env.BREVO_API_KEY!

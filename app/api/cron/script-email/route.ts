@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 import { createClient } from '@supabase/supabase-js'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
@@ -107,6 +108,7 @@ export async function GET(req: NextRequest) {
     .select('*')
     .eq('email_enviado', false)
     .order('created_at', { ascending: true })
+    .limit(5)
 
   if (error) {
     await enviarAlertaError(`No se pudo consultar scripts_video: ${error.message}`)
@@ -128,6 +130,33 @@ export async function GET(req: NextRequest) {
       .eq('email_enviado', false)
       .maybeSingle()
 
+    // Marcar ANTES de enviar (entrega a-lo-más-una-vez): si el proceso muere
+    // entre el envío y el marcado, el mismo script se reenviaba cada día.
+    // Si el envío falla, se revierte la marca y se reintenta mañana.
+    const { error: marcaError } = await supabase
+      .from('scripts_video')
+      .update({ email_enviado: true })
+      .eq('id', scriptRow.id)
+
+    if (marcaError) {
+      resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: false, error: `No se pudo marcar como enviado: ${marcaError.message}` })
+      continue
+    }
+
+    if (scriptLargoRow) {
+      await supabase
+        .from('scripts_video_largo')
+        .update({ email_enviado: true })
+        .eq('id', scriptLargoRow.id)
+    }
+
+    const revertirMarca = async () => {
+      await supabase.from('scripts_video').update({ email_enviado: false }).eq('id', scriptRow.id)
+      if (scriptLargoRow) {
+        await supabase.from('scripts_video_largo').update({ email_enviado: false }).eq('id', scriptLargoRow.id)
+      }
+    }
+
     try {
       const respuesta = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
@@ -146,25 +175,15 @@ export async function GET(req: NextRequest) {
 
       if (!respuesta.ok) {
         const detalle = await respuesta.text()
+        await revertirMarca()
         resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: false, error: detalle })
         continue
-      }
-
-      await supabase
-        .from('scripts_video')
-        .update({ email_enviado: true })
-        .eq('id', scriptRow.id)
-
-      if (scriptLargoRow) {
-        await supabase
-          .from('scripts_video_largo')
-          .update({ email_enviado: true })
-          .eq('id', scriptLargoRow.id)
       }
 
       resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: true, script_largo: !!scriptLargoRow })
 
     } catch (error: any) {
+      await revertirMarca()
       resultados.push({ id: scriptRow.id, titulo: scriptRow.titulo, ok: false, error: error.message })
     }
   }

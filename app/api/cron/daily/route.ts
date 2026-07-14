@@ -23,11 +23,14 @@ function tareasDelGrupo(group: string): string[] {
       '/api/cron/recordatorios-citas',  // citas de mañana
     ]
   }
-  // content (default)
+  // content (default). script-email va PRIMERO: envía los scripts pendientes
+  // de ayer sin competir con la generación del blog (que sigue corriendo en
+  // segundo plano cuando su fetch se aborta a los 12 s); el script de HOY se
+  // genera en esta corrida y sale en el email de mañana.
   const tareas = [
+    '/api/cron/script-email',
     '/api/cron/blog',
     '/api/cron/videos',
-    '/api/cron/script-email',
     '/api/cron/onboarding',
   ]
   // contenido es semanal: solo los domingos
