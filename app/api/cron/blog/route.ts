@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+// La generación con Claude (artículo + scripts) tarda más que el default:
+// sin esto la función puede morir a medias (artículo sin script).
+export const maxDuration = 300
 import { createClient } from '@supabase/supabase-js'
+
+// Errores no fatales (artículo publicado pero script fallido, banco de temas
+// agotado): avisar por email en vez de perderse en logs que expiran en 1h.
+async function enviarAlertaBlog(detalle: string): Promise<void> {
+  try {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': process.env.BREVO_API_KEY!, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:      { name: 'TallerOS Alertas', email: 'hola@tallerosapp.com' },
+        to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+        subject:     '⚠️ Aviso del agente de blog — TallerOS',
+        htmlContent: `<p>El cron del blog (<code>/api/cron/blog</code>) reporta:</p><p style="color:#dc2626;">${detalle}</p>`,
+      }),
+    })
+  } catch {
+    // Si la alerta misma falla, no hay más visibilidad que los logs
+  }
+}
 
 const TEMAS = [
   // Administración
@@ -262,11 +284,22 @@ export async function GET(req: NextRequest) {
 
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const tema = TEMAS[diaDelAnio % TEMAS.length]
 
-  const existe = await slugExiste(supabase, tema.slug)
-  if (existe) {
-    return NextResponse.json({ ok: true, mensaje: `Artículo "${tema.slug}" ya existe, saltando.` })
+  // El índice del día es el punto de PARTIDA: si ese tema ya se publicó
+  // (colisión al ciclar el módulo), se avanza al siguiente disponible en vez
+  // de saltarse el día — saltar dejaba días sin artículo nuevo.
+  let tema: typeof TEMAS[0] | null = null
+  for (let offset = 0; offset < TEMAS.length; offset++) {
+    const candidato = TEMAS[(diaDelAnio + offset) % TEMAS.length]
+    if (!(await slugExiste(supabase, candidato.slug))) {
+      tema = candidato
+      break
+    }
+  }
+
+  if (!tema) {
+    await enviarAlertaBlog('Los 68 temas del banco ya están publicados — hay que agregar temas nuevos.')
+    return NextResponse.json({ ok: true, mensaje: 'Todos los temas ya están publicados.' })
   }
 
   const esDiaLargo = diaDelAnio % 2 === 0
@@ -305,7 +338,13 @@ export async function GET(req: NextRequest) {
     ])
 
     if (blogResult.error) throw new Error(`Blog insert error: ${blogResult.error.message}`)
-    if (scriptResult.error) throw new Error(`Script insert error: ${scriptResult.error.message}`)
+
+    // El artículo ya quedó publicado: un fallo en el script no debe perderse
+    // en silencio (dejaba artículos sin script y nadie se enteraba) pero
+    // tampoco debe tirar la respuesta completa.
+    if (scriptResult.error) {
+      await enviarAlertaBlog(`El artículo "${tema.slug}" se publicó, pero falló el insert del script: ${scriptResult.error.message}`)
+    }
 
     if (esDiaLargo && scriptLargo) {
       const { error: largoError } = await supabase.from('scripts_video_largo').insert({
@@ -315,7 +354,47 @@ export async function GET(req: NextRequest) {
         duracion_minutos: 5,
         email_enviado:    false,
       })
-      if (largoError) throw new Error(`Script largo insert error: ${largoError.message}`)
+      if (largoError) {
+        await enviarAlertaBlog(`El artículo "${tema.slug}" se publicó, pero falló el insert del script largo: ${largoError.message}`)
+      }
+    }
+
+    // ── Reparación: artículos recientes que quedaron sin script ──────────────
+    // (pasó el 09/07 y el 12/07: artículo publicado, insert del script fallido)
+    try {
+      const { data: recientes } = await supabase
+        .from('articulos_blog')
+        .select('slug, titulo, pais')
+        .eq('publicado', true)
+        .gte('published_at', new Date(Date.now() - 7 * 86400000).toISOString())
+        .order('published_at', { ascending: false })
+        .limit(10)
+
+      const slugs = (recientes ?? []).map(a => a.slug)
+      const { data: conScript } = slugs.length
+        ? await supabase.from('scripts_video').select('slug').in('slug', slugs)
+        : { data: [] }
+      const tienenScript = new Set((conScript ?? []).map(s => s.slug))
+      const sinScript = (recientes ?? []).filter(a => !tienenScript.has(a.slug) && a.slug !== tema!.slug)
+
+      // Máximo 1 reparación por corrida para no alargar la ejecución
+      if (sinScript.length > 0) {
+        const pendiente = sinScript[0]
+        const scriptReparado = await generarScript(pendiente as typeof TEMAS[0])
+        if (scriptReparado) {
+          const { error: repError } = await supabase.from('scripts_video').insert({
+            slug:              pendiente.slug,
+            titulo:            pendiente.titulo,
+            script:            scriptReparado,
+            duracion_segundos: 60,
+            plataforma:        ['tiktok', 'youtube_shorts'],
+            publicado:         false,
+          })
+          if (!repError) console.log(`[cron blog] script reparado para ${pendiente.slug} (${sinScript.length - 1} pendientes)`)
+        }
+      }
+    } catch (e) {
+      console.error('[cron blog] reparación de scripts falló:', e)
     }
 
     return NextResponse.json({
