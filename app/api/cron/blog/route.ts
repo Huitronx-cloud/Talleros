@@ -317,27 +317,31 @@ export async function GET(req: NextRequest) {
 
     const excerpt = extractExcerpt(contenidoHtml)
 
-    const [blogResult, scriptResult] = await Promise.all([
-      supabase.from('articulos_blog').insert({
-        titulo:       tema.titulo,
-        slug:         tema.slug,
-        contenido:    contenidoHtml,
-        excerpt,
-        pais:         tema.pais,
-        publicado:    true,
-        published_at: new Date().toISOString(),
-      }),
-      supabase.from('scripts_video').insert({
-        slug:              tema.slug,
-        titulo:            tema.titulo,
-        script,
-        duracion_segundos: 60,
-        plataforma:        ['tiktok', 'youtube_shorts'],
-        publicado:         false,
-      }),
-    ])
+    // SECUENCIAL, no Promise.all: scripts_video.slug tiene una foreign key
+    // hacia el artículo. En paralelo era una carrera — si el script llegaba
+    // a la base antes de que el artículo estuviera confirmado, violaba la FK
+    // (scripts_video_slug_fkey) y el artículo quedaba sin script (pasó el
+    // 09/07, 12/07 y 14/07).
+    const blogResult = await supabase.from('articulos_blog').insert({
+      titulo:       tema.titulo,
+      slug:         tema.slug,
+      contenido:    contenidoHtml,
+      excerpt,
+      pais:         tema.pais,
+      publicado:    true,
+      published_at: new Date().toISOString(),
+    })
 
     if (blogResult.error) throw new Error(`Blog insert error: ${blogResult.error.message}`)
+
+    const scriptResult = await supabase.from('scripts_video').insert({
+      slug:              tema.slug,
+      titulo:            tema.titulo,
+      script,
+      duracion_segundos: 60,
+      plataforma:        ['tiktok', 'youtube_shorts'],
+      publicado:         false,
+    })
 
     // El artículo ya quedó publicado: un fallo en el script no debe perderse
     // en silencio (dejaba artículos sin script y nadie se enteraba) pero
