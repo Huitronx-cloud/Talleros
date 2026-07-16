@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 import { createClient } from '@supabase/supabase-js'
+import { PREMISA_PROMPT } from '@/lib/premisa'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!
@@ -42,7 +43,7 @@ async function obtenerMetricas() {
 
 // ── Generar posts con Claude ──────────────────────────────────────────────────
 async function generarPosts(metricas: Record<string, number>): Promise<string> {
-  const prompt = `Eres el community manager de TallerOS — un software de gestión para talleres mecánicos en LATAM (México, Colombia, Perú).
+  const prompt = `${PREMISA_PROMPT}Eres el community manager de TallerOS — un software de gestión para talleres mecánicos en LATAM (México, Colombia, Perú).
 
 Esta semana TallerOS tuvo estas métricas reales:
 - Talleres nuevos registrados: ${metricas.talleresNuevos}
