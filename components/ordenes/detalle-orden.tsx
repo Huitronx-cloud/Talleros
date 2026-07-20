@@ -2,13 +2,14 @@
 
 import InspeccionDanos from './inspeccion-danos'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Car, User, Phone, Calendar, Wrench, FileText, FileDown,
-  Loader2, MessageCircle, CheckCircle2, XCircle, Clock
+  Loader2, MessageCircle, CheckCircle2, XCircle, Clock, Pencil, Trash2
 } from 'lucide-react'
-import { Orden, EstadoOrden, Notificacion } from '@/types'
-import { cambiarEstado, agregarNotaInterna } from '@/app/(dashboard)/ordenes/actions'
+import { Orden, EstadoOrden, Notificacion, RolUsuario } from '@/types'
+import { cambiarEstado, agregarNotaInterna, eliminarOrden } from '@/app/(dashboard)/ordenes/actions'
 import BadgeEstado from './badge-estado'
 import FotosDiagnostico from './fotos-diagnosticos'
 import PanelPagos from './panel-pagos'
@@ -54,10 +55,17 @@ const TABS: { id: Tab; label: string; activo: string; inactivo: string }[] = [
 export default function DetalleOrden({
   orden,
   notificaciones = [],
+  rol,
 }: {
   orden: Orden
   notificaciones?: Notificacion[]
+  rol?: RolUsuario
 }) {
+  const router = useRouter()
+  const puedeEditar = rol === 'propietario' || rol === 'admin'
+  const [confirmarBorrar, setConfirmarBorrar]   = useState(false)
+  const [borrando, setBorrando]                 = useState(false)
+  const [errorBorrar, setErrorBorrar]           = useState('')
   const [tabActivo, setTabActivo]               = useState<Tab>('resumen')
   const [cambiando, setCambiando]               = useState(false)
   const [guardando, setGuardando]               = useState(false)
@@ -99,6 +107,19 @@ export default function DetalleOrden({
     setGuardando(false)
   }
 
+  const handleEliminar = async () => {
+    setBorrando(true)
+    setErrorBorrar('')
+    const res = await eliminarOrden(orden.id)
+    if (res.error) {
+      setErrorBorrar(res.error)
+      setBorrando(false)
+      return
+    }
+    router.push('/ordenes')
+    router.refresh()
+  }
+
   const handleProgramarRecordatorio = async () => {
     setProgramandoRecordatorio(true)
     setErrorComunicacion('')
@@ -122,6 +143,43 @@ export default function DetalleOrden({
   return (
     <div className="max-w-3xl lg:max-w-4xl mx-auto">
 
+      {/* ── Modal de confirmación de borrado ── */}
+      {confirmarBorrar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Eliminar orden</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-5">
+              Vas a eliminar la <strong>orden #{String(orden.numero_orden).padStart(4, '0')}</strong>. Esta acción no se puede deshacer.
+            </p>
+            {errorBorrar && (
+              <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg mb-3">{errorBorrar}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setConfirmarBorrar(false); setErrorBorrar('') }}
+                disabled={borrando}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEliminar}
+                disabled={borrando}
+                className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+              >
+                {borrando && <Loader2 className="w-4 h-4 animate-spin" />}
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -142,6 +200,22 @@ export default function DetalleOrden({
               day: 'numeric', month: 'long', year: 'numeric',
             })}
           </p>
+          {puedeEditar && (
+            <div className="flex items-center gap-4 mt-3">
+              <Link
+                href={`/ordenes/${orden.id}/editar`}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Editar orden
+              </Link>
+              <button
+                onClick={() => setConfirmarBorrar(true)}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-red-600 font-medium transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Eliminar
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Botón cambio de estado — siempre visible y prominente */}
