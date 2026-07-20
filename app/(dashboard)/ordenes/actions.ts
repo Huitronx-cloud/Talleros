@@ -203,6 +203,71 @@ export async function cambiarEstado(
   return { error: null }
 }
 
+export interface EditarOrdenForm {
+  vehiculo_marca: string
+  vehiculo_modelo: string
+  vehiculo_año: string
+  placas: string
+  kilometraje: string
+  descripcion_problema: string
+  diagnostico: string
+  servicios_realizados: ServicioItem[]
+  mecanico_asignado: string
+  fecha_prometida: string
+  descuento: number
+  tasa_iva: number
+  forma_pago: FormaPago
+  notas_internas: string
+}
+
+export async function editarOrden(ordenId: string, datos: EditarOrdenForm) {
+  const supabase = createClient()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
+
+  // Igual que en crearOrden: los totales se recalculan en el servidor a partir
+  // de servicios_realizados y la tasa de IVA — nunca se confía en los que
+  // manda el cliente. Esto evita justo el bug del "doble IVA".
+  const subtotalCalc = Math.round(
+    datos.servicios_realizados.reduce((acc, s) => acc + s.cantidad * s.precio_unitario, 0) * 100
+  ) / 100
+  const tasaIvaCalc   = Math.min(Math.max(datos.tasa_iva || 0, 0), 0.3)
+  const descuentoCalc = Math.min(Math.max(datos.descuento || 0, 0), subtotalCalc)
+  const baseIvaCalc   = Math.max(0, subtotalCalc - descuentoCalc)
+  const impuestosCalc = Math.round(baseIvaCalc * tasaIvaCalc * 100) / 100
+  const totalCalc     = Math.round((baseIvaCalc + impuestosCalc) * 100) / 100
+
+  const { error } = await supabase
+    .from('ordenes')
+    .update({
+      vehiculo_marca:       datos.vehiculo_marca   || null,
+      vehiculo_modelo:      datos.vehiculo_modelo  || null,
+      vehiculo_año:         datos.vehiculo_año     ? parseInt(datos.vehiculo_año) : null,
+      placas:               datos.placas           || null,
+      kilometraje:          datos.kilometraje      ? parseInt(datos.kilometraje) : null,
+      descripcion_problema: datos.descripcion_problema || null,
+      diagnostico:          datos.diagnostico      || null,
+      servicios_realizados: datos.servicios_realizados.filter(s => s.descripcion.trim()),
+      mecanico_asignado:    datos.mecanico_asignado || null,
+      fecha_prometida:      datos.fecha_prometida  || null,
+      subtotal:             subtotalCalc,
+      descuento:            descuentoCalc,
+      impuestos:            impuestosCalc,
+      tasa_iva:             tasaIvaCalc,
+      total:                totalCalc,
+      forma_pago:           datos.forma_pago,
+      notas_internas:       datos.notas_internas   || null,
+    })
+    .eq('id', ordenId)
+    .eq('taller_id', tallerId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/ordenes')
+  revalidatePath(`/ordenes/${ordenId}`)
+  return { error: null }
+}
+
 export async function agregarNotaInterna(ordenId: string, nota: string) {
   const supabase = createClient()
   const { error } = await supabase
@@ -217,7 +282,17 @@ export async function agregarNotaInterna(ordenId: string, nota: string) {
 
 export async function eliminarOrden(id: string) {
   const supabase = createClient()
-  const { error } = await supabase.from('ordenes').delete().eq('id', id)
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
+
+  // Acotado por taller_id además del id (la RLS ya lo exige, pero explícito
+  // evita cualquier borrado accidental fuera del taller del usuario).
+  const { error } = await supabase
+    .from('ordenes')
+    .delete()
+    .eq('id', id)
+    .eq('taller_id', tallerId)
+
   if (error) return { error: error.message }
   revalidatePath('/ordenes')
   return { error: null }

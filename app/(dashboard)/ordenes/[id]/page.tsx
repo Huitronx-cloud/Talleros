@@ -49,6 +49,7 @@ export default async function DetalleOrdenPage({
     <DetalleOrden
       orden={orden as Orden}
       notificaciones={(notificaciones ?? []) as Notificacion[]}
+      rol={usuario?.rol as RolUsuario | undefined}
     />
   )
 }
