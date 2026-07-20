@@ -97,6 +97,14 @@ const nextConfig = {
         headers: securityHeaders,
       },
       {
+        // El blog lee de Supabase en cada visita: nunca cachear el HTML en el
+        // CDN/navegador, si no se congela mostrando artículos viejos.
+        source: '/blog:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+        ],
+      },
+      {
         // Imágenes de /public: cache de 30 días. No immutable porque los
         // nombres no llevan hash — si se reemplaza una imagen con el mismo
         // nombre, expira en máximo 30 días.

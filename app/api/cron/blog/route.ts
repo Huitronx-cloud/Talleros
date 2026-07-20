@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 // sin esto la función puede morir a medias (artículo sin script).
 export const maxDuration = 60
 import { createClient } from '@supabase/supabase-js'
+import { PREMISA_PROMPT } from '@/lib/premisa'
 
 // Errores no fatales (artículo publicado pero script fallido, banco de temas
 // agotado): avisar por email en vez de perderse en logs que expiran en 1h.
@@ -148,7 +149,7 @@ async function generarArticulo(tema: typeof TEMAS[0]): Promise<string> {
       max_tokens: 2000,
       messages: [{
         role:    'user',
-        content: `Escribe un artículo de blog SEO-optimizado en español para dueños de talleres mecánicos en Latinoamérica.
+        content: `${PREMISA_PROMPT}Escribe un artículo de blog SEO-optimizado en español para dueños de talleres mecánicos en Latinoamérica.
 
 Título: "${tema.titulo}"
 Keyword principal: "${tema.slug.replace(/-/g, ' ')}"
@@ -201,7 +202,7 @@ async function generarScript(tema: typeof TEMAS[0]): Promise<string> {
       max_tokens: 500,
       messages: [{
         role:    'user',
-        content: `Escribe un script de video de 60 segundos para TikTok y YouTube Shorts en español mexicano.
+        content: `${PREMISA_PROMPT}Escribe un script de video de 60 segundos para TikTok y YouTube Shorts en español mexicano.
 
 Tema: "${tema.titulo}"
 ${tema.pais ? `País: ${tema.pais === 'MX' ? 'México' : tema.pais === 'CO' ? 'Colombia' : 'Perú'}` : 'LATAM'}
@@ -238,7 +239,7 @@ async function generarScriptLargo(tema: typeof TEMAS[0]): Promise<string> {
       max_tokens: 2000,
       messages: [{
         role:    'user',
-        content: `Escribe un script de video de 5 minutos para YouTube en español, estilo Alex Hormozi — directo, datos duros, sin relleno, ejemplos específicos, cada oración tiene que valer.
+        content: `${PREMISA_PROMPT}Escribe un script de video de 5 minutos para YouTube en español, estilo Alex Hormozi — directo, datos duros, sin relleno, ejemplos específicos, cada oración tiene que valer.
 
 Tema: "${tema.titulo}"
 ${tema.pais ? `País: ${tema.pais === 'MX' ? 'México' : tema.pais === 'CO' ? 'Colombia' : 'Perú'}` : 'LATAM'}
@@ -366,13 +367,17 @@ export async function GET(req: NextRequest) {
     // ── Reparación: artículos recientes que quedaron sin script ──────────────
     // (pasó el 09/07 y el 12/07: artículo publicado, insert del script fallido)
     try {
+      // Ventana de 30 días y orden ASCENDENTE (más viejo primero): antes eran
+      // 7 días + orden descendente, así que reparaba el artículo más RECIENTE y
+      // los viejos se salían de la ventana antes de que les tocara turno (el del
+      // 09/07 quedó huérfano porque siempre se reparaba el del día anterior).
       const { data: recientes } = await supabase
         .from('articulos_blog')
         .select('slug, titulo, pais')
         .eq('publicado', true)
-        .gte('published_at', new Date(Date.now() - 7 * 86400000).toISOString())
-        .order('published_at', { ascending: false })
-        .limit(10)
+        .gte('published_at', new Date(Date.now() - 30 * 86400000).toISOString())
+        .order('published_at', { ascending: true })
+        .limit(50)
 
       const slugs = (recientes ?? []).map(a => a.slug)
       const { data: conScript } = slugs.length
@@ -381,7 +386,8 @@ export async function GET(req: NextRequest) {
       const tienenScript = new Set((conScript ?? []).map(s => s.slug))
       const sinScript = (recientes ?? []).filter(a => !tienenScript.has(a.slug) && a.slug !== tema!.slug)
 
-      // Máximo 1 reparación por corrida para no alargar la ejecución
+      // Máximo 1 reparación por corrida para no alargar la ejecución: se toma
+      // el más viejo sin script (sinScript ya viene ordenado ascendente)
       if (sinScript.length > 0) {
         const pendiente = sinScript[0]
         const scriptReparado = await generarScript(pendiente as typeof TEMAS[0])
