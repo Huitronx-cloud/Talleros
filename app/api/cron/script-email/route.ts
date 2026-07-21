@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export const maxDuration = 60
-import { createClient } from '@supabase/supabase-js'
+import { createPublicReadClient } from '@/lib/supabase-public'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 
@@ -98,10 +99,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  // Cliente sin caché: si Next cachea el SELECT de pendientes (lo hace con los
+  // fetch de supabase-js, igual que congelaba el blog), el cron reenvía a diario
+  // el mismo lote viejo y nunca ve los scripts nuevos. no-store lo evita.
+  const supabase = createPublicReadClient()
 
   const { data: scripts, error } = await supabase
     .from('scripts_video')
