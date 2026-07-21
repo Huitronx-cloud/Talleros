@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { createClient } from '@supabase/supabase-js'
+export const revalidate = 0
+import { createPublicReadClient } from '@/lib/supabase-public'
 import { enviarResenaOrden } from '@/lib/resenas'
 
 // ── Red de seguridad: reintenta el envío de reseñas para órdenes entregadas
@@ -12,10 +13,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = createPublicReadClient()
 
   const hace3Dias = new Date()
   hace3Dias.setDate(hace3Dias.getDate() - 3)

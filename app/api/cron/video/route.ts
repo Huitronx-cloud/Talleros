@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { createClient } from '@supabase/supabase-js'
+export const revalidate = 0
+import { createPublicReadClient } from '@/lib/supabase-public'
 
 const HEYGEN_API_KEY = process.env.HEYGEN_API_KEY!
 const AVATAR_ID      = 'ba5663aec89b48d490599ce785fb6dcf'
@@ -85,10 +86,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = createPublicReadClient()
 
   const { data: scripts, error } = await supabase
     .from('scripts_video')
@@ -137,10 +135,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Faltan video_id o script_id' }, { status: 400 })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = createPublicReadClient()
 
   const videoUrl = await obtenerVideoUrl(video_id)
   if (!videoUrl) {

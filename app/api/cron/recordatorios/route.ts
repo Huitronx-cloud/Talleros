@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { createClient } from '@supabase/supabase-js'
+export const revalidate = 0
+import { createPublicReadClient } from '@/lib/supabase-public'
 import {
   getClientesParaRecordar,
   personalizarMensaje,
@@ -13,10 +14,7 @@ import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
 const LIMITE_POR_EJECUCION = 50
 
 export async function GET(req: NextRequest) {
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = createPublicReadClient()
 
   // Seguridad: solo Vercel Cron puede llamar este endpoint
   const authHeader = req.headers.get('authorization')

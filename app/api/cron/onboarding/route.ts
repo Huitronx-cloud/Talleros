@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export const maxDuration = 60
-import { createClient } from '@supabase/supabase-js'
+import { createPublicReadClient } from '@/lib/supabase-public'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -149,10 +150,7 @@ function waPaso(nombre: string, paso: number, url: string): string {
 // ── Handler principal ─────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = createPublicReadClient()
 
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
