@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 // La generación con Claude (artículo + scripts) tarda más que el default:
 // sin esto la función puede morir a medias (artículo sin script).
 export const maxDuration = 60
-import { createClient } from '@supabase/supabase-js'
+import { createPublicReadClient } from '@/lib/supabase-public'
 import { PREMISA_PROMPT } from '@/lib/premisa'
 
 // Errores no fatales (artículo publicado pero script fallido, banco de temas
@@ -278,10 +279,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  // Sin caché: la lectura de artículos/scripts para la reparación no debe
+  // servirse del Data Cache de Next (evita reparaciones/duplicados por leer
+  // estado viejo), igual que el fix del envío de scripts y del blog público.
+  const supabase = createPublicReadClient()
 
 
   const diaDelAnio = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
