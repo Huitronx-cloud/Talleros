@@ -1,16 +1,16 @@
 import { MetadataRoute } from 'next'
-import { createClient } from '@supabase/supabase-js'
+import { createPublicReadClient } from '@/lib/supabase-public'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 const BASE_URL = 'https://www.tallerosapp.com'
 
 async function getArticulos() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // Sin caché: si el sitemap se sirve del Data Cache de Next se congela con
+    // una lista vieja (o vacía) de artículos y Google deja de descubrir el blog.
+    const supabase = createPublicReadClient()
     const { data } = await supabase
       .from('articulos_blog')
       .select('slug, published_at')
@@ -34,7 +34,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/guia`,      changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/blog`,      changeFrequency: 'daily',   priority: 0.7 },
     { url: `${BASE_URL}/registro`,  changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/login`,     changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/privacidad`, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/terminos`,  changeFrequency: 'yearly',  priority: 0.3 },
   ]
