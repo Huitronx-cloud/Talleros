@@ -27,10 +27,10 @@ type Tarjeta = {
 } | null
 
 const PLANES = {
-  esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',
-  esencial_anual:   'price_1TVxQORFpmo4G9XHZjkw3iSc',
-  pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
-  pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
+  esencial_mensual: 'price_1TyjpIRFpmo4G9XHLwyeCvth',
+  esencial_anual:   'price_1TyjplRFpmo4G9XHYkBdR8hc',
+  pro_mensual:      'price_1TyjqERFpmo4G9XHEjasGmnq',
+  pro_anual:        'price_1TyjqfRFpmo4G9XHL9pi6s3y',
 }
 
 export default function PlanPage() {

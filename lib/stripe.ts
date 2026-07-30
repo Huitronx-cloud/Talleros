@@ -7,15 +7,15 @@ export function getStripe() {
 }
 
 export const PLANES = {
-  esencial_mensual: 'price_1TVxQ1RFpmo4G9XHSD938Kyf',
-  esencial_anual:   'price_1TVxQORFpmo4G9XHZjkw3iSc',
-  pro_mensual:      'price_1TVxQgRFpmo4G9XHTVC0jRSB',
-  pro_anual:        'price_1TVxR3RFpmo4G9XHtmdwzFAf',
+  esencial_mensual: 'price_1TyjpIRFpmo4G9XHLwyeCvth',
+  esencial_anual:   'price_1TyjplRFpmo4G9XHYkBdR8hc',
+  pro_mensual:      'price_1TyjqERFpmo4G9XHEjasGmnq',
+  pro_anual:        'price_1TyjqfRFpmo4G9XHL9pi6s3y',
 }
 
 export const PRECIOS_A_PLAN: Record<string, string> = {
-  'price_1TVxQ1RFpmo4G9XHSD938Kyf': 'esencial',
-  'price_1TVxQORFpmo4G9XHZjkw3iSc': 'esencial',
-  'price_1TVxQgRFpmo4G9XHTVC0jRSB': 'pro',
-  'price_1TVxR3RFpmo4G9XHtmdwzFAf': 'pro',
+  'price_1TyjpIRFpmo4G9XHLwyeCvth': 'esencial',
+  'price_1TyjplRFpmo4G9XHYkBdR8hc': 'esencial',
+  'price_1TyjqERFpmo4G9XHEjasGmnq': 'pro',
+  'price_1TyjqfRFpmo4G9XHL9pi6s3y': 'pro',
 }
