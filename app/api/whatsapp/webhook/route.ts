@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { generarRespuestaWhatsApp, construirMensajesIA, pareceMensajeAutomatico } from '@/lib/whatsapp-agent'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
 const TWILIO_SID    = process.env.TWILIO_ACCOUNT_SID!
@@ -260,34 +261,53 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── CRM interno — este punto solo se alcanza si el mensaje no era una
-    // aprobación/rechazo de cotización de un cliente de taller, así que
-    // corresponde a un prospecto o alguien con dudas sobre TallerOS.
+    // ── Prospecto o duda sobre TallerOS → agente de IA ────────────────────────
+    // Este punto solo se alcanza si el mensaje no era una aprobación/rechazo de
+    // cotización de un cliente de taller: corresponde a un prospecto.
+    const supabaseCrm = createServiceClient()
     const leadId = await sincronizarLeadEntrante(de, mensaje, perfil)
 
-    // ── Detectar intención del mensaje (prospecting)
-    const interesado = ['si', 'sí', 'me interesa', 'interesa', 'info', 'información',
-                        'demo', 'precio', 'costo', 'cuanto', 'cuánto', 'como', 'cómo'].some(
-      palabra => mensajeLower.includes(palabra)
-    )
-
-    if (interesado) {
-      // Respuesta automática para interesados
-      const respuesta = `¡Hola! 👋 Gracias por tu interés en *TallerOS*.\n\nPuedes ver una demo completa y empezar tu prueba gratuita de 14 días aquí:\n\n👉 https://www.tallerosapp.com/registro\n\nSin tarjeta de crédito. Si tienes dudas, responde este mensaje y te contactamos en minutos. 🔧`
-      await responderWhatsApp(de, respuesta)
-      await registrarMensajeSaliente(leadId, respuesta)
-      // Notificar a Ivan con prioridad alta
-      await notificarIvan(de, `⭐ INTERESADO: ${mensaje}`)
-    } else {
-      // Para cualquier otro mensaje — notificar a Ivan para respuesta manual
-      await notificarIvan(de, mensaje)
+    // No contestar a los contestadores automáticos de otros negocios (evita el
+    // bucle "dos bots hablándose"): se registra y se avisa a Ivan, sin responder.
+    if (pareceMensajeAutomatico(mensaje)) {
+      await notificarIvan(de, `(auto-respuesta del otro número, sin contestar) ${mensaje}`)
+      return twimlOk
     }
 
-    // Twilio espera respuesta TwiML vacía
-    return new NextResponse(
-      `<?xml version="1.0" encoding="UTF-8"?><Response></Response>`,
-      { status: 200, headers: { 'Content-Type': 'text/xml' } }
-    )
+    // Historial de la conversación (incluye el mensaje que se acaba de registrar)
+    // para que la IA responda con contexto.
+    let messages: { role: 'user' | 'assistant'; content: string }[] = []
+    if (leadId) {
+      const { data: hist } = await supabaseCrm
+        .from('crm_mensajes')
+        .select('sentido, mensaje, created_at')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: true })
+        .limit(20)
+      messages = construirMensajesIA(hist ?? [])
+    }
+    if (messages.length === 0) {
+      messages = [{ role: 'user', content: mensaje }]
+    }
+
+    const { respuesta, escalar, motivo } = await generarRespuestaWhatsApp(messages)
+
+    // Si la IA falla, no dejamos al prospecto en visto: mensaje puente + aviso.
+    const textoFinal = respuesta?.trim() ||
+      '¡Hola! Gracias por escribir a TallerOS 👋 En un momento te atiende alguien del equipo.'
+
+    await responderWhatsApp(de, textoFinal)
+    await registrarMensajeSaliente(leadId, textoFinal)
+
+    // Prospecto caliente o algo que la IA no resolvió → marcar y avisar a Ivan.
+    if (escalar) {
+      if (leadId) {
+        await supabaseCrm.from('crm_leads').update({ etapa: 'interesado' }).eq('id', leadId)
+      }
+      await notificarIvan(de, `⭐ ESCALADO${motivo ? ` (${motivo})` : ''}: ${mensaje}`)
+    }
+
+    return twimlOk
   } catch (error: any) {
     console.error('Webhook error:', error)
     return new NextResponse(
