@@ -86,6 +86,14 @@ function handleCORS(request: NextRequest): NextResponse | null {
   return null
 }
 
+// Coincidencia por ruta exacta o subruta. Importante: se compara con `r + '/'`,
+// no con startsWith(r) a secas — con '/' en la lista, un startsWith simple daba
+// true para CUALQUIER ruta y dejaba sin efecto tanto el guard de sesión como la
+// verificación de rol de más abajo.
+function coincideRuta(rutas: string[], pathname: string): boolean {
+  return rutas.some(r => pathname === r || pathname.startsWith(r + '/'))
+}
+
 const RUTAS_PUBLICAS = [
   '/',
   '/abriendo', // página puente de arranque de la PWA — debe cachearse sin sesión
@@ -95,19 +103,14 @@ const RUTAS_PUBLICAS = [
   '/login',
   '/auth/callback',
   '/unirse',
-  '/portal',
-  '/citas',
+  '/portal',   // /portal/[token] — portal del cliente
   '/registro',
-  '/api/talleres/registro',
   '/recuperar-password',
   '/nueva-password',
-  '/api/stripe/webhook',
-  '/api/stripe',
-  '/api/funnel',
-  '/api/whatsapp',
-  '/api/google/callback',
-  '/api/geo',
-  '/api/stats',
+  // Marketing / contenido indexable: sin estas, el blog y la landing por país
+  // redirigirían a /login y se perdería la indexación en Google.
+  '/blog',
+  '/demo',
   '/guia',
   '/mexico',
   '/colombia',
@@ -116,19 +119,27 @@ const RUTAS_PUBLICAS = [
   '/robots.txt',
 ]
 
-const RUTAS_POST_REGISTRO = ['/onboarding'] // ← NUEVO: sesión sí, onboarding no requerido
+// La página pública de reservas es /citas/[tallerId]; /citas a secas es el
+// calendario del taller y sí requiere sesión.
+const RUTAS_PUBLICAS_SOLO_SUBRUTA = ['/citas']
 
-const RUTAS_POR_ROL: Record<string, string[]> = {
-  propietario: ['*'],
-  admin:       ['*'],
-  tecnico:     ['/ordenes', '/kanban', '/citas'],
-  recepcion:   ['/dashboard', '/ordenes', '/clientes', '/cotizaciones', '/kanban', '/citas'],
-}
+const RUTAS_POST_REGISTRO = ['/onboarding'] // sesión sí, onboarding no requerido
+
+// Rutas administrativas: solo propietario y admin. El resto de la app queda
+// disponible para cualquier usuario del taller (la RLS ya aísla por taller_id),
+// para no romper la operación diaria de técnicos y recepción.
+const RUTAS_SOLO_ADMIN = [
+  '/configuracion', // datos del taller, equipo, plan y facturación
+  '/reportes',
+  '/inventario',
+  '/promociones',
+  '/recordatorios',
+  '/resenas',
+]
 
 function tieneAcceso(rol: string, pathname: string): boolean {
-  const rutas = RUTAS_POR_ROL[rol] ?? []
-  if (rutas.includes('*')) return true
-  return rutas.some(r => pathname === r || pathname.startsWith(r + '/'))
+  if (rol === 'propietario' || rol === 'admin') return true
+  return !coincideRuta(RUTAS_SOLO_ADMIN, pathname)
 }
 
 export async function middleware(request: NextRequest) {
@@ -189,11 +200,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const esRutaPublica = RUTAS_PUBLICAS.some(r => pathname.startsWith(r))
-  const esRutaPostRegistro = RUTAS_POST_REGISTRO.some(r => pathname.startsWith(r))
+  // Las rutas /api/ no pasan por el guard de sesión: cada handler valida lo
+  // suyo (Bearer CRON_SECRET en los crons, firma en los webhooks, RLS con la
+  // sesión del usuario en el resto). Redirigirlas a /login rompería los crons
+  // de Vercel y las llamadas server-to-server, que no llevan cookie, y además
+  // una API debe responder 401, no un HTML de login.
+  const esApi = pathname.startsWith('/api/')
+  const esRutaPublica =
+    coincideRuta(RUTAS_PUBLICAS, pathname) ||
+    RUTAS_PUBLICAS_SOLO_SUBRUTA.some(r => pathname.startsWith(r + '/'))
+  const esRutaPostRegistro = coincideRuta(RUTAS_POST_REGISTRO, pathname)
 
   // Sin sesión → login
-  if (!user && !esRutaPublica && !esRutaPostRegistro) {
+  if (!user && !esApi && !esRutaPublica && !esRutaPostRegistro) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
@@ -220,7 +239,7 @@ export async function middleware(request: NextRequest) {
 
   // Verificar acceso por rol en rutas protegidas
   // El rol se cachea en cookie para evitar un query DB en cada navegación
-  if (user && !esRutaPublica && !esRutaPostRegistro) {
+  if (user && !esApi && !esRutaPublica && !esRutaPostRegistro) {
     let rol: string
     const rolCookie = request.cookies.get('_u_rol')?.value
     const [cachedUserId, cachedRol] = rolCookie?.split('|') ?? []
