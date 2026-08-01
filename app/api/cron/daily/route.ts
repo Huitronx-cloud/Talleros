@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 // Vercel Hobby solo permite 2 crons, así que este endpoint encadena todas las
 // tareas diarias en dos grupos (?group=content | notify). Cada tarea se llama
 // por HTTP con el mismo Bearer CRON_SECRET que ya validan todos los handlers
-// (verificado handler por handler), con timeout de 12 s y try/catch individual:
+// (verificado handler por handler), con timeout de 8 s y try/catch individual:
 // un fallo no detiene la cadena.
 // prospecting NO está incluido: sigue pausado detrás de PROSPECTING_AGENT_ENABLED.
 
@@ -21,17 +21,19 @@ function tareasDelGrupo(group: string): string[] {
       '/api/cron/trial-reminder',       // emails de trial a dueños (Resend)
       '/api/cron/resenas',              // red de seguridad de reseñas
       '/api/cron/recordatorios-citas',  // citas de mañana
+      '/api/cron/seguimiento',          // post-servicio 3 días después de entregar
     ]
   }
   // content (default). script-email va PRIMERO: envía los scripts pendientes
   // de ayer sin competir con la generación del blog (que sigue corriendo en
-  // segundo plano cuando su fetch se aborta a los 12 s); el script de HOY se
+  // segundo plano cuando su fetch se aborta a los 8 s); el script de HOY se
   // genera en esta corrida y sale en el email de mañana.
   const tareas = [
     '/api/cron/script-email',
     '/api/cron/blog',
     '/api/cron/videos',
     '/api/cron/onboarding',
+    '/api/cron/orquestador', // reporte diario a hola@ + nudges de activación
   ]
   // contenido es semanal: solo los domingos
   if (new Date().getDay() === 0) tareas.push('/api/cron/contenido')
@@ -61,7 +63,12 @@ export async function GET(req: NextRequest) {
     try {
       const res = await fetch(`${BASE_URL}${path}`, {
         headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-        signal: AbortSignal.timeout(12_000),
+        // 8s por tarea (antes 12s): con 6 tareas por grupo, 12s de peor caso
+        // sumaban 72s y la función se moría a los 60s del plan Hobby, dejando
+        // sin llamar a las últimas. Abortar el fetch no cancela el trabajo del
+        // otro lado: la tarea sigue corriendo, solo dejamos de esperar su
+        // respuesta (por eso el log puede marcar timeout aunque haya terminado).
+        signal: AbortSignal.timeout(8_000),
         cache: 'no-store',
       })
       results.push({
@@ -77,7 +84,7 @@ export async function GET(req: NextRequest) {
         ok:     false,
         status: null,
         ms:     Date.now() - inicio,
-        error:  e?.name === 'TimeoutError' ? 'timeout 12s' : (e?.message ?? 'error desconocido'),
+        error:  e?.name === 'TimeoutError' ? 'timeout 8s' : (e?.message ?? 'error desconocido'),
       })
     }
   }

@@ -6,12 +6,14 @@ import { createClient, getAuthUser } from '@/lib/supabase/server'
 import {
   LayoutGrid, CalendarDays, Users, ClipboardList, FileText,
   Settings, Package, BookOpen, UserCog, TrendingUp,
-  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, Star, BarChart2, Megaphone
+  AlertTriangle, Clock, Wrench, Download, MessageCircle, Bell, Star, BarChart2, Megaphone, Lock
 } from 'lucide-react'
 import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
+import { getLimites } from '@/lib/plan-limits'
+import UsageMeter from './usage-meter'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
 const MensajesPendientes = nextDynamic(() => import('@/components/dashboard/mensajes-pendientes'), { ssr: false })
@@ -32,6 +34,15 @@ const MODULOS = [
   { href: '/configuracion',        label: 'Configuración', icono: Settings,      color: 'bg-rose-500',    roles: ['propietario','admin'] },
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
 ]
+
+// Módulos que dependen de una feature del plan: qué flag los desbloquea y el
+// plan más barato que la incluye (la etiqueta debe mandar al plan correcto —
+// recordatorios ya vienen en Esencial, no hace falta Pro).
+const BLOQUEO_MODULO: Record<string, { flag: 'reportes' | 'recordatorios' | 'promociones'; etiqueta: string }> = {
+  '/reportes':      { flag: 'reportes',      etiqueta: 'PRO' },
+  '/recordatorios': { flag: 'recordatorios', etiqueta: 'ESENCIAL' },
+  '/promociones':   { flag: 'promociones',   etiqueta: 'PRO' },
+}
 
 export default async function DashboardPage() {
   try {
@@ -103,11 +114,14 @@ export default async function DashboardPage() {
 
   const { data: suscripcionData } = await supabase
     .from('suscripciones')
-    .select('plan')
+    .select('plan, trial_fin')
     .eq('taller_id', usuarioData?.taller_id ?? 'none')
     .maybeSingle()
 
-  const planActual = suscripcionData?.plan ?? 'pro'
+  // Sin suscripción se asume el plan gratis, no 'pro': el default anterior
+  // desbloqueaba todos los módulos para cualquiera que no tuviera fila.
+  const planActual  = suscripcionData?.plan ?? 'trial'
+  const limitesPlan = getLimites(planActual, suscripcionData?.trial_fin)
   const tallerRaw  = usuarioData?.talleres
   const taller     = (Array.isArray(tallerRaw) ? tallerRaw[0] : tallerRaw) as { nombre: string; logo_url: string | null; onboarding_completo: boolean } | null
   const nombreUser = usuarioData?.nombre?.split(' ')[0] ?? 'equipo'
@@ -210,9 +224,18 @@ export default async function DashboardPage() {
       }
       return m
     }
-    if (m.upgrade && (planActual === 'pro' || planActual === 'trial')) {
-      return { ...m, upgrade: false }
+    // La marca de upgrade sale de los límites reales del plan, no de comparar
+    // strings: antes se apagaba para 'trial', así que el plan gratis veía todos
+    // los módulos como si los tuviera y solo descubría el candado al entrar.
+    const bloqueo = BLOQUEO_MODULO[m.href]
+    if (bloqueo) {
+      return limitesPlan[bloqueo.flag]
+        ? { ...m, upgrade: false }
+        : { ...m, upgrade: true, etiqueta: bloqueo.etiqueta }
     }
+    // Módulos sin gate real (inventario, reseñas): sin etiqueta, para no
+    // marcar como de pago algo que el plan gratis sí puede usar.
+    if (m.upgrade) return { ...m, upgrade: false }
     return m
   }), ...soporte.filter(m => m.roles.includes(rol))]
 
@@ -282,6 +305,17 @@ export default async function DashboardPage() {
             tallerId={usuarioData?.taller_id ?? ''}
           />
         )}
+
+        {/* ── MEDIDOR DE USO ── cuántas órdenes quedan en el plan gratis.
+            El componente ya existía pero no estaba montado en ninguna página:
+            se pinta solo cuando el plan tiene tope, así que en planes de pago y
+            durante la prueba no aparece. */}
+        <UsageMeter
+          plan={planActual}
+          trialFin={suscripcionData?.trial_fin}
+          usadas={ordenesMes ?? 0}
+          rol={rol}
+        />
 
         {/* ── MENSAJES POR ENVIAR ── cola wa.me generada por los crons */}
         {['propietario','admin','recepcion'].includes(rol) && <MensajesPendientes />}
@@ -410,7 +444,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Módulos</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {modulosVisibles.map((m: any) => {
-              const { href, label, icono: Icono, color, upgrade, externo } = m
+              const { href, label, icono: Icono, color, upgrade, externo, etiqueta } = m
               return (
                 <Link key={href} href={href} target={externo ? '_blank' : undefined} rel={externo ? 'noopener noreferrer' : undefined}
                   className={`group flex flex-col items-center gap-2 rounded-2xl overflow-hidden transition-all hover:shadow-md ${
@@ -424,9 +458,16 @@ export default async function DashboardPage() {
                   } flex items-center justify-center py-5 group-hover:brightness-110 transition-all relative`}>
                     <Icono className="w-10 h-10 text-white" />
                     {upgrade && (
-                      <span className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                        PRO
-                      </span>
+                      <>
+                        <span className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                          {etiqueta ?? 'PRO'}
+                        </span>
+                        {etiqueta && (
+                          <span className="absolute bottom-1.5 left-1.5 bg-black/30 rounded-full p-1">
+                            <Lock className="w-3 h-3 text-white" />
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                   <span className={`text-[10px] sm:text-xs font-medium text-center leading-tight pb-3 px-1 sm:px-2 ${

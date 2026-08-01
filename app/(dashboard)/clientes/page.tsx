@@ -26,11 +26,11 @@ export default async function ClientesPage() {
   ] = await Promise.all([
     supabase.from('clientes').select('*').order('created_at', { ascending: false }),
     supabase.from('ordenes').select('cliente_id, total, estado, created_at').not('cliente_id', 'is', null),
-    supabase.from('suscripciones').select('plan').eq('taller_id', tallerId).single(),
+    supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
   ])
 
   const plan          = suscripcion?.plan ?? 'trial'
-  const limites       = getLimites(plan)
+  const limites       = getLimites(plan, suscripcion?.trial_fin)
   const totalClientes = clientes?.length ?? 0
   const puedeAgregar  = puedeCrear(totalClientes, limites.clientes)
   const cercaLimite   = limites.clientes !== -1 && totalClientes >= limites.clientes * 0.8

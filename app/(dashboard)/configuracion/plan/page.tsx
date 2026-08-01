@@ -142,11 +142,13 @@ export default function PlanPage() {
           <div>
             <p className="text-sm font-medium text-amber-800">
               {dias > 0
-                ? `Tu período de prueba termina en ${dias} día${dias !== 1 ? 's' : ''}`
-                : 'Tu período de prueba ha terminado'}
+                ? `Te ${dias === 1 ? 'queda' : 'quedan'} ${dias} ${dias === 1 ? 'día' : 'días'} de prueba con todas las funciones`
+                : 'Estás en el plan gratis'}
             </p>
             <p className="text-sm text-amber-600 mt-0.5">
-              Elige un plan para seguir usando TallerOS sin interrupciones.
+              {dias > 0
+                ? 'Al terminar pasas al plan gratis: 10 órdenes al mes, 20 clientes y 1 usuario. Tu cuenta no se bloquea ni se borra nada.'
+                : 'Incluye 10 órdenes al mes, 20 clientes y 1 usuario. No vence: puedes seguir usándolo el tiempo que quieras.'}
             </p>
           </div>
         </div>

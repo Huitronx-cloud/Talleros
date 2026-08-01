@@ -25,7 +25,7 @@ export default async function ReportesPage() {
 
   const { data: suscripcion } = await supabase
     .from('suscripciones')
-    .select('plan')
+    .select('plan, trial_fin')
     .eq('taller_id', tallerId)
     .single()
 
@@ -36,7 +36,7 @@ export default async function ReportesPage() {
     .single()
 
   const plan    = suscripcion?.plan ?? 'trial'
-  const limites = getLimites(plan)
+  const limites = getLimites(plan, suscripcion?.trial_fin)
 
   if (!limites.reportes) {
     return (

@@ -6,13 +6,15 @@ interface Props {
   plan:       string
   usadas:     number
   rol:        string
+  trialFin?:  string | null
 }
 
-export default function UsageMeter({ plan, usadas, rol }: Props) {
-  const limites = getLimites(plan)
+export default function UsageMeter({ plan, usadas, rol, trialFin }: Props) {
+  const limites = getLimites(plan, trialFin)
   const limite  = limites.ordenes_mes
 
-  // Solo mostrar medidor cuando hay un límite (trial = 15, paid = -1)
+  // Solo se muestra cuando hay tope: plan gratis = 10, de pago (y prueba
+  // vigente) = -1 ilimitado, y ahí no hay nada que medir.
   if (limite === -1) return null
   if (!['propietario', 'admin'].includes(rol)) return null
 

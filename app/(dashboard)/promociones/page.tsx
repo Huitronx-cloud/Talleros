@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getLimites } from '@/lib/plan-limits'
 import {
   Tag, MessageCircle, Mail, Send, ChevronRight, Lock,
   Users, CheckSquare, Square, Eye, Loader2, CheckCircle2, AlertCircle,
@@ -67,6 +68,7 @@ export default function PromocionesPage() {
   const supabase = createClient()
 
   const [plan, setPlan] = useState('')
+  const [trialFin, setTrialFin] = useState<string | null>(null)
   const [tallerId, setTallerId] = useState('')
   const [nombreTaller, setNombreTaller] = useState('')
   const [loading, setLoading] = useState(true)
@@ -102,13 +104,14 @@ export default function PromocionesPage() {
     setTallerId(tid)
 
     const [{ data: suscripcion }, { data: taller }, { data: clientesData }] = await Promise.all([
-      supabase.from('suscripciones').select('plan').eq('taller_id', tid).single(),
+      supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tid).single(),
       supabase.from('talleres').select('nombre').eq('id', tid).single(),
       supabase.from('clientes').select('id, nombre, telefono, email, vehiculo_marca, vehiculo_modelo')
         .eq('taller_id', tid).order('nombre'),
     ])
 
     setPlan(suscripcion?.plan ?? 'trial')
+    setTrialFin((suscripcion as any)?.trial_fin ?? null)
     setNombreTaller(taller?.nombre ?? '')
     setClientes(clientesData ?? [])
     setLoading(false)
@@ -191,7 +194,10 @@ export default function PromocionesPage() {
   }
 
   // ── Gate Pro ──
-  if (plan !== 'pro' && plan !== 'trial' && plan !== '') {
+  // Antes se comparaban strings y 'trial' quedaba dentro: el plan gratis tenía
+  // el módulo abierto. Se decide con la flag del plan (esencial sigue fuera,
+  // igual que hasta ahora).
+  if (plan !== '' && !getLimites(plan, trialFin).promociones) {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-10">

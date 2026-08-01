@@ -33,7 +33,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
   ] = await Promise.all([
     supabase.from('clientes').select('*').order('nombre'),
     supabase.from('talleres').select('pais, moneda, nombre').eq('id', tallerId).single(),
-    supabase.from('suscripciones').select('plan').eq('taller_id', tallerId).single(),
+    supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
     supabase.from('uso_mensual').select('ordenes').eq('taller_id', tallerId).eq('mes', mesActual).single(),
     supabase.from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', tallerId)
@@ -50,7 +50,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
     .order('nombre')
 
   const plan            = suscripcion?.plan ?? 'trial'
-  const limites         = getLimites(plan)
+  const limites         = getLimites(plan, suscripcion?.trial_fin)
   const totalOrdenesMes = ordenesEsteMes ?? 0
 
   if (!puedeCrear(totalOrdenesMes, limites.ordenes_mes)) {
