@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Bell, MessageCircle, Mail, Clock, Send, ChevronRight, Lock } from 'lucide-react'
 import { RecordatorioConfig, RecordatorioEnviado } from '@/types/recordatorios'
+import { getLimites } from '@/lib/plan-limits'
 
 const MENSAJE_WA_DEFAULT = `¡Hola {{nombre}}! 👋 En *{{taller}}* queremos recordarte que ya pasaron {{meses}} meses desde tu última visita. Tu {{vehiculo}} podría necesitar mantenimiento. ¿Agendamos una cita? Responde este mensaje o llámanos. 🔧`
 
@@ -127,7 +128,10 @@ export default function RecordatoriosPage() {
     )
   }
 
-  if (plan !== 'pro' && plan !== 'trial' && plan !== 'esencial' && plan !== '') {
+  // El gate anterior comparaba strings y excluía pro/trial/esencial/'' — es
+  // decir, no bloqueaba a nadie: el paywall era inalcanzable y el plan gratis
+  // tenía los recordatorios abiertos. Ahora se decide con la flag del plan.
+  if (plan !== '' && !getLimites(plan).recordatorios) {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10">
@@ -136,7 +140,7 @@ export default function RecordatoriosPage() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Feature Pro</h2>
           <p className="text-slate-400 mb-6">
-            Los recordatorios automáticos de mantenimiento están disponibles en el plan Pro.
+            Los recordatorios automáticos de mantenimiento están disponibles desde el plan Esencial.
             Recupera clientes inactivos automáticamente cada 3 a 6 meses.
           </p>
           <a

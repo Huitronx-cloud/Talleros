@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { createPublicReadClient } from '@/lib/supabase-public'
+import { getLimites } from '@/lib/plan-limits'
 import {
   getClientesParaRecordar,
   personalizarMensaje,
@@ -50,8 +51,11 @@ export async function GET(req: NextRequest) {
     for (const config of configs || []) {
       const taller = config.talleres as any
 
+      // La condición anterior dejaba pasar a todos los planes (incluido el
+      // gratis). Sin este filtro, un taller que ya dejó su config activa
+      // seguiría enviando recordatorios aunque la UI se los cierre.
       const planTaller = (taller.suscripciones as any[])?.[0]?.plan ?? 'trial'
-      if (!taller || (planTaller !== 'pro' && planTaller !== 'trial' && planTaller !== 'esencial')) continue
+      if (!taller || !getLimites(planTaller).recordatorios) continue
 
       const clientes = await getClientesParaRecordar(
         taller.id,

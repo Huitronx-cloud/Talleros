@@ -5,15 +5,20 @@ export const LIMITES: Record<Plan, {
   usuarios:      number
   clientes:      number
   recordatorios: boolean
+  promociones:   boolean
   resenas:       boolean
   reportes:      boolean
   exportar:      boolean
 }> = {
+  // 'trial' es el plan gratis para siempre (el nombre quedó de cuando era una
+  // prueba de 14 días). Los topes deben coincidir con lo que promete la web:
+  // 10 órdenes al mes, 1 usuario, 20 clientes.
   trial: {
-    ordenes_mes:   15,
-    usuarios:      2,
-    clientes:      50,
-    recordatorios: true,
+    ordenes_mes:   10,
+    usuarios:      1,
+    clientes:      20,
+    recordatorios: false,
+    promociones:   false,
     resenas:       true,
     reportes:      true,
     exportar:      true,
@@ -23,6 +28,7 @@ export const LIMITES: Record<Plan, {
     usuarios:      5,
     clientes:      -1,
     recordatorios: true,
+    promociones:   false,
     resenas:       true,
     reportes:      false,
     exportar:      true,
@@ -32,6 +38,7 @@ export const LIMITES: Record<Plan, {
     usuarios:      -1,
     clientes:      -1,
     recordatorios: true,
+    promociones:   true,
     resenas:       true,
     reportes:      true,
     exportar:      true,

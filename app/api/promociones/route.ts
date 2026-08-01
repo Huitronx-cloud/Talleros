@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
+import { getLimites } from '@/lib/plan-limits'
 
 export async function POST(req: NextRequest) {
   const supabase      = createClient()
@@ -39,7 +40,9 @@ export async function POST(req: NextRequest) {
       .eq('taller_id', tallerId)
       .single()
 
-    if (suscripcion?.plan !== 'pro' && suscripcion?.plan !== 'trial') {
+    // Con la comparación anterior 'trial' pasaba, así que el plan gratis podía
+    // mandar promociones saltándose el gate de la UI llamando la API directo.
+    if (!getLimites(suscripcion?.plan ?? 'trial').promociones) {
       return NextResponse.json({ error: 'Plan Pro requerido' }, { status: 403 })
     }
 

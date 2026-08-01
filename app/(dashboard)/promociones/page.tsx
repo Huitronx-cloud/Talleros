@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getLimites } from '@/lib/plan-limits'
 import {
   Tag, MessageCircle, Mail, Send, ChevronRight, Lock,
   Users, CheckSquare, Square, Eye, Loader2, CheckCircle2, AlertCircle,
@@ -191,7 +192,10 @@ export default function PromocionesPage() {
   }
 
   // ── Gate Pro ──
-  if (plan !== 'pro' && plan !== 'trial' && plan !== '') {
+  // Antes se comparaban strings y 'trial' quedaba dentro: el plan gratis tenía
+  // el módulo abierto. Se decide con la flag del plan (esencial sigue fuera,
+  // igual que hasta ahora).
+  if (plan !== '' && !getLimites(plan).promociones) {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-10">
