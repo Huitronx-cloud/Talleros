@@ -6,6 +6,7 @@ export const LIMITES: Record<Plan, {
   clientes:      number
   recordatorios: boolean
   promociones:   boolean
+  inventario:    boolean
   resenas:       boolean
   reportes:      boolean
   exportar:      boolean
@@ -19,6 +20,7 @@ export const LIMITES: Record<Plan, {
     clientes:      20,
     recordatorios: false,
     promociones:   false,
+    inventario:    false,
     resenas:       true,
     reportes:      false,
     exportar:      true,
@@ -29,6 +31,7 @@ export const LIMITES: Record<Plan, {
     clientes:      -1,
     recordatorios: true,
     promociones:   false,
+    inventario:    true,
     resenas:       true,
     reportes:      false,
     exportar:      true,
@@ -39,6 +42,7 @@ export const LIMITES: Record<Plan, {
     clientes:      -1,
     recordatorios: true,
     promociones:   true,
+    inventario:    true,
     resenas:       true,
     reportes:      true,
     exportar:      true,

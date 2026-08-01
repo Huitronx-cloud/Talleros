@@ -38,10 +38,11 @@ const MODULOS = [
 // Módulos que dependen de una feature del plan: qué flag los desbloquea y el
 // plan más barato que la incluye (la etiqueta debe mandar al plan correcto —
 // recordatorios ya vienen en Esencial, no hace falta Pro).
-const BLOQUEO_MODULO: Record<string, { flag: 'reportes' | 'recordatorios' | 'promociones'; etiqueta: string }> = {
+const BLOQUEO_MODULO: Record<string, { flag: 'reportes' | 'recordatorios' | 'promociones' | 'inventario'; etiqueta: string }> = {
   '/reportes':      { flag: 'reportes',      etiqueta: 'PRO' },
   '/recordatorios': { flag: 'recordatorios', etiqueta: 'ESENCIAL' },
   '/promociones':   { flag: 'promociones',   etiqueta: 'PRO' },
+  '/inventario':    { flag: 'inventario',    etiqueta: 'ESENCIAL' },
 }
 
 export default async function DashboardPage() {
@@ -128,7 +129,11 @@ export default async function DashboardPage() {
   const rol        = (usuarioData?.rol ?? 'recepcion') as string
   const onboardingCompleto = taller?.onboarding_completo ?? true
 
-  const stockBajo     = (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
+  // Sin inventario en el plan no se muestran sus alertas: avisar de stock bajo
+  // y mandar al paywall al hacer clic es peor que no avisar.
+  const stockBajo     = limitesPlan.inventario
+    ? (inventarioItems ?? []).filter((i: any) => i.stock_actual <= i.stock_minimo)
+    : []
   const totalIngresos = ingresosMes?.reduce((acc, o) => acc + (o.total || 0), 0) ?? 0
 
   const meses = Array.from({ length: 6 }, (_, i) => {
