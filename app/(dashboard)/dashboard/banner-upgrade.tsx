@@ -30,30 +30,19 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
 
   if (!esTrial && !esVencida) return null
 
-  const dias = esTrial && suscripcion.trial_fin
-    ? Math.max(0, Math.ceil((new Date(suscripcion.trial_fin).getTime() - Date.now()) / 86400000))
-    : 0
-
-  const urgente = dias <= 3 || esVencida
-  const medio   = !urgente && dias <= 7
+  // El plan gratis no vence ni se bloquea, así que ya no hay cuenta regresiva:
+  // el banner vende por capacidad (los topes), no por miedo a perder el acceso.
+  // 'urgente' se reserva para la suscripción de pago realmente vencida.
+  const urgente = esVencida
+  const medio   = false
 
   const titulo = esVencida
     ? 'Tu suscripción ha vencido'
-    : dias === 0
-    ? 'Tu período de prueba termina hoy'
-    : urgente
-    ? `⚠️ Tu prueba termina en ${dias} día${dias !== 1 ? 's' : ''} — no pierdas el acceso`
-    : medio
-    ? `Tu prueba termina en ${dias} días — es un buen momento para elegir tu plan`
-    : `Prueba gratuita · ${dias} días restantes`
+    : 'Estás en el plan gratis'
 
   const subtitulo = esVencida
-    ? 'Tu equipo no puede acceder. Elige un plan para reactivar el taller.'
-    : urgente
-    ? 'Suscríbete ahora para que tu equipo siga operando sin interrupciones.'
-    : medio
-    ? 'Sin tarjeta de crédito sorpresa. Cancela cuando quieras.'
-    : 'Suscríbete antes de que termine para no perder ningún dato.'
+    ? 'Actualiza tu método de pago para reactivar tu plan.'
+    : 'Hasta 10 órdenes al mes, 20 clientes y 1 usuario. Con Esencial se te quitan los topes.'
 
   return (
     <div className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center gap-2 ${

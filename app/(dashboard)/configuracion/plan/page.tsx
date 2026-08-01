@@ -141,12 +141,11 @@ export default function PlanPage() {
           <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-medium text-amber-800">
-              {dias > 0
-                ? `Tu período de prueba termina en ${dias} día${dias !== 1 ? 's' : ''}`
-                : 'Tu período de prueba ha terminado'}
+              Estás en el plan gratis
             </p>
             <p className="text-sm text-amber-600 mt-0.5">
-              Elige un plan para seguir usando TallerOS sin interrupciones.
+              Incluye 10 órdenes al mes, 20 clientes y 1 usuario. No vence: puedes
+              seguir usándolo así el tiempo que quieras.
             </p>
           </div>
         </div>

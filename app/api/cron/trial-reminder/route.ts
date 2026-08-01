@@ -61,17 +61,16 @@ function emailDias7(nombre: string, tallerNombre: string): string {
         Ya llevas 7 días con <strong>${tallerNombre}</strong> en TallerOS. Muchos talleres ven su primera diferencia en esta semana: clientes que dejan de llamar porque ven su vehículo en el portal, y aprobaciones que llegan por WhatsApp sin perseguir al cliente.
       </p>
       <div style="background:#eff6ff;border-radius:12px;padding:16px 20px;border-left:4px solid #2563eb;margin-bottom:24px;">
-        <p style="margin:0 0 8px;color:#1e40af;font-size:14px;font-weight:700;">Lo que tienes disponible en tu prueba:</p>
+        <p style="margin:0 0 8px;color:#1e40af;font-size:14px;font-weight:700;">Lo que ya tienes en tu plan gratis:</p>
         <p style="margin:0;color:#1d4ed8;font-size:14px;line-height:1.8;">
           ✅ Portal del cliente en tiempo real<br/>
           ✅ Aprobación de cotizaciones por WhatsApp<br/>
-          ✅ Recordatorios automáticos de mantenimiento<br/>
-          ✅ Reportes de ingresos por mecánico<br/>
-          ✅ Reseñas automáticas en Google
+          ✅ Reseñas automáticas en Google<br/>
+          ✅ Hasta 10 órdenes al mes y 20 clientes
         </p>
       </div>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
-        Te quedan <strong>7 días de prueba</strong>. Si quieres mantener todo esto activo, elige tu plan ahora y no pierdas el ritmo.
+        Con el plan <strong>Esencial</strong> se te quitan los topes — órdenes y clientes ilimitados, hasta 5 personas en tu equipo y recordatorios automáticos de mantenimiento.
       </p>
       <a href="https://www.tallerosapp.com/configuracion/plan"
          style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
@@ -89,26 +88,26 @@ function emailDias4(nombre: string, tallerNombre: string): string {
   <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <div style="background:linear-gradient(135deg,#92400e,#d97706);padding:28px;text-align:center;">
       <p style="margin:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;opacity:0.85;text-transform:uppercase;">TallerOS</p>
-      <p style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:900;">⚠️ Te quedan 4 días</p>
+      <p style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:900;">⚠️ ¿Ya topaste con el límite?</p>
     </div>
     <div style="padding:36px 32px;">
       <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre},</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:8px;">
-        Tu prueba gratuita de <strong>${tallerNombre}</strong> en TallerOS termina en <strong>4 días</strong>.
+        Ya llevas 10 días con <strong>${tallerNombre}</strong> en TallerOS. Tu cuenta y todo lo que registraste siguen siendo tuyos — el plan gratis no vence.
       </p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
-        No pierdas el acceso a todo lo que ya tienes registrado:
+        Lo que sí tiene tope en el plan gratis:
       </p>
       <div style="background:#fef9c3;border-radius:12px;padding:16px 20px;border-left:4px solid #d97706;margin-bottom:24px;">
         <p style="margin:0;color:#78350f;font-size:14px;line-height:1.8;">
-          🔧 Tus clientes y vehículos registrados<br/>
-          📋 Tus órdenes de trabajo activas<br/>
-          💬 El historial de cotizaciones<br/>
-          📊 El reporte de ingresos del mes
+          🔧 10 órdenes de trabajo al mes<br/>
+          👥 20 clientes registrados<br/>
+          🧑‍🔧 1 sola persona en el equipo<br/>
+          📊 Sin recordatorios automáticos ni reportes
         </p>
       </div>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
-        Al suscribirte hoy, todo queda guardado y tu equipo sigue trabajando sin interrupciones. El plan más popular cuesta menos que una hora de mano de obra.
+        Si tu taller ya hace más de 10 órdenes al mes, el plan <strong>Esencial</strong> te quita todos esos topes y cuesta menos que una hora de mano de obra.
       </p>
       <a href="https://www.tallerosapp.com/configuracion/plan"
          style="display:block;text-align:center;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
@@ -126,28 +125,28 @@ function emailDias1(nombre: string, tallerNombre: string): string {
   <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <div style="background:linear-gradient(135deg,#7f1d1d,#dc2626);padding:28px;text-align:center;">
       <p style="margin:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;opacity:0.85;text-transform:uppercase;">TallerOS</p>
-      <p style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:900;">🔴 Mañana termina tu prueba</p>
+      <p style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:900;">Lo que te estás perdiendo</p>
     </div>
     <div style="padding:36px 32px;">
       <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre},</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        La prueba gratuita de <strong>${tallerNombre}</strong> en TallerOS termina <strong>mañana</strong>.
+        Llevas dos semanas con <strong>${tallerNombre}</strong> en TallerOS. Tu cuenta sigue abierta y tus datos siguen ahí: el plan gratis no se vence ni se bloquea.
       </p>
       <div style="background:#fef2f2;border-radius:12px;padding:16px 20px;border-left:4px solid #dc2626;margin-bottom:24px;">
-        <p style="margin:0 0 6px;color:#991b1b;font-size:14px;font-weight:700;">Si no te suscribes hoy:</p>
+        <p style="margin:0 0 6px;color:#991b1b;font-size:14px;font-weight:700;">Lo que hoy te estás perdiendo:</p>
         <p style="margin:0;color:#7f1d1d;font-size:14px;line-height:1.8;">
-          ❌ Tu cuenta quedará bloqueada<br/>
-          ❌ Tu equipo no podrá acceder al sistema<br/>
-          ❌ Las cotizaciones pendientes quedan congeladas<br/>
-          ❌ Los clientes no recibirán notificaciones
+          🔔 Recordatorios automáticos de mantenimiento<br/>
+          📣 Campañas de promociones a tus clientes<br/>
+          📊 Reportes de ingresos por mecánico<br/>
+          🧑‍🔧 Tu equipo trabajando contigo en la misma cuenta
         </p>
       </div>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
-        Suscríbete ahora y tu taller sigue operando mañana sin ningún corte. El proceso toma menos de 2 minutos.
+        Eso es lo que desbloquean los planes de pago. El proceso toma menos de 2 minutos y puedes cancelar cuando quieras.
       </p>
       <a href="https://www.tallerosapp.com/configuracion/plan"
          style="display:block;text-align:center;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
-        Suscribirme ahora — antes de que venza →
+        Ver qué desbloquea cada plan →
       </a>
       <p style="color:#94a3b8;font-size:13px;margin-top:20px;text-align:center;">
         ¿Prefieres hablar primero? Responde este email o escríbenos al WhatsApp y te ayudamos.
@@ -231,7 +230,7 @@ export async function GET(req: NextRequest) {
       // ── 7 días restantes: punto medio — re-engagement ────────────────────
       if (dias >= 6 && dias <= 7 && !etapas.includes('7dias')) {
         await enviarEmail(email, nombre,
-          '🚀 Llevas una semana con TallerOS — te quedan 7 días de prueba',
+          '🚀 Llevas una semana con TallerOS — ¿cómo va tu taller?',
           emailDias7(nombre, taller.nombre)
         )
         // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
@@ -243,7 +242,7 @@ export async function GET(req: NextRequest) {
       // ── 4 días restantes: urgencia media ─────────────────────────────────
       if (dias >= 3 && dias <= 4 && !etapas.includes('4dias')) {
         await enviarEmail(email, nombre,
-          `⚠️ Te quedan ${dias} días de prueba — TallerOS`,
+          `${taller.nombre}: ¿ya topaste con el límite de 10 órdenes?`,
           emailDias4(nombre, taller.nombre)
         )
         // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
@@ -255,9 +254,7 @@ export async function GET(req: NextRequest) {
       // ── 1 día restante: urgencia máxima + alerta a Ivan ──────────────────
       if (dias >= 0 && dias <= 1 && !etapas.includes('1dia')) {
         await enviarEmail(email, nombre,
-          dias === 0
-            ? '🔴 Tu prueba de TallerOS termina hoy — actúa ahora'
-            : '🔴 Mañana termina tu prueba de TallerOS',
+          `${taller.nombre}: esto es lo que tu plan gratis no incluye`,
           emailDias1(nombre, taller.nombre)
         )
         // DEPRECATED: canal migrado a wa.me — ya no se envía WhatsApp por Twilio
@@ -267,10 +264,10 @@ export async function GET(req: NextRequest) {
         await enviarEmail(
           'hola@tallerosapp.com',
           'Ivan',
-          `🎯 Trial por vencer: ${taller.nombre} (${dias === 0 ? 'hoy' : 'mañana'})`,
+          `🎯 Cumple 14 días sin convertir: ${taller.nombre}`,
           `<div style="font-family:Arial;padding:20px;">
-            <p><strong>${taller.nombre}</strong> (${email}${telefono ? ` · ${telefono}` : ''}) vence ${dias === 0 ? 'hoy' : 'mañana'}.</p>
-            <p>Es el momento ideal para contacto personal. Tienen <strong>${dias === 0 ? 'pocas horas' : '1 día'}</strong> para convertir.</p>
+            <p><strong>${taller.nombre}</strong> (${email}${telefono ? ` · ${telefono}` : ''}) cumple 14 días en el plan gratis.</p>
+            <p>Sigue con la cuenta abierta — no se bloquea nada. Es buen momento para contacto personal: ya conoce la app y sabe qué le falta.</p>
           </div>`
         )
         await marcarEtapa(suscripcion.id, etapas, '1dia')

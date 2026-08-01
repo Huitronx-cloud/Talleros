@@ -20,7 +20,7 @@ export const LIMITES: Record<Plan, {
     recordatorios: false,
     promociones:   false,
     resenas:       true,
-    reportes:      true,
+    reportes:      false,
     exportar:      true,
   },
   esencial: {
