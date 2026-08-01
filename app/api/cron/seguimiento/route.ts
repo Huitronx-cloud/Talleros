@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const maxDuration = 60
 import { createServiceClient } from '@/lib/supabase/service'
 import { enviarNotificacion, mensajeSeguimiento } from '@/lib/notificaciones'
 
@@ -8,7 +10,10 @@ function autorizado(request: Request) {
   return auth === `Bearer ${process.env.CRON_SECRET}`
 }
 
-export async function POST(request: Request) {
+// GET, no POST: el orquestador (/api/cron/daily) llama a todas las tareas con
+// GET. Mientras esto fue POST, el cron nunca se ejecutó — ningún taller estaba
+// dando el seguimiento post-servicio.
+export async function GET(request: Request) {
   if (!autorizado(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
@@ -25,6 +30,7 @@ export async function POST(request: Request) {
     .select('id, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, clientes(nombre, telefono)')
     .eq('estado', 'entregado')
     .eq('fecha_entrega', fecha3Dias)
+    .limit(50) // tope por corrida, igual que el resto de los crons
 
   if (error) {
     console.error('[CRON seguimiento]', error)
@@ -39,9 +45,13 @@ export async function POST(request: Request) {
         .from('notificaciones')
         .select('id')
         .eq('orden_id', orden.id)
+        // 'pendiente' cuenta como ya procesada: con el canal wa.me la
+        // notificación se encola para que el taller la envíe y se queda en
+        // 'pendiente' — filtrar solo por 'enviada' nunca encontraba nada.
         .eq('tipo', 'seguimiento')
-        .eq('estado', 'enviada')
-        .single()
+        .in('estado', ['pendiente', 'enviada'])
+        .limit(1)
+        .maybeSingle()
 
       if (yaEnviado) return // Ya se envió, saltar
 
