@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, Zap, X } from 'lucide-react'
+import { enTrial } from '@/lib/plan-limits'
 
 export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; rol?: string }) {
   const [suscripcion, setSuscripcion] = useState<any>(null)
@@ -30,18 +31,27 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
 
   if (!esTrial && !esVencida) return null
 
-  // El plan gratis no vence ni se bloquea, así que ya no hay cuenta regresiva:
-  // el banner vende por capacidad (los topes), no por miedo a perder el acceso.
-  // 'urgente' se reserva para la suscripción de pago realmente vencida.
+  // Durante los 14 días el taller corre con acceso Pro completo; al terminar
+  // cae al plan gratis sin bloquearse. El banner cuenta los días que quedan de
+  // prueba, pero sin amenazar con perder el acceso: no se pierde.
+  const enPrueba = esTrial && enTrial(suscripcion.trial_fin)
+  const dias     = enPrueba
+    ? Math.max(0, Math.ceil((new Date(suscripcion.trial_fin).getTime() - Date.now()) / 86400000))
+    : 0
+
   const urgente = esVencida
-  const medio   = false
+  const medio   = enPrueba && dias <= 3
 
   const titulo = esVencida
     ? 'Tu suscripción ha vencido'
+    : enPrueba
+    ? `Te ${dias === 1 ? 'queda' : 'quedan'} ${dias} ${dias === 1 ? 'día' : 'días'} con todas las funciones abiertas`
     : 'Estás en el plan gratis'
 
   const subtitulo = esVencida
     ? 'Actualiza tu método de pago para reactivar tu plan.'
+    : enPrueba
+    ? 'Después pasas al plan gratis: 10 órdenes al mes, 20 clientes y 1 usuario. No se bloquea nada.'
     : 'Hasta 10 órdenes al mes, 20 clientes y 1 usuario. Con Esencial se te quitan los topes.'
 
   return (

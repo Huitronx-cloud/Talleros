@@ -35,6 +35,7 @@ export default function RecordatoriosPage() {
   const [loading, setLoading] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [plan, setPlan] = useState<string>('')
+  const [trialFin, setTrialFin] = useState<string | null>(null)
   const [tallerId, setTallerId] = useState<string>('')
   const [guardado, setGuardado] = useState(false)
   const [stats, setStats] = useState({ total: 0, enviados: 0, fallidos: 0 })
@@ -61,11 +62,12 @@ export default function RecordatoriosPage() {
     // Obtener plan desde suscripciones, igual que el dashboard
     const { data: suscripcion } = await supabase
       .from('suscripciones')
-      .select('plan')
+      .select('plan, trial_fin')
       .eq('taller_id', tid)
       .single()
 
     setPlan(suscripcion?.plan ?? 'trial')
+    setTrialFin(suscripcion?.trial_fin ?? null)
 
     const { data: cfg } = await supabase
       .from('recordatorios_config')
@@ -131,7 +133,7 @@ export default function RecordatoriosPage() {
   // El gate anterior comparaba strings y excluía pro/trial/esencial/'' — es
   // decir, no bloqueaba a nadie: el paywall era inalcanzable y el plan gratis
   // tenía los recordatorios abiertos. Ahora se decide con la flag del plan.
-  if (plan !== '' && !getLimites(plan).recordatorios) {
+  if (plan !== '' && !getLimites(plan, trialFin).recordatorios) {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10">

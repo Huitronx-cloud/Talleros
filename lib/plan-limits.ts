@@ -45,7 +45,26 @@ export const LIMITES: Record<Plan, {
   },
 }
 
-export function getLimites(plan: string) {
+/** ¿Sigue vigente la prueba de 14 días? (trial_fin en el futuro) */
+export function enTrial(trialFin?: string | null): boolean {
+  if (!trialFin) return false
+  const fin = new Date(trialFin).getTime()
+  return Number.isFinite(fin) && fin > Date.now()
+}
+
+/**
+ * Límites vigentes de un taller.
+ *
+ * Durante los 14 días de prueba el plan gratis corre con acceso Pro completo;
+ * al vencer cae al plan gratis con sus topes (10 órdenes/mes, 1 usuario, 20
+ * clientes) sin bloquear nada ni borrar datos — lo que ya está registrado se
+ * sigue viendo, solo no se puede crear de más.
+ *
+ * Sin trialFin se devuelven los límites del plan gratis: si un call site no
+ * pasa la fecha, el peor caso es quedarse corto, nunca regalar acceso.
+ */
+export function getLimites(plan: string, trialFin?: string | null) {
+  if (plan === 'trial' && enTrial(trialFin)) return LIMITES.pro
   return LIMITES[(plan as Plan)] ?? LIMITES.trial
 }
 

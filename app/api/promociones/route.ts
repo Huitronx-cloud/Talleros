@@ -36,13 +36,13 @@ export async function POST(req: NextRequest) {
     // Verificar que el taller es Pro
     const { data: suscripcion } = await supabaseAdmin
       .from('suscripciones')
-      .select('plan')
+      .select('plan, trial_fin')
       .eq('taller_id', tallerId)
       .single()
 
     // Con la comparación anterior 'trial' pasaba, así que el plan gratis podía
     // mandar promociones saltándose el gate de la UI llamando la API directo.
-    if (!getLimites(suscripcion?.plan ?? 'trial').promociones) {
+    if (!getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin).promociones) {
       return NextResponse.json({ error: 'Plan Pro requerido' }, { status: 403 })
     }
 

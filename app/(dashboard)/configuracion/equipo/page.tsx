@@ -34,11 +34,11 @@ export default async function EquipoPage() {
   // Usar service client para ver todos los miembros del taller (bypasa RLS)
   const [{ data: miembros }, { data: suscripcion }] = await Promise.all([
     admin.from('usuarios').select('*').eq('taller_id', usuario.taller_id).order('created_at'),
-    supabase.from('suscripciones').select('plan').eq('taller_id', usuario.taller_id).single(),
+    supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', usuario.taller_id).single(),
   ])
 
   const plan          = suscripcion?.plan ?? 'trial'
-  const limites       = getLimites(plan)
+  const limites       = getLimites(plan, suscripcion?.trial_fin)
   const totalUsuarios = miembros?.length ?? 0
   const puedeInvitar  = puedeCrear(totalUsuarios, limites.usuarios)
 

@@ -30,7 +30,7 @@ export default async function OrdenesPage({
 
   // Obtener plan y uso
   const [{ data: suscripcion }, { count: ordenesEsteMes }] = await Promise.all([
-    supabase.from('suscripciones').select('plan').eq('taller_id', tallerId).single(),
+    supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
     supabase.from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', tallerId)
       .gte('created_at', `${mesActual}-01`)
@@ -38,7 +38,7 @@ export default async function OrdenesPage({
   ])
 
   const plan    = suscripcion?.plan ?? 'trial'
-  const limites = getLimites(plan)
+  const limites = getLimites(plan, suscripcion?.trial_fin)
   const totalOrdenesMes = ordenesEsteMes ?? 0
   const limiteSuperado  = !puedeCrear(totalOrdenesMes, limites.ordenes_mes)
   const mostrarLimite   = searchParams.limite === 'ordenes' || limiteSuperado

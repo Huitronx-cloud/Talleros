@@ -22,11 +22,11 @@ export async function crearCliente(datos: ClienteForm) {
 
   const { data: suscripcion } = await supabase
     .from('suscripciones')
-    .select('plan')
+    .select('plan, trial_fin')
     .eq('taller_id', tallerId)
     .single()
 
-  const limites = getLimites(suscripcion?.plan ?? 'trial')
+  const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
   const { count: totalClientes } = await supabase
     .from('clientes')
     .select('*', { count: 'exact', head: true })

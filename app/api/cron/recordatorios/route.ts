@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
           id,
           nombre,
           pais,
-          suscripciones (plan, estado)
+          suscripciones (plan, estado, trial_fin)
         )
       `)
       .eq('activo', true)
@@ -54,8 +54,9 @@ export async function GET(req: NextRequest) {
       // La condición anterior dejaba pasar a todos los planes (incluido el
       // gratis). Sin este filtro, un taller que ya dejó su config activa
       // seguiría enviando recordatorios aunque la UI se los cierre.
-      const planTaller = (taller.suscripciones as any[])?.[0]?.plan ?? 'trial'
-      if (!taller || !getLimites(planTaller).recordatorios) continue
+      const suscripcionTaller = (taller.suscripciones as any[])?.[0]
+      const planTaller = suscripcionTaller?.plan ?? 'trial'
+      if (!taller || !getLimites(planTaller, suscripcionTaller?.trial_fin).recordatorios) continue
 
       const clientes = await getClientesParaRecordar(
         taller.id,

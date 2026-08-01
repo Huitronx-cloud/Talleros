@@ -23,11 +23,11 @@ export async function POST(req: NextRequest) {
 
   const { data: suscripcion } = await admin
     .from('suscripciones')
-    .select('plan')
+    .select('plan, trial_fin')
     .eq('taller_id', usuario.taller_id)
     .single()
 
-  const limites = getLimites(suscripcion?.plan ?? 'trial')
+  const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
   const { count: totalUsuarios } = await admin
     .from('usuarios')
     .select('*', { count: 'exact', head: true })
