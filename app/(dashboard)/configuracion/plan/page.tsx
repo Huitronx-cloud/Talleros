@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, Loader2, Zap, Star, AlertTriangle } from 'lucide-react'
 import { trackEvent } from '@/components/meta-pixel'
+import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
 type Suscripcion = {
   plan:                   string
@@ -33,12 +34,67 @@ const PLANES = {
   pro_anual:        'price_1TyjqfRFpmo4G9XHL9pi6s3y',
 }
 
+// Mismos números que la web (home-client y las landings por país) para que el
+// usuario no vea un precio en el sitio y otro distinto al entrar a pagar.
+const PRECIOS = {
+  esencial: { mensual: 24, mensual_antes: 48, anual: 19, anual_antes: 38, total_anual: 228 },
+  pro:      { mensual: 49, mensual_antes: 98, anual: 39, anual_antes: 78, total_anual: 468 },
+}
+
+function BloquePrecio({
+  plan, anual, convertir, moneda, cargandoMoneda,
+}: {
+  plan:           { mensual: number; mensual_antes: number; anual: number; anual_antes: number; total_anual: number }
+  anual:          boolean
+  convertir:      (usd: number) => string
+  moneda:         string
+  cargandoMoneda: boolean
+}) {
+  const actual   = anual ? plan.anual       : plan.mensual
+  const original = anual ? plan.anual_antes : plan.mensual_antes
+  const pct      = Math.round((1 - actual / original) * 100)
+
+  // Mientras no sepamos el país se muestra USD, que es la moneda real del
+  // cargo: es preferible a pintar un precio local que luego cambia.
+  const fmt = (usd: number) => (cargandoMoneda ? `$${usd} USD` : convertir(usd))
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <span className="text-gray-400 text-lg line-through">{fmt(original)}</span>
+        <span className="text-3xl font-bold text-gray-900">{fmt(actual)}</span>
+        <span className="text-gray-500 text-sm">/mes</span>
+      </div>
+      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+        <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+          -{pct}% hoy
+        </span>
+        {anual && (
+          <span className="text-green-600 text-xs">
+            {fmt(plan.total_anual)} facturado anualmente
+          </span>
+        )}
+      </div>
+      {/* El cobro en Stripe es en USD: el precio local es una referencia al
+          tipo de cambio aproximado, no el importe exacto que verá en su banco. */}
+      {!cargandoMoneda && moneda !== 'USD' && (
+        <p className="text-gray-400 text-xs mt-1.5">
+          Precio de referencia. El cargo se hace en dólares: US${actual}/mes
+          {anual ? ` (US$${plan.total_anual} al año)` : ''}.
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function PlanPage() {
   const [suscripcion,  setSuscripcion]  = useState<Suscripcion | null>(null)
   const [tarjeta,      setTarjeta]      = useState<Tarjeta>(null)
   const [cargando,     setCargando]     = useState(true)
   const [procesando,   setProcesando]   = useState<string | null>(null)
   const [billingAnual, setBillingAnual] = useState(false)
+
+  const { convertir, moneda, cargando: cargandoMoneda } = useMonedaLocal()
 
   const supabase = createClient()
 
@@ -188,15 +244,13 @@ export default function PlanPage() {
             <Zap className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-bold text-gray-900">Esencial</h2>
           </div>
-          <div className="mb-4">
-            <span className="text-3xl font-bold text-gray-900">
-              ${billingAnual ? '19' : '24'}
-            </span>
-            <span className="text-gray-500 text-sm">/mes</span>
-            {billingAnual && (
-              <p className="text-green-600 text-xs mt-1">$228 facturado anualmente</p>
-            )}
-          </div>
+          <BloquePrecio
+            plan={PRECIOS.esencial}
+            anual={billingAnual}
+            convertir={convertir}
+            moneda={moneda}
+            cargandoMoneda={cargandoMoneda}
+          />
           <ul className="space-y-2 mb-6 text-sm text-gray-600">
             {[
               'Órdenes de trabajo ilimitadas',
@@ -240,15 +294,13 @@ export default function PlanPage() {
             <Star className="w-5 h-5 text-purple-500" />
             <h2 className="text-lg font-bold text-gray-900">Pro</h2>
           </div>
-          <div className="mb-4">
-            <span className="text-3xl font-bold text-gray-900">
-              ${billingAnual ? '39' : '49'}
-            </span>
-            <span className="text-gray-500 text-sm">/mes</span>
-            {billingAnual && (
-              <p className="text-green-600 text-xs mt-1">$468 facturado anualmente</p>
-            )}
-          </div>
+          <BloquePrecio
+            plan={PRECIOS.pro}
+            anual={billingAnual}
+            convertir={convertir}
+            moneda={moneda}
+            cargandoMoneda={cargandoMoneda}
+          />
           <ul className="space-y-2 mb-6 text-sm text-gray-600">
             {[
               'Todo lo del plan Esencial',
