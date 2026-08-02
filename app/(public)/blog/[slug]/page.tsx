@@ -138,7 +138,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
 
         <div className="my-10 bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
           <p className="font-black text-gray-900 text-lg mb-2">¿Quieres implementar esto en tu taller?</p>
-          <p className="text-gray-500 text-sm mb-4">TallerOS te ayuda a digitalizar tu taller en minutos. 14 días gratis, sin tarjeta.</p>
+          <p className="text-gray-500 text-sm mb-4">TallerOS te ayuda a digitalizar tu taller en minutos. Gratis para siempre, sin tarjeta.</p>
           <Link href="/registro" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition-colors">
             Empezar gratis <ArrowRight className="w-4 h-4" />
           </Link>

@@ -1,17 +1,33 @@
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// Conteos que la landing muestra como prueba social.
+//
+// Antes este endpoint exigía Bearer CRON_SECRET, pero quien lo llama es el
+// navegador del visitante y nunca manda ese header: respondía 401 siempre, así
+// que el contador del hero no se pintaba nunca y el bloque de prueba social
+// caía a un número fijo escrito en el código.
+//
+// Ahora los conteos de talleres son públicos (es justo lo que la web presume)
+// y el total de órdenes se queda detrás del secreto: revela volumen de
+// operación y la landing no lo necesita.
 export async function GET(req: import('next/server').NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const esInterno = req.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
 
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: { persistSession: false },
+      global: {
+        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+          fetch(input, { ...init, cache: 'no-store' }),
+      },
+    }
   )
+
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
 
@@ -30,10 +46,14 @@ export async function GET(req: import('next/server').NextRequest) {
     supabaseAdmin.from('ordenes').select('*', { count: 'exact', head: true }),
   ])
 
-  return NextResponse.json({
-    hoy:     hoy_count     ?? 0,
-    semana:  semana_count  ?? 0,
-    total:   total_count   ?? 0,
-    ordenes: ordenes_count ?? 0,
-  })
+  const publico = {
+    total:  total_count  ?? 0,
+    hoy:    hoy_count    ?? 0,
+    semana: semana_count ?? 0,
+  }
+
+  return NextResponse.json(
+    esInterno ? { ...publico, ordenes: ordenes_count ?? 0 } : publico,
+    { headers: { 'Cache-Control': 'no-store' } }
+  )
 }

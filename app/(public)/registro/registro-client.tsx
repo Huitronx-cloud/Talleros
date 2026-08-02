@@ -142,7 +142,7 @@ export default function RegistroClient() {
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-1">¡Tu taller está listo!</h2>
           <p className="text-slate-500 text-sm mb-5">
-            Bienvenido a TallerOS — tienes <strong className="text-slate-700">14 días gratis</strong> para probar todo.
+            Bienvenido a TallerOS. Tienes <strong className="text-slate-700">14 días con todas las funciones abiertas</strong>, y después tu cuenta sigue gratis.
           </p>
 
           {/* Urgency banner */}
@@ -282,7 +282,7 @@ export default function RegistroClient() {
                 </button>
 
                 <div className="flex items-center justify-center gap-4 text-xs text-slate-400 pt-1">
-                  <span>✓ 14 días gratis</span>
+                  <span>✓ Gratis para siempre</span>
                   <span>·</span>
                   <span>✓ Sin tarjeta</span>
                   <span>·</span>
@@ -410,7 +410,7 @@ export default function RegistroClient() {
                 </button>
 
                 <div className="flex items-center justify-center gap-4 text-xs text-slate-400 pt-1">
-                  <span>✓ 14 días gratis</span>
+                  <span>✓ Gratis para siempre</span>
                   <span>·</span>
                   <span>✓ Sin tarjeta</span>
                   <span>·</span>
