@@ -6,6 +6,16 @@ export default function SplashScreen() {
   const [fadeOut, setFadeOut] = useState(false)
   const [hidden,  setHidden]  = useState(false)
   const [dots,    setDots]    = useState('.')
+  // Solo con la app instalada (PWA en standalone). En el navegador este
+  // overlay tapaba la landing durante 2,2 s antes de mostrar nada.
+  const [enApp,   setEnApp]   = useState(false)
+
+  useEffect(() => {
+    setEnApp(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true
+    )
+  }, [])
 
   useEffect(() => {
     const dotsInterval = setInterval(() => {
@@ -25,7 +35,7 @@ export default function SplashScreen() {
     }
   }, [])
 
-  if (hidden) return null
+  if (hidden || !enApp) return null
 
   return (
     <div

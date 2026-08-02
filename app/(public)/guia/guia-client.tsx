@@ -201,7 +201,7 @@ export default function GuiaClient() {
             ))}
           </div>
           <Link href="/registro" style={{display:'inline-flex',alignItems:'center',gap:8,background:'#2563eb',color:'#fff',padding:'13px 28px',borderRadius:12,textDecoration:'none',fontSize:15,fontWeight:700,boxShadow:'0 8px 32px rgba(37,99,235,0.25)'}}>
-            Probar TallerOS 14 días gratis <ArrowRight size={16}/>
+            Crear mi cuenta gratis <ArrowRight size={16}/>
           </Link>
           <p style={{fontSize:12,color:'#94a3b8',marginTop:10}}>Sin tarjeta de crédito requerida</p>
         </div>

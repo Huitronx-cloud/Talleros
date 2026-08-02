@@ -8,6 +8,7 @@ import {
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
   ChevronRight, Users, FileText, BarChart2, Calendar, Package, Download,
 } from 'lucide-react'
+import { PLANES_WEB } from '@/lib/planes-web'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
 const HF = {
@@ -28,14 +29,11 @@ const DIFERENCIADORES = [
 ]
 
 const MODULOS = [
-  { icon: FileText,      label: 'Órdenes de trabajo',  desc: 'Crea y sigue cada orden en tiempo real.',  color: '#3b82f6' },
-  { icon: Users,         label: 'Clientes y vehículos', desc: 'Historial completo de cada cliente.',      color: '#06b6d4' },
-  { icon: MessageCircle, label: 'WhatsApp integrado',   desc: 'Aprobaciones y notificaciones directas.',  color: '#22c55e' },
-  { icon: BarChart2,     label: 'Reportes avanzados',   desc: 'Ingresos y rendimiento por mecánico.',     color: '#a855f7' },
-  { icon: Calendar,      label: 'Citas y agenda',        desc: 'Organiza sin conflictos de horario.',      color: '#ec4899' },
-  { icon: Package,       label: 'Inventario',            desc: 'Controla refacciones sin desabasto.',      color: '#f59e0b' },
-  { icon: Shield,        label: 'Garantía digital',      desc: 'Documentos firmados en cada entrega.',    color: '#10b981' },
-  { icon: Star,          label: 'Reseñas automáticas',  desc: 'Google Reviews sin esfuerzo extra.',       color: '#eab308' },
+  { icon: FileText, label: 'Órdenes de trabajo',   desc: 'Crea y sigue cada orden en tiempo real.', color: '#3b82f6' },
+  { icon: Users,    label: 'Clientes y vehículos', desc: 'Historial completo de cada cliente.',     color: '#06b6d4' },
+  { icon: Calendar, label: 'Citas y agenda',        desc: 'Organiza sin conflictos de horario.',     color: '#ec4899' },
+  { icon: Package,  label: 'Inventario',            desc: 'Controla refacciones sin desabasto.',     color: '#f59e0b' },
+  { icon: BarChart2,label: 'Reportes',              desc: 'Ingresos y rendimiento por mecánico.',    color: '#a855f7' },
 ]
 
 const TESTIMONIALES = [
@@ -44,20 +42,6 @@ const TESTIMONIALES = [
   { texto: 'Los recordatorios automáticos nos trajeron clientes que no veíamos en años. Es como tener un vendedor trabajando 24/7 sin pagarle extra.',             nombre: 'Miguel Hernández', rol: 'Mecánica Hernández, CDMX MX', img: '/testi-3-miguel.png',  estrellas: 5 },
 ]
 
-const PLANES = [
-  {
-    nombre: 'Esencial', precio_mensual: 24, precio_anual: 19, total_anual: 228,
-    precio_original_mensual: 48, precio_original_anual: 38,
-    icono: Zap, popular: false,
-    features: ['Órdenes de trabajo ilimitadas','Gestión de clientes y vehículos','Notificaciones por WhatsApp','Portal del cliente en tiempo real','Garantía digital en cada entrega','Hasta 5 usuarios','Soporte por email'],
-  },
-  {
-    nombre: 'Pro', precio_mensual: 49, precio_anual: 39, total_anual: 468,
-    precio_original_mensual: 98, precio_original_anual: 78,
-    icono: Star, popular: true,
-    features: ['Todo lo del plan Esencial','Recordatorios automáticos de mantenimiento','Solicitud automática de reseñas en Google','Reportes y métricas avanzadas','Módulo de promociones masivas','Usuarios ilimitados','Soporte prioritario'],
-  },
-]
 
 const STATS_DATA = [
   { valor: '63%',  texto: 'de clientes desconfía de talleres mecánicos en México', icon: AlertTriangle, color: '#ef4444' },
@@ -65,6 +49,8 @@ const STATS_DATA = [
   { valor: '#1',   texto: 'queja en México: cobros no autorizados',                 icon: MessageCircle, color: '#a855f7' },
   { valor: '+40%', texto: 'más ingresos con recordatorios automáticos',             icon: TrendingUp,    color: '#06b6d4' },
 ]
+
+const PLANES = PLANES_WEB
 
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 const WORDS = ['más confiable','más profesional','más rentable','el favorito']
@@ -184,7 +170,7 @@ export default function MexicoClient() {
           ))}
           <div className="ln-mob-act">
             <a href="/login" className="ln-mob-login">Iniciar sesion</a>
-            <a href="/registro" className="ln-mob-cta">Prueba gratis - 14 dias</a>
+            <a href="/registro" className="ln-mob-cta">Crear cuenta gratis</a>
           </div>
         </div>
       )}
@@ -209,11 +195,11 @@ export default function MexicoClient() {
           </h1>
           <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto — en México.</p>
           <div className="lh-ctas">
-            <a href="/registro" className="lb-pri">Probar gratis 14 días <ArrowRight size={16}/></a>
+            <a href="/registro" className="lb-pri">Crear mi cuenta gratis <ArrowRight size={16}/></a>
             <a href="#caracteristicas" className="lb-out">Ver como funciona</a>
           </div>
           <div className="ltrust">
-            {['Sin tarjeta de crédito','14 días gratis','Soporte en español'].map(t => (
+            {['Sin tarjeta de crédito','14 días con todo abierto','Después sigues gratis','Soporte en español'].map(t => (
               <div key={t} className="ltrust-p"><Check size={11} strokeWidth={3} className="lck"/><span>{t}</span></div>
             ))}
           </div>
@@ -277,32 +263,20 @@ export default function MexicoClient() {
             </div>
           ))}
         </div>
+        <div className="lmods-tira">
+          <span className="lmods-lbl">Y además incluye</span>
+          <div className="lmods-chips">
+            {MODULOS.map((m,i) => (
+              <span key={i} className="lmod-chip" title={m.desc}>
+                <m.icon size={14} style={{color:m.color}}/>{m.label}
+              </span>
+            ))}
+          </div>
+        </div>
         <div className="lcta-c"><a href="/registro" className="lb-pri">Probar todas las funciones gratis <ArrowRight size={16}/></a></div>
       </div>
     </section>
 
-    {/* MODULOS */}
-    <section id="modulos" className="ls lmod-s">
-      <div className="li">
-        <div className="lsl">Todo en un solo lugar</div>
-        <h2 className="lsh2">Todo lo que tu taller en México necesita</h2>
-        <p className="lssub">Sin apps extra, sin integraciones complicadas. TallerOS tiene todo desde el día uno.</p>
-        <div className="lmw">
-          <div className="lmimgs">
-            <Image src="/mod-img1.png" alt="Recepcion taller con TallerOS México" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg"/>
-            <Image src="/mod-img2.png" alt="Mecánicos usando TallerOS en México" width={1200} height={896} sizes="(max-width: 768px) 92vw, 40vw" className="lmimg lmimg2"/>
-          </div>
-          <div className="lmgrid">
-            {MODULOS.map((m,i) => (
-              <div key={i} id={`mod-${i}`} data-animate className={`lmc${isV(`mod-${i}`)?' v':''}`} style={{transitionDelay:`${i*50}ms`}}>
-                <div className="lmc-ic" style={{background:`${m.color}15`,border:`1px solid ${m.color}25`}}><m.icon size={20} style={{color:m.color}}/></div>
-                <div><p className="lmc-l">{m.label}</p><p className="lmc-d">{m.desc}</p></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
 
     {/* GALLERY */}
     <section className="lgal">
@@ -362,7 +336,7 @@ export default function MexicoClient() {
         </div>
         <div className="lsl">Precios de lanzamiento</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
-        <p className="lssub">14 días gratis en cualquier plan. Sin tarjeta de crédito. Cancela cuando quieras.</p>
+        <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
         <div className="ltog-w">
           <div className="ltog">
             {['Mensual','Anual'].map((label,i) => (
@@ -386,27 +360,29 @@ export default function MexicoClient() {
                   <div><h3 className="lplan-n">{plan.nombre}</h3><span className="lplan-pct">-{pct}% hoy</span></div>
                 </div>
                 <div className="lplan-pb">
-                  <div className="lplan-or">{!cM ? lor : `$${por} USD`}</div>
+                  <div className="lplan-or">{!cM ? lor.replace(/\s[A-Z]{3}$/, '') : `$${por}`}</div>
                   <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
                   {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
                 </div>
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
                 </ul>
-                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Empezar 14 días gratis <ArrowRight size={15}/></a>
+                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Elegir plan <ArrowRight size={15}/></a>
                 <p className="lplan-nt">Sin tarjeta de crédito requerida</p>
               </div>
             )
           })}
         </div>
+        {stats.total > 0 && (
         <div className="lproof">
           <div className="lpavs">
             {[HF.mechanic1, HF.customer, HF.team1, HF.workshop1].map((src,i) => (
               <img key={i} src={src} alt="" loading="lazy" decoding="async" className="lpav" style={{marginLeft:i===0?0:-10}}/>
             ))}
           </div>
-          <p className="lproof-t"><strong>{stats.total > 0 ? `+${stats.total}` : '+50'} talleres</strong> en México ya digitalizaron su operación</p>
+          <p className="lproof-t"><strong>+{stats.total} talleres</strong> ya crearon su cuenta</p>
         </div>
+        )}
       </div>
     </section>
 
@@ -445,7 +421,7 @@ export default function MexicoClient() {
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy en México</div>
         <h2 className="lcta-h2">Deja de perder clientes por no tener sistema.</h2>
-        <p className="lcta-sub">Únete a los talleres mexicanos que ya digitalizaron su operación.<br/>14 días gratis, sin tarjeta de crédito.</p>
+        <p className="lcta-sub">Únete a los talleres mexicanos que ya digitalizaron su operación.<br/>Gratis para siempre, sin tarjeta de crédito.</p>
         <div className="lcta-bts">
           <a href="/registro" className="lb-pri">Crear mi taller gratis <ArrowRight size={16}/></a>
           <a href="/login" className="lb-wh">Ya tengo cuenta</a>
@@ -571,6 +547,10 @@ export default function MexicoClient() {
       .lfc-lnk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;transition:gap .15s;}
       .lfc-lnk:hover{gap:10px;}
       .lcta-c{display:flex;justify-content:center;margin-top:3rem;}
+      .lmods-tira{margin-top:40px;padding-top:28px;border-top:1px solid var(--bdr);display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;justify-content:center;}
+      .lmods-lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+      .lmods-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+      .lmod-chip{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--surf);border:1px solid var(--bdr);border-radius:999px;padding:7px 14px;}
       .lmod-s{background:var(--surf);}
       .lmw{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
       .lmimgs{display:flex;flex-direction:column;gap:16px;position:sticky;top:100px;}
@@ -634,8 +614,8 @@ export default function MexicoClient() {
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
       .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
-      .lplan-pr{display:flex;align-items:baseline;gap:6px;}
-      .lplan-num{font-size:clamp(36px,5vw,52px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
+      .lplan-pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+      .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:900;color:var(--blue);letter-spacing:-1.5px;line-height:1.05;white-space:nowrap;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
       .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}

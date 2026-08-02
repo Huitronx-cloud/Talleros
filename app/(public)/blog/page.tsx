@@ -117,7 +117,7 @@ export default async function BlogPage() {
       <div className="bg-blue-600 py-14 px-4 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl font-black text-white mb-3">¿Listo para digitalizar tu taller?</h2>
-          <p className="text-blue-100 mb-6 text-sm">14 días gratis. Sin tarjeta de crédito. Soporte en español.</p>
+          <p className="text-blue-100 mb-6 text-sm">Gratis para siempre. Sin tarjeta de crédito. Soporte en español.</p>
           <Link href="/registro" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors">
             Empezar gratis <ArrowRight className="w-4 h-4" />
           </Link>
