@@ -8,8 +8,9 @@
 // Las funciones listadas aquí deben corresponder con lib/plan-limits.ts, que
 // es lo que la app aplica de verdad.
 
-import { Check, Zap, Star } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { IconLlave, IconPiston, IconTurbo } from '@/components/iconos-mecanicos'
+
+type IconoPlan = (props: { size?: number; className?: string; style?: React.CSSProperties }) => JSX.Element
 
 export type PlanWeb = {
   nombre:                  string
@@ -18,7 +19,7 @@ export type PlanWeb = {
   total_anual:             number
   precio_original_mensual: number
   precio_original_anual:   number
-  icono:                   LucideIcon
+  icono:                   IconoPlan
   popular:                 boolean
   gratis:                  boolean
   ideal:                   string
@@ -30,7 +31,7 @@ export const PLANES_WEB: PlanWeb[] = [
     nombre: 'Gratuito',
     precio_mensual: 0, precio_anual: 0, total_anual: 0,
     precio_original_mensual: 0, precio_original_anual: 0,
-    icono: Check, popular: false, gratis: true,
+    icono: IconLlave,  popular: false, gratis: true,
     ideal: 'Para arrancar y ver cómo se siente trabajar con sistema.',
     features: [
       '10 órdenes de trabajo al mes',
@@ -46,7 +47,7 @@ export const PLANES_WEB: PlanWeb[] = [
     nombre: 'Esencial',
     precio_mensual: 24, precio_anual: 19, total_anual: 228,
     precio_original_mensual: 48, precio_original_anual: 38,
-    icono: Zap,   popular: true,  gratis: false,
+    icono: IconPiston, popular: true,  gratis: false,
     ideal: 'Para el taller que ya trabaja todos los días. Sin topes.',
     features: [
       'Órdenes de trabajo ilimitadas',
@@ -65,7 +66,7 @@ export const PLANES_WEB: PlanWeb[] = [
     nombre: 'Pro',
     precio_mensual: 49, precio_anual: 39, total_anual: 468,
     precio_original_mensual: 98, precio_original_anual: 78,
-    icono: Star,  popular: false, gratis: false,
+    icono: IconTurbo,  popular: false, gratis: false,
     ideal: 'Para talleres con varias sucursales o equipos grandes.',
     features: [
       'Todo lo del plan Esencial',
