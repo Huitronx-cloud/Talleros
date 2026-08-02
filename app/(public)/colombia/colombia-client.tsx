@@ -165,7 +165,7 @@ export default function ColombiaClient() {
       </div>
       {menuOpen && (
         <div className="ln-mob">
-          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes'],['/blog','Blog']].map(([href,label]) => (
             <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <div className="ln-mob-act">
@@ -473,7 +473,16 @@ export default function ColombiaClient() {
       .ln-login:hover{color:var(--ink);}
       .ln-cta{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:#fff;text-decoration:none;background:var(--blue);padding:9px 18px;border-radius:10px;box-shadow:var(--sh-bl);transition:background .15s,transform .1s;}
       .ln-cta:hover{background:var(--blue-d);transform:translateY(-1px);}
-      .ln-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:4px;}
+      .ln-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:4px;margin-left:auto;}
+      /* Sobre el hero el nav es transparente y el fondo es oscuro: el logo y los
+         enlaces van en blanco hasta que aparece la barra blanca al hacer scroll. */
+      .ln:not(.sc) .ll-t{color:#fff;}
+      .ln:not(.sc) .ll-t em{color:#93c5fd;}
+      .ln:not(.sc) .ln-a{color:rgba(255,255,255,0.82);}
+      .ln:not(.sc) .ln-a:hover{color:#fff;}
+      .ln:not(.sc) .ln-login{color:rgba(255,255,255,0.82);}
+      .ln:not(.sc) .ln-login:hover{color:#fff;}
+      .ln:not(.sc) .ln-ham{color:#fff;}
       .ln-mob{background:var(--surf);border-top:1px solid var(--bdr);padding:12px 24px 20px;}
       .ln-mob-a{display:block;font-size:16px;font-weight:600;color:var(--ink2);text-decoration:none;padding:13px 0;border-bottom:1px solid var(--bdr);}
       .ln-mob-act{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
@@ -520,17 +529,18 @@ export default function ColombiaClient() {
       .lmq-d{margin:0 20px;color:var(--blue);}
       .li{max-width:1200px;margin:0 auto;padding:0 28px;}
       .ls{padding:96px 0;}
-      .lsl{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;text-align:center;}
-      .lsh2{font-size:clamp(26px,4vw,48px);font-weight:900;letter-spacing:-1.5px;line-height:1.05;color:var(--ink);text-align:center;margin-bottom:14px;}
-      .lssub{font-size:16px;color:var(--ink3);text-align:center;max-width:560px;margin:0 auto 60px;line-height:1.7;}
+      .lsl{font-size:13px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
+      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:900;letter-spacing:-1.8px;line-height:1.04;color:var(--ink);text-align:center;margin-bottom:16px;}
+      .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 60px;line-height:1.7;}
       .lprob{background:var(--surf2);}
-      .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-      .lstc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:32px 24px;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,box-shadow .2s;text-align:center;}
+      .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
+      .lstc{background:transparent;border:none;border-left:1px solid var(--bdr);border-radius:0;padding:40px 26px 36px;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s;text-align:center;}
+      .lstc:first-child{border-left:none;}
       .lstc.v{opacity:1;transform:translateY(0);}
       .lstc:hover{box-shadow:var(--sh-md);transform:translateY(-4px);}
       .lsti{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-      .lstn{font-size:clamp(40px,5vw,56px);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:12px;}
-      .lstxt{font-size:14px;color:var(--ink3);line-height:1.6;}
+      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-4px;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
+      .lstxt{font-size:14.5px;color:var(--ink2);line-height:1.55;font-weight:500;max-width:210px;margin:0 auto;}
       .lfeat-s{background:var(--surf2);}
       .lfg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
       .lfc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s,box-shadow .2s;}
@@ -604,7 +614,7 @@ export default function ColombiaClient() {
       .ltb.a{background:var(--blue);color:#fff;}
       .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
       .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto 48px;}
-      .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;}
+      .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
       .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px var(--blue),var(--sh-bl);}
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
@@ -618,7 +628,7 @@ export default function ColombiaClient() {
       .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:900;color:var(--blue);letter-spacing:-1.5px;line-height:1.05;white-space:nowrap;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
       .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
-      .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+      .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
       .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
       .lfck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);flex-shrink:0;margin-top:2px;}
       .lplan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--bdr2);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}

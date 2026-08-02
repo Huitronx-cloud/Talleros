@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { PREGUNTAS } from './preguntas'
 import HomeClient from './home-client'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +18,10 @@ export const metadata: Metadata = {
     languages: HREFLANG,
   },
 }
+
+// Preguntas que un taller escribe tal cual en Google antes de decidirse. Se
+// muestran en la página y se declaran como FAQPage para el resultado
+// enriquecido: el contenido tiene que estar visible, si no Google lo ignora.
 
 // Datos estructurados para rich results en Google (Organization + producto
 // con rango de precios de los planes).
@@ -47,6 +52,17 @@ const JSON_LD = [
       highPrice: '49',
       offerCount: 3,
     },
+  },
+  // FAQPage: Google puede mostrar estas preguntas desplegadas en el propio
+  // resultado de búsqueda. Deben coincidir con las que se ven en la página.
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: PREGUNTAS.map(({ p, r }) => ({
+      '@type': 'Question',
+      name: p,
+      acceptedAnswer: { '@type': 'Answer', text: r },
+    })),
   },
 ]
 

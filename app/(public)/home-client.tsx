@@ -8,6 +8,7 @@ import {
   Check, Menu, X, Zap, ArrowRight, TrendingUp, AlertTriangle,
   ChevronRight, Users, FileText, BarChart2, Calendar, Package,
 } from 'lucide-react'
+import { PREGUNTAS } from './preguntas'
 import { PLANES_WEB } from '@/lib/planes-web'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
 
@@ -59,6 +60,13 @@ const STATS_DATA = [
 ]
 
 const PLANES = PLANES_WEB
+
+// "$100,800 COP" se parte en importe y código: el importe va grande y la
+// moneda pequeña al lado, que es lo que evita que el precio desborde la caja.
+function montoYmoneda(txt: string): [string, string] {
+  const m = txt.match(/^(.*?)\s([A-Z]{3})$/)
+  return m ? [m[1], m[2]] : [txt, '']
+}
 
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Tablero de trabajos en vivo','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 
@@ -136,7 +144,7 @@ export default function LandingPage() {
       </div>
       {menuOpen && (
         <div className="ln-mob">
-          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes']].map(([href,label]) => (
+          {[['#modulos','Módulos'],['#caracteristicas','Cómo funciona'],['#precios','Precios'],['#testimoniales','Clientes'],['/blog','Blog']].map(([href,label]) => (
             <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <div className="ln-mob-act">
@@ -228,7 +236,8 @@ export default function LandingPage() {
           </div>
           <div className="lver-cnt">
             <div className="lsl">Lo que cambia</div>
-            <h2 className="lver-h2">Sigues con WhatsApp,<br/>Excel y llamadas perdidas?</h2>
+            <h2 className="lver-h2">Tu trabajo está bien hecho.<br/>Lo que se pierde es todo lo demás.</h2>
+            <p className="lver-sub">El cliente aprueba, tú lo apuntas donde puedes y a fin de mes nadie sabe qué se cobró, qué falta por entregar ni quién no ha vuelto en un año. No es que trabajes mal: es que nada queda registrado.</p>
             <div className="lver-rows">
               {[
                 ['Clientes llaman sin parar para preguntar por su carro','Portal en tiempo real - el cliente ve el avance solo'],
@@ -290,7 +299,6 @@ export default function LandingPage() {
     <section className="lgal">
       <div className="lgal-i">
         <div className="lgal-t">
-          <div className="lsl">Talleres reales</div>
           <h2 className="lgal-h2">Profesionales que ya dieron el salto digital</h2>
           <p className="lgal-sub">Mecánicos y dueños de taller en México, Colombia, Perú y toda Latinoamérica confían en TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
@@ -317,8 +325,7 @@ export default function LandingPage() {
     {/* TESTIMONIALES */}
     <section id="testimoniales" className="ls ltesti-s">
       <div className="li">
-        <div className="lsl">Lo que dicen nuestros clientes</div>
-        <h2 className="lsh2">Talleres que ya dieron el salto</h2>
+        <h2 className="lsh2">Lo que dicen nuestros clientes</h2>
         <div className="ltg">
           {TESTIMONIALES.map((t,i) => (
             <div key={i} id={`tes-${i}`} data-animate className={`ltc${isV(`tes-${i}`)?' v':''}`} style={{transitionDelay:`${i*100}ms`}}>
@@ -339,7 +346,7 @@ export default function LandingPage() {
     {/* PRECIOS */}
     <section id="precios" className="ls lprice-s">
       <div className="li">
-        <div className="lsl">Precios de lanzamiento</div>
+        <div className="lsl">Cuesta menos que un servicio</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
         <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
         <div className="ltog-w">
@@ -361,12 +368,10 @@ export default function LandingPage() {
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}${plan.nombre==='Esencial'?' esencial':''}`}>
                 {plan.popular && <div className="lplan-b">Mas popular</div>}
                 <div className="lplan-h">
-                  <div className="lplan-ic"><plan.icono size={18}/></div>
-                  <div>
-                    <h3 className="lplan-n">{plan.nombre}</h3>
-                    {!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}
-                    {plan.gratis && <span style={{fontSize:11,color:'var(--muted)'}}>Para siempre gratis</span>}
-                  </div>
+                  <div className="lplan-ic"><plan.icono size={22}/></div>
+                  <h3 className="lplan-n">{plan.nombre}</h3>
+                  {!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}
+                  {plan.gratis && <span className="lplan-free">Para siempre gratis</span>}
                 </div>
                 <p className="lplan-ideal">{plan.ideal}</p>
                 <div className="lplan-pb">
@@ -374,9 +379,15 @@ export default function LandingPage() {
                     <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
                   ) : (
                     <>
-                      <div className="lplan-or">{!cM ? lor.replace(/\s[A-Z]{3}$/, '') : `$${por}`}</div>
-                      <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
-                      {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
+                      <div className="lplan-or">{montoYmoneda(!cM ? lor : `$${por} USD`)[0]}</div>
+                      <div className="lplan-pr">
+                        <span className="lplan-num">{montoYmoneda(!cM ? la : `$${pa} USD`)[0]}</span>
+                        <span className="lplan-cur">{montoYmoneda(!cM ? la : `$${pa} USD`)[1]}</span>
+                        <span className="lplan-per">/mes</span>
+                      </div>
+                      {anual
+                        ? <p className="lplan-an">{!cM ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>
+                        : <p className="lplan-an">Ahorras {!cM ? convertir(plan.precio_mensual*12 - plan.total_anual) : `$${plan.precio_mensual*12 - plan.total_anual} USD`} pagando al año</p>}
                     </>
                   )}
                 </div>
@@ -386,7 +397,11 @@ export default function LandingPage() {
                 <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>
                   {plan.gratis ? 'Empezar gratis' : `Elegir ${plan.nombre}`} <ArrowRight size={15}/>
                 </a>
-                <p className="lplan-nt">Sin tarjeta de crédito requerida</p>
+                <p className="lplan-nt">
+                  {plan.gratis
+                    ? 'Sin tarjeta de crédito'
+                    : 'Empiezas gratis. Sin permanencia, cancelas cuando quieras.'}
+                </p>
               </div>
             )
           })}
@@ -441,13 +456,52 @@ export default function LandingPage() {
       </div>
     </section>
 
+    {/* PREGUNTAS FRECUENTES — responden las objeciones antes de la compra y
+        alimentan el resultado enriquecido de Google (FAQPage). */}
+    <section className="ls lfaq-s">
+      <div className="li">
+        <div className="lsl">Antes de que preguntes</div>
+        <h2 className="lsh2">Lo que todos nos preguntan</h2>
+        <div className="lfaq">
+          {PREGUNTAS.map(({ p, r }) => (
+            <details key={p} className="lfaq-i">
+              <summary className="lfaq-q">{p}<span className="lfaq-ic" aria-hidden="true">+</span></summary>
+              <p className="lfaq-r">{r}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* WHATSAPP FLOTANTE — un visitante con dudas escribe sin salir de la página */}
+    <a
+      href="https://wa.me/14284362377?text=Hola%2C%20tengo%20una%20duda%20sobre%20TallerOS"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="lwa-fab"
+      aria-label="Escríbenos por WhatsApp"
+    >
+      <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35z"/>
+        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23z"/>
+      </svg>
+    </a>
+
     {/* FOOTER */}
     <footer className="lfoot">
       <div className="lfoot-i">
         <div className="lfoot-l"><Image src="/icon-512.png" alt="TallerOS" width={72} height={72} className="ll-img sm"/><span className="ll-t sm">Taller<em>OS</em></span></div>
         <p className="lfoot-c">2026 TallerOS. Gestión inteligente para talleres mecánicos en Latinoamérica.</p>
-        <div className="lfoot-lnks">
-          {[{l:'Blog',h:'/blog'},{l:'Privacidad',h:'/privacidad'},{l:'Terminos',h:'/terminos'},{l:'💬 Soporte WhatsApp',h:'https://wa.me/14284362377'},{l:'✉ hola@tallerosapp.com',h:'mailto:hola@tallerosapp.com'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
+        <div className="lfoot-cols">
+          <div className="lfoot-lnks">
+            {[{l:'Blog',h:'/blog'},{l:'Privacidad',h:'/privacidad'},{l:'Términos',h:'/terminos'}].map(x => (<a key={x.l} href={x.h}>{x.l}</a>))}
+          </div>
+          <div className="lfoot-cont">
+            <a href="https://wa.me/14284362377" target="_blank" rel="noopener noreferrer" className="lfoot-wa">
+              <MessageCircle size={15}/> Soporte por WhatsApp
+            </a>
+            <a href="mailto:hola@tallerosapp.com" className="lfoot-mail">hola@tallerosapp.com</a>
+          </div>
         </div>
       </div>
     </footer>
@@ -501,7 +555,16 @@ export default function LandingPage() {
       .ln-login:hover{color:var(--ink);}
       .ln-cta{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:#fff;text-decoration:none;background:var(--blue);padding:9px 18px;border-radius:10px;box-shadow:var(--sh-bl);transition:background .15s,transform .1s;}
       .ln-cta:hover{background:var(--blue-d);transform:translateY(-1px);}
-      .ln-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:4px;}
+      .ln-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);padding:4px;margin-left:auto;}
+      /* Sobre el hero el nav es transparente y el fondo es oscuro: el logo y los
+         enlaces van en blanco hasta que aparece la barra blanca al hacer scroll. */
+      .ln:not(.sc) .ll-t{color:#fff;}
+      .ln:not(.sc) .ll-t em{color:#93c5fd;}
+      .ln:not(.sc) .ln-a{color:rgba(255,255,255,0.82);}
+      .ln:not(.sc) .ln-a:hover{color:#fff;}
+      .ln:not(.sc) .ln-login{color:rgba(255,255,255,0.82);}
+      .ln:not(.sc) .ln-login:hover{color:#fff;}
+      .ln:not(.sc) .ln-ham{color:#fff;}
       .ln-mob{background:var(--surf);border-top:1px solid var(--bdr);padding:12px 24px 20px;}
       .ln-mob-a{display:block;font-size:16px;font-weight:600;color:var(--ink2);text-decoration:none;padding:13px 0;border-bottom:1px solid var(--bdr);}
       .ln-mob-act{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
@@ -551,18 +614,19 @@ export default function LandingPage() {
 
       .li{max-width:1200px;margin:0 auto;padding:0 28px;}
       .ls{padding:96px 0;}
-      .lsl{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;text-align:center;}
-      .lsh2{font-size:clamp(26px,4vw,48px);font-weight:900;letter-spacing:-1.5px;line-height:1.05;color:var(--ink);text-align:center;margin-bottom:14px;}
-      .lssub{font-size:16px;color:var(--ink3);text-align:center;max-width:560px;margin:0 auto 60px;line-height:1.7;}
+      .lsl{font-size:13px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
+      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:900;letter-spacing:-1.8px;line-height:1.04;color:var(--ink);text-align:center;margin-bottom:16px;}
+      .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 60px;line-height:1.7;}
 
       .lprob{background:var(--surf2);}
-      .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-      .lstc{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rl);padding:32px 24px;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,box-shadow .2s;text-align:center;}
+      .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
+      .lstc{background:transparent;border:none;border-left:1px solid var(--bdr);border-radius:0;padding:40px 26px 36px;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s;text-align:center;}
+      .lstc:first-child{border-left:none;}
       .lstc.v{opacity:1;transform:translateY(0);}
       .lstc:hover{box-shadow:var(--sh-md);transform:translateY(-4px);}
       .lsti{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-      .lstn{font-size:clamp(40px,5vw,56px);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:12px;}
-      .lstxt{font-size:14px;color:var(--ink3);line-height:1.6;}
+      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-4px;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
+      .lstxt{font-size:14.5px;color:var(--ink2);line-height:1.55;font-weight:500;max-width:210px;margin:0 auto;}
 
       .lver{padding:96px 0;background:var(--surf);}
       .lver-w{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
@@ -571,12 +635,13 @@ export default function LandingPage() {
       .lvimg-c{position:absolute;bottom:16px;left:16px;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;}
       .lvimg-c.bad{background:rgba(239,68,68,0.9);color:#fff;}
       .lver-cnt{display:flex;flex-direction:column;}
-      .lver-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);margin-bottom:32px;text-align:left;}
+      .lver-h2{font-size:clamp(28px,4.2vw,46px);font-weight:900;letter-spacing:-1.8px;line-height:1.06;color:var(--ink);margin-bottom:16px;text-align:left;}
+      .lver-sub{font-size:16px;color:var(--ink3);line-height:1.65;margin-bottom:30px;max-width:520px;}
       .lver-rows{display:flex;flex-direction:column;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;}
       .lvrow{display:grid;grid-template-columns:1fr 1fr;}
       .lvrow:not(:last-child){border-bottom:1px solid var(--bdr);}
-      .lvbad{display:flex;align-items:flex-start;gap:8px;padding:12px 16px;font-size:13px;color:#ef4444;background:#fef2f2;line-height:1.4;}
-      .lvgood{display:flex;align-items:flex-start;gap:8px;padding:12px 16px;font-size:13px;color:#166534;background:#f0fdf4;line-height:1.4;border-left:1px solid var(--bdr);}
+      .lvbad{display:flex;align-items:flex-start;gap:9px;padding:15px 18px;font-size:13.5px;color:var(--muted);background:var(--surf2);line-height:1.45;text-decoration:line-through;text-decoration-color:rgba(148,163,184,.5);}
+      .lvgood{display:flex;align-items:flex-start;gap:9px;padding:15px 18px;font-size:13.5px;font-weight:600;color:var(--ink);background:#fff;line-height:1.45;border-left:1px solid var(--bdr);}
       .lvx{font-weight:800;flex-shrink:0;color:#ef4444;}
       .lvch{font-weight:800;flex-shrink:0;color:#22c55e;}
 
@@ -618,7 +683,7 @@ export default function LandingPage() {
       .lgal{padding:96px 0;background:var(--surf2);overflow:hidden;}
       .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lgal-t{display:flex;flex-direction:column;gap:20px;}
-      .lgal-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);text-align:left;}
+      .lgal-h2{font-size:clamp(30px,4.4vw,50px);font-weight:900;letter-spacing:-1.8px;line-height:1.06;color:var(--ink);text-align:center;}
       .lgal-sub{font-size:15px;color:var(--ink3);line-height:1.7;max-width:420px;text-align:left;}
       .lgal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
       .lgal-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-md);transition:transform .3s,box-shadow .3s;}
@@ -652,12 +717,12 @@ export default function LandingPage() {
       .ltb.a{background:var(--blue);color:#fff;}
       .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
       .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
-      .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;}
+      .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
       .lplan.pop{border-color:#d97706;border-width:2px;box-shadow:0 0 0 1px #d97706,0 8px 32px rgba(217,119,6,0.18);}
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
-      .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-      .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
+      .lplan-h{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;text-align:center;}
+      .lplan-ic{width:52px;height:52px;border-radius:15px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
       .lplan.esencial{border-color:#3b82f6;border-width:2px;box-shadow:0 0 0 1px rgba(59,130,246,0.3),0 8px 24px rgba(59,130,246,0.1);}
       .lplan.esencial .lplan-ic{background:rgba(59,130,246,0.12);color:#2563eb;}
       .lplan.esencial .lplan-num{color:#2563eb;}
@@ -665,24 +730,26 @@ export default function LandingPage() {
       .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
       .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
       .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
-      .lplan-ideal{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.5;}
-      .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
+      .lplan-ideal{font-size:13.5px;color:var(--ink3);margin:0 0 18px;line-height:1.55;text-align:center;min-height:42px;}
+      .lplan-n{font-size:29px;font-weight:900;color:var(--ink);letter-spacing:-.7px;line-height:1;}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
-      .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
+      .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:20px 14px;margin-bottom:22px;text-align:center;}
       .lplan.pop .lplan-pb{background:rgba(245,158,11,0.06);border-color:rgba(217,119,6,0.2);}
-      .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
-      .lplan-pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
-      .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:900;color:var(--blue);letter-spacing:-1.5px;line-height:1.05;white-space:nowrap;}
+      .lplan-or{font-size:17px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:2px;}
+      .lplan-pr{display:flex;align-items:baseline;gap:5px;justify-content:center;flex-wrap:nowrap;}
+      .lplan-num{font-size:clamp(38px,3.6vw,54px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;white-space:nowrap;}
+      .lplan-cur{font-size:13px;font-weight:800;color:var(--ink4);letter-spacing:.5px;}
       .lplan.pop .lplan-num{color:#d97706;}
-      .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
-      .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
-      .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+      .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;white-space:nowrap;}
+      .lplan-an{font-size:12.5px;color:#059669;font-weight:700;margin-top:8px;}
+      .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
       .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
       .lplan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--bdr2);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
       .lplan-cta:hover{background:var(--surf3);}
       .lplan-cta.pop{background:linear-gradient(135deg,#f59e0b,#d97706);border-color:#d97706;color:#fff;box-shadow:0 4px 20px rgba(217,119,6,0.35);}
       .lplan-cta.pop:hover{background:linear-gradient(135deg,#fbbf24,#b45309);box-shadow:0 6px 28px rgba(217,119,6,0.45);}
-      .lplan-nt{text-align:center;font-size:11px;color:var(--ink4);margin-top:10px;}
+      .lplan-nt{text-align:center;font-size:11.5px;color:var(--ink4);margin-top:11px;line-height:1.45;}
+      .lplan-free{font-size:12px;color:var(--muted);font-weight:600;}
       .lproof{display:flex;align-items:center;justify-content:center;gap:14px;}
       .lpavs{display:flex;}
       .lpav{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--surf2);}
@@ -702,6 +769,10 @@ export default function LandingPage() {
       .lfoot-l{display:flex;align-items:center;gap:8px;}
       .lfoot-c{font-size:12px;color:var(--ink4);}
       .lfoot-lnks{display:flex;gap:24px;}
+      .lfoot-cols{display:flex;align-items:center;gap:28px;flex-wrap:wrap;justify-content:center;}
+      .lfoot-cont{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center;}
+      .lfoot-wa{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:#15803d !important;background:#f0fdf4;border:1px solid #bbf7d0;padding:8px 14px;border-radius:999px;}
+      .lfoot-mail{font-weight:600;}
       .lfoot-lnks a{font-size:13px;color:var(--ink4);text-decoration:none;transition:color .15s;}
       .lfoot-lnks a:hover{color:var(--ink2);}
 
@@ -718,6 +789,8 @@ export default function LandingPage() {
 
       @media(max-width:1024px){
         .lstg{grid-template-columns:repeat(2,1fr);}
+        .lstc:nth-child(2n+1){border-left:none;}
+        .lstc:nth-child(n+3){border-top:1px solid var(--bdr);}
         .lfg{grid-template-columns:repeat(2,1fr);}
         .lmw{grid-template-columns:1fr;}
         .lmimgs{position:static;display:grid;grid-template-columns:1fr 1fr;}
@@ -735,7 +808,24 @@ export default function LandingPage() {
         .lgal-grid{grid-template-columns:1fr 1fr;}
         .llm .lsl{text-align:center;}
       }
+      .lfaq-s{background:var(--surf);}
+      .lfaq{max-width:760px;margin:0 auto;border-top:1px solid var(--bdr);}
+      .lfaq-i{border-bottom:1px solid var(--bdr);}
+      .lfaq-q{display:flex;align-items:center;justify-content:space-between;gap:18px;cursor:pointer;list-style:none;padding:22px 4px;font-size:17px;font-weight:700;color:var(--ink);line-height:1.4;text-align:left;}
+      .lfaq-q::-webkit-details-marker{display:none;}
+      .lfaq-ic{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--surf2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--blue);transition:transform .2s;}
+      .lfaq-i[open] .lfaq-ic{transform:rotate(45deg);}
+      .lfaq-r{padding:0 4px 24px;font-size:15.5px;color:var(--ink3);line-height:1.7;max-width:660px;text-align:left;}
+      .lwa-fab{position:fixed;right:20px;bottom:22px;z-index:99;width:56px;height:56px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,.4);transition:transform .15s,box-shadow .15s;}
+      .lwa-fab:hover{transform:scale(1.06);box-shadow:0 8px 26px rgba(37,211,102,.5);}
       .lmobile-cta{display:none;}
+      @media(max-width:900px){
+        /* En pantalla de teléfono todo el bloque de texto va centrado */
+        .lh-left,.lfc-b,.lver-cnt,.lplan-h,.lplan-ideal{text-align:center;}
+        .lh-ctas,.ltrust{justify-content:center;}
+        .lfc-lnk{justify-content:center;}
+        .lstc{padding:30px 16px;}
+      }
       @media(max-width:640px){
         .lh{padding:90px 16px 60px;}
         .li{padding:0 16px;}
@@ -743,13 +833,20 @@ export default function LandingPage() {
         .lh-ctas{flex-direction:column;}
         .lb-pri,.lb-out{width:100%;justify-content:center;max-width:340px;}
         .lstg{grid-template-columns:1fr 1fr;}
+        .lstc:nth-child(2n+1){border-left:none;}
+        .lstc:nth-child(n+3){border-top:1px solid var(--bdr);}
         .lfg{grid-template-columns:1fr;}
         .lpg{grid-template-columns:1fr;}
         .lvrow{grid-template-columns:1fr;}
         .lvbad{border-radius:0;}
         .l-toast{left:12px;right:12px;bottom:16px;}
         .lcta-bts{flex-direction:column;align-items:center;}
-        .lfoot{padding-bottom:100px;}
+        .lfoot{padding-bottom:110px;}
+        .lwa-fab{width:52px;height:52px;right:14px;bottom:96px;}
+        .lfoot-i{flex-direction:column;text-align:center;gap:20px;}
+        .lfoot-cols{flex-direction:column;gap:18px;}
+        .lfoot-lnks{gap:22px;flex-wrap:wrap;justify-content:center;}
+        .lfoot-cont{flex-direction:column;gap:12px;}
         .lmobile-cta{display:flex;flex-direction:column;align-items:center;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;padding:12px 16px 20px;box-shadow:0 -4px 20px rgba(0,0,0,0.08);z-index:100;}
         .lmobile-cta-btn{display:block;width:100%;background:#2563eb;color:#fff;text-align:center;font-size:15px;font-weight:700;padding:13px;border-radius:12px;text-decoration:none;}
         .lmobile-cta-sub{font-size:11px;color:#94a3b8;margin:6px 0 0;}
