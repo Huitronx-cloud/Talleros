@@ -243,7 +243,7 @@ export default function ResenasPage() {
             value={config.google_review_url || ''}
             onChange={e => setConfig(c => ({ ...c, google_review_url: e.target.value }))}
             placeholder="https://g.page/r/XXXXXXXXXXXXXXXX/review"
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 placeholder:text-slate-600"
+            className="input-on-dark w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 placeholder:text-slate-400"
           />
           <p className="text-xs text-slate-500">
             ¿No tienes tu link? Búscate en Google Maps → haz clic en tu negocio → &quot;Obtener más reseñas&quot;. Si no tienes perfil, créalo gratis en{' '}
@@ -293,7 +293,7 @@ export default function ResenasPage() {
               value={config.mensaje_whatsapp || ''}
               onChange={e => setConfig(c => ({ ...c, mensaje_whatsapp: e.target.value }))}
               rows={4}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
+              className="input-on-dark w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
             />
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400">Vista previa — así verá el mensaje el cliente:</p>
@@ -302,7 +302,7 @@ export default function ResenasPage() {
                   {generarVistaPreviaWA(config.mensaje_whatsapp || '')}
                 </div>
               </div>
-              <p className="text-xs text-slate-600 text-right">Datos de ejemplo: Carlos · Toyota Corolla · g.page/tu-taller</p>
+              <p className="text-xs text-slate-400 text-right">Datos de ejemplo: Carlos · Toyota Corolla · g.page/tu-taller</p>
             </div>
           </div>
         )}
@@ -319,7 +319,7 @@ export default function ResenasPage() {
                 type="text"
                 value={config.mensaje_email_asunto || ''}
                 onChange={e => setConfig(c => ({ ...c, mensaje_email_asunto: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500"
+                className="input-on-dark w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500"
               />
             </div>
             <div className="space-y-2">
@@ -328,7 +328,7 @@ export default function ResenasPage() {
                 value={config.mensaje_email_cuerpo || ''}
                 onChange={e => setConfig(c => ({ ...c, mensaje_email_cuerpo: e.target.value }))}
                 rows={5}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
+                className="input-on-dark w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-yellow-500 resize-none"
               />
             </div>
           </div>
