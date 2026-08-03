@@ -47,6 +47,28 @@ input.input-on-dark::placeholder, textarea.input-on-dark::placeholder {
   -webkit-text-fill-color: #9ca3af !important;
 }
 
+/* ── Sistema visual de la web pública ────────────────────────────────────────
+   Las cuatro landings (home, México, Colombia, Perú) comparten el mismo juego
+   de clases. La tipografía se declara aquí una sola vez para que no vuelvan a
+   desincronizarse, como ya pasó con la tabla de planes.
+
+   Archivo para los titulares: condensada de natural, aguanta tamaños grandes
+   sin desbordar en pantalla de teléfono y tiene más carácter que una grotesca
+   neutra. Public Sans para leer: números de altura uniforme y una "1" que no
+   se confunde con la "l", que importa cuando media página son precios. */
+.lr {
+  font-family: var(--fuente-texto), system-ui, -apple-system, sans-serif;
+}
+.lr h1, .lr h2, .lr h3,
+.lr .ll-t, .lr .lstn, .lr .lplan-n, .lr .lplan-num, .lr .lfaq-q {
+  font-family: var(--fuente-titular), system-ui, -apple-system, sans-serif;
+}
+/* Los importes se leen en columna: sin cifras de ancho fijo, el "1" angosto
+   descuadra el precio anual respecto al mensual al cambiar de pestaña. */
+.lr .lplan-num, .lr .lplan-or, .lr .lplan-cur, .lr .lplan-an, .lr .lstn {
+  font-variant-numeric: tabular-nums;
+}
+
 .blog-content h2 {
   font-size: 1.25rem;
   font-weight: 900;

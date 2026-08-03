@@ -135,7 +135,7 @@ export default function LandingPage() {
           ))}
         </div>
         <div className="ln-r">
-          <a href="/login" className="ln-login">Iniciar sesion</a>
+          <a href="/login" className="ln-login">Iniciar sesión</a>
           <a href="/registro" className="ln-cta">Prueba gratis <ChevronRight size={14}/></a>
         </div>
         <button className="ln-ham" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <div className="ln-mob-act">
-            <a href="/login" className="ln-mob-login">Iniciar sesion</a>
+            <a href="/login" className="ln-mob-login">Iniciar sesión</a>
             <a href="/registro" className="ln-mob-cta">Crear cuenta gratis</a>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function LandingPage() {
             <Image src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard" width={895} height={1200} priority sizes="(max-width: 900px) 92vw, 44vw" className="lmock-s" />
             <div className="lfl lfl-wa">
               <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
-              <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
+              <div><p className="lfl-l">Cliente aprobó</p><p className="lfl-v">Cambio de frenos</p></div>
             </div>
             <div className="lfl lfl-rv">
               <div className="lfl-ic" style={{background:'#f59e0b'}}><Star size={15} color="#fff"/></div>
@@ -261,8 +261,8 @@ export default function LandingPage() {
     {/* FEATURES */}
     <section id="caracteristicas" className="ls lfeat-s">
       <div className="li">
-        <div className="lsl">Por que nos eligen</div>
-        <h2 className="lsh2">6 herramientas que transforman tu taller en 30 dias</h2>
+        <div className="lsl">Por qué nos eligen</div>
+        <h2 className="lsh2">6 herramientas que transforman tu taller en 30 días</h2>
         <p className="lssub">Cada función resuelve un problema real que cuesta clientes y dinero todos los días.</p>
         <div className="lfg">
           {DIFERENCIADORES.map((d,i) => (
@@ -275,7 +275,7 @@ export default function LandingPage() {
               <div className="lfc-b">
                 <h3 className="lfc-t">{d.titulo}</h3>
                 <p className="lfc-d">{d.desc}</p>
-                <a href={d.url} className="lfc-lnk">Ver en accion <ArrowRight size={13}/></a>
+                <a href={d.url} className="lfc-lnk">Ver en acción <ArrowRight size={13}/></a>
               </div>
             </div>
           ))}
@@ -366,7 +366,7 @@ export default function LandingPage() {
             const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}${plan.nombre==='Esencial'?' esencial':''}`}>
-                {plan.popular && <div className="lplan-b">Mas popular</div>}
+                {plan.popular && <div className="lplan-b">Más popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={22}/></div>
                   <h3 className="lplan-n">{plan.nombre}</h3>
@@ -502,12 +502,19 @@ export default function LandingPage() {
     </div>
 
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html{scroll-behavior:smooth;}
       :root{
-        --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+        --ink:#0f172a;--ink2:#334155;--ink3:#4a5468;--ink4:#94a3b8;
+        /* --muted se usaba en tres reglas sin estar definida: al ser una
+           variable inválida, esos textos heredaban el color del padre en vez
+           de atenuarse. La columna "Sin TallerOS" se veía igual de negra que
+           la buena, que es justo lo contrario de lo que debía comunicar. */
+        --muted:#6b7688;
         --blue:#2563eb;--blue-d:#1d4ed8;--green:#22c55e;
+        /* Naranja de señal: reservado al dinero — precio, descuento y el plan
+           de arriba. Si se usa en cualquier otro sitio deja de significar algo. */
+        --sig:#e2600a;--sig-d:#c24f05;--sig-sf:#fff3e9;--sig-bd:#fbd7b8;
         --surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
         --bdr:rgba(15,23,42,0.08);--bdr2:rgba(15,23,42,0.12);
         --r:14px;--rl:20px;--rxl:28px;
@@ -516,7 +523,7 @@ export default function LandingPage() {
         --sh-lg:0 16px 48px rgba(15,23,42,0.14);
         --sh-bl:0 8px 32px rgba(37,99,235,0.25);
       }
-      .lr{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--surf);color:var(--ink);overflow-x:hidden;min-height:100dvh;}
+      .lr{background:var(--surf);color:var(--ink);overflow-x:hidden;min-height:100dvh;}
 
       .l-toast{position:fixed;bottom:24px;left:24px;z-index:300;display:flex;align-items:center;gap:10px;background:var(--ink);border-radius:12px;padding:12px 18px;box-shadow:var(--sh-lg);animation:tIn .4s cubic-bezier(.34,1.56,.64,1);}
       @keyframes tIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
@@ -574,13 +581,17 @@ export default function LandingPage() {
       .lh-left{display:flex;flex-direction:column;gap:24px;}
       .ley{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
       .ley-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s infinite;flex-shrink:0;}
-      .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
+      /* El interletrado va en em y no en px: con clamp, un -2px fijo que
+         funciona a 68px deja el titular ilegible a 36px en el teléfono. */
+      .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:800;line-height:1.02;letter-spacing:-.03em;color:#f8fafc;}
       .ltw{display:block;color:#60a5fa;min-height:1.1em;}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
       .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
       .lh-ctas{display:flex;gap:12px;flex-wrap:wrap;}
       .ltrust{display:flex;flex-wrap:wrap;gap:16px;}
-      .ltrust-p{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#475569;}
+      /* Iba en #475569 sobre un hero casi negro: se leía a duras penas justo en
+         la línea que quita el miedo a registrarse. */
+      .ltrust-p{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:#b6c2d4;}
       .lck{color:var(--green);}
       .lh-right{display:flex;justify-content:center;align-items:center;}
       .lmock{position:relative;width:100%;max-width:560px;}
@@ -602,8 +613,11 @@ export default function LandingPage() {
       .li{max-width:1200px;margin:0 auto;padding:0 28px;}
       .ls{padding:72px 0;}
       .lsl{font-size:13px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
-      .lprice-s .lsl{display:block;width:fit-content;margin:0 auto 18px;font-size:15px;letter-spacing:1.6px;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:999px;padding:9px 22px;}
-      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:900;letter-spacing:-1.8px;line-height:1.04;color:var(--ink);text-align:center;margin-bottom:16px;}
+      /* El gancho de precio va en naranja de señal, no en verde: el verde en
+         esta página confirma cosas ya logradas (funciones incluidas, ahorro),
+         y esto es una llamada a actuar. */
+      .lprice-s .lsl{display:block;width:fit-content;margin:0 auto 18px;font-size:15px;letter-spacing:1.6px;color:var(--sig-d);background:var(--sig-sf);border:1px solid var(--sig-bd);border-radius:999px;padding:9px 22px;}
+      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:800;letter-spacing:-.028em;line-height:1.06;color:var(--ink);text-align:center;margin-bottom:16px;text-wrap:balance;}
       .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 44px;line-height:1.7;}
 
       .lprob{background:var(--surf2);}
@@ -613,7 +627,7 @@ export default function LandingPage() {
       .lstc.v{opacity:1;transform:translateY(0);}
       .lstc:hover{box-shadow:var(--sh-md);transform:translateY(-4px);}
       .lsti{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-4px;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
+      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-.05em;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
       .lstxt{font-size:14.5px;color:var(--ink2);line-height:1.55;font-weight:500;max-width:210px;margin:0 auto;}
 
       .lver{padding:72px 0;background:var(--surf);}
@@ -623,7 +637,7 @@ export default function LandingPage() {
       .lvimg-c{position:absolute;bottom:16px;left:16px;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;}
       .lvimg-c.bad{background:rgba(239,68,68,0.9);color:#fff;}
       .lver-cnt{display:flex;flex-direction:column;}
-      .lver-h2{font-size:clamp(28px,4.2vw,46px);font-weight:900;letter-spacing:-1.8px;line-height:1.06;color:var(--ink);margin-bottom:16px;text-align:left;}
+      .lver-h2{font-size:clamp(28px,4.2vw,46px);font-weight:800;letter-spacing:-.028em;line-height:1.08;color:var(--ink);margin-bottom:16px;text-align:left;text-wrap:balance;}
       .lver-sub{font-size:16px;color:var(--ink3);line-height:1.65;margin-bottom:30px;max-width:520px;}
       .lver-rows{display:flex;flex-direction:column;border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;}
       .lvrow{display:grid;grid-template-columns:1fr 1fr;}
@@ -671,7 +685,7 @@ export default function LandingPage() {
       .lgal{padding:72px 0;background:var(--surf2);overflow:hidden;}
       .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lgal-t{display:flex;flex-direction:column;gap:20px;}
-      .lgal-h2{font-size:clamp(30px,4.4vw,50px);font-weight:900;letter-spacing:-1.8px;line-height:1.06;color:var(--ink);text-align:center;}
+      .lgal-h2{font-size:clamp(30px,4.4vw,50px);font-weight:800;letter-spacing:-.028em;line-height:1.08;color:var(--ink);text-align:center;text-wrap:balance;}
       .lgal-sub{font-size:15px;color:var(--ink3);line-height:1.7;max-width:420px;text-align:left;}
       .lgal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
       .lgal-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-md);transition:transform .3s,box-shadow .3s;}
@@ -703,12 +717,14 @@ export default function LandingPage() {
       .ltog{display:inline-flex;background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:4px;}
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
       .ltb.a{background:var(--blue);color:#fff;}
-      .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
+      .ltbadge{font-size:10px;background:var(--sig);color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
       .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
       .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
-      .lplan.pop{border-color:#d97706;border-width:2px;box-shadow:0 0 0 1px #d97706,0 8px 32px rgba(217,119,6,0.18);}
-      .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
+      /* "Más popular" cuelga de la tarjeta de Esencial: va del color de esa
+         tarjeta. En ámbar chocaba con el plan Pro y parecía señalarlo a él. */
+      .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px rgba(37,99,235,0.3),0 8px 32px rgba(37,99,235,0.14);}
+      .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;text-align:center;}
       .lplan-ic{width:56px;height:56px;border-radius:16px;background:rgba(100,116,139,0.10);display:flex;align-items:center;justify-content:center;color:var(--ink3);}
       .lplan.esencial{border-color:#3b82f6;border-width:2px;box-shadow:0 0 0 1px rgba(59,130,246,0.3),0 8px 24px rgba(59,130,246,0.1);}
@@ -718,27 +734,29 @@ export default function LandingPage() {
       .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
       .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
       .lplan.pop .lplan-ic{background:rgba(37,99,235,0.12);color:#2563eb;}
-      .lplan:last-child .lplan-ic{background:rgba(217,119,6,0.12);color:#d97706;}
+      /* Pro se queda con el naranja de señal en vez de su ámbar anterior: así
+         la página entera tiene un solo color cálido y no dos casi iguales. */
+      .lplan:last-child .lplan-ic{background:rgba(226,96,10,0.12);color:var(--sig);}
       .lplan-ideal{font-size:13.5px;color:var(--ink3);margin:0 0 18px;line-height:1.55;text-align:center;min-height:42px;}
-      .lplan-n{font-size:29px;font-weight:900;color:var(--ink);letter-spacing:-.7px;line-height:1;}
-      .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
+      .lplan-n{font-size:29px;font-weight:800;color:var(--ink);letter-spacing:-.022em;line-height:1;}
+      .lplan-pct{font-size:11px;font-weight:800;background:var(--sig-sf);color:var(--sig-d);border:1px solid var(--sig-bd);padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:20px 14px;margin-bottom:22px;text-align:center;}
       .lplan.pop .lplan-pb{background:rgba(37,99,235,0.05);border-color:rgba(37,99,235,0.18);}
-      .lplan:last-child .lplan-pb{background:rgba(217,119,6,0.05);border-color:rgba(217,119,6,0.18);}
+      .lplan:last-child .lplan-pb{background:rgba(226,96,10,0.05);border-color:rgba(226,96,10,0.18);}
       .lplan-or{font-size:17px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:2px;}
       .lplan-pr{display:flex;align-items:baseline;gap:5px;justify-content:center;flex-wrap:nowrap;}
-      .lplan-num{font-size:clamp(38px,3.6vw,54px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;white-space:nowrap;}
+      .lplan-num{font-size:clamp(38px,3.6vw,54px);font-weight:900;color:var(--blue);letter-spacing:-.035em;line-height:1;white-space:nowrap;}
       .lplan-cur{font-size:13px;font-weight:800;color:var(--ink4);letter-spacing:.5px;}
       .lplan.pop .lplan-num{color:#2563eb;}
-      .lplan:last-child .lplan-num{color:#d97706;}
+      .lplan:last-child .lplan-num{color:var(--sig);}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;white-space:nowrap;}
       .lplan-an{font-size:12.5px;color:#059669;font-weight:700;margin-top:8px;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
       .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
       .lplan-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--bdr2);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:12px;transition:all .2s;}
       .lplan-cta:hover{background:var(--surf3);}
-      .lplan-cta.pop{background:linear-gradient(135deg,#f59e0b,#d97706);border-color:#d97706;color:#fff;box-shadow:0 4px 20px rgba(217,119,6,0.35);}
-      .lplan-cta.pop:hover{background:linear-gradient(135deg,#fbbf24,#b45309);box-shadow:0 6px 28px rgba(217,119,6,0.45);}
+      .lplan-cta.pop{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,0.3);}
+      .lplan-cta.pop:hover{background:var(--blue-d);box-shadow:0 6px 28px rgba(37,99,235,0.4);}
       .lplan-nt{text-align:center;font-size:11.5px;color:var(--ink4);margin-top:11px;line-height:1.45;}
       .lplan-free{font-size:12px;color:var(--muted);font-weight:600;}
       .lproof{display:flex;align-items:center;justify-content:center;gap:14px;}
@@ -751,7 +769,7 @@ export default function LandingPage() {
       .lcta-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(0.3);}
       .lcta-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,15,30,0.94),rgba(10,15,30,0.88));}
       .lcta-i{position:relative;z-index:1;max-width:640px;margin:0 auto;}
-      .lcta-h2{font-size:clamp(32px,5vw,60px);font-weight:900;letter-spacing:-2px;color:#f8fafc;margin:12px 0 16px;}
+      .lcta-h2{font-size:clamp(32px,5vw,60px);font-weight:800;letter-spacing:-.03em;line-height:1.06;color:#f8fafc;margin:12px 0 16px;text-wrap:balance;}
       .lcta-sub{font-size:clamp(15px,1.8vw,18px);color:#94a3b8;line-height:1.7;margin-bottom:36px;}
       .lcta-bts{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;}
 
@@ -771,7 +789,7 @@ export default function LandingPage() {
       .llm{padding:96px 0;background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);}
       .llm .lsl{color:#93c5fd;}
       .llm-solo{max-width:680px;margin:0 auto;}
-      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;}
+      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:800;letter-spacing:-.025em;color:#fff;line-height:1.12;margin-bottom:16px;text-wrap:balance;}
       .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;}
       .llm-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
       .llm-list-center{max-width:560px;margin:0 auto;}

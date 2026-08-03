@@ -1,11 +1,26 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Archivo, Public_Sans } from 'next/font/google'
 import './globals.css'
 import CookieConsent from '@/components/cookie-consent'
 import RegistrarSW from '@/components/registrar-sw'
 import SplashScreen from '@/components/splash-screen'
 
 const inter = Inter({ subsets: ['latin'] })
+
+// Tipografías de la web pública. Van por next/font (autoalojadas, precargadas)
+// en vez de un @import a Google dentro de una etiqueta <style>: aquel bloqueaba
+// el primer render de la landing hasta que respondía un servidor de terceros.
+// Ambas son variables, así que un solo archivo cubre todos los pesos.
+const archivo = Archivo({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--fuente-titular',
+})
+const publicSans = Public_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--fuente-texto',
+})
 
 export const metadata: Metadata = {
   title: 'TallerOS — Gestión inteligente para talleres mecánicos',
@@ -102,7 +117,7 @@ export default function RootLayout({
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
 </head>
-      <body className={`${inter.className} has-offer-bar`}>
+      <body className={`${inter.className} ${archivo.variable} ${publicSans.variable} has-offer-bar`}>
         <div id="splash-screen">
           <div id="splash-logo">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
