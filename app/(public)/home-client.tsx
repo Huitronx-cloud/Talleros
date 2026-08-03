@@ -501,7 +501,13 @@ export default function LandingPage() {
       <p className="lmobile-cta-sub">Sin tarjeta · Cancela cuando quieras</p>
     </div>
 
-    <style>{`
+    {/* El CSS va por dangerouslySetInnerHTML y no como hijo de texto: React
+        escapa las comillas al renderizar en el servidor (" pasa a &quot;,
+        ' a &#x27;), pero dentro de <style> el navegador no decodifica
+        entidades. El texto del servidor y el del cliente no coincidían y
+        React tiraba todo el HTML del servidor para repintar en el cliente.
+        El contenido es una plantilla fija nuestra, sin datos de nadie. */}
+    <style dangerouslySetInnerHTML={{ __html: `
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html{scroll-behavior:smooth;}
       :root{
@@ -868,7 +874,7 @@ export default function LandingPage() {
         .lmobile-cta-btn{display:block;width:100%;background:#2563eb;color:#fff;text-align:center;font-size:15px;font-weight:700;padding:13px;border-radius:12px;text-decoration:none;}
         .lmobile-cta-sub{font-size:11px;color:#94a3b8;margin:6px 0 0;}
       }
-    `}</style>
+    ` }} />
     </div>
     </>
   )
