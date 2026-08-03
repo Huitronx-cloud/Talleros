@@ -35,8 +35,11 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
     supabase.from('talleres').select('pais, moneda, nombre').eq('id', tallerId).single(),
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
     supabase.from('uso_mensual').select('ordenes').eq('taller_id', tallerId).eq('mes', mesActual).single(),
+    // Sin excluir la muestra, un taller gratuito llegaría al tope una orden
+    // antes de tiempo por un dato que no pidió.
     supabase.from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', tallerId)
+      .eq('es_ejemplo', false)
       .gte('created_at', `${mesActual}-01`)
       .lt('created_at', `${mesActual}-31`),
   ])

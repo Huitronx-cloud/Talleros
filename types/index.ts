@@ -71,10 +71,12 @@ export interface Cliente {
   vin: string | null
   notas: string | null
   foto_vehiculo_url: string | null
+  /** Sembrado al registrar el taller: se enseña como muestra y no gasta cupo. */
+  es_ejemplo: boolean
   created_at: string
 }
 
-export type ClienteForm = Omit<Cliente, 'id' | 'taller_id' | 'created_at'>
+export type ClienteForm = Omit<Cliente, 'id' | 'taller_id' | 'created_at' | 'es_ejemplo'>
 
 export type EstadoOrden = 'recibido' | 'en_proceso' | 'listo' | 'entregado'
 export type FormaPago   = 'efectivo' | 'transferencia' | 'tarjeta'
@@ -167,6 +169,8 @@ export interface Orden {
   fecha_cobro: string | null
   notas_internas: string | null
   historial: HistorialItem[]
+  /** Sembrada al registrar el taller: se enseña como muestra y no gasta cupo. */
+  es_ejemplo: boolean
   created_at: string
   clientes?: { nombre: string; telefono: string | null } | null
 }

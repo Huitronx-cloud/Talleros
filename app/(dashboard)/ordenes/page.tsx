@@ -31,8 +31,10 @@ export default async function OrdenesPage({
   // Obtener plan y uso
   const [{ data: suscripcion }, { count: ordenesEsteMes }] = await Promise.all([
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
+    // La orden de muestra se lista, pero no cuenta contra el tope del plan.
     supabase.from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', tallerId)
+      .eq('es_ejemplo', false)
       .gte('created_at', `${mesActual}-01`)
       .lt('created_at', `${mesActual}-31`),
   ])

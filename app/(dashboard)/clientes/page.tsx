@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { Cliente } from '@/types'
 import TablaClientes from '@/components/clientes/tabla-clientes'
+import AvisoDatosEjemplo from '@/components/clientes/aviso-datos-ejemplo'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
 import Link from 'next/link'
 import { Users } from 'lucide-react'
@@ -31,7 +32,10 @@ export default async function ClientesPage() {
 
   const plan          = suscripcion?.plan ?? 'trial'
   const limites       = getLimites(plan, suscripcion?.trial_fin)
-  const totalClientes = clientes?.length ?? 0
+  // Los de muestra se listan, pero el cupo se mide solo con los reales: si no,
+  // el aviso de "te acercas al límite" saltaría por datos que nadie pidió.
+  const clientesEjemplo = clientes?.filter(c => c.es_ejemplo).length ?? 0
+  const totalClientes = (clientes?.length ?? 0) - clientesEjemplo
   const puedeAgregar  = puedeCrear(totalClientes, limites.clientes)
   const cercaLimite   = limites.clientes !== -1 && totalClientes >= limites.clientes * 0.8
 
@@ -49,6 +53,8 @@ export default async function ClientesPage() {
 
   return (
     <div>
+      <AvisoDatosEjemplo cuantos={clientesEjemplo} />
+
       {/* Banner límite de clientes */}
       {limites.clientes !== -1 && (!puedeAgregar || cercaLimite) && (
         <div className={`mb-6 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap ${

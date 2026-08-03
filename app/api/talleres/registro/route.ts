@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { sembrarDatosEjemplo } from '@/lib/datos-ejemplo'
 
 export async function POST(req: Request) {
   const supabaseAdmin = createClient(
@@ -102,6 +103,16 @@ export async function POST(req: Request) {
         .update({ telefono: telefono.trim() })
         .eq('id', userId)
       if (telefonoUpdateError) console.error('Error guardando teléfono:', telefonoUpdateError)
+    }
+
+    // ── 4c. Sembrar la muestra para que el panel no arranque vacío ───────────
+    // Va después de guardar el teléfono para poder reutilizarlo en los clientes
+    // de ejemplo. Si algo falla, el registro sigue adelante: quedarse sin datos
+    // de muestra es un panel soso, pero perder el alta es perder al taller.
+    try {
+      await sembrarDatosEjemplo(supabaseAdmin, usuario.taller_id, telefonoLimpio.length >= 8 ? telefono.trim() : null)
+    } catch (ejemploErr) {
+      console.error('Error sembrando datos de ejemplo (no crítico):', ejemploErr)
     }
 
     // ── 5. Generar magic link para acceso directo al onboarding ──────────────

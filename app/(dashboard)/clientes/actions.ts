@@ -27,10 +27,12 @@ export async function crearCliente(datos: ClienteForm) {
     .single()
 
   const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
+  // Los clientes de muestra no gastan cupo: se sembraron sin pedirlos.
   const { count: totalClientes } = await supabase
     .from('clientes')
     .select('*', { count: 'exact', head: true })
     .eq('taller_id', tallerId)
+    .eq('es_ejemplo', false)
 
   if (!puedeCrear(totalClientes ?? 0, limites.clientes)) {
     return { error: 'Alcanzaste el límite de clientes de tu plan. Actualiza tu plan para seguir agregando clientes.' }
@@ -124,5 +126,42 @@ export async function eliminarCliente(id: string) {
 
   if (error) return { error: error.message }
   revalidatePath('/clientes')
+  return { error: null }
+}
+
+/**
+ * Quita de una vez la muestra que se sembró al registrar el taller.
+ *
+ * Se borran primero las órdenes: cliente_id queda en null al borrar el cliente
+ * (on delete set null), y entonces la orden de ejemplo se quedaría suelta en la
+ * lista sin nombre y sin manera cómoda de encontrarla.
+ */
+export async function eliminarDatosEjemplo() {
+  const supabase = createClient()
+  const tallerId = await getTallerId()
+  if (!tallerId) return { error: 'No se encontró el taller' }
+
+  const { error: errOrdenes } = await supabase
+    .from('ordenes')
+    .delete()
+    .eq('taller_id', tallerId)
+    .eq('es_ejemplo', true)
+  if (errOrdenes) return { error: errOrdenes.message }
+
+  const { error: errClientes } = await supabase
+    .from('clientes')
+    .delete()
+    .eq('taller_id', tallerId)
+    .eq('es_ejemplo', true)
+  if (errClientes) return { error: errClientes.message }
+
+  // Si la muestra era lo único que había, el contador vuelve a cero para que la
+  // primera orden de verdad sea la #0001. La función comprueba por dentro que
+  // no queden órdenes, así que llamarla siempre es seguro.
+  await supabase.rpc('reiniciar_contador_orden', { p_taller_id: tallerId })
+
+  revalidatePath('/clientes')
+  revalidatePath('/ordenes')
+  revalidatePath('/dashboard')
   return { error: null }
 }

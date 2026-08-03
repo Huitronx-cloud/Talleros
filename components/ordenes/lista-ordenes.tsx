@@ -121,6 +121,11 @@ export default function ListaOrdenes({ ordenes }: { ordenes: Orden[] }) {
                       #{String(orden.numero_orden).padStart(4, '0')}
                     </span>
                     <BadgeEstado estado={orden.estado} />
+                    {orden.es_ejemplo && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                        Ejemplo
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 mb-1">
                     <User className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
