@@ -150,7 +150,14 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
                             </span>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
+                            <p className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                              {c.nombre}
+                              {c.es_ejemplo && (
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                                  Ejemplo
+                                </span>
+                              )}
+                            </p>
                             <p className="text-xs text-gray-400">
                               Cliente desde {new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })}
                             </p>

@@ -67,6 +67,9 @@ export default async function DashboardPage() {
     .maybeSingle()
 
   let totalClientes = 0, ordenesMes = 0, totalOrdenes = 0, cotizacionesAbiertas = 0
+  // Las tarjetas de actividad enseñan lo que hay en pantalla, incluida la
+  // muestra. El medidor del plan mide cupo, así que solo cuenta lo real.
+  let ordenesMesReales = 0
   let ingresosMes: any[] = [], ordenesRecientes: any[] = [], ordenesRetrasadas: any[] = []
   let ingresosPorMes: any[] = [], ordenesTiempo: any[] = [], inventarioItems: any[] = []
 
@@ -97,12 +100,16 @@ export default async function DashboardPage() {
         .order('created_at', { ascending: false })
         .limit(50),
       supabase.from('inventario').select('id, nombre, stock_actual, stock_minimo, unidad').order('stock_actual'),
+      supabase.from('ordenes').select('*', { count: 'exact', head: true })
+        .gte('created_at', inicioMes)
+        .eq('es_ejemplo', false),
     ])
 
     totalClientes        = results[0].count ?? 0
     ordenesMes           = results[1].count ?? 0
     totalOrdenes         = results[2].count ?? 0
     cotizacionesAbiertas = results[3].count ?? 0
+    ordenesMesReales     = results[10].count ?? 0
     ingresosMes          = results[4].data ?? []
     ordenesRecientes     = results[5].data ?? []
     ordenesRetrasadas    = results[6].data ?? []
@@ -318,7 +325,7 @@ export default async function DashboardPage() {
         <UsageMeter
           plan={planActual}
           trialFin={suscripcionData?.trial_fin}
-          usadas={ordenesMes ?? 0}
+          usadas={ordenesMesReales}
           rol={rol}
         />
 

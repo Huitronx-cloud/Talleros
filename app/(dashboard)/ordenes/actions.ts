@@ -53,10 +53,12 @@ export async function crearOrden(datos: OrdenForm) {
 
   const limites   = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
   const mesActual = new Date().toISOString().slice(0, 7)
+  // La orden de muestra no gasta cupo del mes: se sembró sin pedirla.
   const { count: ordenesEsteMes } = await supabase
     .from('ordenes')
     .select('*', { count: 'exact', head: true })
     .eq('taller_id', tallerId)
+    .eq('es_ejemplo', false)
     .gte('created_at', `${mesActual}-01`)
     .lt('created_at', `${mesActual}-31`)
 
