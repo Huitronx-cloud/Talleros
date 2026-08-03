@@ -172,7 +172,7 @@ export default function LandingPage() {
             Se acabaron las llamadas de<br/>
             <span className="ltw" style={{fontStyle:'italic'}}>&ldquo;¿Cómo va mi carro?&rdquo;</span>
           </h1>
-          <p className="lh-sub">Tus clientes ven el estado en vivo. Aprueban reparaciones por WhatsApp. TallerOS se encarga del resto.</p>
+          <p className="lh-sub">Tus clientes ven el estado en vivo y aprueban por WhatsApp. Tú cobras más rápido, no se te escapa un trabajo y los clientes regresan solos.</p>
           <div className="lh-ctas">
             <a href="/registro" className="lb-pri">Crear mi cuenta gratis <ArrowRight size={16}/></a>
             <a href="/demo" className="lb-out">Ver cómo lo ve el cliente</a>
@@ -213,7 +213,7 @@ export default function LandingPage() {
       <div className="li">
         <div className="lsl">El problema real</div>
         <h2 className="lsh2">Los números que tu competencia ignora</h2>
-        <p className="lssub">Mientras la mayoría opera igual que hace 20 años, los talleres con TallerOS ya van adelante.</p>
+        <p className="lssub">No se trata de trabajar más horas. Se trata de que no se te escape el dinero que ya estás generando.</p>
         <div className="lstg">
           {STATS_DATA.map((s,i) => (
             <div key={i} id={`st-${i}`} data-animate className={`lstc${isV(`st-${i}`)?' v':''}`} style={{transitionDelay:`${i*80}ms`}}>
@@ -299,8 +299,8 @@ export default function LandingPage() {
     <section className="lgal">
       <div className="lgal-i">
         <div className="lgal-t">
-          <h2 className="lgal-h2">Profesionales que ya dieron el salto digital</h2>
-          <p className="lgal-sub">Mecánicos y dueños de taller en México, Colombia, Perú y toda Latinoamérica confían en TallerOS.</p>
+          <h2 className="lgal-h2">Talleres como el tuyo ya dieron el salto</h2>
+          <p className="lgal-sub">Dueños de taller en México, Colombia, Perú y toda Latinoamérica ya administran su negocio con TallerOS.</p>
           <a href="/registro" className="lb-pri">Unirme a ellos <ArrowRight size={16}/></a>
         </div>
         <div className="lgal-grid">
@@ -347,7 +347,7 @@ export default function LandingPage() {
     <section id="precios" className="ls lprice-s">
       <div className="li">
         <div className="lsl">Cuesta menos que un servicio</div>
-        <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
+        <h2 className="lsh2">Sin sorpresas.<br/>Sin letra chica.</h2>
         <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
         <div className="ltog-w">
           <div className="ltog">
@@ -447,7 +447,7 @@ export default function LandingPage() {
       <div className="lcta-ov"/>
       <div className="lcta-i">
         <div className="lsl" style={{color:'#93c5fd'}}>Empieza hoy</div>
-        <h2 className="lcta-h2">Deja de perder clientes por no tener sistema.</h2>
+        <h2 className="lcta-h2">Cada cliente que no regresa es dinero que se queda en la calle.</h2>
         <p className="lcta-sub">Sin tarjeta, sin contratos y sin fecha de vencimiento. Tu cuenta gratis no caduca.</p>
         <div className="lcta-bts">
           <a href="/registro" className="lb-pri">Crear mi cuenta gratis <ArrowRight size={16}/></a>
@@ -473,19 +473,6 @@ export default function LandingPage() {
       </div>
     </section>
 
-    {/* WHATSAPP FLOTANTE — un visitante con dudas escribe sin salir de la página */}
-    <a
-      href="https://wa.me/14284362377?text=Hola%2C%20tengo%20una%20duda%20sobre%20TallerOS"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="lwa-fab"
-      aria-label="Escríbenos por WhatsApp"
-    >
-      <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35z"/>
-        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23z"/>
-      </svg>
-    </a>
 
     {/* FOOTER */}
     <footer className="lfoot">
@@ -613,10 +600,11 @@ export default function LandingPage() {
       .lmq-d{margin:0 20px;color:var(--blue);}
 
       .li{max-width:1200px;margin:0 auto;padding:0 28px;}
-      .ls{padding:96px 0;}
+      .ls{padding:72px 0;}
       .lsl{font-size:13px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
+      .lprice-s .lsl{display:block;width:fit-content;margin:0 auto 18px;font-size:15px;letter-spacing:1.6px;color:#166534;background:#dcfce7;border:1px solid #bbf7d0;border-radius:999px;padding:9px 22px;}
       .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:900;letter-spacing:-1.8px;line-height:1.04;color:var(--ink);text-align:center;margin-bottom:16px;}
-      .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 60px;line-height:1.7;}
+      .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 44px;line-height:1.7;}
 
       .lprob{background:var(--surf2);}
       .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
@@ -628,7 +616,7 @@ export default function LandingPage() {
       .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-4px;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
       .lstxt{font-size:14.5px;color:var(--ink2);line-height:1.55;font-weight:500;max-width:210px;margin:0 auto;}
 
-      .lver{padding:96px 0;background:var(--surf);}
+      .lver{padding:72px 0;background:var(--surf);}
       .lver-w{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lver-img{position:relative;border-radius:var(--rl);overflow:hidden;}
       .lvimg{width:100%;height:500px;object-fit:cover;display:block;}
@@ -680,7 +668,7 @@ export default function LandingPage() {
       .lmc-l{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;}
       .lmc-d{font-size:12px;color:var(--ink4);line-height:1.4;}
 
-      .lgal{padding:96px 0;background:var(--surf2);overflow:hidden;}
+      .lgal{padding:72px 0;background:var(--surf2);overflow:hidden;}
       .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lgal-t{display:flex;flex-direction:column;gap:20px;}
       .lgal-h2{font-size:clamp(30px,4.4vw,50px);font-weight:900;letter-spacing:-1.8px;line-height:1.06;color:var(--ink);text-align:center;}
@@ -722,24 +710,27 @@ export default function LandingPage() {
       .lplan.pop{border-color:#d97706;border-width:2px;box-shadow:0 0 0 1px #d97706,0 8px 32px rgba(217,119,6,0.18);}
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;text-align:center;}
-      .lplan-ic{width:52px;height:52px;border-radius:15px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
+      .lplan-ic{width:56px;height:56px;border-radius:16px;background:rgba(100,116,139,0.10);display:flex;align-items:center;justify-content:center;color:var(--ink3);}
       .lplan.esencial{border-color:#3b82f6;border-width:2px;box-shadow:0 0 0 1px rgba(59,130,246,0.3),0 8px 24px rgba(59,130,246,0.1);}
-      .lplan.esencial .lplan-ic{background:rgba(59,130,246,0.12);color:#2563eb;}
+      .lplan.esencial .lplan-ic{background:rgba(37,99,235,0.12);color:#2563eb;}
       .lplan.esencial .lplan-num{color:#2563eb;}
       .lplan.esencial .lplan-pb{background:rgba(59,130,246,0.04);border-color:rgba(59,130,246,0.15);}
       .lplan.esencial .lplan-cta{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,0.25);}
       .lplan.esencial .lplan-cta:hover{background:#1d4ed8;box-shadow:0 6px 24px rgba(37,99,235,0.35);}
-      .lplan.pop .lplan-ic{background:rgba(245,158,11,0.12);color:#d97706;}
+      .lplan.pop .lplan-ic{background:rgba(37,99,235,0.12);color:#2563eb;}
+      .lplan:last-child .lplan-ic{background:rgba(217,119,6,0.12);color:#d97706;}
       .lplan-ideal{font-size:13.5px;color:var(--ink3);margin:0 0 18px;line-height:1.55;text-align:center;min-height:42px;}
       .lplan-n{font-size:29px;font-weight:900;color:var(--ink);letter-spacing:-.7px;line-height:1;}
       .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:20px 14px;margin-bottom:22px;text-align:center;}
-      .lplan.pop .lplan-pb{background:rgba(245,158,11,0.06);border-color:rgba(217,119,6,0.2);}
+      .lplan.pop .lplan-pb{background:rgba(37,99,235,0.05);border-color:rgba(37,99,235,0.18);}
+      .lplan:last-child .lplan-pb{background:rgba(217,119,6,0.05);border-color:rgba(217,119,6,0.18);}
       .lplan-or{font-size:17px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:2px;}
       .lplan-pr{display:flex;align-items:baseline;gap:5px;justify-content:center;flex-wrap:nowrap;}
       .lplan-num{font-size:clamp(38px,3.6vw,54px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;white-space:nowrap;}
       .lplan-cur{font-size:13px;font-weight:800;color:var(--ink4);letter-spacing:.5px;}
-      .lplan.pop .lplan-num{color:#d97706;}
+      .lplan.pop .lplan-num{color:#2563eb;}
+      .lplan:last-child .lplan-num{color:#d97706;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;white-space:nowrap;}
       .lplan-an{font-size:12.5px;color:#059669;font-weight:700;margin-top:8px;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
@@ -816,12 +807,19 @@ export default function LandingPage() {
       .lfaq-ic{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--surf2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--blue);transition:transform .2s;}
       .lfaq-i[open] .lfaq-ic{transform:rotate(45deg);}
       .lfaq-r{padding:0 4px 24px;font-size:15.5px;color:var(--ink3);line-height:1.7;max-width:660px;text-align:left;}
-      .lwa-fab{position:fixed;right:20px;bottom:22px;z-index:99;width:56px;height:56px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,.4);transition:transform .15s,box-shadow .15s;}
-      .lwa-fab:hover{transform:scale(1.06);box-shadow:0 8px 26px rgba(37,211,102,.5);}
       .lmobile-cta{display:none;}
       @media(max-width:900px){
         /* En pantalla de teléfono todo el bloque de texto va centrado */
         .lh-left,.lfc-b,.lver-cnt,.lplan-h,.lplan-ideal{text-align:center;}
+        /* En columna flex el text-align no alinea la caja: hace falta align-items */
+        .lh-left,.lgal-t{align-items:center;}
+        .lver-h2,.lver-sub,.lgal-t{text-align:center;}
+        /* Las filas de comparación son listas: centrarlas descoloca el icono
+           respecto al texto y se leen peor. Se quedan a la izquierda. */
+        .lvbad,.lvgood{text-align:left;}
+        /* la píldora del gancho de precio cabe en un renglón en pantalla chica */
+        .lprice-s .lsl{font-size:12.5px;letter-spacing:1.1px;padding:8px 16px;}
+        .lver-sub{margin-left:auto;margin-right:auto;}
         .lh-ctas,.ltrust{justify-content:center;}
         .lfc-lnk{justify-content:center;}
         .lstc{padding:30px 16px;}
@@ -829,7 +827,9 @@ export default function LandingPage() {
       @media(max-width:640px){
         .lh{padding:90px 16px 60px;}
         .li{padding:0 16px;}
-        .ls{padding:64px 0;}
+        .ls{padding:48px 0;}
+        .lver,.lgal{padding:48px 0;}
+        .lssub{margin-bottom:34px;}
         .lh-ctas{flex-direction:column;}
         .lb-pri,.lb-out{width:100%;justify-content:center;max-width:340px;}
         .lstg{grid-template-columns:1fr 1fr;}
@@ -842,7 +842,6 @@ export default function LandingPage() {
         .l-toast{left:12px;right:12px;bottom:16px;}
         .lcta-bts{flex-direction:column;align-items:center;}
         .lfoot{padding-bottom:110px;}
-        .lwa-fab{width:52px;height:52px;right:14px;bottom:96px;}
         .lfoot-i{flex-direction:column;text-align:center;gap:20px;}
         .lfoot-cols{flex-direction:column;gap:18px;}
         .lfoot-lnks{gap:22px;flex-wrap:wrap;justify-content:center;}
