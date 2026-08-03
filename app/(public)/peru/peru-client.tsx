@@ -110,7 +110,10 @@ export default function PeruClient() {
   const [scrolled, setScrolled]     = useState(false)
   const [visible, setVisible]       = useState<Set<string>>(new Set())
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0 })
-  const [secs, setSecs]             = useState(getSecsUntilEOM())
+  // Arranca en null y se calcula tras montar. Si se calculara en el render,
+  // el servidor pintaría un segundo y el cliente otro, y ese desajuste hacía
+  // que React descartara todo el HTML del servidor para repintar de cero.
+  const [secs, setSecs]             = useState<number | null>(null)
   const obs = useRef<IntersectionObserver | null>(null)
   const { convertir, cargando: cM } = useMonedaLocal()
 
@@ -124,7 +127,13 @@ export default function PeruClient() {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
   }, [])
 
-  useEffect(() => { const t = setInterval(() => setSecs(s => s > 0 ? s-1 : 0), 1000); return () => clearInterval(t) }, [])
+  // Se recalcula contra el reloj en vez de restar de uno en uno: así no se
+  // desfasa si el navegador congela la pestaña en segundo plano.
+  useEffect(() => {
+    setSecs(getSecsUntilEOM())
+    const t = setInterval(() => setSecs(getSecsUntilEOM()), 1000)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     obs.current = new IntersectionObserver(
@@ -137,7 +146,7 @@ export default function PeruClient() {
 
   const isV = (id: string) => visible.has(id)
   const pad = (n: number) => String(n).padStart(2, '0')
-  const { d, h, m, s } = fmt(secs)
+  const { d, h, m, s } = fmt(secs ?? 0)
 
   return (
     <>
@@ -332,7 +341,9 @@ export default function PeruClient() {
         <div className="lobar">
           <span className="lobar-f">🔥</span>
           <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% DE DESCUENTO</span>
-          <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>
+          {/* hasta que el reloj del navegador responda no se enseña nada:
+              un 0d 00:00:00 parpadeando diría que la oferta ya terminó */}
+          {secs !== null && <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>}
         </div>
         <div className="lsl">Precios de lanzamiento</div>
         <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
@@ -357,12 +368,12 @@ export default function PeruClient() {
                 {plan.popular && <div className="lplan-b">Más popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={18}/></div>
-                  <div><h3 className="lplan-n">{plan.nombre}</h3><span className="lplan-pct">-{pct}% hoy</span></div>
+                  <div><h3 className="lplan-n">{plan.nombre}</h3>{!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}</div>
                 </div>
                 <div className="lplan-pb">
-                  <div className="lplan-or">{!cM ? lor.replace(/\s[A-Z]{3}$/, '') : `$${por}`}</div>
+                  {!plan.gratis && <div className="lplan-or">{!cM ? lor.replace(/\s[A-Z]{3}$/, '') : `$${por}`}</div>}
                   <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
-                  {anual && <p className="lplan-an">{!cM ? `${lan} al anio` : `$${plan.total_anual} USD al anio`}</p>}
+                  {anual && <p className="lplan-an">{!cM ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>}
                 </div>
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
@@ -440,7 +451,13 @@ export default function PeruClient() {
       </div>
     </footer>
 
-    <style>{`
+    {/* El CSS va por dangerouslySetInnerHTML y no como hijo de texto: React
+        escapa las comillas al renderizar en el servidor (" pasa a &quot;,
+        ' a &#x27;), pero dentro de <style> el navegador no decodifica
+        entidades. El texto del servidor y el del cliente no coincidían y
+        React tiraba todo el HTML del servidor para repintar en el cliente.
+        El contenido es una plantilla fija nuestra, sin datos de nadie. */}
+    <style dangerouslySetInnerHTML={{ __html: `
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html{scroll-behavior:smooth;}
       :root{
@@ -681,7 +698,7 @@ export default function PeruClient() {
       @media(max-width:1024px){.lstg{grid-template-columns:repeat(2,1fr);}.lfg{grid-template-columns:repeat(2,1fr);}.lmw{grid-template-columns:1fr;}.lmimgs{position:static;display:grid;grid-template-columns:1fr 1fr;}.lmimg,.lmimg2{height:180px;}}
       @media(max-width:900px){.ln-links,.ln-r{display:none;}.ln-ham{display:block;}.lh-inner{grid-template-columns:1fr;}.lh-right{display:none;}.ltg{grid-template-columns:1fr;}.lgal-i{grid-template-columns:1fr;}.lgal-grid{grid-template-columns:1fr 1fr;}.llm-w{grid-template-columns:1fr;}.llm-h2{text-align:center;}.llm-sub{text-align:center;}.llm .lsl{text-align:center;}}
       @media(max-width:640px){.lh{padding:90px 16px 60px;}.li{padding:0 16px;}.ls{padding:64px 0;}.lh-ctas{flex-direction:column;}.lb-pri,.lb-out{width:100%;justify-content:center;max-width:340px;}.lstg{grid-template-columns:1fr 1fr;}.lfg{grid-template-columns:1fr;}.lpg{grid-template-columns:1fr;}.lobar{flex-direction:column;gap:.5rem;text-align:center;}.lcta-bts{flex-direction:column;align-items:center;}}
-    `}</style>
+    ` }} />
     </div>
     </>
   )
