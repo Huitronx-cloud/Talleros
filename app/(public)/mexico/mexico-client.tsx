@@ -441,11 +441,11 @@ export default function MexicoClient() {
     </footer>
 
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html{scroll-behavior:smooth;}
       :root{
-        --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+        --ink:#0f172a;--ink2:#334155;--ink3:#4a5468;--ink4:#94a3b8;--muted:#6b7688;
+        --sig:#e2600a;--sig-d:#c24f05;--sig-sf:#fff3e9;--sig-bd:#fbd7b8;
         --blue:#2563eb;--blue-d:#1d4ed8;--green:#22c55e;
         --surf:#fff;--surf2:#f8fafc;--surf3:#f1f5f9;
         --bdr:rgba(15,23,42,0.08);--bdr2:rgba(15,23,42,0.12);
@@ -455,7 +455,7 @@ export default function MexicoClient() {
         --sh-lg:0 16px 48px rgba(15,23,42,0.14);
         --sh-bl:0 8px 32px rgba(37,99,235,0.25);
       }
-      .lr{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--surf);color:var(--ink);overflow-x:hidden;min-height:100dvh;}
+      .lr{background:var(--surf);color:var(--ink);overflow-x:hidden;min-height:100dvh;}
       .ln{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .25s,box-shadow .25s;}
       .ln.sc{background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--bdr);}
       .ln-i{max-width:1280px;margin:0 auto;display:flex;align-items:center;height:68px;padding:0 28px;gap:32px;}
@@ -504,7 +504,7 @@ export default function MexicoClient() {
       .ley{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.3);border-radius:999px;padding:6px 16px;width:fit-content;font-size:12px;font-weight:600;color:#93c5fd;}
       .ley-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pu 2s infinite;flex-shrink:0;}
       @keyframes pu{0%,100%{box-shadow:0 0 6px var(--green);}50%{box-shadow:0 0 14px var(--green);}}
-      .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.0;letter-spacing:-2px;color:#f8fafc;}
+      .lh1{font-size:clamp(36px,5.5vw,68px);font-weight:800;line-height:1.02;letter-spacing:-.03em;color:#f8fafc;}
       .ltw{display:block;color:#60a5fa;min-height:1.1em;}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
       .lh-sub{font-size:clamp(15px,1.5vw,18px);color:#94a3b8;line-height:1.75;max-width:500px;}
@@ -530,7 +530,7 @@ export default function MexicoClient() {
       .li{max-width:1200px;margin:0 auto;padding:0 28px;}
       .ls{padding:96px 0;}
       .lsl{font-size:13px;font-weight:800;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
-      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:900;letter-spacing:-1.8px;line-height:1.04;color:var(--ink);text-align:center;margin-bottom:16px;}
+      .lsh2{font-size:clamp(31px,4.6vw,54px);font-weight:800;letter-spacing:-.028em;line-height:1.06;color:var(--ink);text-align:center;margin-bottom:16px;text-wrap:balance;}
       .lssub{font-size:17px;color:var(--ink3);text-align:center;max-width:580px;margin:0 auto 60px;line-height:1.7;}
       .lprob{background:var(--surf2);}
       .lstg{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
@@ -539,7 +539,7 @@ export default function MexicoClient() {
       .lstc.v{opacity:1;transform:translateY(0);}
       .lstc:hover{box-shadow:var(--sh-md);transform:translateY(-4px);}
       .lsti{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-4px;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
+      .lstn{font-size:clamp(52px,7vw,80px);font-weight:900;letter-spacing:-.05em;line-height:.92;margin-bottom:14px;font-variant-numeric:tabular-nums;}
       .lstxt{font-size:14.5px;color:var(--ink2);line-height:1.55;font-weight:500;max-width:210px;margin:0 auto;}
       .lfeat-s{background:var(--surf2);}
       .lfg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
@@ -577,7 +577,7 @@ export default function MexicoClient() {
       .lgal{padding:96px 0;background:var(--surf2);overflow:hidden;}
       .lgal-i{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:center;}
       .lgal-t{display:flex;flex-direction:column;gap:20px;}
-      .lgal-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:var(--ink);text-align:left;}
+      .lgal-h2{font-size:clamp(24px,3.5vw,40px);font-weight:800;letter-spacing:-.025em;line-height:1.12;color:var(--ink);text-align:left;}
       .lgal-sub{font-size:15px;color:var(--ink3);line-height:1.7;max-width:420px;text-align:left;}
       .lgal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
       .lgal-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-md);transition:transform .3s,box-shadow .3s;}
@@ -612,7 +612,7 @@ export default function MexicoClient() {
       .ltog{display:inline-flex;background:var(--surf);border:1px solid var(--bdr2);border-radius:12px;padding:4px;}
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
       .ltb.a{background:var(--blue);color:#fff;}
-      .ltbadge{font-size:10px;background:#22c55e;color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
+      .ltbadge{font-size:10px;background:var(--sig);color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
       .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto 48px;}
       .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
@@ -620,12 +620,12 @@ export default function MexicoClient() {
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
       .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
-      .lplan-n{font-size:22px;font-weight:900;color:var(--ink);}
-      .lplan-pct{font-size:11px;font-weight:800;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:999px;}
+      .lplan-n{font-size:22px;font-weight:800;color:var(--ink);}
+      .lplan-pct{font-size:11px;font-weight:800;background:var(--sig-sf);color:var(--sig-d);border:1px solid var(--sig-bd);padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
       .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
       .lplan-pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
-      .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:900;color:var(--blue);letter-spacing:-1.5px;line-height:1.05;white-space:nowrap;}
+      .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:800;color:var(--blue);letter-spacing:-.032em;line-height:1.05;white-space:nowrap;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
       .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
@@ -645,7 +645,7 @@ export default function MexicoClient() {
       .lcta-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(0.3);}
       .lcta-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,15,30,0.94),rgba(10,15,30,0.88));}
       .lcta-i{position:relative;z-index:1;max-width:640px;margin:0 auto;}
-      .lcta-h2{font-size:clamp(32px,5vw,60px);font-weight:900;letter-spacing:-2px;color:#f8fafc;margin:12px 0 16px;}
+      .lcta-h2{font-size:clamp(32px,5vw,60px);font-weight:800;letter-spacing:-.03em;line-height:1.06;color:#f8fafc;margin:12px 0 16px;text-wrap:balance;}
       .lcta-sub{font-size:clamp(15px,1.8vw,18px);color:#94a3b8;line-height:1.7;margin-bottom:36px;}
       .lcta-bts{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;}
       .lfoot{border-top:1px solid var(--bdr);padding:32px 28px;background:var(--surf);}
@@ -658,7 +658,7 @@ export default function MexicoClient() {
       .llm{padding:96px 0;background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);}
       .llm .lsl{color:#93c5fd;}
       .llm-w{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;color:#fff;line-height:1.1;margin-bottom:16px;text-align:left;}
+      .llm-h2{font-size:clamp(24px,3.5vw,40px);font-weight:800;letter-spacing:-.025em;color:#fff;line-height:1.1;margin-bottom:16px;text-align:left;}
       .llm-sub{font-size:15px;color:#bfdbfe;line-height:1.7;margin-bottom:28px;}
       .llm-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
       .llm-item{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:#e0f2fe;line-height:1.5;}
