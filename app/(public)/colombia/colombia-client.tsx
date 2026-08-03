@@ -156,7 +156,7 @@ export default function ColombiaClient() {
           ))}
         </div>
         <div className="ln-r">
-          <a href="/login" className="ln-login">Iniciar sesion</a>
+          <a href="/login" className="ln-login">Iniciar sesión</a>
           <a href="/registro" className="ln-cta">Prueba gratis <ChevronRight size={14}/></a>
         </div>
         <button className="ln-ham" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -169,7 +169,7 @@ export default function ColombiaClient() {
             <a key={href} href={href} className="ln-mob-a" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
           <div className="ln-mob-act">
-            <a href="/login" className="ln-mob-login">Iniciar sesion</a>
+            <a href="/login" className="ln-mob-login">Iniciar sesión</a>
             <a href="/registro" className="ln-mob-cta">Crear cuenta gratis</a>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function ColombiaClient() {
             <Image src="/Gemini_Generated_Image_t2xuqlt2xuqlt2xu.png" alt="TallerOS Dashboard Colombia" width={895} height={1200} priority sizes="(max-width: 900px) 92vw, 44vw" className="lmock-s" />
             <div className="lfl lfl-wa">
               <div className="lfl-ic" style={{background:'#22c55e'}}><MessageCircle size={15} color="#fff"/></div>
-              <div><p className="lfl-l">Cliente aprobo</p><p className="lfl-v">Cambio de frenos</p></div>
+              <div><p className="lfl-l">Cliente aprobó</p><p className="lfl-v">Cambio de frenos</p></div>
             </div>
             <div className="lfl lfl-rv">
               <div className="lfl-ic" style={{background:'#f59e0b'}}><Star size={15} color="#fff"/></div>
@@ -244,8 +244,8 @@ export default function ColombiaClient() {
     {/* FEATURES */}
     <section id="caracteristicas" className="ls lfeat-s">
       <div className="li">
-        <div className="lsl">Por que nos eligen en Colombia</div>
-        <h2 className="lsh2">6 herramientas que transforman tu taller en 30 dias</h2>
+        <div className="lsl">Por qué nos eligen en Colombia</div>
+        <h2 className="lsh2">6 herramientas que transforman tu taller en 30 días</h2>
         <p className="lssub">Cada función resuelve un problema real que cuesta clientes y dinero todos los días en los talleres de Colombia.</p>
         <div className="lfg">
           {DIFERENCIADORES.map((d,i) => (
@@ -258,7 +258,7 @@ export default function ColombiaClient() {
               <div className="lfc-b">
                 <h3 className="lfc-t">{d.titulo}</h3>
                 <p className="lfc-d">{d.desc}</p>
-                <a href="/registro" className="lfc-lnk">Ver en accion <ArrowRight size={13}/></a>
+                <a href="/registro" className="lfc-lnk">Ver en acción <ArrowRight size={13}/></a>
               </div>
             </div>
           ))}
@@ -354,7 +354,7 @@ export default function ColombiaClient() {
             const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}`}>
-                {plan.popular && <div className="lplan-b">Mas popular</div>}
+                {plan.popular && <div className="lplan-b">Más popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={18}/></div>
                   <div><h3 className="lplan-n">{plan.nombre}</h3><span className="lplan-pct">-{pct}% hoy</span></div>
