@@ -141,7 +141,15 @@ ser útil o recurrente, se borra.
    El blog **no tiene imágenes en ninguna capa**: falta la columna en
    `articulos_blog`, guardar la ruta por artículo y pintarla en las dos vistas
    (`app/(public)/blog/page.tsx` y `blog/[slug]/page.tsx`). Lleva migración.
-   El usuario tiene un ZIP de 61 MB; GitHub topa en 25 MB **por archivo**.
-   Hacer en su lugar: que suba las imágenes sueltas (descomprimidas) a una rama
-   nueva, nunca el ZIP ni a `main`; luego comprimirlas con `sharp` a 1200 px y
-   WebP (~4-5 MB en total) y fusionar solo las optimizadas.
+   Son 24 fotos de ~2,5 MB. El tope de GitHub es 25 MB **por archivo**, así que
+   caben sueltas; el problema era intentar subir el ZIP de 61 MB como un archivo.
+   **La subida por la web de GitHub le falló y no llegamos a averiguar por qué.**
+   Sospechas sin confirmar: hacerlo desde el navegador del teléfono, archivos
+   HEIC de iPhone, o el peso total de una sola tanda.
+   Hacer en su lugar: **empezar por diagnosticar ese fallo**, no repetir la misma
+   instrucción. Pedir el mensaje de error exacto y probar desde una computadora
+   con 5-6 archivos por commit antes de intentar las 24 de golpe. El chat no
+   sirve de canal (tope de 5 imágenes) y el proxy deniega enlaces externos tipo
+   Drive: la única vía real es el repositorio.
+   Cuando lleguen: comprimir con `sharp` a 1200 px y WebP (~150-250 KB cada una)
+   y fusionar solo las optimizadas, nunca los originales a `main`.
