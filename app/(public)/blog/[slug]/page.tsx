@@ -45,12 +45,26 @@ async function getRelacionados(slug: string) {
   }
 }
 
+const SITIO = 'https://www.tallerosapp.com'
+
+/**
+ * Las redes exigen URL absoluta en la imagen de vista previa: una ruta como
+ * /blog/foo.webp no se resuelve fuera del sitio y la tarjeta sale sin imagen.
+ */
+function urlAbsoluta(ruta: string | null | undefined): string | null {
+  if (!ruta) return null
+  return ruta.startsWith('http') ? ruta : `${SITIO}${ruta}`
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const art = await getArticulo(params.slug)
   if (!art) return {}
 
   const descripcion = art.excerpt || art.titulo
-  const url = `https://www.tallerosapp.com/blog/${art.slug}`
+  const url = `${SITIO}/blog/${art.slug}`
+  // Sin portada propia se cae al og-image del sitio: peor que la del artículo,
+  // pero mucho mejor que compartir un enlace sin ninguna imagen.
+  const imagen = urlAbsoluta(art.imagen_url) ?? `${SITIO}/og-image.jpg`
 
   return {
     title: `${art.titulo} | TallerOS`,
@@ -62,11 +76,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: art.titulo,
       description: descripcion,
       publishedTime: art.published_at,
+      images: [{ url: imagen, width: 1200, height: 630, alt: art.titulo }],
     },
     twitter: {
       card: 'summary_large_image',
       title: art.titulo,
       description: descripcion,
+      images: [imagen],
     },
   }
 }
@@ -84,6 +100,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
     description: art.excerpt,
     datePublished: art.published_at,
     dateModified: art.published_at,
+    ...(urlAbsoluta(art.imagen_url) ? { image: [urlAbsoluta(art.imagen_url)] } : {}),
     author: { '@type': 'Organization', name: 'TallerOS' },
     publisher: {
       '@type': 'Organization',
@@ -130,6 +147,21 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
             </span>
           </div>
         </header>
+
+        {art.imagen_url && (
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-gray-100 mb-8">
+            {/* priority: es la imagen grande del primer pantallazo, y es lo que
+                mide Google como carga percibida del artículo. */}
+            <Image
+              src={art.imagen_url}
+              alt={art.titulo}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </div>
+        )}
 
         <article
           className="blog-content"
