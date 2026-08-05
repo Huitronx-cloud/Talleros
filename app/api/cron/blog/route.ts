@@ -6,6 +6,7 @@ export const revalidate = 0
 export const maxDuration = 60
 import { createPublicReadClient } from '@/lib/supabase-public'
 import { PREMISA_PROMPT } from '@/lib/premisa'
+import redireccionesBlog from '@/lib/blog-redirecciones.json'
 
 // Errores no fatales (artículo publicado pero script fallido, banco de temas
 // agotado): avisar por email en vez de perderse en logs que expiran en 1h.
@@ -26,94 +27,123 @@ async function enviarAlertaBlog(detalle: string): Promise<void> {
   }
 }
 
-const TEMAS = [
-  // Administración
+// Banco de temas. Un slug solo puede aparecer una vez: las entradas repetidas
+// no publicaban dos veces (slugExiste las filtra) pero inflaban el conteo, y por
+// eso el aviso de banco agotado hablaba de 68 temas que nunca existieron.
+const BANCO = [
+  // ── Administración ─────────────────────────────────────────────────────────
   { titulo: 'Cómo administrar un taller mecánico sin perder el control',                          slug: 'administrar-taller-mecanico-sin-perder-control',        pais: null },
   { titulo: 'Los errores de administración que más le cuestan a un taller mecánico',              slug: 'errores-administracion-taller-mecanico',                pais: null },
   { titulo: 'Cómo organizar el día a día de un taller con varios mecánicos',                      slug: 'organizar-dia-taller-varios-mecanicos',                 pais: null },
+  { titulo: 'Cómo organizar las órdenes de trabajo en tu taller mecánico',                        slug: 'organizar-ordenes-trabajo-taller-mecanico',             pais: null },
+  { titulo: 'Tablero Kanban para talleres mecánicos: qué es y cómo usarlo',                       slug: 'kanban-taller-mecanico',                                pais: null },
+  { titulo: 'Cómo llevar el inventario de un taller mecánico sin perder dinero',                  slug: 'inventario-taller-mecanico',                            pais: null },
+  { titulo: 'Cotizaciones profesionales en tu taller: cómo hacerlas bien',                        slug: 'cotizaciones-profesionales-taller-mecanico',            pais: null },
+  { titulo: 'Cómo calcular el precio de tus servicios en un taller mecánico',                     slug: 'calcular-precios-servicios-taller-mecanico',            pais: null },
+  { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',                   slug: 'garantia-digital-taller-mecanico',                      pais: null },
+  { titulo: 'Cómo hacer una orden de trabajo profesional en tu taller mecánico',                  slug: 'orden-trabajo-profesional-taller-mecanico',             pais: null },
 
-  // Rentabilidad
+  // ── Rentabilidad y finanzas ────────────────────────────────────────────────
   { titulo: 'Cuánto debería ganar realmente un taller mecánico al mes',                           slug: 'cuanto-debe-ganar-taller-mecanico',                     pais: null },
   { titulo: 'Por qué tu taller trabaja mucho y gana poco',                                        slug: 'taller-trabaja-mucho-gana-poco',                        pais: null },
   { titulo: 'Cómo saber si tu taller mecánico es rentable de verdad',                             slug: 'taller-mecanico-rentable-de-verdad',                    pais: null },
+  { titulo: 'Cómo calcular la tarifa de mano de obra de tu taller mecánico',                      slug: 'calcular-tarifa-mano-de-obra-taller',                   pais: null },
+  { titulo: 'Cuánto margen dejar en las refacciones sin espantar al cliente',                     slug: 'margen-refacciones-taller-mecanico',                    pais: null },
+  { titulo: 'Cómo subir los precios de tu taller sin perder clientes',                            slug: 'subir-precios-taller-mecanico',                         pais: null },
+  { titulo: 'Por qué tu taller tiene trabajo pero nunca tiene dinero: el flujo de caja',          slug: 'flujo-de-caja-taller-mecanico',                         pais: null },
+  { titulo: 'Cómo separar el dinero del taller del dinero de tu casa',                            slug: 'separar-dinero-taller-y-personal',                      pais: null },
+  { titulo: 'El punto de equilibrio de un taller mecánico: cuánto necesitas facturar',            slug: 'punto-equilibrio-taller-mecanico',                      pais: null },
+  { titulo: 'Los gastos fijos de un taller mecánico que casi nadie tiene completos',              slug: 'gastos-fijos-taller-mecanico',                          pais: null },
+  { titulo: 'Cómo dejar de fiar en tu taller sin perder a los buenos clientes',                   slug: 'cuentas-por-cobrar-taller-mecanico',                    pais: null },
+  { titulo: 'Cuánto te cuesta tener un carro parado en tu taller',                                slug: 'costo-carro-parado-taller-mecanico',                    pais: null },
+  { titulo: 'Cómo pedir un anticipo de la reparación sin incomodar al cliente',                   slug: 'anticipo-reparacion-taller-mecanico',                   pais: null },
+  { titulo: 'Cómo cobrar mejor en tu taller: facturación digital sin errores',                    slug: 'cobrar-mejor-taller-mecanico-facturacion-digital',      pais: null },
 
-  // Personas
-  { titulo: 'Cómo delegar tareas en tu taller mecánico y dejar de hacerlo todo tú',              slug: 'delegar-tareas-taller-mecanico',                        pais: null },
+  // ── Operación del taller ───────────────────────────────────────────────────
+  { titulo: 'Cómo medir la productividad de tus mecánicos sin generar pleitos',                   slug: 'medir-productividad-mecanicos-taller',                  pais: null },
+  { titulo: 'Cuántos vehículos puede atender tu taller al día',                                   slug: 'capacidad-taller-mecanico-vehiculos-dia',               pais: null },
+  { titulo: 'Checklist de recepción del vehículo: la hoja que te evita reclamos',                 slug: 'checklist-recepcion-vehiculo-taller',                   pais: null },
+  { titulo: 'El historial de servicio por vehículo: el activo que más vale en tu taller',         slug: 'historial-servicio-vehiculo-taller',                    pais: null },
+  { titulo: 'Cómo manejar los trabajos de garantía sin perder dinero',                            slug: 'trabajos-garantia-taller-mecanico',                     pais: null },
+  { titulo: 'Refacciones y proveedores: cómo pedir sin frenar la orden de trabajo',               slug: 'refacciones-proveedores-taller-mecanico',               pais: null },
+  { titulo: 'Cómo organizar la agenda de tu taller para no tener horas muertas',                  slug: 'agenda-citas-taller-mecanico',                          pais: null },
+  { titulo: 'Qué hacer con los vehículos que el cliente no recoge',                               slug: 'vehiculos-no-recogidos-taller-mecanico',                pais: null },
+  { titulo: 'Cómo cotizar un trabajo cuando no sabes cuánto va a tardar',                         slug: 'cotizar-trabajo-duracion-incierta-taller',              pais: null },
+
+  // ── Dueños y equipo ────────────────────────────────────────────────────────
+  { titulo: 'Cómo delegar tareas en tu taller mecánico y dejar de hacerlo todo tú',               slug: 'delegar-tareas-taller-mecanico',                        pais: null },
   { titulo: 'Cómo contratar al mecánico correcto para tu taller',                                 slug: 'contratar-mecanico-correcto-taller',                    pais: null },
+  { titulo: 'Consejos para dueños de taller que están empezando',                                 slug: 'consejos-duenos-taller-que-empiezan',                   pais: null },
+  { titulo: 'Cómo un dueño de taller puede dejar de trabajar 12 horas al día',                    slug: 'dueno-taller-dejar-trabajar-12-horas',                  pais: null },
+  { titulo: 'Cuándo conviene contratar a otro mecánico: los números que lo dicen',                slug: 'cuando-contratar-otro-mecanico-taller',                 pais: null },
+  { titulo: 'Cómo pagarle a tus mecánicos: sueldo fijo, comisión o mixto',                        slug: 'como-pagar-mecanicos-taller',                           pais: null },
+  { titulo: 'Cómo capacitar a un mecánico nuevo sin frenar el taller',                            slug: 'capacitar-mecanico-nuevo-taller',                       pais: null },
 
-  // Digitalización
-  { titulo: 'Digitalizar tu taller mecánico: por dónde empezar',                                  slug: 'digitalizar-taller-mecanico-por-donde-empezar',         pais: null },
-  { titulo: 'Órdenes de trabajo digitales vs papel: qué conviene más',                            slug: 'ordenes-trabajo-digitales-vs-papel-taller',             pais: null },
+  // ── Crecimiento ────────────────────────────────────────────────────────────
+  { titulo: 'Cómo abrir una segunda sucursal de tu taller sin perder el control',                 slug: 'segunda-sucursal-taller-mecanico',                      pais: null },
+  { titulo: 'Especializarte en una marca o atender todas: qué le conviene a tu taller',           slug: 'especializar-taller-marca-o-todas',                     pais: null },
+  { titulo: 'Cómo conseguir clientes de flotillas y empresas para tu taller',                     slug: 'clientes-flotillas-empresas-taller',                    pais: null },
+  { titulo: 'Trabajar con aseguradoras en tu taller: cuándo conviene y cuándo no',                slug: 'trabajar-con-aseguradoras-taller',                      pais: null },
 
-  // Marketing
-  { titulo: 'Marketing de boca en boca: cómo activarlo en tu taller mecánico',                   slug: 'marketing-boca-en-boca-taller-mecanico',               pais: null },
+  // ── Clientes ───────────────────────────────────────────────────────────────
+  { titulo: 'Por qué muchos clientes desconfían de los talleres mecánicos',                       slug: 'clientes-desconfian-talleres-mecanicos',                pais: null },
+  { titulo: 'Qué decirle al cliente cuando la reparación se va a tardar más',                     slug: 'avisar-cliente-reparacion-retrasada',                   pais: null },
+  { titulo: 'Cómo explicar una reparación cara sin que suene a abuso',                            slug: 'explicar-reparacion-cara-cliente-taller',               pais: null },
+  { titulo: 'Qué hacer cuando el cliente pide una segunda opinión',                               slug: 'cliente-pide-segunda-opinion-taller',                   pais: null },
+  { titulo: 'Cómo recuperar a los clientes que dejaron de venir a tu taller',                     slug: 'recuperar-clientes-perdidos-taller',                    pais: null },
+  { titulo: 'Cómo fidelizar clientes en un taller mecánico',                                      slug: 'fidelizar-clientes-taller-mecanico',                    pais: null },
+  { titulo: 'Recordatorios de mantenimiento: la estrategia que recupera clientes',                slug: 'recordatorios-mantenimiento-clientes-taller',           pais: null },
+  { titulo: '5 señales de que tu taller mecánico está perdiendo clientes sin darte cuenta',       slug: 'senales-taller-mecanico-pierde-clientes',               pais: null },
+  { titulo: 'El error más caro que cometen los talleres mecánicos',                               slug: 'error-mas-caro-talleres-mecanicos',                     pais: null },
+
+  // ── Marketing ──────────────────────────────────────────────────────────────
+  { titulo: 'Marketing de boca en boca: cómo activarlo en tu taller mecánico',                    slug: 'marketing-boca-en-boca-taller-mecanico',                pais: null },
   { titulo: 'Redes sociales para talleres mecánicos: qué publicar para generar confianza',        slug: 'redes-sociales-taller-mecanico-confianza',              pais: null },
   { titulo: 'Marketing para talleres mecánicos: por dónde empezar sin gastar en publicidad',      slug: 'marketing-taller-mecanico-sin-publicidad',              pais: null },
   { titulo: 'Cómo conseguir más clientes para tu taller mecánico sin bajar precios',              slug: 'conseguir-clientes-taller-mecanico-sin-bajar-precios',  pais: null },
+  { titulo: 'Precio o valor: cómo dejar de competir contra el taller de la esquina',              slug: 'competir-precio-taller-mecanico',                       pais: null },
+  { titulo: 'Guía completa de reseñas en Google para talleres mecánicos en LATAM',                slug: 'resenas-google-talleres-mecanicos-latam',               pais: null },
+  { titulo: 'Cómo usar WhatsApp para aumentar las ventas de tu taller mecánico',                  slug: 'whatsapp-ventas-taller-mecanico',                       pais: null },
+  { titulo: 'Cómo aprobar reparaciones por WhatsApp y eliminar malentendidos',                    slug: 'aprobar-reparaciones-whatsapp-taller',                  pais: null },
+
+  // ── Digitalización ─────────────────────────────────────────────────────────
+  { titulo: 'Digitalizar tu taller mecánico: por dónde empezar',                                  slug: 'digitalizar-taller-mecanico-por-donde-empezar',         pais: null },
+  { titulo: 'Órdenes de trabajo digitales vs papel: qué conviene más',                            slug: 'ordenes-trabajo-digitales-vs-papel-taller',             pais: null },
+  { titulo: 'Taller mecánico sin papel: cómo hacer la transición',                                slug: 'taller-mecanico-sin-papel',                             pais: null },
+  { titulo: 'Los números que deberías revisar cada semana en tu taller',                          slug: 'indicadores-semanales-taller-mecanico',                 pais: null },
+  { titulo: 'Cómo pasar de la libreta al sistema sin perder tu historial',                        slug: 'migrar-libreta-a-sistema-taller',                       pais: null },
+  { titulo: 'Cómo proteger la información de tu taller y no perderla nunca',                      slug: 'proteger-informacion-taller-mecanico',                  pais: null },
 
   // ── Fondo de embudo (intención comercial) ──────────────────────────────────
-  { titulo: 'Sistema de gestión para taller mecánico: qué es y cómo elegir el mejor',            slug: 'sistema-gestion-taller-mecanico-como-elegir',           pais: null },
-  { titulo: 'Cuánto cuesta un software para taller mecánico en México',                           slug: 'cuanto-cuesta-software-taller-mecanico-mexico',         pais: 'MX' },
+  { titulo: 'Sistema de gestión para taller mecánico: qué es y cómo elegir el mejor',             slug: 'sistema-gestion-taller-mecanico-como-elegir',           pais: null },
   { titulo: 'TallerOS vs Excel: por qué una hoja de cálculo no alcanza para gestionar un taller', slug: 'tallerados-vs-excel-gestion-taller',                    pais: null },
   { titulo: 'Los mejores software para talleres mecánicos en LATAM: comparativa 2026',            slug: 'mejores-software-talleres-mecanicos-latam-2026',        pais: null },
-  { titulo: 'Cómo hacer una orden de trabajo profesional en tu taller mecánico',                  slug: 'orden-trabajo-profesional-taller-mecanico',             pais: null },
-  { titulo: 'Cómo cobrar mejor en tu taller: facturación digital sin errores',                    slug: 'cobrar-mejor-taller-mecanico-facturacion-digital',      pais: null },
+  { titulo: 'Cuánto cuesta un software para taller mecánico en México',                           slug: 'cuanto-cuesta-software-taller-mecanico-mexico',         pais: 'MX' },
+  { titulo: 'Cuánto cuesta un software para taller mecánico en Colombia',                         slug: 'cuanto-cuesta-software-taller-mecanico-colombia',       pais: 'CO' },
+  { titulo: 'Cuánto cuesta un software para taller mecánico en Perú',                             slug: 'cuanto-cuesta-software-taller-mecanico-peru',           pais: 'PE' },
 
   // ── Geolocalización ────────────────────────────────────────────────────────
   { titulo: 'Cómo digitalizar un taller mecánico en Guadalajara',                                 slug: 'digitalizar-taller-mecanico-guadalajara',               pais: 'MX' },
+  { titulo: 'Cómo digitalizar un taller mecánico en Monterrey',                                   slug: 'digitalizar-taller-mecanico-monterrey',                 pais: 'MX' },
+  { titulo: 'Cómo digitalizar un taller mecánico en Ciudad de México',                            slug: 'digitalizar-taller-mecanico-cdmx',                      pais: 'MX' },
   { titulo: 'Cómo digitalizar un taller mecánico en Bogotá',                                      slug: 'digitalizar-taller-mecanico-bogota',                    pais: 'CO' },
+  { titulo: 'Cómo digitalizar un taller mecánico en Medellín',                                    slug: 'digitalizar-taller-mecanico-medellin',                  pais: 'CO' },
   { titulo: 'Cómo digitalizar un taller mecánico en Lima',                                        slug: 'digitalizar-taller-mecanico-lima',                      pais: 'PE' },
   { titulo: 'Software para talleres mecánicos en Guadalajara: guía 2026',                         slug: 'software-talleres-mecanicos-guadalajara-2026',          pais: 'MX' },
   { titulo: 'Software para talleres mecánicos en Monterrey: guía 2026',                           slug: 'software-talleres-mecanicos-monterrey-2026',            pais: 'MX' },
+  { titulo: 'Software para talleres mecánicos en Ciudad de México: guía 2026',                    slug: 'software-talleres-mecanicos-cdmx-2026',                 pais: 'MX' },
+  { titulo: 'Software para talleres mecánicos en Bogotá: guía 2026',                              slug: 'software-talleres-mecanicos-bogota-2026',               pais: 'CO' },
+  { titulo: 'Software para talleres mecánicos en Lima: guía 2026',                                slug: 'software-talleres-mecanicos-lima-2026',                 pais: 'PE' },
+]
 
-  // ── Nuevos temas ──────────────────────────────────────────────────────────
-  { titulo: 'Por qué los talleres mecánicos pierden clientes sin saberlo',                       slug: 'talleres-mecanicos-pierden-clientes',                pais: null },
-  { titulo: 'El error más caro que cometen los talleres mecánicos',                              slug: 'error-mas-caro-talleres-mecanicos',                  pais: null },
-  { titulo: 'Cómo administrar un taller mecánico sin perder el control',                         slug: 'administrar-taller-mecanico-sin-perder-control',     pais: null },
-  { titulo: 'Los errores de administración que más le cuestan a un taller mecánico',             slug: 'errores-administracion-taller-mecanico',             pais: null },
-  { titulo: 'Cómo organizar el día a día de un taller con varios mecánicos',                     slug: 'organizar-dia-taller-varios-mecanicos',              pais: null },
-  { titulo: 'Cómo organizar las órdenes de trabajo en tu taller mecánico',                       slug: 'organizar-ordenes-trabajo-taller-mecanico',          pais: null },
-  { titulo: 'Tablero Kanban para talleres mecánicos: qué es y cómo usarlo',                      slug: 'kanban-taller-mecanico',                             pais: null },
-  { titulo: 'Cómo llevar el inventario de un taller mecánico sin perder dinero',                 slug: 'inventario-taller-mecanico',                         pais: null },
-  { titulo: 'Cotizaciones profesionales en tu taller: cómo hacerlas bien',                       slug: 'cotizaciones-profesionales-taller-mecanico',         pais: null },
-  { titulo: 'Cómo calcular el precio de tus servicios en un taller mecánico',                    slug: 'calcular-precios-servicios-taller-mecanico',         pais: null },
-  { titulo: 'Garantía digital en talleres mecánicos: cómo proteger tu negocio',                  slug: 'garantia-digital-taller-mecanico',                   pais: null },
-  { titulo: 'Digitalizar tu taller mecánico: por dónde empezar',                                 slug: 'digitalizar-taller-mecanico-por-donde-empezar',      pais: null },
-  { titulo: 'Taller mecánico sin papel: cómo hacer la transición',                               slug: 'taller-mecanico-sin-papel',                          pais: null },
-
-  // El negocio: rentabilidad y finanzas del taller
-  { titulo: 'Cuánto debería ganar realmente un taller mecánico al mes',                          slug: 'cuanto-debe-ganar-taller-mecanico',                  pais: null },
-  { titulo: 'Por qué tu taller trabaja mucho y gana poco',                                       slug: 'taller-trabaja-mucho-gana-poco',                     pais: null },
-  { titulo: 'Cómo saber si tu taller mecánico es rentable de verdad',                            slug: 'taller-mecanico-rentable-de-verdad',                 pais: null },
-
-  // Consejos para dueños de taller
-  { titulo: 'Cómo delegar tareas en tu taller mecánico y dejar de hacerlo todo tú',               slug: 'delegar-tareas-taller-mecanico',                     pais: null },
-  { titulo: 'Cómo contratar al mecánico correcto para tu taller',                                slug: 'contratar-mecanico-correcto-taller',                 pais: null },
-  { titulo: 'Consejos para dueños de taller que están empezando',                                slug: 'consejos-duenos-taller-que-empiezan',                pais: null },
-  { titulo: 'Cómo un dueño de taller puede dejar de trabajar 12 horas al día',                   slug: 'dueno-taller-dejar-trabajar-12-horas',               pais: null },
-
-  // Marketing para talleres mecánicos
-  { titulo: 'Por qué el 63% de los clientes desconfía de los talleres mecánicos',                slug: 'clientes-desconfian-talleres-mecanicos',             pais: null },
-  { titulo: 'Cómo evitar conflictos con clientes en tu taller mecánico',                         slug: 'evitar-conflictos-clientes-taller-mecanico',         pais: null },
-  { titulo: 'Por qué los talleres que no piden reseñas pierden frente a la competencia',         slug: 'talleres-sin-resenas-pierden-competencia',           pais: null },
-  { titulo: 'Cómo usar WhatsApp para aumentar las ventas de tu taller mecánico',                 slug: 'whatsapp-ventas-taller-mecanico',                    pais: null },
-  { titulo: 'Cómo aprobar reparaciones por WhatsApp y eliminar malentendidos',                   slug: 'aprobar-reparaciones-whatsapp-taller',               pais: null },
-  { titulo: 'Mensajes de WhatsApp que convierten clientes en tu taller mecánico',                slug: 'mensajes-whatsapp-clientes-taller',                  pais: null },
-  { titulo: 'Cómo conseguir más reseñas en Google para tu taller mecánico',                      slug: 'conseguir-resenas-google-taller-mecanico',           pais: null },
-  { titulo: 'Guía completa de reseñas en Google para talleres mecánicos en LATAM',               slug: 'resenas-google-talleres-mecanicos-latam',            pais: null },
-  { titulo: 'Cuántas reseñas de Google necesita tu taller para conseguir más clientes',          slug: 'cuantas-resenas-google-taller-mecanico',             pais: null },
-  { titulo: 'Marketing de boca en boca: cómo activarlo en tu taller mecánico',                   slug: 'marketing-boca-en-boca-taller-mecanico',             pais: null },
-  { titulo: 'Redes sociales para talleres mecánicos: qué publicar para generar confianza',       slug: 'redes-sociales-taller-mecanico-confianza',           pais: null },
-  { titulo: 'Marketing para talleres mecánicos: por dónde empezar sin gastar en publicidad',     slug: 'marketing-taller-mecanico-sin-publicidad',           pais: null },
-
-  // Cómo conseguir y retener más clientes
-  { titulo: '5 señales de que tu taller mecánico está perdiendo clientes sin darte cuenta',      slug: 'senales-taller-mecanico-pierde-clientes',            pais: null },
-  { titulo: 'Cómo conseguir más clientes para tu taller mecánico sin bajar precios',             slug: 'conseguir-clientes-taller-mecanico-sin-bajar-precios', pais: null },
-  { titulo: 'Cómo un taller mecánico puede conseguir más clientes con tecnología',                slug: 'taller-mecanico-conseguir-clientes-tecnologia',      pais: null },
-  { titulo: 'Cómo fidelizar clientes en un taller mecánico',                                     slug: 'fidelizar-clientes-taller-mecanico',                 pais: null },
-  { titulo: 'Recordatorios de mantenimiento: la estrategia que recupera clientes',                slug: 'recordatorios-mantenimiento-clientes-taller',        pais: null },
-  { titulo: 'Cómo hacer que tus clientes regresen a tu taller mecánico',                         slug: 'clientes-regresen-taller-mecanico',                  pais: null },
-  ]
+// Un tema cuyo slug quedó consolidado en otro artículo no puede seguir en el
+// banco: el artículo se generaría y su URL redirige (301) a otra parte, así que
+// Google nunca lo indexaría. Ocho temas estaban justo así y ya salieron de la
+// lista de arriba. Este filtro es el que impide que vuelva a pasar: la próxima
+// consolidación los saca del banco sola, sin tener que acordarse de los dos
+// archivos. Hoy no descarta ninguno, y eso es exactamente lo que debe pasar.
+const SLUGS_REDIRIGIDOS = new Set(redireccionesBlog.redirecciones.map(r => r.origen))
+const TEMAS = BANCO.filter(t => !SLUGS_REDIRIGIDOS.has(t.slug))
 
 async function limpiarArticulosExistentes(supabase: any): Promise<void> {
   const { data: articulos } = await supabase
@@ -300,7 +330,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tema) {
-    await enviarAlertaBlog('Los 68 temas del banco ya están publicados — hay que agregar temas nuevos.')
+    await enviarAlertaBlog(`Los ${TEMAS.length} temas del banco ya están publicados — hay que agregar temas nuevos en app/api/cron/blog/route.ts.`)
     return NextResponse.json({ ok: true, mensaje: 'Todos los temas ya están publicados.' })
   }
 
