@@ -148,6 +148,12 @@ ser útil o recurrente, se borra.
    "Ayudamos a que los dueños de talleres ganen más dinero administrando mejor su
    negocio."
 
+7. **[2026-08-05] Dos temas del blog descartados por el dueño**
+   Ni artículos de facturación electrónica por país (CFDI, DIAN, SUNAT) ni
+   corregir la errata del slug `tallerados-vs-excel-gestion-taller`. Se
+   propusieron y se rechazaron.
+   Hacer en su lugar: no volver a ofrecerlos.
+
 ## Trabajo pendiente
 
 1. **[2026-08-05] Medir la activación del onboarding nuevo (≈ 18 de agosto)**
