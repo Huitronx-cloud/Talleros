@@ -1,5 +1,12 @@
 import { MetadataRoute } from 'next'
 import { createPublicReadClient } from '@/lib/supabase-public'
+import redireccionesBlog from '@/lib/blog-redirecciones.json'
+
+// Artículos que se consolidaron en otro y hoy devuelven un 301. Siguen
+// marcados como publicados en la base, así que sin este filtro el sitemap le
+// pedía a Google rastrear 10 URLs que redirigen: gasta presupuesto de rastreo
+// y las reporta como "Página con redirección" en Search Console.
+const CONSOLIDADOS = new Set(redireccionesBlog.redirecciones.map(r => r.origen))
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -38,7 +45,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/terminos`,  changeFrequency: 'yearly',  priority: 0.3 },
   ]
 
-  const blog: MetadataRoute.Sitemap = articulos.map((art) => ({
+  const blog: MetadataRoute.Sitemap = articulos
+    .filter((art) => !CONSOLIDADOS.has(art.slug))
+    .map((art) => ({
     url: `${BASE_URL}/blog/${art.slug}`,
     lastModified: art.published_at ? new Date(art.published_at) : undefined,
     changeFrequency: 'monthly',

@@ -58,7 +58,15 @@ function urlAbsoluta(ruta: string | null | undefined): string | null {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const art = await getArticulo(params.slug)
-  if (!art) return {}
+
+  // getArticulo devuelve null ante cualquier fallo de Supabase, no solo cuando
+  // el artículo no existe. Antes esto hacía `return {}` y la página salía sin
+  // título y sin canonical: si Google pasaba justo en ese momento, la reportaba
+  // como "el usuario no ha indicado ninguna versión canónica". El slug viene en
+  // params, así que la canónica no necesita la base de datos para nada.
+  if (!art) {
+    return { alternates: { canonical: `/blog/${params.slug}` } }
+  }
 
   const descripcion = art.excerpt || art.titulo
   const url = `${SITIO}/blog/${art.slug}`
