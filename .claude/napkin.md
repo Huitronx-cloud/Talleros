@@ -164,8 +164,13 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: si el informe sigue igual a los pocos días, es latencia de
    Google, no una regresión; no reescribir el sitemap por impaciencia.
 
-3. **[2026-08-05] El error de redirección de Search Console es configuración, no código**
-   Depende de que en Vercel → Settings → Domains, `tallerosapp.com` (sin www) esté
-   como *Redirect to www* con 308.
-   Hacer en su lugar: pedirle al dueño que lo confirme ahí antes de buscar la
-   causa en el repositorio.
+3. **[2026-08-05] La redirección del dominio raíz la manda Cloudflare, no Vercel**
+   Comprobado por DNS: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
+   (Cloudflare, con proxy), mientras `www` → `vercel-dns-017.com` → Vercel. El
+   307 lo emite Cloudflare (`server: cloudflare` en el primer salto); el panel de
+   Vercel solo *muestra* lo que observa al sondear, y por eso avisa "Proxy
+   Detected". La cadena es de dos saltos y acaba en 200: **no hay bucle**.
+   Hacer en su lugar: los cambios de la redirección raíz→www van en Cloudflare
+   (Rules → Redirect Rules), no en Vercel → Domains. Y "Página con redirección"
+   en Search Console es el estado normal de una raíz que redirige, no un fallo
+   que perseguir.
