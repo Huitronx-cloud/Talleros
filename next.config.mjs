@@ -1,4 +1,14 @@
 /** @type {import('next').NextConfig} */
+import { readFileSync } from 'node:fs'
+
+// Las consolidaciones del blog viven en un JSON compartido con app/sitemap.ts.
+// Cuando estaban solo aquí, el sitemap seguía ofreciendo los 10 orígenes y
+// Google gastaba rastreo en URLs que redirigen. Se lee con readFileSync y no
+// con import de JSON para no depender del soporte de import attributes al
+// cargar la configuración.
+const { redirecciones: REDIRECCIONES_BLOG } = JSON.parse(
+  readFileSync(new URL('./lib/blog-redirecciones.json', import.meta.url), 'utf8')
+)
 
 const ALLOWED_ORIGINS = [
   'https://www.tallerosapp.com',
@@ -66,27 +76,13 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    return [
-      // Cluster: retención
-      { source: '/blog/clientes-recurrentes-taller-mecanico', destination: '/blog/fidelizar-clientes-taller-mecanico', permanent: true },
-      { source: '/blog/clientes-regresen-taller-mecanico', destination: '/blog/fidelizar-clientes-taller-mecanico', permanent: true },
-
-      // Cluster: clientes difíciles
-      { source: '/blog/manejar-cliente-enojado-taller', destination: '/blog/clientes-dificiles-taller-mecanico', permanent: true },
-      { source: '/blog/evitar-conflictos-clientes-taller-mecanico', destination: '/blog/clientes-dificiles-taller-mecanico', permanent: true },
-
-      // Cluster: reseñas Google
-      { source: '/blog/cuantas-resenas-google-taller-mecanico', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
-      { source: '/blog/conseguir-resenas-google-taller-mecanico', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
-      { source: '/blog/talleres-sin-resenas-pierden-competencia', destination: '/blog/resenas-google-talleres-mecanicos-latam', permanent: true },
-
-      // Cluster: WhatsApp
-      { source: '/blog/mensajes-whatsapp-clientes-taller', destination: '/blog/whatsapp-ventas-taller-mecanico', permanent: true },
-
-      // Cluster: conseguir/perder clientes
-      { source: '/blog/talleres-mecanicos-pierden-clientes', destination: '/blog/taller-no-consigue-clientes-nuevos', permanent: true },
-      { source: '/blog/taller-mecanico-conseguir-clientes-tecnologia', destination: '/blog/taller-no-consigue-clientes-nuevos', permanent: true },
-    ]
+    // Un 301 por cada artículo consolidado. La lista es la misma que usa el
+    // sitemap para no ofrecer estas URLs.
+    return REDIRECCIONES_BLOG.map(({ origen, destino }) => ({
+      source:      `/blog/${origen}`,
+      destination: `/blog/${destino}`,
+      permanent:   true,
+    }))
   },
 
   async headers() {

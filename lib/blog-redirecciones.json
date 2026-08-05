@@ -1,0 +1,19 @@
+{
+  "_comentario": "Artículos del blog consolidados en uno solo. Lo lee next.config.mjs para emitir los 301 y app/sitemap.ts para NO ofrecerle a Google URLs que redirigen. Vivían solo en next.config.mjs y el sitemap seguía publicando los 10 orígenes, así que Google gastaba rastreo en URLs abandonadas y las reportaba como 'Página con redirección'.",
+  "redirecciones": [
+    { "origen": "clientes-recurrentes-taller-mecanico",          "destino": "fidelizar-clientes-taller-mecanico",      "grupo": "retención" },
+    { "origen": "clientes-regresen-taller-mecanico",             "destino": "fidelizar-clientes-taller-mecanico",      "grupo": "retención" },
+
+    { "origen": "manejar-cliente-enojado-taller",                "destino": "clientes-dificiles-taller-mecanico",      "grupo": "clientes difíciles" },
+    { "origen": "evitar-conflictos-clientes-taller-mecanico",    "destino": "clientes-dificiles-taller-mecanico",      "grupo": "clientes difíciles" },
+
+    { "origen": "cuantas-resenas-google-taller-mecanico",        "destino": "resenas-google-talleres-mecanicos-latam", "grupo": "reseñas Google" },
+    { "origen": "conseguir-resenas-google-taller-mecanico",      "destino": "resenas-google-talleres-mecanicos-latam", "grupo": "reseñas Google" },
+    { "origen": "talleres-sin-resenas-pierden-competencia",      "destino": "resenas-google-talleres-mecanicos-latam", "grupo": "reseñas Google" },
+
+    { "origen": "mensajes-whatsapp-clientes-taller",             "destino": "whatsapp-ventas-taller-mecanico",         "grupo": "WhatsApp" },
+
+    { "origen": "talleres-mecanicos-pierden-clientes",           "destino": "taller-no-consigue-clientes-nuevos",      "grupo": "conseguir/perder clientes" },
+    { "origen": "taller-mecanico-conseguir-clientes-tecnologia", "destino": "taller-no-consigue-clientes-nuevos",      "grupo": "conseguir/perder clientes" }
+  ]
+}
