@@ -104,7 +104,20 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: no escribir esa tabla directamente; usar funciones
    `security definer` (ver `reiniciar_contador_orden`).
 
-8. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
+8. **[2026-08-05] Las redirecciones del blog viven en un solo JSON**
+   `lib/blog-redirecciones.json` lo leen `next.config.mjs` (para emitir los 301) y
+   `app/sitemap.ts` (para no publicar esas URLs). Cuando vivían solo en el config,
+   el sitemap seguía ofreciéndole a Google 10 URLs que redirigían.
+   Hacer en su lugar: añadir o quitar redirecciones **solo** en el JSON; nunca
+   escribir una lista paralela en ninguno de los dos consumidores.
+
+9. **[2026-08-05] La canónica no puede depender de que Supabase responda**
+   Si la consulta falla, la página se renderiza sin `<link rel="canonical">` y
+   Search Console la marca sin canónica.
+   Hacer en su lugar: construir la canónica con el `slug` de la URL, no con el
+   dato que vuelve de la base.
+
+10. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
    Ya pasó con los dos crons, el `UsageMeter`, `/api/stats`, las cuatro puertas de
    plan y el bloqueo del trial.
    Hacer en su lugar: antes de construir algo nuevo, comprobar si ya existe y solo
@@ -137,19 +150,28 @@ ser útil o recurrente, se borra.
 
 ## Trabajo pendiente
 
-1. **[2026-08-03] Imágenes del blog — sesión dedicada**
-   El blog **no tiene imágenes en ninguna capa**: falta la columna en
-   `articulos_blog`, guardar la ruta por artículo y pintarla en las dos vistas
-   (`app/(public)/blog/page.tsx` y `blog/[slug]/page.tsx`). Lleva migración.
-   Son 24 fotos de ~2,5 MB. El tope de GitHub es 25 MB **por archivo**, así que
-   caben sueltas; el problema era intentar subir el ZIP de 61 MB como un archivo.
-   **La subida por la web de GitHub le falló y no llegamos a averiguar por qué.**
-   Sospechas sin confirmar: hacerlo desde el navegador del teléfono, archivos
-   HEIC de iPhone, o el peso total de una sola tanda.
-   Hacer en su lugar: **empezar por diagnosticar ese fallo**, no repetir la misma
-   instrucción. Pedir el mensaje de error exacto y probar desde una computadora
-   con 5-6 archivos por commit antes de intentar las 24 de golpe. El chat no
-   sirve de canal (tope de 5 imágenes) y el proxy deniega enlaces externos tipo
-   Drive: la única vía real es el repositorio.
-   Cuando lleguen: comprimir con `sharp` a 1200 px y WebP (~150-250 KB cada una)
-   y fusionar solo las optimizadas, nunca los originales a `main`.
+1. **[2026-08-05] Medir la activación del onboarding nuevo (≈ 18 de agosto)**
+   El asistente de dos pasos entró el 2026-08-04; hace falta un par de semanas de
+   altas para saber si mejoró la activación real.
+   Hacer en su lugar: correr
+   `select count(distinct taller_id) from public.ordenes where es_ejemplo = false
+   and created_at > '2026-08-04';` y compararlo con el ritmo previo.
+
+2. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
+   Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
+   días/semanas. Las 10 "Página con redirección" deberían desaparecer y el
+   artículo sin canónica pasar a indexado.
+   Hacer en su lugar: si el informe sigue igual a los pocos días, es latencia de
+   Google, no una regresión; no reescribir el sitemap por impaciencia.
+
+3. **[2026-08-05] La redirección del dominio raíz la manda Cloudflare, no Vercel**
+   Comprobado por DNS: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
+   (Cloudflare, con proxy), mientras `www` → `vercel-dns-017.com` → Vercel. El
+   307 lo emite Cloudflare (`server: cloudflare` en el primer salto); el panel de
+   Vercel solo *muestra* lo que observa al sondear, y por eso avisa "Proxy
+   Detected". La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y
+   acaba en 200: **no hay bucle ni URLs profundas cayendo en la portada**.
+   Hacer en su lugar: los cambios de la redirección raíz→www van en Cloudflare
+   (Rules → Redirect Rules), no en Vercel → Domains. Y "Página con redirección"
+   en Search Console es el estado normal de una raíz que redirige, no un fallo
+   que perseguir.
