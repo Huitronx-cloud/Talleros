@@ -169,7 +169,8 @@ ser útil o recurrente, se borra.
    (Cloudflare, con proxy), mientras `www` → `vercel-dns-017.com` → Vercel. El
    307 lo emite Cloudflare (`server: cloudflare` en el primer salto); el panel de
    Vercel solo *muestra* lo que observa al sondear, y por eso avisa "Proxy
-   Detected". La cadena es de dos saltos y acaba en 200: **no hay bucle**.
+   Detected". La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y
+   acaba en 200: **no hay bucle ni URLs profundas cayendo en la portada**.
    Hacer en su lugar: los cambios de la redirección raíz→www van en Cloudflare
    (Rules → Redirect Rules), no en Vercel → Domains. Y "Página con redirección"
    en Search Console es el estado normal de una raíz que redirige, no un fallo
