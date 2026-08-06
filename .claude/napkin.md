@@ -156,12 +156,13 @@ ser útil o recurrente, se borra.
 
 ## Trabajo pendiente
 
-1. **[2026-08-05] Medir la activación del onboarding nuevo (≈ 18 de agosto)**
-   El asistente de dos pasos entró el 2026-08-04; hace falta un par de semanas de
-   altas para saber si mejoró la activación real.
-   Hacer en su lugar: correr
-   `select count(distinct taller_id) from public.ordenes where es_ejemplo = false
-   and created_at > '2026-08-04';` y compararlo con el ritmo previo.
+1. **[2026-08-05] Medir la activación del onboarding nuevo — en dos fechas**
+   El 18/08 solo para detectar desastre (¿algún taller nuevo creó una orden
+   real?); el veredicto va el 01/09, con cuatro semanas de altas. Con 73 talleres
+   en total, dos semanas son ruido y leerlas como veredicto es el error a evitar.
+   Hacer en su lugar: correr `supabase/consultas/activacion-onboarding.sql`, que
+   ya compara cohortes con la misma ventana y lleva escritos sus dos límites (no
+   aísla el onboarding de los datos de ejemplo, y la muestra es diminuta).
 
 2. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
    Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
