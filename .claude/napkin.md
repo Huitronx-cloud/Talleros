@@ -29,6 +29,10 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: comprobar que los árboles coinciden
    (`git diff --stat <ultimo-commit-fusionado> origin/main` vacío) y rebasar con
    `git rebase --onto origin/main <ultimo-commit-fusionado> <rama>`.
+   **Ojo con `git checkout -B <rama> origin/main`**: deja el upstream apuntando a
+   `origin/main`, así que `git rev-parse HEAD @{u}` sale idéntico y parece todo
+   sincronizado mientras la rama del servidor sigue en el commit viejo. Para
+   saber dónde está de verdad: `git ls-remote origin <rama>`.
 
 4. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
@@ -57,9 +61,21 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: arrancarlo con `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` de relleno.
 
-4. **[2026-08-03] Capturas del navegador**
+4. **[2026-08-06] `server: cloudflare` NO dice quién generó la respuesta**
+   Cloudflare reescribe esa cabecera en todo lo que atraviesa su proxy, así que
+   solo prueba que la respuesta pasó por ahí. Deducir lo contrario mandó al
+   dueño a buscar en Cloudflare una regla que no existía: el 307 de raíz→www lo
+   emitía Vercel, que es su valor por defecto, y Cloudflare lo repetía. El DNS
+   ya lo insinuaba: `tallerosapp.com` → IPs de Cloudflare con proxy activo,
+   `www` → `vercel-dns-017.com` → Vercel.
+   Hacer en su lugar: detrás de un proxy, averiguar quién manda mirando dónde
+   está configurada la regla, no la cabecera `server`. El dominio raíz se
+   gestiona en **Vercel → Settings → Domains** (hoy en 308, verificado).
+
+5. **[2026-08-03] Capturas del navegador**
    Hacer en su lugar: `playwright-core` con
    `executablePath: '/opt/pw-browsers/chromium'`. No ejecutar `playwright install`.
+   No está en `package.json`: instalarlo en el scratchpad, no en el proyecto.
 
 ## Guardarraíles del producto
 
@@ -167,18 +183,9 @@ ser útil o recurrente, se borra.
 2. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
    Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
    días/semanas. Las 10 "Página con redirección" deberían desaparecer y el
-   artículo sin canónica pasar a indexado.
+   artículo sin canónica pasar a indexado. El 06/08 se cambió además la
+   redirección raíz→www de 307 a 308 en Vercel (verificado), así que Google ya
+   puede consolidar la raíz; eso también tarda semanas en reflejarse.
    Hacer en su lugar: si el informe sigue igual a los pocos días, es latencia de
    Google, no una regresión; no reescribir el sitemap por impaciencia.
 
-3. **[2026-08-05] La redirección del dominio raíz la manda Cloudflare, no Vercel**
-   Comprobado por DNS: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
-   (Cloudflare, con proxy), mientras `www` → `vercel-dns-017.com` → Vercel. El
-   307 lo emite Cloudflare (`server: cloudflare` en el primer salto); el panel de
-   Vercel solo *muestra* lo que observa al sondear, y por eso avisa "Proxy
-   Detected". La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y
-   acaba en 200: **no hay bucle ni URLs profundas cayendo en la portada**.
-   Hacer en su lugar: los cambios de la redirección raíz→www van en Cloudflare
-   (Rules → Redirect Rules), no en Vercel → Domains. Y "Página con redirección"
-   en Search Console es el estado normal de una raíz que redirige, no un fallo
-   que perseguir.
