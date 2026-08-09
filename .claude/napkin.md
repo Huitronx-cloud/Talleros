@@ -175,14 +175,17 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: si el informe sigue igual a los pocos días, es latencia de
    Google, no una regresión; no reescribir el sitemap por impaciencia.
 
-3. **[2026-08-05] La redirección del dominio raíz la manda Cloudflare, no Vercel**
-   Comprobado por DNS: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
-   (Cloudflare, con proxy), mientras `www` → `vercel-dns-017.com` → Vercel. El
-   307 lo emite Cloudflare (`server: cloudflare` en el primer salto); el panel de
-   Vercel solo *muestra* lo que observa al sondear, y por eso avisa "Proxy
-   Detected". La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y
-   acaba en 200: **no hay bucle ni URLs profundas cayendo en la portada**.
-   Hacer en su lugar: los cambios de la redirección raíz→www van en Cloudflare
-   (Rules → Redirect Rules), no en Vercel → Domains. Y "Página con redirección"
-   en Search Console es el estado normal de una raíz que redirige, no un fallo
-   que perseguir.
+3. **[2026-08-06] `server: cloudflare` NO significa que redirija Cloudflare**
+   Cloudflare reescribe esa cabecera en todo lo que atraviesa su proxy, así que
+   solo prueba que la respuesta pasó por ahí. Se dedujo lo contrario y mandó al
+   panel equivocado: en Cloudflare **no hay ninguna Redirect Rule**, el 307 de
+   raíz→www lo emite Vercel (es su valor por defecto) y Cloudflare lo repite.
+   El DNS lo explica: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
+   (Cloudflare, proxy activo) y `www` → `vercel-dns-017.com` → Vercel.
+   Hacer en su lugar: para saber quién genera una respuesta detrás de un proxy,
+   mirar dónde está configurada la regla, no la cabecera `server`. El cambio del
+   código de estado va en **Vercel → Settings → Domains**.
+   La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y acaba en
+   200: **no hay bucle ni URLs profundas cayendo en la portada**. Y "Página con
+   redirección" en Search Console es el estado normal de una raíz que redirige,
+   no un fallo que perseguir.
