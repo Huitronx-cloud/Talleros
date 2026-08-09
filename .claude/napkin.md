@@ -61,9 +61,21 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: arrancarlo con `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` de relleno.
 
-4. **[2026-08-03] Capturas del navegador**
+4. **[2026-08-06] `server: cloudflare` NO dice quién generó la respuesta**
+   Cloudflare reescribe esa cabecera en todo lo que atraviesa su proxy, así que
+   solo prueba que la respuesta pasó por ahí. Deducir lo contrario mandó al
+   dueño a buscar en Cloudflare una regla que no existía: el 307 de raíz→www lo
+   emitía Vercel, que es su valor por defecto, y Cloudflare lo repetía. El DNS
+   ya lo insinuaba: `tallerosapp.com` → IPs de Cloudflare con proxy activo,
+   `www` → `vercel-dns-017.com` → Vercel.
+   Hacer en su lugar: detrás de un proxy, averiguar quién manda mirando dónde
+   está configurada la regla, no la cabecera `server`. El dominio raíz se
+   gestiona en **Vercel → Settings → Domains** (hoy en 308, verificado).
+
+5. **[2026-08-03] Capturas del navegador**
    Hacer en su lugar: `playwright-core` con
    `executablePath: '/opt/pw-browsers/chromium'`. No ejecutar `playwright install`.
+   No está en `package.json`: instalarlo en el scratchpad, no en el proyecto.
 
 ## Guardarraíles del producto
 
@@ -171,21 +183,9 @@ ser útil o recurrente, se borra.
 2. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
    Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
    días/semanas. Las 10 "Página con redirección" deberían desaparecer y el
-   artículo sin canónica pasar a indexado.
+   artículo sin canónica pasar a indexado. El 06/08 se cambió además la
+   redirección raíz→www de 307 a 308 en Vercel (verificado), así que Google ya
+   puede consolidar la raíz; eso también tarda semanas en reflejarse.
    Hacer en su lugar: si el informe sigue igual a los pocos días, es latencia de
    Google, no una regresión; no reescribir el sitemap por impaciencia.
 
-3. **[2026-08-06] `server: cloudflare` NO significa que redirija Cloudflare**
-   Cloudflare reescribe esa cabecera en todo lo que atraviesa su proxy, así que
-   solo prueba que la respuesta pasó por ahí. Se dedujo lo contrario y mandó al
-   panel equivocado: en Cloudflare **no hay ninguna Redirect Rule**, el 307 de
-   raíz→www lo emite Vercel (es su valor por defecto) y Cloudflare lo repite.
-   El DNS lo explica: `tallerosapp.com` → 104.21.64.56 / 172.67.176.96
-   (Cloudflare, proxy activo) y `www` → `vercel-dns-017.com` → Vercel.
-   Hacer en su lugar: para saber quién genera una respuesta detrás de un proxy,
-   mirar dónde está configurada la regla, no la cabecera `server`. El cambio del
-   código de estado va en **Vercel → Settings → Domains**.
-   La cadena es de dos saltos, conserva la ruta (`/blog` → `/blog`) y acaba en
-   200: **no hay bucle ni URLs profundas cayendo en la portada**. Y "Página con
-   redirección" en Search Console es el estado normal de una raíz que redirige,
-   no un fallo que perseguir.
