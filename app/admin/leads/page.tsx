@@ -6,10 +6,12 @@ import CrmKanban from '@/components/admin/crm-kanban'
 export default async function AdminLeadsPage() {
   const supabase = createServiceClient()
 
+  // Descendente: el lead recién capturado es el que hay que llamar, y en
+  // ascendente caía al fondo de la columna, debajo de los más fríos.
   const { data: leads } = await supabase
     .from('crm_leads')
     .select('*')
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
 
   return (
     <div>

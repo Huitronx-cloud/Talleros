@@ -1,14 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Sparkles, MessageCircle, Star, Handshake, CheckCircle2, XCircle,
-  Phone, MapPin, Globe,
+  Phone, MapPin, Globe, Search, X,
 } from 'lucide-react'
-import { Lead, EtapaLead } from '@/types'
+import { Lead, EtapaLead, OrigenLead } from '@/types'
 import { cambiarEtapa } from '@/app/admin/leads/actions'
+
+// Minúsculas y sin acentos, para que "leon" encuentre "León". Se usa el rango
+// de diacríticos y no \p{Diacritic}: las escapes de propiedad Unicode piden
+// target es2018 y este tsconfig apunta más abajo.
+function normalizar(texto: string): string {
+  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
 
 const COLUMNAS: { id: EtapaLead; label: string; color: string; bg: string; border: string; icono: any }[] = [
   { id: 'nuevo',       label: 'Nuevo',          color: 'text-gray-300',   bg: 'bg-gray-800/60',    border: 'border-gray-700',     icono: Sparkles      },
@@ -151,10 +158,20 @@ function KanbanMovil({ leads }: { leads: Lead[] }) {
 // ── VISTA DESKTOP (drag & drop) ──
 function KanbanDesktop({ leads }: { leads: Lead[] }) {
   const router = useRouter()
-  const [leadsState, setLeadsState]     = useState<Lead[]>(leads)
+  // Antes esto era useState<Lead[]>(leads), que solo se inicializa una vez: el
+  // tablero se quedaba congelado con los leads del primer render e ignoraba
+  // tanto el router.refresh() de después de mover una tarjeta como cualquier
+  // lead nuevo de la prospección. Ahora la lista sale siempre de las props y el
+  // estado guarda únicamente el movimiento optimista, hasta que el servidor
+  // confirma lo mismo.
+  const [etapaOptimista, setEtapaOptimista] = useState<Record<string, EtapaLead>>({})
   const [arrastrando, setArrastrando]   = useState<string | null>(null)
   const [sobreColumna, setSobreColumna] = useState<EtapaLead | null>(null)
   const [moviendo, setMoviendo]         = useState<string | null>(null)
+
+  const leadsVista = leads.map(l =>
+    etapaOptimista[l.id] ? { ...l, etapa: etapaOptimista[l.id] } : l
+  )
 
   const handleDragStart = (e: React.DragEvent, leadId: string) => {
     e.dataTransfer.setData('leadId', leadId)
@@ -169,14 +186,14 @@ function KanbanDesktop({ leads }: { leads: Lead[] }) {
   const handleDrop = async (e: React.DragEvent, nuevaEtapa: EtapaLead) => {
     e.preventDefault()
     const leadId = e.dataTransfer.getData('leadId')
-    const lead   = leadsState.find(l => l.id === leadId)
+    const lead   = leadsVista.find(l => l.id === leadId)
     if (!lead || lead.etapa === nuevaEtapa) {
       setArrastrando(null)
       setSobreColumna(null)
       return
     }
 
-    setLeadsState(prev => prev.map(l => l.id === leadId ? { ...l, etapa: nuevaEtapa } : l))
+    setEtapaOptimista(prev => ({ ...prev, [leadId]: nuevaEtapa }))
     setArrastrando(null)
     setSobreColumna(null)
     setMoviendo(leadId)
@@ -193,7 +210,7 @@ function KanbanDesktop({ leads }: { leads: Lead[] }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {COLUMNAS.map(col => {
-        const tarjetas = leadsState.filter(l => l.etapa === col.id)
+        const tarjetas = leadsVista.filter(l => l.etapa === col.id)
         const esSobre  = sobreColumna === col.id
         const Icono    = col.icono
 
@@ -250,14 +267,81 @@ function KanbanDesktop({ leads }: { leads: Lead[] }) {
 }
 
 // ── COMPONENTE PRINCIPAL ──
+const ORIGENES: { id: 'todos' | OrigenLead; label: string }[] = [
+  { id: 'todos',            label: 'Todos'       },
+  { id: 'prospeccion',      label: 'Prospección' },
+  { id: 'whatsapp_inbound', label: 'WhatsApp'    },
+]
+
 export default function CrmKanban({ leads }: { leads: Lead[] }) {
+  const [busqueda, setBusqueda] = useState('')
+  const [origen, setOrigen]     = useState<'todos' | OrigenLead>('todos')
+
+  // Se filtra en el cliente porque la página ya trae todos los leads: buscar
+  // contra el servidor sería un viaje de ida y vuelta por cada tecla.
+  const filtrados = useMemo(() => {
+    const q = normalizar(busqueda.trim())
+    return leads.filter(lead => {
+      if (origen !== 'todos' && lead.origen !== origen) return false
+      if (!q) return true
+      return [lead.nombre, lead.telefono, lead.ciudad, lead.pais, lead.email, lead.website]
+        .some(campo => campo && normalizar(campo).includes(q))
+    })
+  }, [leads, busqueda, origen])
+
+  const hayFiltro = busqueda.trim() !== '' || origen !== 'todos'
+
   return (
     <>
+      <div className="mb-4 flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre, teléfono, ciudad, correo o sitio web"
+            className="input-on-dark w-full bg-gray-900 border border-gray-800 rounded-xl pl-9 pr-9 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-700"
+          />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda('')}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex rounded-xl border border-gray-800 bg-gray-900 p-1 gap-1">
+          {ORIGENES.map(o => (
+            <button
+              key={o.id}
+              onClick={() => setOrigen(o.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
+                origen === o.id ? 'bg-gray-800 text-white' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {hayFiltro && (
+        <p className="mb-3 text-xs text-gray-500">
+          {filtrados.length === 0
+            ? 'Ningún lead coincide'
+            : `${filtrados.length} de ${leads.length} leads`}
+        </p>
+      )}
+
       <div className="md:hidden">
-        <KanbanMovil leads={leads} />
+        <KanbanMovil leads={filtrados} />
       </div>
       <div className="hidden md:block">
-        <KanbanDesktop leads={leads} />
+        <KanbanDesktop leads={filtrados} />
       </div>
     </>
   )
