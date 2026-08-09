@@ -29,6 +29,10 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: comprobar que los árboles coinciden
    (`git diff --stat <ultimo-commit-fusionado> origin/main` vacío) y rebasar con
    `git rebase --onto origin/main <ultimo-commit-fusionado> <rama>`.
+   **Ojo con `git checkout -B <rama> origin/main`**: deja el upstream apuntando a
+   `origin/main`, así que `git rev-parse HEAD @{u}` sale idéntico y parece todo
+   sincronizado mientras la rama del servidor sigue en el commit viejo. Para
+   saber dónde está de verdad: `git ls-remote origin <rama>`.
 
 4. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
