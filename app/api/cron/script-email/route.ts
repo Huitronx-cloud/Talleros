@@ -5,8 +5,13 @@ export const maxDuration = 60
 import { createPublicReadClient } from '@/lib/supabase-public'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY!
+const URL_BASE      = 'https://www.tallerosapp.com'
 
-function emailScript(titulo: string, script: string, scriptLargo?: string): string {
+function emailScript(titulo: string, slug: string, script: string, scriptLargo?: string): string {
+  // El enlace nunca da 404: el orquestador corre este cron ANTES que el del
+  // blog, así que el artículo de un script ya lleva un día publicado cuando
+  // sale su correo.
+  const urlArticulo = `${URL_BASE}/blog/${slug}`
   const lineas = script.split('\n').filter(l => l.trim()).map(l =>
     `<p style="color:#0f172a;font-size:15px;line-height:1.7;margin-bottom:12px;">${l}</p>`
   ).join('')
@@ -46,6 +51,21 @@ function emailScript(titulo: string, script: string, scriptLargo?: string): stri
         <h1 style="color:#ffffff;font-size:20px;font-weight:700;margin:0;line-height:1.3;">${titulo}</h1>
       </div>
       <div style="padding:32px;">
+        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+          <p style="color:#6b21a8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 10px;">🎬 Vídeo desde el artículo</p>
+          <p style="color:#581c87;font-size:13px;margin:0 0 12px;line-height:1.6;">Copia esta URL y pégala como fuente en Gemini Notebook para generar el Video Overview:</p>
+          <p style="margin:0 0 14px;">
+            <a href="${urlArticulo}" style="color:#7c3aed;font-size:14px;font-weight:600;word-break:break-all;">${urlArticulo}</a>
+          </p>
+          <ol style="color:#581c87;font-size:13px;margin:0;padding-left:20px;line-height:1.9;">
+            <li>Pega la URL en Gemini Notebook y genera el Video Overview</li>
+            <li>Elige el formato corto: 2 minutos son largos para TikTok</li>
+            <li>Descarga el MP4</li>
+            <li>Conviértelo con <code style="background:#f3e8ff;padding:2px 6px;border-radius:4px;">./scripts/video-vertical.sh archivo.mp4</code></li>
+          </ol>
+          <p style="color:#7e22ce;font-size:12px;margin:12px 0 0;line-height:1.6;">El script deja el vídeo en 1080×1920, sin la marca de agua de Google y con la marca de TallerOS.</p>
+        </div>
+
         <div style="background:#f8fafc;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:20px 24px;margin-bottom:24px;">
           <p style="color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">📱 Script corto — TikTok + YouTube Shorts · 60 segundos</p>
           ${lineas}
@@ -168,6 +188,7 @@ export async function GET(req: NextRequest) {
           subject:     `📹 Script del día — ${scriptRow.titulo}`,
           htmlContent: emailScript(
             scriptRow.titulo,
+            scriptRow.slug,
             scriptRow.script,
             scriptLargoRow?.script
           ),
