@@ -139,6 +139,20 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: antes de construir algo nuevo, comprobar si ya existe y solo
    le falta el cable.
 
+11. **[2026-08-06] `/api/cron/video` está huérfano, y cablearlo tal cual cuesta dinero**
+   Genera vídeos con HeyGen (avatar y voz fijos, 1080×1920, subtítulos) desde
+   `scripts_video`. Nadie lo llama: el orquestador diario invoca
+   `/api/cron/videos` (plural, investigación de keywords en YouTube), nunca el
+   singular. Las columnas `heygen_video_id` y `video_url` sí existen.
+   El GET elige por `publicado = false`, pero `publicado` solo se marca en el
+   POST, que tampoco tiene quien lo llame — y el cron de correos usa otro campo,
+   `email_enviado`. Cablear el GET sin más regeneraría **el mismo script cada
+   día**, pagando HeyGen cada vez.
+   Hacer en su lugar: si se enciende, que el cron se cierre solo en una pasada —
+   primero consultar el estado de un `heygen_video_id` sin `video_url` y marcar
+   `publicado`, y solo si no hay pendientes generar el siguiente; seleccionando
+   por `heygen_video_id is null`, no por `publicado`.
+
 ## Directivas del usuario
 
 1. **[2026-08-03] A FASTCAR no se le toca nada**
