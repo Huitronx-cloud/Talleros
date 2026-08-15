@@ -7,21 +7,40 @@ import { createPublicReadClient } from '@/lib/supabase-public'
 import { ArrowRight, Clock, BookOpen } from 'lucide-react'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Blog para talleres mecánicos — Gestión, clientes y tecnología | TallerOS',
-  description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos en México, Colombia y Perú.',
-  alternates: { canonical: '/blog' },
-  openGraph: {
-    type: 'website',
-    url: 'https://www.tallerosapp.com/blog',
-    title: 'Blog para talleres mecánicos — TallerOS',
-    description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos en México, Colombia y Perú.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Blog para talleres mecánicos — TallerOS',
-    description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos.',
-  },
+const POR_PAGINA = 24   // múltiplo de 3, que es el número de columnas de la rejilla
+
+const DESCRIPCION = 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos en México, Colombia y Perú.'
+
+function leerPagina(searchParams?: { page?: string }): number {
+  const n = parseInt(searchParams?.page ?? '1', 10)
+  return Number.isFinite(n) && n > 1 ? n : 1
+}
+
+// Cada página se apunta a sí misma con la canónica. Si todas apuntaran a /blog,
+// Google trataría las páginas 2 en adelante como duplicados de la primera.
+export function generateMetadata({ searchParams }: { searchParams?: { page?: string } }): Metadata {
+  const pagina = leerPagina(searchParams)
+  const ruta   = pagina > 1 ? `/blog?page=${pagina}` : '/blog'
+  const titulo = pagina > 1
+    ? `Blog para talleres mecánicos — página ${pagina} | TallerOS`
+    : 'Blog para talleres mecánicos — Gestión, clientes y tecnología | TallerOS'
+
+  return {
+    title: titulo,
+    description: DESCRIPCION,
+    alternates: { canonical: ruta },
+    openGraph: {
+      type: 'website',
+      url: `https://www.tallerosapp.com${ruta}`,
+      title: pagina > 1 ? `Blog para talleres mecánicos — página ${pagina}` : 'Blog para talleres mecánicos — TallerOS',
+      description: DESCRIPCION,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Blog para talleres mecánicos — TallerOS',
+      description: 'Guías prácticas sobre gestión, clientes, tecnología y marketing para dueños de talleres mecánicos.',
+    },
+  }
 }
 
 const PAIS_LABEL: Record<string, string> = {
@@ -30,24 +49,31 @@ const PAIS_LABEL: Record<string, string> = {
   PE: '🇵🇪 Perú',
 }
 
-async function getArticulos() {
+// Antes pedía .limit(50) sin paginar. Con 77 artículos publicados eso dejaba 27
+// fuera de toda página del sitio: existían y estaban en el sitemap, pero ningún
+// enlace llevaba a ellos, y el número crecía uno por día porque el cron publica
+// a diario y el tope no se movía.
+async function getArticulos(pagina: number) {
   try {
     const supabase = createPublicReadClient()
-    const { data } = await supabase
+    const desde = (pagina - 1) * POR_PAGINA
+    const { data, count } = await supabase
       .from('articulos_blog')
-      .select('titulo, slug, excerpt, pais, published_at, imagen_url')
+      .select('titulo, slug, excerpt, pais, published_at, imagen_url', { count: 'exact' })
       .eq('publicado', true)
       .order('published_at', { ascending: false })
-      .limit(50)
-    return data ?? []
+      .range(desde, desde + POR_PAGINA - 1)
+    return { articulos: data ?? [], total: count ?? 0 }
   } catch (e) {
     console.error('Error cargando articulos_blog:', e)
-    return []
+    return { articulos: [], total: 0 }
   }
 }
 
-export default async function BlogPage() {
-  const articulos = await getArticulos()
+export default async function BlogPage({ searchParams }: { searchParams?: { page?: string } }) {
+  const pagina = leerPagina(searchParams)
+  const { articulos, total } = await getArticulos(pagina)
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA))
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -126,6 +152,55 @@ export default async function BlogPage() {
               </Link>
             ))}
           </div>
+        )}
+
+        {totalPaginas > 1 && (
+          // Enlaces de verdad, no botones con JavaScript: si Google no puede
+          // seguirlos, los artículos de las páginas siguientes vuelven a quedar
+          // sin ningún enlace que lleve a ellos, que es el problema que esto
+          // viene a resolver.
+          <nav className="mt-12 flex items-center justify-center gap-2 flex-wrap" aria-label="Paginación del blog">
+            {pagina > 1 && (
+              <Link
+                href={pagina === 2 ? '/blog' : `/blog?page=${pagina - 1}`}
+                rel="prev"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors"
+              >
+                ← Anterior
+              </Link>
+            )}
+
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+              <Link
+                key={n}
+                href={n === 1 ? '/blog' : `/blog?page=${n}`}
+                aria-current={n === pagina ? 'page' : undefined}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                  n === pagina
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:text-blue-600'
+                }`}
+              >
+                {n}
+              </Link>
+            ))}
+
+            {pagina < totalPaginas && (
+              <Link
+                href={`/blog?page=${pagina + 1}`}
+                rel="next"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors"
+              >
+                Siguiente →
+              </Link>
+            )}
+          </nav>
+        )}
+
+        {total > 0 && (
+          <p className="mt-6 text-center text-xs text-gray-400">
+            {total} artículos · página {pagina} de {totalPaginas}
+          </p>
         )}
       </div>
 
