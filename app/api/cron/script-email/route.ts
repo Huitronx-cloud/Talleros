@@ -31,16 +31,6 @@ function emailScript(titulo: string, slug: string, script: string, scriptLargo?:
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0 0 8px 8px;padding:24px;">
         ${lineasLargo}
       </div>
-      <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-top:16px;">
-        <p style="color:#92400e;font-size:13px;font-weight:600;margin:0 0 6px;">📹 Checklist video largo</p>
-        <ul style="color:#92400e;font-size:13px;margin:0;padding-left:20px;line-height:1.8;">
-          <li>Mismo avatar Kaleb con chamarra azul</li>
-          <li>Fondo de taller rotativo</li>
-          <li>Formato: 16:9 · 1920x1080</li>
-          <li>Subtítulos activados</li>
-          <li>Subir solo a YouTube (no Shorts)</li>
-        </ul>
-      </div>
     </div>
   ` : ''
 
@@ -69,16 +59,6 @@ function emailScript(titulo: string, slug: string, script: string, scriptLargo?:
         <div style="background:#f8fafc;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:20px 24px;margin-bottom:24px;">
           <p style="color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">📱 Script corto — TikTok + YouTube Shorts · 60 segundos</p>
           ${lineas}
-        </div>
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-          <p style="color:#166534;font-size:13px;font-weight:600;margin:0 0 6px;">✅ Checklist video corto</p>
-          <ul style="color:#166534;font-size:13px;margin:0;padding-left:20px;line-height:1.8;">
-            <li>Avatar: Kaleb con chamarra azul</li>
-            <li>Fondo: uno de los 24 fondos de taller</li>
-            <li>Voz: español mexicano</li>
-            <li>Subtítulos: activados</li>
-            <li>Formato: 9:16 · 1080x1920</li>
-          </ul>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;">
           <p style="color:#1e40af;font-size:13px;font-weight:600;margin:0 0 6px;">📤 Después de generar</p>
