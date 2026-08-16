@@ -72,7 +72,16 @@ ser útil o recurrente, se borra.
    está configurada la regla, no la cabecera `server`. El dominio raíz se
    gestiona en **Vercel → Settings → Domains** (hoy en 308, verificado).
 
-5. **[2026-08-03] Capturas del navegador**
+5. **[2026-08-13] Buscar por el valor, nunca por la forma del atributo**
+   `grep 'href="/blog"'` no encontró nada y se concluyó que el blog no estaba
+   enlazado desde ninguna landing. Sí lo estaba, dos veces en cada una: los
+   enlaces se generan desde objetos (`{l:'Blog',h:'/blog'}`, `['/blog','Blog']`),
+   así que la cadena literal no existe en el código.
+   Hacer en su lugar: buscar `/blog` a secas, o `'/blog'\|"/blog"`. Una búsqueda
+   que no encuentra nada es sospechosa, no concluyente — sobre todo antes de
+   reportarla como hallazgo.
+
+6. **[2026-08-03] Capturas del navegador**
    Hacer en su lugar: `playwright-core` con
    `executablePath: '/opt/pw-browsers/chromium'`. No ejecutar `playwright install`.
    No está en `package.json`: instalarlo en el scratchpad, no en el proyecto.
@@ -92,11 +101,13 @@ ser útil o recurrente, se borra.
    (pasó durante meses con Plus Jakarta Sans).
    Hacer en su lugar: `next/font/google`, que las autoaloja.
 
-3. **[2026-08-03] React escapa las comillas dentro de `<style>`**
-   Como hijo de texto, `"` pasa a `&quot;` en el servidor, pero el navegador no
-   decodifica entidades dentro de `<style>`: falla la hidratación y React tira
-   todo el HTML del servidor.
-   Hacer en su lugar: `<style dangerouslySetInnerHTML={{ __html: \`...\` }} />`.
+3. **[2026-08-13] Un tope fijo más un productor diario = huérfanos silenciosos**
+   `/blog` pedía `.limit(50)` sin paginar mientras el cron publica un artículo al
+   día. Con 77 publicados, 27 quedaron sin ningún enlace del sitio que llevara a
+   ellos, y el número crecía solo. Nadie se entera: la página se ve bien.
+   Hacer en su lugar: donde algo crece a diario, o se pagina o el tope se compara
+   contra el total en cada revisión. Un `.limit()` sin paginación al lado de un
+   cron que publica es una fuga con fecha de caducidad.
 
 4. **[2026-08-03] Nada que dependa del reloj se calcula en el render**
    `useState(algoConDate())` da un valor en el servidor y otro en el cliente.
@@ -120,26 +131,29 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: no escribir esa tabla directamente; usar funciones
    `security definer` (ver `reiniciar_contador_orden`).
 
-8. **[2026-08-05] Las redirecciones del blog viven en un solo JSON**
-   `lib/blog-redirecciones.json` lo leen `next.config.mjs` (para emitir los 301) y
-   `app/sitemap.ts` (para no publicar esas URLs). Cuando vivían solo en el config,
-   el sitemap seguía ofreciéndole a Google 10 URLs que redirigían.
-   Hacer en su lugar: añadir o quitar redirecciones **solo** en el JSON; nunca
-   escribir una lista paralela en ninguno de los dos consumidores.
+8. **[2026-08-13] SEO del blog: la fuente única y la canónica a prueba de fallos**
+   Las redirecciones viven **solo** en `lib/blog-redirecciones.json`, que leen
+   `next.config.mjs` (emite los 301) y `app/sitemap.ts` (los excluye); cuando
+   vivían solo en el config, el sitemap seguía ofreciendo 10 URLs que redirigían.
+   La canónica se arma con el `slug` de la URL y no con lo que devuelva Supabase:
+   si la consulta falla, la página salía sin `<link rel="canonical">`. Y en
+   listados paginados cada página se canoniza a sí misma, o Google trata de la
+   segunda en adelante como duplicados de la primera.
+   Hacer en su lugar: nunca una lista paralela de redirecciones, nunca una
+   canónica que dependa de la base, nunca una canónica fija en un listado que
+   pagina.
 
-9. **[2026-08-05] La canónica no puede depender de que Supabase responda**
-   Si la consulta falla, la página se renderiza sin `<link rel="canonical">` y
-   Search Console la marca sin canónica.
-   Hacer en su lugar: construir la canónica con el `slug` de la URL, no con el
-   dato que vuelve de la base.
-
-10. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
+9. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
    Ya pasó con los dos crons, el `UsageMeter`, `/api/stats`, las cuatro puertas de
-   plan y el bloqueo del trial.
+   plan, el bloqueo del trial y —el más caro— `imagen_url`: la migración 043 creó
+   la columna, cuatro sitios la leen, las 23 portadas llevaban meses en
+   `public/blog/`, y **nada en el repositorio la escribía**. 76 de 77 artículos
+   sin imagen.
    Hacer en su lugar: antes de construir algo nuevo, comprobar si ya existe y solo
-   le falta el cable.
+   le falta el cable. Que una columna exista y se lea no significa que alguien la
+   rellene: para eso, contar filas en la base, no leer el código.
 
-11. **[2026-08-06] `/api/cron/video` está huérfano, y cablearlo tal cual cuesta dinero**
+10. **[2026-08-06] `/api/cron/video` está huérfano, y cablearlo tal cual cuesta dinero**
    Genera vídeos con HeyGen (avatar y voz fijos, 1080×1920, subtítulos) desde
    `scripts_video`. Nadie lo llama: el orquestador diario invoca
    `/api/cron/videos` (plural, investigación de keywords en YouTube), nunca el
