@@ -192,7 +192,19 @@ ser útil o recurrente, se borra.
    "Ayudamos a que los dueños de talleres ganen más dinero administrando mejor su
    negocio."
 
-7. **[2026-08-05] Dos temas del blog descartados por el dueño**
+7. **[2026-08-17] La prospección en frío está apagada a propósito, con dos llaves**
+   El agente de `/api/cron/prospecting` gastaba presupuesto de Twilio en
+   WhatsApp que no se entregaba: WhatsApp Business no reparte en frío a quien no
+   te escribió antes. Decisión del dueño, no un descuido.
+   Están **las dos llaves puestas**: el flag `PROSPECTING_AGENT_ENABLED` y, sobre
+   todo, que la ruta no está en la lista de `daily/route.ts`. Poner el flag en
+   `true` no reactiva nada.
+   Hacer en su lugar: no encenderlo por iniciativa propia. Si el dueño lo pide,
+   volver **solo por correo** (Brevo no tiene el problema de entrega) y avisarle
+   de que hay que tocar las dos llaves. Lo mismo vale para
+   `reintentar-prospectos-whatsapp`, que es su reintento.
+
+8. **[2026-08-05] Dos temas del blog descartados por el dueño**
    Ni artículos de facturación electrónica por país (CFDI, DIAN, SUNAT) ni
    corregir la errata del slug `tallerados-vs-excel-gestion-taller`. Se
    propusieron y se rechazaron.
