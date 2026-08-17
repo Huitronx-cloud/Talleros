@@ -37,6 +37,8 @@ function tareasDelGrupo(group: string): string[] {
   ]
   // contenido es semanal: solo los domingos
   if (new Date().getDay() === 0) tareas.push('/api/cron/contenido')
+  // el reporte a los talleres es mensual: el día 1, sobre el mes que cerró
+  if (new Date().getDate() === 1) tareas.push('/api/cron/reporte-mensual')
   return tareas
 }
 
