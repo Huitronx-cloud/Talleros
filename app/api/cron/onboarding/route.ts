@@ -43,106 +43,99 @@ function horasDesde(fecha: string): number {
 }
 
 // ── Templates de mensajes ─────────────────────────────────────────────────────
+//
+// Reescritos el 2026-08-17. Los anteriores hablaban de una cuenta vacía —"aún
+// no has completado la configuración", "⬜ agregar tu primer cliente"— pero
+// desde la migración 042 el taller entra y ya ve 2 clientes y 1 orden de
+// ejemplo. El correo contradecía la pantalla, que es la forma más rápida de
+// que dejen de leerte.
+//
+// Ahora son TRES y cada uno tiene un solo trabajo. Antes eran cuatro, pero el
+// paso 1 y el paso 2 disparaban con la misma condición (!tieneClientes), así
+// que competían por el mismo momento y con un cron diario nunca llegaban los
+// dos.
 
-function emailPaso1(nombre: string, tallerNombre: string): string {
-  return `
-  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+function emailPrimerClienteReal(nombre: string, tallerNombre: string): string {
+  return `  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:28px;text-align:center;">
       <p style="margin:0;color:#fff;font-size:22px;font-weight:900;">TallerOS</p>
     </div>
     <div style="padding:36px 32px;">
       <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre} 👋</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        Notamos que <strong>${tallerNombre}</strong> aún no ha completado la configuración inicial.
-        Solo toma 3 minutos y es el primer paso para que TallerOS funcione perfectamente para ti.
+        Cuando creaste <strong>${tallerNombre}</strong> te dejamos dos clientes y una orden de ejemplo, para que no entraras a una pantalla en blanco. Sirven para mirar, no para trabajar.
       </p>
-      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
-        📋 <strong>Qué te falta completar:</strong><br/>
-        ✅ Configurar tu taller (nombre, moneda, logo)<br/>
-        ⬜ Agregar tu primer cliente<br/>
-        ⬜ Crear tu primera orden de trabajo
-      </p>
-      <a href="https://www.tallerosapp.com/configuracion" style="display:inline-block;background:#2563eb;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
-        Completar configuración →
-      </a>
-      <p style="color:#64748b;font-size:13px;margin-top:20px;">
-        ¿Tienes dudas? Responde este email y te ayudamos en minutos.
-      </p>
-    </div>
-  </div>`
-}
-
-function emailPaso2(nombre: string, tallerNombre: string): string {
-  return `
-  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-    <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:28px;text-align:center;">
-      <p style="margin:0;color:#fff;font-size:22px;font-weight:900;">TallerOS</p>
-    </div>
-    <div style="padding:36px 32px;">
-      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre} 👋</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        ¡Excelente! Ya configuraste <strong>${tallerNombre}</strong>. El siguiente paso es agregar tu primer cliente.
-      </p>
-      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
-        Cuando agregues un cliente, TallerOS le envía automáticamente un mensaje de bienvenida por WhatsApp. Es la primera impresión de tu taller digital. 💬
+        El siguiente paso es meter <strong>un cliente de verdad</strong>: el próximo que te deje el carro. Son dos minutos y a partir de ahí el taller ya está corriendo en TallerOS.
       </p>
       <a href="https://www.tallerosapp.com/clientes" style="display:inline-block;background:#2563eb;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
-        Agregar primer cliente →
+        Registrar un cliente real →
       </a>
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
+        Los de ejemplo puedes borrarlos cuando quieras, y no gastan tu cupo del plan.
+      </p>
+      <p style="color:#64748b;font-size:13px;margin-top:20px;">
+        ¿Se te atoró algo? Responde este correo y te contesto yo.
+      </p>
     </div>
   </div>`
 }
 
-function emailPaso3(nombre: string, tallerNombre: string): string {
-  return `
-  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+function emailPrimeraOrdenReal(nombre: string, tallerNombre: string): string {
+  return `  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
     <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:28px;text-align:center;">
       <p style="margin:0;color:#fff;font-size:22px;font-weight:900;">TallerOS</p>
     </div>
     <div style="padding:36px 32px;">
-      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">¡Ya casi llegas, ${nombre}! 🚀</p>
+      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Vas bien, ${nombre} 🔧</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        Ya tienes clientes registrados en <strong>${tallerNombre}</strong>. Solo falta crear tu primera orden de trabajo para que el taller empiece a operar completamente en TallerOS.
+        Ya tienes clientes de verdad en <strong>${tallerNombre}</strong>. Falta la parte que cambia tu día: la primera orden de trabajo.
       </p>
-      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
-        Una orden de trabajo te permite rastrear el estado del vehículo, agregar fotos del diagnóstico y enviar la cotización al cliente por WhatsApp para que la apruebe. 🔧
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
+        La orden es donde vive el dinero. Ahí anotas qué entró, qué se le hizo y cuánto se cobra, el cliente ve el avance en su portal sin llamarte, y la aprobación te llega por WhatsApp sin perseguir a nadie.
       </p>
-      <a href="https://www.tallerosapp.com/ordenes" style="display:inline-block;background:#2563eb;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
-        Crear primera orden →
+      <a href="https://www.tallerosapp.com/ordenes/nueva" style="display:inline-block;background:#2563eb;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
+        Crear mi primera orden →
       </a>
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
+        Con la del próximo carro que entre basta. No hace falta capturar el historial.
+      </p>
+      <p style="color:#64748b;font-size:13px;margin-top:20px;">
+        ¿Se te atoró algo? Responde este correo y te contesto yo.
+      </p>
     </div>
   </div>`
 }
 
-function emailInactivo48h(nombre: string, tallerNombre: string): string {
-  return `
-  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-    <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:28px;text-align:center;">
+function emailSinArrancar(nombre: string, tallerNombre: string): string {
+  return `  <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:28px;text-align:center;">
       <p style="margin:0;color:#fff;font-size:22px;font-weight:900;">TallerOS</p>
     </div>
     <div style="padding:36px 32px;">
-      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre}, ¿necesitas ayuda? 🤝</p>
+      <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">${nombre}, ¿qué te frenó?</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        Notamos que llevas 2 días sin entrar a <strong>${tallerNombre}</strong> en TallerOS. Queremos asegurarnos de que todo esté bien y que puedas aprovechar al máximo tu prueba gratuita.
+        Registraste <strong>${tallerNombre}</strong> hace un par de días y no has llegado a meter un cliente ni una orden. Eso casi nunca es falta de ganas: normalmente es que algo no quedó claro, o que el día no dio.
       </p>
-      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:24px;">
-        ¿Hay algo que no quedó claro? ¿Tienes alguna duda? Responde este email directamente — lo lee una persona real y te respondemos en menos de 2 horas. ⚡
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
+        Te lo pregunto en serio, y contesto yo: <strong>¿qué fue?</strong> Responde este correo con una línea. Si prefieres que te lo enseñe en vivo, agendamos quince minutos y lo dejamos configurado juntos.
       </p>
-      <a href="https://www.tallerosapp.com/dashboard" style="display:inline-block;background:#7c3aed;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
-        Volver a TallerOS →
+      <a href="https://www.tallerosapp.com/clientes" style="display:inline-block;background:#2563eb;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:700;">
+        Prefiero intentarlo yo →
       </a>
-      <p style="color:#64748b;font-size:13px;margin-top:20px;">
-        Tu prueba gratuita de 14 días sigue activa. No pierdas el tiempo que te queda.
+      <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
+        Y si simplemente no era para ti, dímelo también. Tu cuenta se queda abierta en el plan gratis, no se borra nada.
       </p>
     </div>
   </div>`
 }
+
 
 function waPaso(nombre: string, paso: number, url: string): string {
   const msgs: Record<number, string> = {
-    1: `¡Hola ${nombre}! 👋 Soy el asistente de *TallerOS*. Notamos que aún no has completado la configuración de tu taller. Solo toma 3 minutos. Entra aquí: ${url}`,
-    2: `¡Hola ${nombre}! 🎉 Ya configuraste tu taller en *TallerOS*. El siguiente paso es agregar tu primer cliente. Cuando lo hagas, le llega un WhatsApp de bienvenida automático. Entra aquí: ${url}`,
-    3: `¡Casi listo ${nombre}! 🚀 Ya tienes clientes en *TallerOS*. Solo falta crear tu primera orden de trabajo para operar al 100%. Entra aquí: ${url}`,
+    1: `Hola ${nombre} 👋 Soy el asistente de *TallerOS*. Los dos clientes y la orden que ves en tu cuenta son de ejemplo. Cuando metas uno real —el próximo carro que te dejen— el taller ya está corriendo. Son dos minutos: ${url}`,
+    2: `Hola ${nombre} 🔧 Ya tienes clientes de verdad en *TallerOS*. Falta la primera orden de trabajo, que es donde vive el dinero: qué entró, qué se hizo y cuánto se cobra. Con la del próximo carro basta: ${url}`,
+    3: `Hola ${nombre}, registraste tu taller hace un par de días y no has llegado a meter un cliente ni una orden. ¿Qué te frenó? Respóndeme por aquí y te ayudo, o si prefieres lo intentas tú: ${url}`,
   }
   return msgs[paso] ?? ''
 }
@@ -165,83 +158,94 @@ export async function GET(req: NextRequest) {
       .from('talleres')
       .select(`
         id, nombre, created_at,
-        usuarios!inner(id, nombre, email, telefono, rol),
-        clientes(count),
-        ordenes(count)
+        usuarios!inner(id, nombre, email, telefono, rol)
       `)
       .order('created_at', { ascending: false })
 
     if (!talleres) return NextResponse.json({ ok: true, procesados: 0 })
+
+    // Los conteos van APARTE y filtrando es_ejemplo.
+    //
+    // Antes se pedían incrustados —clientes(count), ordenes(count)— sin filtro
+    // alguno. Desde que cada alta nace con 2 clientes y 1 orden de ejemplo
+    // (migración 042), esos conteos nunca daban cero, así que las cuatro etapas
+    // de abajo, que todas exigen "todavía no tiene", dejaron de dispararse. Los
+    // crons corrían, no fallaban, y no mandaban nada: cinco correos y sus
+    // WhatsApp muertos en silencio desde el 2026-08-03.
+    //
+    // Dos consultas en bloque y un Set, en vez de una por taller: con 73
+    // talleres, preguntar de uno en uno serían 146 viajes en una función que
+    // tiene 60 segundos.
+    const [clientesReales, ordenesReales] = await Promise.all([
+      supabase.from('clientes').select('taller_id').eq('es_ejemplo', false),
+      supabase.from('ordenes').select('taller_id').eq('es_ejemplo', false),
+    ])
+    const conClientes = new Set((clientesReales.data ?? []).map(c => c.taller_id))
+    const conOrdenes  = new Set((ordenesReales.data ?? []).map(o => o.taller_id))
 
     for (const taller of talleres) {
       const propietario = (taller.usuarios as any[]).find((u: any) => u.rol === 'propietario')
       if (!propietario) continue
 
       const horas         = horasDesde(taller.created_at)
-      const tieneClientes = (taller.clientes as any)?.[0]?.count > 0
-      const tieneOrdenes  = (taller.ordenes as any)?.[0]?.count > 0
+      const tieneClientes = conClientes.has(taller.id)
+      const tieneOrdenes  = conOrdenes.has(taller.id)
       const nombre        = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email         = propietario.email
       const telefono      = propietario.telefono
 
-      // ── Paso 1: Sin clientes ni órdenes — 24h después del registro ──
-      if (horas >= 24 && horas < 36 && !tieneClientes) {
+      // Las ventanas duran 24 h, no 12, porque el cron corre una vez al día:
+      // con ventanas de 12 h cada taller caía en unas y se saltaba otras según
+      // la hora a la que se hubiera registrado, y nadie recibía la secuencia
+      // completa. Con 24 h, cada taller pasa por cada etapa exactamente una vez.
+
+      // ── Día 1: todavía sin un cliente real ──
+      if (horas >= 24 && horas < 48 && !tieneClientes) {
         if (email) {
           await enviarEmail(email, nombre,
-            '⚙️ Completa la configuración de tu taller — TallerOS',
-            emailPaso1(nombre, taller.nombre)
+            `${nombre}, mete un cliente de verdad en ${taller.nombre}`,
+            emailPrimerClienteReal(nombre, taller.nombre)
           )
         }
         if (telefono) {
-          await enviarWhatsApp(telefono, waPaso(nombre, 1, 'https://www.tallerosapp.com/configuracion'))
+          await enviarWhatsApp(telefono, waPaso(nombre, 1, 'https://www.tallerosapp.com/clientes'))
         }
-        resultados.push({ taller: taller.nombre, accion: 'paso1_24h' })
+        resultados.push({ taller: taller.nombre, accion: 'primer_cliente_real' })
       }
 
-      // ── Paso 2: Tiene configuración pero sin clientes — 36h ──
-      if (horas >= 36 && horas < 48 && !tieneClientes) {
+      // ── Día 2: ya tiene clientes reales, pero ninguna orden real ──
+      if (horas >= 48 && horas < 72 && tieneClientes && !tieneOrdenes) {
         if (email) {
           await enviarEmail(email, nombre,
-            '👥 Agrega tu primer cliente en TallerOS',
-            emailPaso2(nombre, taller.nombre)
+            `Ya tienes clientes en ${taller.nombre}. Falta la orden.`,
+            emailPrimeraOrdenReal(nombre, taller.nombre)
           )
         }
         if (telefono) {
-          await enviarWhatsApp(telefono, waPaso(nombre, 2, 'https://www.tallerosapp.com/clientes'))
+          await enviarWhatsApp(telefono, waPaso(nombre, 2, 'https://www.tallerosapp.com/ordenes/nueva'))
         }
-        resultados.push({ taller: taller.nombre, accion: 'paso2_36h' })
+        resultados.push({ taller: taller.nombre, accion: 'primera_orden_real' })
       }
 
-      // ── Paso 3: Tiene clientes pero sin órdenes — 48h ──
-      if (horas >= 48 && horas < 60 && tieneClientes && !tieneOrdenes) {
+      // ── Día 2: no arrancó con nada ──
+      if (horas >= 48 && horas < 72 && !tieneClientes && !tieneOrdenes) {
         if (email) {
           await enviarEmail(email, nombre,
-            '🔧 Crea tu primera orden de trabajo — TallerOS',
-            emailPaso3(nombre, taller.nombre)
+            `${nombre}, ¿qué te frenó con ${taller.nombre}?`,
+            emailSinArrancar(nombre, taller.nombre)
           )
         }
         if (telefono) {
-          await enviarWhatsApp(telefono, waPaso(nombre, 3, 'https://www.tallerosapp.com/ordenes'))
+          await enviarWhatsApp(telefono, waPaso(nombre, 3, 'https://www.tallerosapp.com/clientes'))
         }
-        resultados.push({ taller: taller.nombre, accion: 'paso3_48h' })
-      }
-
-      // ── Inactivo 48h: sin clientes Y sin órdenes — alerta a Ivan ──
-      if (horas >= 48 && horas < 60 && !tieneClientes && !tieneOrdenes) {
-        if (email) {
-          await enviarEmail(email, nombre,
-            '¿Necesitas ayuda con TallerOS? Estamos aquí 🤝',
-            emailInactivo48h(nombre, taller.nombre)
-          )
-        }
-        // Notificar a Ivan también
+        // Avisar a Ivan: este es el que conviene llamar a mano
         await enviarEmail(
           'hola@tallerosapp.com',
           'Ivan',
-          `⚠️ Usuario inactivo 48h: ${taller.nombre}`,
-          `<p>El taller <strong>${taller.nombre}</strong> (${email}) lleva 48 horas sin completar ningún paso del onboarding. Podría necesitar ayuda personal.</p>`
+          `⚠️ Sin arrancar a las 48h: ${taller.nombre}`,
+          `<p>El taller <strong>${taller.nombre}</strong> (${email}) lleva dos días sin crear ningún cliente ni orden reales. Se le acaba de mandar el correo preguntándole qué lo frenó — vale la pena responder tú si contesta.</p>`
         )
-        resultados.push({ taller: taller.nombre, accion: 'inactivo_48h_alerta' })
+        resultados.push({ taller: taller.nombre, accion: 'sin_arrancar_48h' })
       }
     }
 

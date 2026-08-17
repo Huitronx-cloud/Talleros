@@ -78,9 +78,13 @@ export async function GET(req: NextRequest) {
   for (const trial of trialsCalientes ?? []) {
     const taller = trial.talleres as any
     if (!taller) continue
+    // es_ejemplo excluido: cada alta nace con una orden de ejemplo, así que sin
+    // este filtro TODOS los trials salían marcados como ACTIVO en el reporte
+    // diario, hubieran tocado el producto o no.
     const { count: ordenes } = await supabase
       .from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', trial.taller_id)
+      .eq('es_ejemplo', false)
     const diasRestantes = Math.ceil((new Date(trial.trial_fin).getTime() - Date.now()) / 86400000)
     const actividad = (ordenes ?? 0) > 0 ? `${ordenes} ordenes creadas - ACTIVO` : 'sin actividad'
     llamadasHoy.push(`<strong>${taller.nombre}</strong> — vence en ${diasRestantes} dia(s) — ${actividad}${taller.telefono ? ` — Tel: ${taller.telefono}` : ''}`)
@@ -99,9 +103,13 @@ export async function GET(req: NextRequest) {
 
   let nudgesEnviados = 0
   for (const taller of talleresRecientes ?? []) {
+    // Mismo filtro que arriba: sin él, la orden de ejemplo que trae cada alta
+    // hacía que este `continue` se ejecutara siempre y el nudge de inactividad
+    // no se enviara nunca.
     const { count: ordenes } = await supabase
       .from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', taller.id)
+      .eq('es_ejemplo', false)
     if ((ordenes ?? 0) > 0) continue
 
     const { data: propietario } = await supabase

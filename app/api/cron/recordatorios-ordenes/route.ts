@@ -27,6 +27,7 @@ export async function GET(request: Request) {
     .lte('recordatorio_fecha', hoy)
     .eq('recordatorio_enviado', false)
     .eq('estado', 'entregado')
+    .eq('es_ejemplo', false)   // la orden de ejemplo lleva el teléfono del propio dueño
     .not('recordatorio_fecha', 'is', null)
     .order('recordatorio_fecha', { ascending: true })
     .limit(LIMITE_POR_EJECUCION)

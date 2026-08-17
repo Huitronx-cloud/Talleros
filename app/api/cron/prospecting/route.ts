@@ -8,10 +8,25 @@ const TWILIO_SID     = process.env.TWILIO_ACCOUNT_SID!
 const TWILIO_TOKEN   = process.env.TWILIO_AUTH_TOKEN!
 const TWILIO_FROM    = process.env.TWILIO_WHATSAPP_FROM!
 
-// Apagado por defecto: el agente estaba gastando presupuesto de Twilio en
-// mensajes que casi nunca se entregaban (WhatsApp de prospección fría sin que
-// el destinatario le haya escrito antes al número del taller). Para
-// reactivarlo, poner PROSPECTING_AGENT_ENABLED=true en las env vars de Vercel.
+// Apagado a propósito: el agente estaba gastando presupuesto de Twilio en
+// mensajes que casi nunca se entregaban. WhatsApp Business no entrega en frío a
+// quien no te ha escrito antes, fuera de plantillas aprobadas, así que se pagaba
+// por envíos que no llegaban.
+//
+// OJO — hay DOS capas de apagado, y este flag es solo una:
+//   1. Este `PROSPECTING_AGENT_ENABLED`, que corta la ejecución en la primera
+//      línea del handler.
+//   2. `/api/cron/prospecting` **no está en la lista de `daily/route.ts`**, así
+//      que nadie invoca esta ruta. Ese es el apagado de verdad.
+//
+// Poner el flag en `true` y no tocar lo segundo NO reactiva nada: la ruta
+// seguiría sin ejecutarse nunca, y sin ningún error que lo avise. Para
+// reactivarlo hacen falta las dos cosas.
+//
+// Si se retoma, lo sensato es volver **solo por correo**: el problema de
+// entrega era de WhatsApp, y Brevo no tiene esa restricción. Los dos canales se
+// eligen por separado (ver el parámetro `canales`), pero este flag los apaga a
+// la vez.
 const PROSPECTING_AGENT_ENABLED = process.env.PROSPECTING_AGENT_ENABLED === 'true'
 
 // ── Ciudades objetivo ─────────────────────────────────────────────────────────

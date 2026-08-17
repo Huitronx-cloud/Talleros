@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     .from('ordenes')
     .select('id, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, clientes(nombre, telefono)')
     .eq('estado', 'entregado')
+    .eq('es_ejemplo', false)   // la orden de ejemplo lleva el teléfono del propio dueño
     .eq('fecha_entrega', fecha3Dias)
     .limit(50) // tope por corrida, igual que el resto de los crons
 
