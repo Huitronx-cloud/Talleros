@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     .from('ordenes')
     .select('id, taller_id')
     .eq('estado', 'entregado')
+    .eq('es_ejemplo', false)   // la orden de ejemplo lleva el teléfono del propio dueño
     .gte('fecha_entrega', fecha3Dias)
     .lte('fecha_entrega', hoy)
 

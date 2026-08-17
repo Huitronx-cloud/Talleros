@@ -22,8 +22,8 @@ async function obtenerMetricas() {
     { count: totalTalleres },
   ] = await Promise.all([
     supabase.from('talleres').select('*', { count: 'exact', head: true }).gte('created_at', hace7dias),
-    supabase.from('ordenes').select('*', { count: 'exact', head: true }).gte('created_at', hace7dias),
-    supabase.from('clientes').select('*', { count: 'exact', head: true }).gte('created_at', hace7dias),
+    supabase.from('ordenes').select('*', { count: 'exact', head: true }).eq('es_ejemplo', false).gte('created_at', hace7dias),
+    supabase.from('clientes').select('*', { count: 'exact', head: true }).eq('es_ejemplo', false).gte('created_at', hace7dias),
     supabase.from('resenas_enviadas').select('*', { count: 'exact', head: true }).gte('created_at', hace7dias),
     supabase.from('recordatorios_enviados').select('*', { count: 'exact', head: true }).gte('created_at', hace7dias),
     supabase.from('talleres').select('*', { count: 'exact', head: true }),

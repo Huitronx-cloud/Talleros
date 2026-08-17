@@ -165,21 +165,38 @@ export async function GET(req: NextRequest) {
       .from('talleres')
       .select(`
         id, nombre, created_at,
-        usuarios!inner(id, nombre, email, telefono, rol),
-        clientes(count),
-        ordenes(count)
+        usuarios!inner(id, nombre, email, telefono, rol)
       `)
       .order('created_at', { ascending: false })
 
     if (!talleres) return NextResponse.json({ ok: true, procesados: 0 })
+
+    // Los conteos van APARTE y filtrando es_ejemplo.
+    //
+    // Antes se pedían incrustados —clientes(count), ordenes(count)— sin filtro
+    // alguno. Desde que cada alta nace con 2 clientes y 1 orden de ejemplo
+    // (migración 042), esos conteos nunca daban cero, así que las cuatro etapas
+    // de abajo, que todas exigen "todavía no tiene", dejaron de dispararse. Los
+    // crons corrían, no fallaban, y no mandaban nada: cinco correos y sus
+    // WhatsApp muertos en silencio desde el 2026-08-03.
+    //
+    // Dos consultas en bloque y un Set, en vez de una por taller: con 73
+    // talleres, preguntar de uno en uno serían 146 viajes en una función que
+    // tiene 60 segundos.
+    const [clientesReales, ordenesReales] = await Promise.all([
+      supabase.from('clientes').select('taller_id').eq('es_ejemplo', false),
+      supabase.from('ordenes').select('taller_id').eq('es_ejemplo', false),
+    ])
+    const conClientes = new Set((clientesReales.data ?? []).map(c => c.taller_id))
+    const conOrdenes  = new Set((ordenesReales.data ?? []).map(o => o.taller_id))
 
     for (const taller of talleres) {
       const propietario = (taller.usuarios as any[]).find((u: any) => u.rol === 'propietario')
       if (!propietario) continue
 
       const horas         = horasDesde(taller.created_at)
-      const tieneClientes = (taller.clientes as any)?.[0]?.count > 0
-      const tieneOrdenes  = (taller.ordenes as any)?.[0]?.count > 0
+      const tieneClientes = conClientes.has(taller.id)
+      const tieneOrdenes  = conOrdenes.has(taller.id)
       const nombre        = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email         = propietario.email
       const telefono      = propietario.telefono
