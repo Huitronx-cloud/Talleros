@@ -153,15 +153,29 @@ export async function GET(req: NextRequest) {
   const resultados: any[] = []
 
   try {
-    // Obtener todos los talleres con sus usuarios propietarios
-    const { data: talleres } = await supabase
+    // El teléfono sale de `talleres`, NO de `usuarios`.
+    //
+    // Esta consulta pedía `usuarios!inner(..., telefono, ...)` y esa columna no
+    // existe: `usuarios` es (id, taller_id, nombre, email, rol, created_at) y
+    // ninguna migración la añade. PostgREST rechaza el select entero, `talleres`
+    // llega null y el handler se iba por el early return de abajo sin mandar
+    // nada. Es decir: esta era una SEGUNDA causa, independiente de la de
+    // es_ejemplo, por la que la secuencia de activación nunca enviaba. Arreglar
+    // solo los conteos no habría bastado.
+    const { data: talleres, error: errorTalleres } = await supabase
       .from('talleres')
       .select(`
-        id, nombre, created_at,
-        usuarios!inner(id, nombre, email, telefono, rol)
+        id, nombre, telefono, created_at,
+        usuarios!inner(id, nombre, email, rol)
       `)
       .order('created_at', { ascending: false })
 
+    // El error ya no se traga: si la consulta falla, el cron lo dice en vez de
+    // devolver un 200 alegre con "procesados: 0", que es lo que escondió esto.
+    if (errorTalleres) {
+      console.error('[onboarding] no se pudieron leer los talleres:', errorTalleres)
+      return NextResponse.json({ error: errorTalleres.message }, { status: 500 })
+    }
     if (!talleres) return NextResponse.json({ ok: true, procesados: 0 })
 
     // Los conteos van APARTE y filtrando es_ejemplo.
@@ -192,7 +206,7 @@ export async function GET(req: NextRequest) {
       const tieneOrdenes  = conOrdenes.has(taller.id)
       const nombre        = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email         = propietario.email
-      const telefono      = propietario.telefono
+      const telefono      = (taller as any).telefono
 
       // Las ventanas duran 24 h, no 12, porque el cron corre una vez al día:
       // con ventanas de 12 h cada taller caía en unas y se saltaba otras según

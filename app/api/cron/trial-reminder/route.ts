@@ -183,14 +183,24 @@ export async function GET(req: NextRequest) {
   const resultados: any[] = []
 
   try {
-    const { data: talleres } = await supabase
+    // El teléfono sale de `talleres`, NO de `usuarios`: esa columna no existe
+    // —`usuarios` es (id, taller_id, nombre, email, rol, created_at)— y
+    // PostgREST rechazaba el select entero. `talleres` llegaba null y el cron
+    // se iba por el early return devolviendo un 200 con "procesados: 0", así
+    // que los tres correos de fin de trial tampoco se enviaban nunca.
+    const { data: talleres, error: errorTalleres } = await supabase
       .from('talleres')
       .select(`
-        id, nombre,
+        id, nombre, telefono,
         suscripciones(id, plan, estado, trial_fin, trial_reminder_etapas),
-        usuarios!inner(nombre, email, telefono, rol)
+        usuarios!inner(nombre, email, rol)
       `)
 
+    // El error deja de tragarse: era lo que mantenía esto invisible.
+    if (errorTalleres) {
+      console.error('[trial-reminder] no se pudieron leer los talleres:', errorTalleres)
+      return NextResponse.json({ error: errorTalleres.message }, { status: 500 })
+    }
     if (!talleres) return NextResponse.json({ ok: true, procesados: 0 })
 
     // Límite global por ejecución — protección contra la cola acumulada
@@ -218,7 +228,7 @@ export async function GET(req: NextRequest) {
       const dias    = Math.ceil((new Date(suscripcion.trial_fin).getTime() - Date.now()) / 86400000)
       const nombre  = propietario.nombre?.split(' ')[0] ?? 'Hola'
       const email   = propietario.email
-      const telefono = propietario.telefono
+      const telefono = (taller as any).telefono
 
       if (resultados.length >= LIMITE_POR_EJECUCION) {
         pendientesRestantes++
