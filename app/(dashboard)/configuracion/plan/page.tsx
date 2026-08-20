@@ -158,7 +158,12 @@ export default function PlanPage() {
         body:    JSON.stringify({ precio_id: precioId }),
       })
       const data = await res.json()
+      // Sin este `else` la pantalla no decía absolutamente nada cuando el
+      // checkout fallaba: el botón dejaba de girar y ahí terminaba todo. El
+      // catch solo cubre errores de red, no una respuesta de error del
+      // servidor, así que un rechazo de Stripe era invisible para el cliente.
       if (data.url) window.location.href = data.url
+      else alert(data.error ?? 'No se pudo iniciar el pago. Escríbenos a hola@tallerosapp.com y lo resolvemos.')
     } catch {
       alert('Error al iniciar el pago. Intenta de nuevo.')
     } finally {

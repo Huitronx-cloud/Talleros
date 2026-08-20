@@ -114,16 +114,27 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: arrancar en `null`, calcular en `useEffect`, y no pintar
    nada hasta tener valor.
 
-5. **[2026-08-03] Las cuatro landings comparten el mismo juego de clases**
-   `home-client.tsx` y `mexico/colombia/peru-client.tsx` usan las mismas clases
-   (`.lh1`, `.lsh2`, `.lplan-*`…) pero son archivos separados.
-   Hacer en su lugar: replicar todo cambio visual en las cuatro, o extraerlo a
-   `globals.css` bajo `.lr`, como ya se hizo con la tipografía.
+5. **[2026-08-03] El CSS del proyecto le gana a lo que escribas en la página**
+   Dos trampas: `globals.css` declara `input, select, textarea { color: #0f172a
+   !important }`, así que sobre fondo oscuro el texto del campo desaparece (la
+   clase `.input-on-dark` lo arregla, cubre `input` y `textarea`); y las cuatro
+   landings (`home-client.tsx`, `mexico/colombia/peru-client.tsx`) son archivos
+   separados que comparten el mismo juego de clases (`.lh1`, `.lsh2`,
+   `.lplan-*`…).
+   Hacer en su lugar: replicar todo cambio visual en las cuatro landings, o
+   extraerlo a `globals.css` bajo `.lr`, como ya se hizo con la tipografía.
 
-6. **[2026-08-03] `globals.css` fuerza texto casi negro en todo campo**
-   La regla `input, select, textarea { color: #0f172a !important }` le gana a
-   Tailwind, así que sobre fondo oscuro el texto se pierde.
-   Hacer en su lugar: añadir la clase `.input-on-dark` (cubre `input` y `textarea`).
+6. **[2026-08-20] De un mapa histórico no se borra nunca una entrada**
+   `PRECIOS_A_PLAN` traduce el precio que manda Stripe → plan. Al cambiar los
+   precios de CAD a USD se sacaron los viejos del mapa "porque ya no se
+   ofrecen", pero las suscripciones vivas seguían corriendo sobre ellos: el
+   siguiente `customer.subscription.updated` —una renovación cobrada sin
+   problema— caía en el `?? 'trial'` y degradaba al único cliente de pago a los
+   topes del plan gratis. Estuvo así tres semanas sin que nada lo reportara.
+   Hacer en su lugar: los mapas de traducción incluyen lo retirado; lo que
+   cambia es qué se **ofrece** (`PLANES`), no qué se sabe **leer**. Y un valor
+   desconocido nunca justifica bajarle el plan a nadie: se conserva lo que
+   había y se avisa.
 
 7. **[2026-08-03] El número de orden sale de un contador atómico**
    `siguiente_numero_orden(taller_id)` incrementa `contadores_orden`, que bajo RLS

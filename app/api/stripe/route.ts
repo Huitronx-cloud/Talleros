@@ -60,6 +60,11 @@ export async function POST(req: NextRequest) {
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: precio_id, quantity: 1 }],
+      // El metadata de la sesión no es opcional: el webhook lee
+      // `session.metadata.taller_id` en checkout.session.completed y si no está
+      // corta sin escribir nada. Sin esta línea, quien pagaba desde /precios
+      // pagaba de verdad en Stripe y seguía en el plan gratis dentro de la app.
+      metadata: { taller_id: usuario.taller_id },
       subscription_data: {
         metadata: { taller_id: usuario.taller_id },
       },
@@ -68,8 +73,13 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Stripe checkout error:', error)
+    if (typeof error?.message === 'string' && error.message.includes('combine currencies')) {
+      return NextResponse.json({
+        error: 'Tu cuenta ya tiene una suscripción en otra moneda. Escríbenos a hola@tallerosapp.com y lo resolvemos hoy mismo — no pierdes el acceso.',
+      }, { status: 409 })
+    }
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
