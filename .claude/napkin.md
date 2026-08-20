@@ -11,19 +11,50 @@ ser útil o recurrente, se borra.
 
 ## Ejecución y verificación (máxima prioridad)
 
-1. **[2026-08-03] `next build` NO valida tipos**
+1. **[2026-08-20] `const { data }` sin mirar el `error` esconde averías durante semanas**
+   Tres veces en una sola sesión, siempre igual: la consulta falla, `data` llega
+   null, y el código lo interpreta como "no había nada". Los crons de onboarding
+   y trial devolvían 200 con `procesados: 0` porque pedían `usuarios.telefono`,
+   que no existe. El checkout de Stripe devolvía "Error interno" sin decir que
+   Stripe rechazaba por mezclar monedas. Y el portal del cliente respondía 404 en
+   **todos** los enlaces de **todos** los talleres porque la RPC ni se ejecutaba.
+   Ninguna de las tres se detectó desde dentro: las reportaron los clientes.
+   Hacer en su lugar: desestructurar siempre `{ data, error }` y ramificar por
+   `error` antes de mirar `data`. Un fallo de consulta y un resultado vacío
+   necesitan salidas distintas — si acaban en el mismo `notFound()` o el mismo
+   `return 0`, la avería es invisible. Vale para Supabase y para cualquier
+   respuesta con forma `{ data, error }`.
+
+2. **[2026-08-20] Las migraciones describen tablas que en producción son otras**
+   `024_missing_tables.sql` declara `portal_tokens.token` como `uuid`, pero usa
+   `create table if not exists` y la tabla ya existía: en producción es `text`
+   con `encode(gen_random_bytes(32),'hex')`. La migración 037 escribió
+   `get_portal_data(p_token uuid)` copiando el archivo, y el portal entero llevaba
+   semanas en 404.
+   Hacer en su lugar: antes de escribir SQL que dependa del esquema, leer el
+   esquema **de la base**, no del archivo — `information_schema.columns` para
+   tipos, `pg_get_function_identity_arguments` para firmas. Todo archivo con
+   `create table if not exists` es una descripción sin garantía.
+
+3. **[2026-08-03] `next build` NO valida tipos**
    `next.config.mjs` tiene `ignoreBuildErrors: true` e `ignoreDuringBuilds: true`,
    así que "✓ Compiled successfully" no dice nada sobre TypeScript.
    Hacer en su lugar: `npx tsc --noEmit`. El repo arrastra **19 errores previos**;
    comparar el total antes y después para saber si añadiste alguno.
 
-2. **[2026-08-03] Las migraciones van ANTES del merge**
+4. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
    Fusionar a `main` dispara el deploy de producción en Vercel. Si el código
    consulta una columna que aún no existe, tumba las pantallas de todos.
    Hacer en su lugar: pasarle el SQL al usuario, esperar confirmación de que lo
    corrió, y solo entonces fusionar.
+   **La excepción [2026-08-20]:** cuando lo que cambia es la *forma de lo que
+   devuelve* la base y no un campo nuevo, el orden se invierte. La 044 hizo que
+   `get_portal_data` devolviera `{expirado:true}`; correrla antes habría dado ese
+   objeto a la página vieja, que iba directa a leer la orden y habría respondido
+   500. Preguntarse siempre quién habla primero: si la base empieza a decir algo
+   que el código desplegado no sabe interpretar, el código va primero.
 
-3. **[2026-08-03] La rama diverge tras cada squash merge**
+5. **[2026-08-03] La rama diverge tras cada squash merge**
    La PR sale `mergeable_state: dirty` porque la rama conserva los commits que
    en `main` entraron aplastados en uno.
    Hacer en su lugar: comprobar que los árboles coinciden
@@ -34,12 +65,12 @@ ser útil o recurrente, se borra.
    sincronizado mientras la rama del servidor sigue en el commit viejo. Para
    saber dónde está de verdad: `git ls-remote origin <rama>`.
 
-4. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
+6. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
    exportar por falta de variables de Supabase. No es una regresión.
    Hacer en su lugar: darlo por esperado; comprobar solo `Compiled successfully`.
 
-5. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
+7. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
    No se pueden usar en sesiones no interactivas.
    Hacer en su lugar: leer el esquema en `supabase/migrations/`, y seguir el
    estado del deploy con `get_deployment` (`state: READY` + `aliasError: null`).
