@@ -207,10 +207,54 @@ export async function POST(req: NextRequest) {
         const invoice  = event.data.object
         const customer = invoice.customer
 
-        await supabaseAdmin
+        const { data: suscripcion } = await supabaseAdmin
           .from('suscripciones')
           .update({ estado: 'vencida' })
           .eq('stripe_customer_id', customer)
+          .select('taller_id')
+          .single()
+
+        // Hasta ahora esto solo marcaba la fila y se acababa: el taller se
+        // enteraba únicamente si entraba a la app y veía el banner. Un dueño
+        // que no entra en tres días con la tarjeta rebotando es exactamente el
+        // que se pierde, así que aquí se le avisa.
+        //
+        // Stripe reintenta el cobro varias veces y manda un evento por intento.
+        // Solo se escribe en el primero y en el último, para no convertir un
+        // problema de tarjeta en cuatro correos iguales.
+        const intento       = Number(invoice.attempt_count ?? 1)
+        const ultimoIntento = !invoice.next_payment_attempt
+        if (!suscripcion?.taller_id || (intento > 1 && !ultimoIntento)) break
+
+        try {
+          const { data: usuario } = await supabaseAdmin
+            .from('usuarios')
+            .select('nombre, email, talleres(nombre)')
+            .eq('taller_id', suscripcion.taller_id)
+            .eq('rol', 'propietario')
+            .single()
+
+          if (usuario?.email) {
+            const nombreUsuario = (usuario.nombre ?? 'Hola').split(' ')[0]
+            const nombreTaller  = (usuario.talleres as any)?.nombre ?? 'tu taller'
+            const monto = new Intl.NumberFormat('es-MX', {
+              style: 'currency',
+              currency: (invoice.currency ?? 'usd').toUpperCase(),
+              maximumFractionDigits: 0,
+            }).format((invoice.amount_due ?? 0) / 100)
+
+            await resend.emails.send({
+              from:    'TallerOS <hola@tallerosapp.com>',
+              to:      usuario.email,
+              subject: ultimoIntento
+                ? `${nombreUsuario}, no pudimos cobrar tu mensualidad de TallerOS`
+                : `${nombreUsuario}, tu pago de TallerOS no pasó`,
+              html: buildEmailPagoFallido({ nombreUsuario, nombreTaller, monto, ultimoIntento }),
+            })
+          }
+        } catch (emailErr) {
+          console.error('[stripe] no se pudo avisar del pago fallido:', emailErr)
+        }
         break
       }
     }
@@ -265,6 +309,104 @@ async function trackMetaPurchase({
   } catch (e) {
     console.error('Meta CAPI fetch error:', e)
   }
+}
+
+/**
+ * Aviso de cobro rechazado.
+ *
+ * La idea que lo gobierna: un cobro fallido casi nunca es alguien que se quiere
+ * ir — es una tarjeta vencida, un límite o un cambio de banco. Si el correo
+ * suena a cobranza, se convierte en la excusa para irse. Por eso lo primero que
+ * dice es que el taller no se bloquea, que es además la verdad: `getLimites`
+ * mira el plan, no el estado, así que una suscripción `vencida` conserva su
+ * acceso.
+ */
+function buildEmailPagoFallido({
+  nombreUsuario,
+  nombreTaller,
+  monto,
+  ultimoIntento,
+}: {
+  nombreUsuario: string
+  nombreTaller:  string
+  monto:         string
+  ultimoIntento: boolean
+}) {
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+        <tr>
+          <td style="background:linear-gradient(135deg,#b45309 0%,#92400e 100%);padding:32px 40px;">
+            <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px;">
+              Taller<span style="opacity:0.7;">OS</span>
+            </div>
+            <div style="color:#fde68a;font-size:13px;font-weight:600;margin-top:8px;">
+              Tu pago no se pudo procesar
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:36px 40px;">
+            <p style="font-size:16px;color:#111827;margin:0 0 20px;line-height:1.7;">
+              Hola ${nombreUsuario}, intentamos cobrar la mensualidad de
+              <strong>${nombreTaller}</strong> (${monto}) y el banco no autorizó el cargo.
+            </p>
+
+            <p style="font-size:15px;color:#374151;margin:0 0 24px;line-height:1.7;">
+              Casi siempre es algo simple: una tarjeta vencida, un límite del banco o
+              una tarjeta que cambió de número.
+            </p>
+
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:18px 20px;margin-bottom:28px;">
+              <p style="margin:0;font-size:15px;color:#166534;line-height:1.6;">
+                <strong>Tu taller sigue funcionando con normalidad.</strong> No bloqueamos
+                nada ni se pierde información — tus órdenes, clientes e historial están
+                intactos. Solo necesitamos que actualices tu método de pago.
+              </p>
+            </div>
+
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+              <tr>
+                <td style="background:#1d4ed8;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.2);">
+                  <a href="https://www.tallerosapp.com/configuracion/plan"
+                     style="display:inline-block;padding:16px 36px;color:#fff;font-size:16px;font-weight:700;text-decoration:none;">
+                    Actualizar mi tarjeta →
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="font-size:14px;color:#6b7280;margin:0 0 20px;line-height:1.7;">
+              ${ultimoIntento
+                ? 'Este fue el último intento de cobro automático. En cuanto actualices la tarjeta, tu plan se reactiva solo.'
+                : 'Lo volveremos a intentar automáticamente en unos días. Si actualizas la tarjeta antes, no tienes que hacer nada más.'}
+            </p>
+
+            <p style="font-size:14px;color:#6b7280;margin:0;line-height:1.7;">
+              ¿Algo no cuadra o prefieres pagar de otra forma? Responde este correo y lo vemos.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #f3f4f6;">
+            <p style="color:#9ca3af;font-size:11px;margin:0;">
+              TallerOS — Gestión inteligente para talleres mecánicos
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
 }
 
 function buildEmailBienvenidaPlan({
