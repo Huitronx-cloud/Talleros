@@ -4,6 +4,48 @@ import { getStripe, PRECIOS_A_PLAN } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
+/**
+ * Fechas del periodo de facturación.
+ *
+ * Desde la versión 2025-03-31 de la API de Stripe `current_period_start/end`
+ * ya no viven en la suscripción sino en cada ítem, y esta app corre sobre
+ * 2026-04-22. Leerlas de `sub` devolvía `undefined` siempre, así que todas las
+ * filas de `suscripciones` quedaron con `periodo_inicio` y `periodo_fin` en
+ * null y nadie sabía cuándo renovaba un cliente. Se lee del ítem y se deja el
+ * campo viejo como respaldo por si alguna suscripción antigua todavía lo trae.
+ */
+function periodo(sub: any): { inicio: string | null; fin: string | null } {
+  const item = sub?.items?.data?.[0]
+  const aIso = (seg: unknown) =>
+    typeof seg === 'number' ? new Date(seg * 1000).toISOString() : null
+  return {
+    inicio: aIso(item?.current_period_start ?? sub?.current_period_start),
+    fin:    aIso(item?.current_period_end   ?? sub?.current_period_end),
+  }
+}
+
+/** Aviso a hola@ cuando llega un precio que el código no sabe traducir. */
+async function avisarPrecioDesconocido(precioId: string, tallerId: string, decision: string) {
+  console.error(`[stripe] precio desconocido ${precioId} (taller ${tallerId}) — ${decision}`)
+  if (!process.env.BREVO_API_KEY) return
+  try {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method:  'POST',
+      headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender:  { name: 'TallerOS Stripe', email: 'hola@tallerosapp.com' },
+        to:      [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
+        subject: `[Stripe] Precio desconocido: ${precioId}`,
+        htmlContent: `<p>Stripe mandó el precio <strong>${precioId}</strong> para el taller <strong>${tallerId}</strong> y no está en <code>PRECIOS_A_PLAN</code>.</p>
+          <p>Qué se hizo mientras tanto: <strong>${decision}</strong></p>
+          <p>Agrega el precio a <code>lib/stripe.ts</code> y revisa la fila en <code>suscripciones</code>.</p>`,
+      }),
+    })
+  } catch (e) {
+    console.error('[stripe] no se pudo avisar del precio desconocido:', e)
+  }
+}
+
 export async function POST(req: NextRequest) {
   const stripe = getStripe()
   const supabaseAdmin = createClient(
@@ -40,14 +82,18 @@ export async function POST(req: NextRequest) {
 
         const sub      = await stripe.subscriptions.retrieve(subscriptionId) as any
         const precioId = sub.items?.data?.[0]?.price?.id
-        const plan     = PRECIOS_A_PLAN[precioId] ?? 'trial'
 
-        const periodoInicio = sub.current_period_start
-          ? new Date(sub.current_period_start * 1000).toISOString()
-          : null
-        const periodoFin = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null
+        // Quien llega aquí acabó de pagar. Si el precio no está en el mapa, el
+        // peor default posible es 'trial': lo dejaría con los topes del plan
+        // gratis después de haber pagado. Se asume 'esencial' —el plan de pago
+        // más barato, nunca da de más— y se avisa para corregir el mapa.
+        let plan = PRECIOS_A_PLAN[precioId]
+        if (!plan) {
+          plan = 'esencial'
+          await avisarPrecioDesconocido(precioId, tallerId, 'se asumió el plan esencial')
+        }
+
+        const { inicio: periodoInicio, fin: periodoFin } = periodo(sub)
 
         await supabaseAdmin
           .from('suscripciones')
@@ -108,14 +154,24 @@ export async function POST(req: NextRequest) {
         if (!tallerId) break
 
         const precioId = sub.items?.data?.[0]?.price?.id
-        const plan     = PRECIOS_A_PLAN[precioId] ?? 'trial'
 
-        const periodoInicio = sub.current_period_start
-          ? new Date(sub.current_period_start * 1000).toISOString()
-          : null
-        const periodoFin = sub.current_period_end
-          ? new Date(sub.current_period_end * 1000).toISOString()
-          : null
+        // Aquí es donde se rompió lo de FASTCAR: al retirar un precio del mapa,
+        // el primer `updated` que llegaba —una renovación cobrada sin problema—
+        // lo traducía a 'trial' y degradaba a un cliente al corriente. Un precio
+        // que no se reconoce no es información para bajar a nadie de plan: se
+        // conserva el plan que ya tenía y se avisa.
+        let plan = PRECIOS_A_PLAN[precioId]
+        if (!plan) {
+          const { data: actual } = await supabaseAdmin
+            .from('suscripciones')
+            .select('plan')
+            .eq('taller_id', tallerId)
+            .single()
+          plan = actual?.plan ?? 'esencial'
+          await avisarPrecioDesconocido(precioId, tallerId, `se conservó el plan ${plan}`)
+        }
+
+        const { inicio: periodoInicio, fin: periodoFin } = periodo(sub)
 
         await supabaseAdmin
           .from('suscripciones')

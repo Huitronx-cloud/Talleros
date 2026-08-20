@@ -73,8 +73,20 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Stripe checkout error:', error)
+
+    // 'Error interno' dejaba al cliente sin la menor pista: FASTCAR lo intentó
+    // 15 veces sin saber nunca por qué fallaba, y desde la pantalla no había
+    // forma de distinguirlo de una caída del servidor. Los rechazos de Stripe
+    // que son culpa de la configuración de la cuenta se traducen a algo que se
+    // pueda leer y accionar.
+    if (typeof error?.message === 'string' && error.message.includes('combine currencies')) {
+      return NextResponse.json({
+        error: 'Tu cuenta ya tiene una suscripción en otra moneda. Escríbenos a hola@tallerosapp.com y lo resolvemos hoy mismo — no pierdes el acceso.',
+      }, { status: 409 })
+    }
+
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
