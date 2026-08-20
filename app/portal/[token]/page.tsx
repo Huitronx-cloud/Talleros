@@ -16,10 +16,43 @@ export default async function PortalClientePage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data: portalData } = await supabase
+  const { data: portalData, error } = await supabase
     .rpc('get_portal_data', { p_token: params.token })
 
+  // El error se ignoraba y solo se miraba si venían datos, así que un fallo de
+  // la consulta era indistinguible de un token inventado: los dos acababan en
+  // 404. Durante semanas la función esperaba un uuid y recibía texto —Postgres
+  // ni siquiera llegaba a ejecutarla— y desde fuera parecía que los enlaces
+  // estaban mal, no la base.
+  if (error) {
+    console.error('[portal] get_portal_data falló:', error.message, '· token:', params.token)
+    notFound()
+  }
+
   if (!portalData) notFound()
+
+  // Token válido pero caducado (duran 7 días). Es un caso normal, no un error:
+  // el cliente abre un enlace viejo y merece saber qué pasó.
+  if ((portalData as any).expirado) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-sm text-center">
+          <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-6 h-6 text-amber-600" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900">Este enlace ya expiró</h1>
+          <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+            Los enlaces de seguimiento duran 7 días. Pídele al taller que te
+            comparta uno nuevo y podrás volver a ver el estado de tu vehículo.
+          </p>
+          <p className="text-xs text-gray-300 mt-6">
+            Seguimiento en tiempo real por{' '}
+            <span className="font-semibold text-gray-400">TallerOS</span>
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const orden   = portalData.orden as any
   const cliente = portalData.cliente ?? {}
