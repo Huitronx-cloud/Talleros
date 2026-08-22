@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Archivo, Public_Sans } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/next'
 import CookieConsent from '@/components/cookie-consent'
 import RegistrarSW from '@/components/registrar-sw'
 import SplashScreen from '@/components/splash-screen'
@@ -130,6 +131,17 @@ export default function RootLayout({
         <CookieConsent />
         <RegistrarSW />
         <SplashScreen />
+        {/* Va FUERA del banner de cookies, y es deliberado: Vercel Analytics no
+            usa cookies ni identifica al visitante, así que no necesita
+            consentimiento. GA y Meta Pixel sí, y por eso siguen dentro de
+            CookieConsent.
+
+            Esa diferencia es justamente para lo que sirve: GA solo mide a quien
+            pulsa "Aceptar" —una fracción del tráfico, y sesgada hacia quien se
+            quedó lo suficiente para interactuar con el banner—. Este mide a
+            todos, que es el número que hacía falta para saber si la landing
+            convierte o no. */}
+        <Analytics />
         {children}
       </body>
     </html>
