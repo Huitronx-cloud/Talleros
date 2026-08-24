@@ -32,7 +32,7 @@ export default async function AdminPanelPage() {
   const desde = new Date(Date.now() - DIAS * 86400000).toISOString()
 
   const [talleresRes, suscripcionesRes, ordenesRealesRes, ordenesPeriodoRes,
-         clientesRealesRes, leadsRes, articulosRes, prospectosRes] = await Promise.all([
+         clientesRealesRes, leadsRes, articulosRes, prospectosRes, usuariosRes] = await Promise.all([
     supabase.from('talleres').select('id, nombre, ciudad, pais, created_at').order('created_at', { ascending: false }),
     supabase.from('suscripciones').select('taller_id, plan, estado, trial_fin'),
     supabase.from('ordenes').select('taller_id').eq('es_ejemplo', false),
@@ -41,6 +41,7 @@ export default async function AdminPanelPage() {
     supabase.from('crm_leads').select('etapa, created_at'),
     supabase.from('articulos_blog').select('*', { count: 'exact', head: true }).eq('publicado', true),
     supabase.from('prospectos_enviados').select('created_at').gte('created_at', desde),
+    supabase.from('usuarios').select('taller_id'),
   ])
 
   const talleres      = talleresRes.data ?? []
@@ -52,13 +53,27 @@ export default async function AdminPanelPage() {
   const activados = new Set((ordenesRealesRes.data ?? []).map(o => o.taller_id))
 
   const porTaller = new Map(suscripciones.map(s => [s.taller_id, s]))
-  const pagando   = suscripciones.filter(s => ['esencial', 'pro'].includes(s.plan) && s.estado === 'activa')
-  const trials    = suscripciones.filter(s => s.plan === 'trial' && s.estado === 'activa')
+
+  // Una suscripción sin ningún usuario detrás no es un cliente: son las filas
+  // huérfanas de las pruebas viejas (Rodriguez, zasz, El Campeón). Contarlas
+  // hacía que el panel dijera "Pagando 4" cuando el cliente real era uno, y ese
+  // es justo el número que se mira con prisa para decidir algo.
+  const conUsuarios = new Set((usuariosRes.data ?? []).map(u => u.taller_id))
+
+  const pagandoTodas = suscripciones.filter(s => ['esencial', 'pro'].includes(s.plan) && s.estado === 'activa')
+  const pagando      = pagandoTodas.filter(s => conUsuarios.has(s.taller_id))
+  const huerfanas    = pagandoTodas.length - pagando.length
+
+  const trials = suscripciones.filter(s => s.plan === 'trial' && s.estado === 'activa')
 
   const registros7  = talleres.filter(t => diasDesde(t.created_at) < 7).length
   const registros30 = talleres.filter(t => diasDesde(t.created_at) < 30).length
 
   // Trials que vencen pronto — es la lista de llamadas del correo del orquestador.
+  //
+  // El filtro es `<= en3dias`, así que arrastra también todos los que vencieron
+  // hace semanas. Decir "80 vencen en ≤3 días" cuando 79 ya vencieron convierte
+  // una lista de llamadas urgentes en ruido: hay que separarlos.
   const en3dias = Date.now() + 3 * 86400000
   const trialsCalientes = trials
     .filter(s => s.trial_fin && new Date(s.trial_fin).getTime() <= en3dias)
@@ -69,6 +84,9 @@ export default async function AdminPanelPage() {
       dias:   Math.ceil((new Date(s.trial_fin!).getTime() - Date.now()) / 86400000),
       activo: activados.has(s.taller_id),
     }))
+
+  const porVencer  = trialsCalientes.filter(s => s.dias >= 0)
+  const yaVencidos = trialsCalientes.length - porVencer.length
 
   // Riesgo: se registraron hace 2-14 días y siguen sin crear una orden real.
   const enRiesgo = talleres
@@ -94,9 +112,18 @@ export default async function AdminPanelPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Tarjeta etiqueta="Talleres registrados" valor={talleres.length} pie={`${registros7} en los últimos 7 días`} />
         <Tarjeta etiqueta="Pagando" valor={pagando.length} tono={pagando.length > 0 ? 'bueno' : 'alerta'}
-                 pie={talleres.length ? `${((pagando.length / talleres.length) * 100).toFixed(1)}% de los registros` : undefined} />
+                 pie={[
+                   talleres.length ? `${((pagando.length / talleres.length) * 100).toFixed(1)}% de los registros` : '',
+                   huerfanas ? `${huerfanas} ${huerfanas === 1 ? 'suscripción sin usuarios, no contada' : 'suscripciones sin usuarios, no contadas'}` : '',
+                 ].filter(Boolean).join(' · ')} />
         <Tarjeta etiqueta="Trials activos" valor={trials.length} tono="acento"
-                 pie={trialsCalientes.length ? `${trialsCalientes.length} vencen en ≤3 días` : 'ninguno vence pronto'} />
+                 pie={
+                   porVencer.length
+                     ? `${porVencer.length} ${porVencer.length === 1 ? 'vence' : 'vencen'} en ≤3 días${yaVencidos ? ` · ${yaVencidos} ya vencidos` : ''}`
+                     : yaVencidos
+                     ? `${yaVencidos} ya vencidos, ninguno por vencer`
+                     : 'ninguno vence pronto'
+                 } />
         <Tarjeta etiqueta="Activados" valor={activados.size} tono={pctActivacion >= 50 ? 'bueno' : 'alerta'}
                  pie={`${pctActivacion.toFixed(0)}% creó una orden real`} />
       </div>
@@ -107,7 +134,7 @@ export default async function AdminPanelPage() {
           pasos={[
             { etiqueta: 'Se registraron',        valor: talleres.length },
             { etiqueta: 'Crearon una orden real', valor: activados.size, detalle: 'excluye las órdenes de ejemplo' },
-            { etiqueta: 'Están pagando',          valor: pagando.length },
+            { etiqueta: 'Están pagando',          valor: pagando.length, detalle: 'solo suscripciones con un usuario detrás' },
           ]}
           pie="Cada paso se mide contra el total de registros, no contra el paso anterior."
         />

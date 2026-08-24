@@ -53,9 +53,18 @@ export async function GET(req: NextRequest) {
   const acciones: string[] = []
   const llamadasHoy: string[] = []
 
-  const { count: pagando } = await supabase
-    .from('suscripciones').select('*', { count: 'exact', head: true })
-    .in('plan', ['esencial', 'pro']).eq('estado', 'activa')
+  // Una suscripción sin ningún usuario detrás no es un cliente: son filas
+  // huérfanas de pruebas viejas. Contándolas, este correo llevaba semanas
+  // diciendo "4/500" cuando el cliente real era uno — y es la primera cifra que
+  // se mira cada mañana.
+  const [{ data: suscripcionesPago }, { data: usuariosTodos }] = await Promise.all([
+    supabase.from('suscripciones').select('taller_id')
+      .in('plan', ['esencial', 'pro']).eq('estado', 'activa'),
+    supabase.from('usuarios').select('taller_id'),
+  ])
+
+  const conUsuarios = new Set((usuariosTodos ?? []).map(u => u.taller_id))
+  const pagando = (suscripcionesPago ?? []).filter(s => conUsuarios.has(s.taller_id)).length
 
   const { count: trialsActivos } = await supabase
     .from('suscripciones').select('*', { count: 'exact', head: true })
@@ -66,11 +75,17 @@ export async function GET(req: NextRequest) {
     .from('talleres').select('*', { count: 'exact', head: true })
     .gte('created_at', ayer)
 
+  // La ventana tiene suelo, no solo techo. Sin el `gte(ahora)` esta consulta
+  // traía los trials más antiguos primero —los que vencieron hace semanas— y
+  // llenaba la lista de "llamadas de hoy" con talleres que ya decidieron hace
+  // tiempo, dejando fuera a los que de verdad deciden esta semana.
+  const ahora   = new Date().toISOString()
   const en3dias = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
   const { data: trialsCalientes } = await supabase
     .from('suscripciones')
     .select('taller_id, trial_fin, talleres(nombre, telefono)')
     .eq('plan', 'trial').eq('estado', 'activa')
+    .gte('trial_fin', ahora)
     .lte('trial_fin', en3dias)
     .order('trial_fin', { ascending: true })
     .limit(10)
@@ -156,7 +171,7 @@ export async function GET(req: NextRequest) {
     <p style="margin:0 0 24px;font-size:13px;color:#64748b;">Generado automaticamente por el Orquestador</p>
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:20px;">
       <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:1px;">Metricas</p>
-      <p style="margin:0 0 6px;font-size:14px;color:#334155;">Clientes pagando: <strong>${pagando ?? 0}</strong> / 500</p>
+      <p style="margin:0 0 6px;font-size:14px;color:#334155;">Clientes pagando: <strong>${pagando}</strong> / 500</p>
       <p style="margin:0 0 6px;font-size:14px;color:#334155;">Trials activos: <strong>${trialsActivos ?? 0}</strong></p>
       <p style="margin:0 0 6px;font-size:14px;color:#334155;">Registros ultimas 24h: <strong>${registrosAyer ?? 0}</strong></p>
       <p style="margin:0 0 6px;font-size:14px;color:#334155;">Prospectados ayer: <strong>${prospectadosAyer ?? 0}</strong></p>
@@ -176,7 +191,7 @@ export async function GET(req: NextRequest) {
       <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:1px;">Lo que hice hoy por ti</p>
       ${acciones.map(a => `<p style="margin:0 0 6px;font-size:14px;color:#334155;">${a}</p>`).join('')}
     </div>` : ''}
-    <p style="margin:24px 0 0;font-size:13px;color:#94a3b8;">Meta: 1 venta/dia → 500 clientes. Faltan ${500 - (pagando ?? 0)}.</p>
+    <p style="margin:24px 0 0;font-size:13px;color:#94a3b8;">Meta: 1 venta/dia → 500 clientes. Faltan ${500 - pagando}.</p>
   `
 
   await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -185,7 +200,7 @@ export async function GET(req: NextRequest) {
     body: JSON.stringify({
       sender:      { name: 'TallerOS Orquestador', email: 'hola@tallerosapp.com' },
       to:          [{ email: 'hola@tallerosapp.com', name: 'Ivan' }],
-      subject:     `[Orquestador] ${pagando ?? 0}/500 · ${llamadasHoy.length} llamadas hoy · ${nudgesEnviados} nudges`,
+      subject:     `[Orquestador] ${pagando}/500 · ${llamadasHoy.length} llamadas hoy · ${nudgesEnviados} nudges`,
       htmlContent: emailBase(reporteHtml),
     }),
   })
