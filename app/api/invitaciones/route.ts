@@ -27,16 +27,6 @@ export async function POST(req: NextRequest) {
     .eq('taller_id', usuario.taller_id)
     .single()
 
-  const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
-  const { count: totalUsuarios } = await admin
-    .from('usuarios')
-    .select('*', { count: 'exact', head: true })
-    .eq('taller_id', usuario.taller_id)
-
-  if (!puedeCrear(totalUsuarios ?? 0, limites.usuarios)) {
-    return NextResponse.json({ error: 'Alcanzaste el límite de usuarios de tu plan. Actualiza tu plan para invitar a más miembros.' }, { status: 403 })
-  }
-
   const { email, rol } = await req.json()
 
   if (!email || !rol) return NextResponse.json({ error: 'Email y rol son requeridos' }, { status: 400 })
@@ -53,6 +43,50 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (existente) return NextResponse.json({ error: 'Este email ya pertenece al taller' }, { status: 400 })
+
+  // Invitar dos veces al mismo correo creaba dos invitaciones válidas para la
+  // misma persona, y con el cupo contando invitaciones eso gastaría dos plazas
+  // por un solo miembro.
+  const { data: yaInvitado } = await admin
+    .from('invitaciones')
+    .select('id')
+    .eq('taller_id', usuario.taller_id)
+    .eq('email', email)
+    .eq('usado', false)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle()
+
+  if (yaInvitado) {
+    return NextResponse.json({ error: 'Ya hay una invitación pendiente para este correo. Pídele que revise su bandeja, o espera a que expire para mandar otra.' }, { status: 400 })
+  }
+
+  const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
+
+  // El cupo cuenta miembros MÁS invitaciones pendientes. Contando solo los
+  // miembros ya registrados, un taller de 4 en Esencial podía mandar tres
+  // invitaciones seguidas —cada una pasaba, porque seguían siendo 4— y acabar
+  // con 7 miembros si todas se aceptaban. La plaza se reserva al invitar y se
+  // libera sola si la invitación caduca.
+  const [{ count: totalUsuarios }, { count: invitacionesPendientes }] = await Promise.all([
+    admin.from('usuarios')
+      .select('*', { count: 'exact', head: true })
+      .eq('taller_id', usuario.taller_id),
+    admin.from('invitaciones')
+      .select('*', { count: 'exact', head: true })
+      .eq('taller_id', usuario.taller_id)
+      .eq('usado', false)
+      .gt('expires_at', new Date().toISOString()),
+  ])
+
+  const ocupadas = (totalUsuarios ?? 0) + (invitacionesPendientes ?? 0)
+
+  if (!puedeCrear(ocupadas, limites.usuarios)) {
+    return NextResponse.json({
+      error: (invitacionesPendientes ?? 0) > 0
+        ? `Alcanzaste el límite de tu plan contando las ${invitacionesPendientes} invitaciones que están sin aceptar. Espera a que las acepten, o actualiza tu plan.`
+        : 'Alcanzaste el límite de usuarios de tu plan. Actualiza tu plan para invitar a más miembros.',
+    }, { status: 403 })
+  }
 
   // Crear invitación
   const { data: invitacion, error } = await admin
