@@ -32,15 +32,27 @@ export default async function EquipoPage() {
   }
 
   // Usar service client para ver todos los miembros del taller (bypasa RLS)
-  const [{ data: miembros }, { data: suscripcion }] = await Promise.all([
+  const [{ data: miembros }, { data: suscripcion }, { count: invitacionesPendientes }] = await Promise.all([
     admin.from('usuarios').select('*').eq('taller_id', usuario.taller_id).order('created_at'),
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', usuario.taller_id).single(),
+    admin.from('invitaciones')
+      .select('*', { count: 'exact', head: true })
+      .eq('taller_id', usuario.taller_id)
+      .eq('usado', false)
+      .gt('expires_at', new Date().toISOString()),
   ])
 
-  const plan          = suscripcion?.plan ?? 'trial'
-  const limites       = getLimites(plan, suscripcion?.trial_fin)
+  const plan    = suscripcion?.plan ?? 'trial'
+  const limites = getLimites(plan, suscripcion?.trial_fin)
+
+  // Las plazas ocupadas incluyen las invitaciones sin aceptar, igual que las
+  // cuenta /api/invitaciones. Si aquí se contaran solo los miembros, la pantalla
+  // diría "4 de 5" y al invitar saldría un error de límite alcanzado: el dueño
+  // vería que el sistema se contradice.
+  const pendientes    = invitacionesPendientes ?? 0
   const totalUsuarios = miembros?.length ?? 0
-  const puedeInvitar  = puedeCrear(totalUsuarios, limites.usuarios)
+  const ocupadas      = totalUsuarios + pendientes
+  const puedeInvitar  = puedeCrear(ocupadas, limites.usuarios)
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -53,7 +65,7 @@ export default async function EquipoPage() {
         <div className={`mb-6 rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap ${
           !puedeInvitar
             ? 'bg-red-50 border border-red-200'
-            : totalUsuarios >= limites.usuarios * 0.8
+            : ocupadas >= limites.usuarios * 0.8
             ? 'bg-amber-50 border border-amber-200'
             : 'bg-blue-50 border border-blue-200'
         }`}>
@@ -63,8 +75,15 @@ export default async function EquipoPage() {
               <p className={`text-sm font-semibold ${!puedeInvitar ? 'text-red-800' : 'text-amber-800'}`}>
                 {!puedeInvitar
                   ? 'Límite de usuarios alcanzado'
-                  : `${totalUsuarios} de ${limites.usuarios} usuarios en tu plan ${plan}`}
+                  : `${ocupadas} de ${limites.usuarios} usuarios en tu plan ${plan}`}
               </p>
+              {/* Sin esta línea el dueño no entiende por qué su cuenta dice 5
+                  si solo ve 3 personas en la lista. */}
+              {pendientes > 0 && (
+                <p className={`text-xs mt-0.5 ${!puedeInvitar ? 'text-red-600' : 'text-amber-700'}`}>
+                  Incluye {pendientes} {pendientes === 1 ? 'invitación enviada y sin aceptar' : 'invitaciones enviadas y sin aceptar'}. Si {pendientes === 1 ? 'caduca' : 'caducan'}, {pendientes === 1 ? 'el lugar se libera' : 'los lugares se liberan'} solos.
+                </p>
+              )}
               {!puedeInvitar && (
                 <p className="text-xs text-red-600 mt-0.5">
                   Actualiza tu plan para agregar más miembros al equipo.
