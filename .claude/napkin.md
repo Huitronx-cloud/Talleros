@@ -254,15 +254,30 @@ ser útil o recurrente, se borra.
 
 ## Trabajo pendiente
 
-1. **[2026-08-05] Medir la activación del onboarding nuevo — en dos fechas**
-   El 18/08 solo para detectar desastre (¿algún taller nuevo creó una orden
-   real?); el veredicto va el 01/09, con cuatro semanas de altas. Con 73 talleres
-   en total, dos semanas son ruido y leerlas como veredicto es el error a evitar.
-   Hacer en su lugar: correr `supabase/consultas/activacion-onboarding.sql`, que
-   ya compara cohortes con la misma ventana y lleva escritos sus dos límites (no
-   aísla el onboarding de los datos de ejemplo, y la muestra es diminuta).
+1. **[2026-08-24] Medir la activación — hacia el 7 de septiembre, no antes**
+   Los correos de activación y el portal del cliente estuvieron rotos hasta el
+   20-22/08, así que ninguna cohorte anterior sirve de comparación: la secuencia
+   nunca llegó a enviarse y el portal daba 404. El reloj empieza ahí.
+   Hacer en su lugar: correr `supabase/consultas/activacion-onboarding.sql` y
+   comparar contra el 21% de activación medido el 24/08 (19 de 92 talleres
+   crearon una orden real). La muestra sigue siendo diminuta; leer dos semanas
+   como veredicto es el error a evitar.
 
-2. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
+2. **[2026-08-24] El cuello de botella NO es la web — no rediseñarla**
+   Medido con Google Analytics sobre 30 días: la portada tuvo **18 usuarios**, el
+   blog **3**, y todo el sitio 51 usuarios activos (la mayoría dueños entrando a
+   `/dashboard` y `/login`). Con 22 registros reales en el mismo periodo, entra
+   casi tanta gente a `/registro` como a la portada: el embudo real no es
+   "web → registro", la gente llega directa al alta por WhatsApp o de boca en
+   boca. Los números de GA van cortos porque solo cuenta a quien acepta el banner
+   de cookies, pero la proporción entre páginas sí es válida.
+   Hacer en su lugar: si el dueño vuelve a plantear rediseñar la web, enseñarle
+   estos números primero. Sus dos problemas son que no llega nadie (canal de
+   entrada) y que el 79% de quien se registra nunca usa el producto (activación).
+   Rediseñar no ataca ninguno de los dos. Vercel Analytics se montó el 24/08 y
+   mide sin el sesgo del banner: a partir de septiembre hay dato limpio.
+
+3. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
    Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
    días/semanas. Las 10 "Página con redirección" deberían desaparecer y el
    artículo sin canónica pasar a indexado. El 06/08 se cambió además la
