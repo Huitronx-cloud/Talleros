@@ -84,41 +84,49 @@ export default function ListaCotizaciones({ cotizaciones }: { cotizaciones: Coti
             <p className="text-gray-400 text-sm font-medium">Sin cotizaciones</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"># Cotización</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Vigencia</th>
-                <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtradas.map(c => (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <Link href={`/cotizaciones/${c.id}`} className="font-mono text-sm font-bold text-blue-600 hover:underline">
-                      #{String(c.numero_cotizacion).padStart(4, '0')}
-                    </Link>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {c.clientes?.nombre ?? <span className="text-gray-400">Sin cliente</span>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <BadgeEstadoCotizacion estado={c.estado} />
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{c.vigencia_dias} días</td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    {formatMoney(c.total, c.moneda)}
-                  </td>
+          /* El dueño mira sus cotizaciones desde el celular, y ahí cinco
+             columnas con px-6 gastaban 240px de los 360 solo en relleno. Con el
+             overflow-hidden del contenedor, lo que no cabía se cortaba sin
+             manera de verlo. Ahora: relleno más chico en móvil, la vigencia
+             —el dato menos urgente— solo aparece desde tablet, y la tabla puede
+             desplazarse dentro de su propio contenedor como red de seguridad. */
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"># Cotización</th>
+                  <th className="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
+                  <th className="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
+                  <th className="hidden md:table-cell text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Vigencia</th>
+                  <th className="text-right px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtradas.map(c => (
+                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 sm:px-6 py-4">
+                      <Link href={`/cotizaciones/${c.id}`} className="font-mono text-sm font-bold text-blue-600 hover:underline">
+                        #{String(c.numero_cotizacion).padStart(4, '0')}
+                      </Link>
+                      <p className="text-xs text-gray-400 mt-0.5 whitespace-nowrap">
+                        {new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </td>
+                    <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
+                      {c.clientes?.nombre ?? <span className="text-gray-400">Sin cliente</span>}
+                    </td>
+                    <td className="px-3 sm:px-6 py-4">
+                      <BadgeEstadoCotizacion estado={c.estado} />
+                    </td>
+                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{c.vigencia_dias} días</td>
+                    <td className="px-3 sm:px-6 py-4 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                      {formatMoney(c.total, c.moneda)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </>
