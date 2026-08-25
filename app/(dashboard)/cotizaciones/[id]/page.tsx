@@ -85,26 +85,34 @@ export default async function DetalleCotizacionPage({ params }: { params: { id: 
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">Servicios</h2>
         </div>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500">Descripción</th>
-              <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">Cant.</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500">Precio unit.</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {(c.servicios ?? []).map((s, i) => (
-              <tr key={i}>
-                <td className="px-6 py-3 text-sm text-gray-900">{s.descripcion}</td>
-                <td className="px-4 py-3 text-sm text-gray-600 text-center">{s.cantidad}</td>
-                <td className="px-4 py-3 text-sm text-gray-600 text-right">{sym}{fmt(s.precio_unitario ?? 0)}</td>
-                <td className="px-6 py-3 text-sm font-medium text-gray-900 text-right">{sym}{fmt(s.total ?? 0)}</td>
+        {/* Esta es la pantalla que el dueño abre en el celular cuando el
+            cliente le pregunta por el precio. Con px-6 en cuatro columnas no
+            cabía, y el overflow-hidden del contenedor cortaba el importe —el
+            único dato que de verdad importa aquí—. El relleno se encoge en
+            móvil y la tabla se desplaza dentro de su propio contenedor. Ninguna
+            columna se oculta: las cuatro hacen falta para entender el total. */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500">Descripción</th>
+                <th className="text-center px-2 sm:px-4 py-3 text-xs font-semibold text-gray-500">Cant.</th>
+                <th className="text-right px-2 sm:px-4 py-3 text-xs font-semibold text-gray-500 whitespace-nowrap">Precio unit.</th>
+                <th className="text-right px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500">Subtotal</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {(c.servicios ?? []).map((s, i) => (
+                <tr key={i}>
+                  <td className="px-3 sm:px-6 py-3 text-sm text-gray-900 min-w-[9rem]">{s.descripcion}</td>
+                  <td className="px-2 sm:px-4 py-3 text-sm text-gray-600 text-center">{s.cantidad}</td>
+                  <td className="px-2 sm:px-4 py-3 text-sm text-gray-600 text-right whitespace-nowrap">{sym}{fmt(s.precio_unitario ?? 0)}</td>
+                  <td className="px-3 sm:px-6 py-3 text-sm font-medium text-gray-900 text-right whitespace-nowrap">{sym}{fmt(s.total ?? 0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Totales */}
         <div className="px-6 py-4 border-t border-gray-100 space-y-1.5">
