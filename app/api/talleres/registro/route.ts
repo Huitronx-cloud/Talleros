@@ -89,20 +89,29 @@ export async function POST(req: Request) {
     }
 
     // ── 4. Actualizar taller con datos reales ────────────────────────────────
+    //
+    // El teléfono va AQUÍ, en la misma escritura. Antes iba aparte a
+    // `usuarios.telefono`, una columna que no existe: PostgREST rechazaba la
+    // consulta, el error solo se registraba en consola y el registro seguía
+    // adelante. Resultado: el formulario lleva meses pidiendo el WhatsApp de
+    // cada taller y tirándolo a la basura sin que nadie se entere.
+    //
+    // `talleres.telefono` sí existe, es lo que ya leen los crons de onboarding
+    // y trial, y es lo que el portal enseña como "Contactar al taller por
+    // WhatsApp" — que es exactamente lo que el formulario pide.
+    const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
     const { error: tallerUpdateError } = await supabaseAdmin
       .from('talleres')
-      .update({ nombre: nombre_taller.trim(), pais })
+      .update({
+        nombre: nombre_taller.trim(),
+        pais,
+        ...(telefonoLimpio.length >= 8 ? { telefono: telefono.trim() } : {}),
+      })
       .eq('id', usuario.taller_id)
-    if (tallerUpdateError) console.error('Error actualizando taller:', tallerUpdateError)
-
-    // ── 4b. Guardar teléfono del propietario (para WhatsApp) ─────────────────
-    const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
-    if (telefonoLimpio.length >= 8) {
-      const { error: telefonoUpdateError } = await supabaseAdmin
-        .from('usuarios')
-        .update({ telefono: telefono.trim() })
-        .eq('id', userId)
-      if (telefonoUpdateError) console.error('Error guardando teléfono:', telefonoUpdateError)
+    // Este error ya no se traga en silencio: sin teléfono no hay forma de
+    // contactar a un taller que se registró y no volvió.
+    if (tallerUpdateError) {
+      console.error('[registro] no se pudieron guardar los datos del taller:', tallerUpdateError.message)
     }
 
     // ── 4c. Sembrar la muestra para que el panel no arranque vacío ───────────
