@@ -101,6 +101,18 @@ const nextConfig = {
         ],
       },
       {
+        // Misma razón que el blog: cada token del portal se cacheaba con el
+        // estado que tenía la orden la primera vez que alguien lo abrió, y ahí
+        // se quedaba aunque el taller avanzara la orden después. `dynamic =
+        // 'force-dynamic'` en la página ya lo evita en el servidor; esto es la
+        // segunda capa, para que tampoco quede una copia vieja en el CDN o en
+        // el navegador del cliente.
+        source: '/portal/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
+        ],
+      },
+      {
         // Imágenes de /public: cache de 30 días. No immutable porque los
         // nombres no llevan hash — si se reemplaza una imagen con el mismo
         // nombre, expira en máximo 30 días.
