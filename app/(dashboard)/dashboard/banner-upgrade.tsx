@@ -51,8 +51,8 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
   const subtitulo = esVencida
     ? 'Actualiza tu método de pago para reactivar tu plan.'
     : enPrueba
-    ? 'Después pasas al plan gratis: 10 órdenes al mes, 20 clientes y 1 usuario. No se bloquea nada.'
-    : 'Hasta 10 órdenes al mes, 20 clientes y 1 usuario. Con Esencial se te quitan los topes.'
+    ? 'Después pasas al plan gratis: 5 órdenes al mes, 15 clientes y 1 usuario. No se bloquea nada.'
+    : 'Hasta 5 órdenes al mes, 15 clientes y 1 usuario. Con Esencial se te quitan los topes.'
 
   return (
     <div className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center gap-2 ${

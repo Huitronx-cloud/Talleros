@@ -71,7 +71,7 @@ function emailDias7(nombre: string, tallerNombre: string): string {
         </p>
       </div>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
-        Te quedan <strong>7 días</strong> con todo esto. Después tu cuenta sigue abierta en el plan gratis (10 órdenes al mes, 20 clientes, 1 usuario) — no se bloquea ni se borra nada, pero estas funciones se guardan.
+        Te quedan <strong>7 días</strong> con todo esto. Después tu cuenta sigue abierta en el plan gratis (5 órdenes al mes, 15 clientes, 1 usuario) — no se bloquea ni se borra nada, pero estas funciones se guardan.
       </p>
       <a href="https://www.tallerosapp.com/configuracion/plan"
          style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
@@ -98,14 +98,14 @@ function emailDias4(nombre: string, tallerNombre: string): string {
       </p>
       <div style="background:#fef9c3;border-radius:12px;padding:16px 20px;border-left:4px solid #d97706;margin:16px 0 24px;">
         <p style="margin:0;color:#78350f;font-size:14px;line-height:1.8;">
-          🔧 10 órdenes de trabajo al mes<br/>
-          👥 20 clientes registrados<br/>
+          🔧 5 órdenes de trabajo al mes<br/>
+          👥 15 clientes registrados<br/>
           🧑‍🔧 1 sola persona en el equipo<br/>
           📊 Sin recordatorios, promociones ni reportes
         </p>
       </div>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:28px;">
-        Si tu taller hace más de 10 órdenes al mes, el plan <strong>Esencial</strong> te quita esos topes y cuesta menos que una hora de mano de obra.
+        Si tu taller hace más de 5 órdenes al mes, el plan <strong>Esencial</strong> te quita esos topes y cuesta menos que una hora de mano de obra.
       </p>
       <a href="https://www.tallerosapp.com/configuracion/plan"
          style="display:block;text-align:center;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;padding:15px 28px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:800;letter-spacing:0.3px;">
@@ -128,7 +128,7 @@ function emailDias1(nombre: string, tallerNombre: string): string {
     <div style="padding:36px 32px;">
       <p style="color:#0f172a;font-size:16px;font-weight:700;margin-bottom:12px;">Hola ${nombre},</p>
       <p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">
-        Mañana <strong>${tallerNombre}</strong> pasa al plan gratis. Tu cuenta sigue abierta y no se borra nada — puedes seguir trabajando con 10 órdenes al mes, 20 clientes y 1 usuario.
+        Mañana <strong>${tallerNombre}</strong> pasa al plan gratis. Tu cuenta sigue abierta y no se borra nada — puedes seguir trabajando con 5 órdenes al mes, 15 clientes y 1 usuario.
       </p>
       <div style="background:#fef2f2;border-radius:12px;padding:16px 20px;border-left:4px solid #dc2626;margin-bottom:24px;">
         <p style="margin:0 0 6px;color:#991b1b;font-size:14px;font-weight:700;">Lo que dejas de tener mañana:</p>
