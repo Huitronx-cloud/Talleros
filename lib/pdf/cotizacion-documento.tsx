@@ -2,6 +2,7 @@ import {
   Document, Page, Text, View, StyleSheet, Image,
 } from '@react-pdf/renderer'
 import { Cotizacion, Taller } from '@/types'
+import { simboloMoneda } from '@/lib/utils'
 
 const AZUL   = '#1D4ED8'
 const OSCURO = '#111827'
@@ -65,8 +66,11 @@ const s = StyleSheet.create({
   footerBrand: { fontSize: 8, color: MEDIO },
 })
 
+// Cualquier moneda que no fuera la mexicana se imprimía como 'COP ' —pesos
+// colombianos— en la cotización que el taller le entrega a su cliente. El
+// símbolo sale ahora de la tabla de monedas.
 function fmt(n: number, moneda: string) {
-  return `${moneda === 'MXN' ? '$' : 'COP '}${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+  return `${simboloMoneda(moneda)} ${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 }
 
 interface Props {

@@ -2,6 +2,7 @@ import {
   Document, Page, Text, View, StyleSheet, Image,
 } from '@react-pdf/renderer'
 import { Orden, Taller } from '@/types'
+import { simboloMoneda } from '@/lib/utils'
 
 const AZUL   = '#1D4ED8'
 const VERDE  = '#059669'
@@ -83,9 +84,12 @@ const s = StyleSheet.create({
   qrSub:        { fontSize: 7.5, color: MEDIO },
 })
 
+// El símbolo sale de la tabla de monedas, no de un ternario. Antes solo
+// distinguía Colombia y todo lo demás llevaba un '$' a secas, así que un taller
+// argentino, peruano o guatemalteco imprimía un importe sin identificar en un
+// documento que le entrega a su cliente.
 function fmt(n: number, moneda?: string) {
-  const sym = moneda === 'COP' ? 'COP $' : '$'
-  return `${sym}${(n ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+  return `${simboloMoneda(moneda)} ${(n ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 }
 
 function fmtFecha(f: string | null) {
