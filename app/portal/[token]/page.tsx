@@ -6,6 +6,16 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
+// Esta página nunca declaró que era dinámica, a diferencia de las otras 166
+// rutas del proyecto que sí lo hacen como norma. Sin esto, Next.js la trataba
+// como estática: la primera visita a cada token quedaba cacheada tal cual —
+// "Recibido"— y las visitas siguientes veían esa misma foto aunque el taller
+// cambiara el estado de la orden después. Es la misma clase de fallo que
+// next.config.mjs ya reconoce y evita para /blog ("nunca cachear el HTML... si
+// no se congela mostrando artículos viejos"), pero nunca se aplicó aquí.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function PortalClientePage({
   params,
 }: {
