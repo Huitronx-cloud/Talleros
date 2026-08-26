@@ -1,31 +1,25 @@
 // ── IVA / impuesto de venta por país ──────────────────────────────────────────
-// Fuente única para el formulario de nueva orden y el de edición. Los precios
-// que se capturan son SIN IVA; el sistema lo agrega encima para el total.
-export const IVA_POR_PAIS: Record<string, { tasa: number; etiqueta: string }> = {
-  'México':               { tasa: 0.16, etiqueta: 'IVA 16%'   },
-  'Colombia':             { tasa: 0.19, etiqueta: 'IVA 19%'   },
-  'Argentina':            { tasa: 0.21, etiqueta: 'IVA 21%'   },
-  'Chile':                { tasa: 0.19, etiqueta: 'IVA 19%'   },
-  'Perú':                 { tasa: 0.18, etiqueta: 'IGV 18%'   },
-  'Ecuador':              { tasa: 0.15, etiqueta: 'IVA 15%'   },
-  'Venezuela':            { tasa: 0.16, etiqueta: 'IVA 16%'   },
-  'Bolivia':              { tasa: 0.13, etiqueta: 'IVA 13%'   },
-  'Paraguay':             { tasa: 0.10, etiqueta: 'IVA 10%'   },
-  'Uruguay':              { tasa: 0.22, etiqueta: 'IVA 22%'   },
-  'Guatemala':            { tasa: 0.12, etiqueta: 'IVA 12%'   },
-  'Costa Rica':           { tasa: 0.13, etiqueta: 'IVA 13%'   },
-  'Panamá':               { tasa: 0.07, etiqueta: 'ITBMS 7%'  },
-  'Honduras':             { tasa: 0.15, etiqueta: 'ISV 15%'   },
-  'El Salvador':          { tasa: 0.13, etiqueta: 'IVA 13%'   },
-  'Nicaragua':            { tasa: 0.15, etiqueta: 'IVA 15%'   },
-  'República Dominicana': { tasa: 0.18, etiqueta: 'ITBIS 18%' },
+// Los precios que se capturan son SIN IVA; el sistema lo agrega encima para el
+// total.
+//
+// La tabla vive ahora en lib/paises.ts junto con la moneda, porque son el mismo
+// dato: de qué país es el taller. Este archivo se conserva para no tocar los
+// cuatro sitios que ya importan `getIva`, pero ya no guarda su propia copia.
+import { getPais } from './paises'
+import { simboloMoneda } from './utils'
+
+export function getIva(pais?: string | null) {
+  const { tasa, etiqueta } = getPais(pais)
+  return { tasa, etiqueta }
 }
 
-export function getIva(pais: string) {
-  return IVA_POR_PAIS[pais] ?? { tasa: 0.16, etiqueta: 'IVA 16%' }
-}
-
-export function getMoneda(moneda: string) {
-  if (moneda === 'COP') return 'COP $'
-  return '$'
+/**
+ * Símbolo de la moneda.
+ *
+ * Antes devolvía 'COP $' para Colombia y '$' para todo lo demás, así que un
+ * taller argentino veía un '$' a secas y uno peruano también. Ahora sale de la
+ * tabla de monedas de utils.ts, que ya tenía las diez de la región.
+ */
+export function getMoneda(moneda?: string | null): string {
+  return simboloMoneda(moneda ?? 'MXN')
 }

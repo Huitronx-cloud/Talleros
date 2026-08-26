@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { sembrarDatosEjemplo } from '@/lib/datos-ejemplo'
+import { monedaDePais } from '@/lib/paises'
 
 export async function POST(req: Request) {
   const supabaseAdmin = createClient(
@@ -99,12 +100,17 @@ export async function POST(req: Request) {
     // `talleres.telefono` sí existe, es lo que ya leen los crons de onboarding
     // y trial, y es lo que el portal enseña como "Contactar al taller por
     // WhatsApp" — que es exactamente lo que el formulario pide.
+    // La moneda se deriva del país aquí mismo. Sin esta línea el taller se
+    // quedaba con el valor por defecto de la columna —MXN— y los 21 talleres
+    // de fuera de México veían su dinero en pesos mexicanos, sin ninguna
+    // pantalla donde cambiarlo.
     const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
     const { error: tallerUpdateError } = await supabaseAdmin
       .from('talleres')
       .update({
         nombre: nombre_taller.trim(),
         pais,
+        moneda: monedaDePais(pais),
         ...(telefonoLimpio.length >= 8 ? { telefono: telefono.trim() } : {}),
       })
       .eq('id', usuario.taller_id)
