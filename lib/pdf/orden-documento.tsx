@@ -3,6 +3,7 @@ import {
 } from '@react-pdf/renderer'
 import { Orden, Taller } from '@/types'
 import { simboloMoneda } from '@/lib/utils'
+import { getPais } from '@/lib/paises'
 
 const AZUL   = '#1D4ED8'
 const VERDE  = '#059669'
@@ -11,14 +12,6 @@ const MEDIO  = '#6B7280'
 const CLARO  = '#F9FAFB'
 const BORDE  = '#E5E7EB'
 
-const IVA_ETIQUETA: Record<string, string> = {
-  'México':    'IVA 16%', 'Colombia':  'IVA 19%', 'Argentina': 'IVA 21%',
-  'Chile':     'IVA 19%', 'Perú':      'IGV 18%', 'Ecuador':   'IVA 15%',
-  'Venezuela': 'IVA 16%', 'Bolivia':   'IVA 13%', 'Paraguay':  'IVA 10%',
-  'Uruguay':   'IVA 22%', 'Guatemala': 'IVA 12%', 'Costa Rica':'IVA 13%',
-  'Panamá':    'ITBMS 7%','Honduras':  'ISV 15%', 'El Salvador':'IVA 13%',
-  'Nicaragua': 'IVA 15%', 'República Dominicana': 'ITBIS 18%',
-}
 
 const s = StyleSheet.create({
   page:         { fontFamily: 'Helvetica', fontSize: 10, color: OSCURO, backgroundColor: '#FFFFFF', paddingHorizontal: 40, paddingVertical: 36 },
@@ -108,7 +101,11 @@ interface Props {
 export default function OrdenDocumento({ orden, taller, qrOptInUrl }: Props) {
   const moneda    = (taller as any).moneda ?? 'MXN'
   const pais      = (taller as any).pais   ?? 'México'
-  const ivaLabel  = IVA_ETIQUETA[pais] ?? 'IVA 16%'
+  // Tercera copia de la tabla de impuestos que había en el repo, y con el
+  // mismo fallo: indexada por nombre ('Argentina') y consultada con el código
+  // que guarda la base ('AR'), así que la orden en PDF de un taller argentino
+  // imprimía 'IVA 16%'. Ahora sale de lib/paises.ts, que acepta las dos formas.
+  const ivaLabel  = getPais(pais).etiqueta
   const cliente   = orden.clientes
   const impuestos = (orden as any).impuestos ?? 0
 

@@ -20,7 +20,11 @@
 --   escribió 15000 quería decir quince mil pesos argentinos, y lo único que
 --   cambia es que dejará de leerse "15,000 MX$" para leerse "15.000,00 AR$".
 --
--- Ejecutar en: Supabase > SQL Editor (DESPUÉS de desplegar el código nuevo)
+-- Ejecutar en: Supabase > SQL Editor
+--   1º  migrations/046_monedas_latam.sql — sin ella la columna solo acepta MXN
+--       y COP, y el update de abajo revienta en la primera fila argentina.
+--   2º  desplegar el código nuevo.
+--   3º  este archivo.
 -- ---------------------------------------------------------------------------
 
 -- 1) Ver a quién va a afectar, antes de tocar nada.
