@@ -34,8 +34,8 @@ export const PLANES_WEB: PlanWeb[] = [
     icono: IconLlaveCarro,      popular: false, gratis: true,
     ideal: 'Para arrancar y ver cómo se siente trabajar con sistema.',
     features: [
-      '10 órdenes de trabajo al mes',
-      'Hasta 20 clientes',
+      '5 órdenes de trabajo al mes',
+      'Hasta 15 clientes',
       '1 usuario',
       'Portal del cliente en tiempo real',
       'Aprobación de cotizaciones por WhatsApp',

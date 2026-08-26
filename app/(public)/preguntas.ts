@@ -11,7 +11,7 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Qué pasa cuando terminan los 14 días de prueba?',
-    r: 'Nada se bloquea. Tu cuenta pasa al plan gratuito, que incluye 10 órdenes de trabajo al mes, 20 clientes y un usuario. Tus órdenes, clientes y vehículos siguen ahí y los puedes consultar siempre.',
+    r: 'Nada se bloquea. Tu cuenta pasa al plan gratuito, que incluye 5 órdenes de trabajo al mes, 15 clientes y un usuario. Tus órdenes, clientes y vehículos siguen ahí y los puedes consultar siempre.',
   },
   {
     p: '¿Cuánto cuesta un software para taller mecánico?',
@@ -19,7 +19,7 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Sirve si mi taller es pequeño o trabajo solo?',
-    r: 'Sí. El plan gratuito está pensado justo para eso: hasta 10 órdenes al mes con un usuario. Muchos talleres de una o dos personas trabajan con ese plan sin pagar nada.',
+    r: 'Sí. El plan gratuito está pensado justo para eso: hasta 5 órdenes al mes con un usuario. Es suficiente para probar cómo se siente trabajar con sistema, y si tu taller mueve más que eso, el plan Esencial te quita los topes por menos de lo que cobras por una hora de mano de obra.',
   },
   {
     p: '¿En qué países funciona TallerOS?',

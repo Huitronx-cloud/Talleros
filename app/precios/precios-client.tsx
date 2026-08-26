@@ -37,8 +37,8 @@ const PRICE_IDS = {
 
 const FEATURES_GRATIS = [
   '1 usuario',
-  '10 órdenes de trabajo al mes',
-  'Hasta 20 clientes',
+  '5 órdenes de trabajo al mes',
+  'Hasta 15 clientes',
   'Cotizaciones básicas',
   'Portal del cliente (vista limitada)',
 ]

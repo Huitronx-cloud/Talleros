@@ -13,11 +13,21 @@ export const LIMITES: Record<Plan, {
 }> = {
   // 'trial' es el plan gratis para siempre (el nombre quedó de cuando era una
   // prueba de 14 días). Los topes deben coincidir con lo que promete la web:
-  // 10 órdenes al mes, 1 usuario, 20 clientes.
+  // 5 órdenes al mes, 1 usuario, 15 clientes.
+  //
+  // Bajados de 10/20 el 25/08/2026. La razón NO es que alguien estuviera
+  // topándose: de las 58 órdenes reales que existían, 41 eran de un solo taller
+  // que ya paga, así que ningún taller gratis andaba cerca ni de 3 al mes. Se
+  // hizo justamente por eso — hoy el cambio no afecta a nadie, y dentro de un
+  // año, con talleres trabajando de verdad, bajarlo sería romperles una promesa.
+  //
+  // El tope de clientes es el que de verdad llega, porque es acumulativo y no
+  // se reinicia cada mes: un taller que suma tres clientes al mes topa a los
+  // cinco meses, cuando ya le tomó cariño al producto.
   trial: {
-    ordenes_mes:   10,
+    ordenes_mes:   5,
     usuarios:      1,
-    clientes:      20,
+    clientes:      15,
     recordatorios: false,
     promociones:   false,
     inventario:    false,
@@ -60,7 +70,7 @@ export function enTrial(trialFin?: string | null): boolean {
  * Límites vigentes de un taller.
  *
  * Durante los 14 días de prueba el plan gratis corre con acceso Pro completo;
- * al vencer cae al plan gratis con sus topes (10 órdenes/mes, 1 usuario, 20
+ * al vencer cae al plan gratis con sus topes (5 órdenes/mes, 1 usuario, 15
  * clientes) sin bloquear nada ni borrar datos — lo que ya está registrado se
  * sigue viendo, solo no se puede crear de más.
  *
