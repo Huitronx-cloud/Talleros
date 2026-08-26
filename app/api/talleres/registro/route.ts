@@ -100,17 +100,12 @@ export async function POST(req: Request) {
     // `talleres.telefono` sí existe, es lo que ya leen los crons de onboarding
     // y trial, y es lo que el portal enseña como "Contactar al taller por
     // WhatsApp" — que es exactamente lo que el formulario pide.
-    // La moneda se deriva del país aquí mismo. Sin esta línea el taller se
-    // quedaba con el valor por defecto de la columna —MXN— y los 21 talleres
-    // de fuera de México veían su dinero en pesos mexicanos, sin ninguna
-    // pantalla donde cambiarlo.
     const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
     const { error: tallerUpdateError } = await supabaseAdmin
       .from('talleres')
       .update({
         nombre: nombre_taller.trim(),
         pais,
-        moneda: monedaDePais(pais),
         ...(telefonoLimpio.length >= 8 ? { telefono: telefono.trim() } : {}),
       })
       .eq('id', usuario.taller_id)
@@ -118,6 +113,29 @@ export async function POST(req: Request) {
     // contactar a un taller que se registró y no volvió.
     if (tallerUpdateError) {
       console.error('[registro] no se pudieron guardar los datos del taller:', tallerUpdateError.message)
+    }
+
+    // ── 4b. La moneda, en su propia escritura y a propósito ──────────────────
+    //
+    // Va aparte porque `talleres.moneda` tiene una restricción que solo acepta
+    // MXN y COP (migración 006). Escribir 'ARS' la viola, y si fuera en el mismo
+    // UPDATE que arriba se caería la fila entera: el taller perdería también su
+    // nombre, su país y su teléfono. Separada, un rechazo de la moneda no se
+    // lleva por delante lo demás.
+    //
+    // La migración 046 amplía esa restricción a las 16 monedas del selector.
+    // Mientras no se haya corrido, esto falla para los países de fuera de
+    // México y Colombia y se queda en MXN — que es exactamente lo que pasaba
+    // antes, no una regresión.
+    const moneda = monedaDePais(pais)
+    if (moneda !== 'MXN') {
+      const { error: monedaError } = await supabaseAdmin
+        .from('talleres')
+        .update({ moneda })
+        .eq('id', usuario.taller_id)
+      if (monedaError) {
+        console.error(`[registro] no se pudo fijar la moneda ${moneda} (¿falta la migración 046?):`, monedaError.message)
+      }
     }
 
     // ── 4c. Sembrar la muestra para que el panel no arranque vacío ───────────
