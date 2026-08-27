@@ -198,7 +198,37 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // ── Sesión, con límite de tiempo ──────────────────────────────────────────
+  //
+  // El 27/08 la red entre el borde de Vercel y Supabase se degradó: la llamada
+  // moría con `write ETIMEDOUT` y, sin límite propio, la petición se quedaba
+  // colgada hasta que Vercel mataba la invocación a los 25 s y devolvía un 504.
+  // Supabase estaba sano —respondía 200 a todo lo que le llegaba— y el problema
+  // era el tramo de red. Resultado: todos los talleres con sesión bloqueados
+  // mientras el sitio público seguía funcionando.
+  //
+  // Cinco segundos es de sobra para una respuesta normal (decenas de ms) y a la
+  // vez lo bastante corto para que el usuario no note un cuelgue.
+  const TIMEOUT_SESION_MS = 5_000
+
+  let user: { id: string } | null = null
+  let sesionIndeterminada = false
+
+  try {
+    const resultado = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, rechazar) =>
+        setTimeout(() => rechazar(new Error('timeout')), TIMEOUT_SESION_MS)
+      ),
+    ])
+    user = resultado.data.user
+  } catch (e) {
+    // No sabemos si hay sesión o no. Es distinto de "no hay sesión": mandar a
+    // /login a alguien que sí la tiene sería cerrarle la app, y /login también
+    // necesita el mismo servicio para dejarle entrar de nuevo.
+    sesionIndeterminada = true
+    console.error('[middleware] sesión indeterminada:', e instanceof Error ? e.message : e, '·', pathname)
+  }
 
   // Las rutas /api/ no pasan por el guard de sesión: cada handler valida lo
   // suyo (Bearer CRON_SECRET en los crons, firma en los webhooks, RLS con la
@@ -210,6 +240,25 @@ export async function middleware(request: NextRequest) {
     coincideRuta(RUTAS_PUBLICAS, pathname) ||
     RUTAS_PUBLICAS_SOLO_SUBRUTA.some(r => pathname.startsWith(r + '/'))
   const esRutaPostRegistro = coincideRuta(RUTAS_POST_REGISTRO, pathname)
+
+  // ── Qué hacer cuando no se pudo comprobar la sesión ───────────────────────
+  //
+  // Se deja pasar, pero NO porque dé igual: cada página del panel vuelve a
+  // comprobar la sesión por su cuenta desde la función serverless —
+  // app/(dashboard)/layout.tsx hace getAuthUser() y redirige a /login— y ese
+  // camino es el que seguía funcionando durante la caída. El middleware es la
+  // primera capa, no la única.
+  //
+  // Las rutas de administrador son la excepción, y por un motivo concreto:
+  // configuracion y promociones NO comprueban el rol en la página, solo aquí.
+  // Dejarlas pasar a ciegas permitiría a un técnico entrar en ellas, así que
+  // rebotan a /ordenes, que es adonde ya los manda tieneAcceso().
+  if (sesionIndeterminada) {
+    if (!esApi && coincideRuta(RUTAS_SOLO_ADMIN, pathname)) {
+      return NextResponse.redirect(new URL('/ordenes', request.url))
+    }
+    return supabaseResponse
+  }
 
   // Sin sesión → login
   if (!user && !esApi && !esRutaPublica && !esRutaPostRegistro) {
@@ -269,8 +318,14 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse
 }
 
+// `js` se añadió a la lista de extensiones excluidas por un motivo medible:
+// /sw.js era la ruta MÁS frecuente del middleware —11 de 46 peticiones en 24h,
+// casi una cuarta parte— y cada una disparaba un `auth.getUser()` contra
+// Supabase para acabar sirviendo un archivo estático del service worker. Los
+// bundles de la app ya estaban cubiertos por `_next/static`; el único .js
+// suelto en /public es sw.js.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|js)$).*)',
   ],
 }

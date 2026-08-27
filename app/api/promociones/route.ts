@@ -12,8 +12,20 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: usuario } = await supabase.from('usuarios').select('taller_id').eq('id', user.id).single()
+  const { data: usuario } = await supabase.from('usuarios').select('taller_id, rol').eq('id', user.id).single()
   if (!usuario?.taller_id) return NextResponse.json({ error: 'Usuario sin taller' }, { status: 400 })
+
+  // Promociones está en RUTAS_SOLO_ADMIN, pero el middleware excluye todo lo que
+  // empieza por /api/ de su comprobación de rol — así que esta API nunca estuvo
+  // protegida por él. Un técnico podía llamarla directamente y mandarle una
+  // promoción a todos los clientes del taller. La comprobación va aquí, que es
+  // donde de verdad se ejecuta la acción.
+  if (!['propietario', 'admin'].includes(usuario.rol)) {
+    return NextResponse.json(
+      { error: 'Solo el propietario y administradores pueden enviar promociones' },
+      { status: 403 }
+    )
+  }
 
   const tallerId = usuario.taller_id
 
