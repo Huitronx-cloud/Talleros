@@ -68,6 +68,7 @@ export default function PromocionesPage() {
   const supabase = createClient()
 
   const [plan, setPlan] = useState('')
+  const [rol, setRol] = useState('')
   const [trialFin, setTrialFin] = useState<string | null>(null)
   const [tallerId, setTallerId] = useState('')
   const [nombreTaller, setNombreTaller] = useState('')
@@ -97,8 +98,9 @@ export default function PromocionesPage() {
     if (!user) return
 
     const { data: usuario } = await supabase
-      .from('usuarios').select('taller_id').eq('id', user.id).single()
+      .from('usuarios').select('taller_id, rol').eq('id', user.id).single()
     if (!usuario) return
+    setRol(usuario.rol ?? '')
 
     const tid = usuario.taller_id
     setTallerId(tid)
@@ -189,6 +191,27 @@ export default function PromocionesPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+      </div>
+    )
+  }
+
+  // ── Gate por rol ──
+  // Esta pantalla está en RUTAS_SOLO_ADMIN, pero hasta ahora eso solo lo hacía
+  // cumplir el middleware. Aquí es cosmético —la comprobación de verdad está en
+  // POST /api/promociones, que es donde se ejecuta el envío— pero evita
+  // enseñarle a un técnico un formulario que le va a dar 403 al final.
+  if (rol !== '' && !['propietario', 'admin'].includes(rol)) {
+    return (
+      <div className="max-w-2xl mx-auto mt-16 text-center px-4">
+        <div className="bg-white rounded-2xl border border-gray-200 p-10">
+          <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Sin acceso</h2>
+          <p className="text-gray-500">
+            Solo el propietario y los administradores pueden enviar promociones a los clientes del taller.
+          </p>
+        </div>
       </div>
     )
   }

@@ -19,7 +19,7 @@ export default async function ConfiguracionPage() {
 
   const { data: usuario, error: errorUsuario } = await supabase
     .from('usuarios')
-    .select('taller_id')
+    .select('taller_id, rol')
     .eq('id', user.id)
     .single()
 
@@ -27,6 +27,21 @@ export default async function ConfiguracionPage() {
     return (
       <div className="p-6">
         <p className="text-red-600 text-sm">Error: {errorUsuario?.message ?? 'No se encontró taller_id'}</p>
+      </div>
+    )
+  }
+
+  // El rol también se comprueba aquí, no solo en el middleware. Esta página
+  // estaba en RUTAS_SOLO_ADMIN pero era una de las dos que no lo verificaba por
+  // su cuenta: si el middleware no podía resolver la sesión —como pasó el 27/08
+  // con la red entre Vercel y Supabase caída— no quedaba nadie comprobándolo.
+  if (!['propietario', 'admin'].includes(usuario.rol)) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
+          <p className="text-sm font-semibold text-red-700">Sin acceso</p>
+          <p className="text-xs text-red-500 mt-1">Solo el propietario y administradores pueden ver la configuración del taller.</p>
+        </div>
       </div>
     )
   }
