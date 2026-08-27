@@ -77,26 +77,33 @@ export async function sembrarDatosEjemplo(
 ): Promise<void> {
   const telefono = telefonoPropietario?.trim() || null
 
-  const { data: clientes, error: errClientes } = await admin
-    .from('clientes')
-    .insert(CLIENTES_EJEMPLO.map(c => ({ ...c, taller_id: tallerId, telefono, es_ejemplo: true })))
-    .select('id, placas')
+  // Los clientes y el número de orden se piden a la vez: el contador solo
+  // necesita el taller, no los clientes. Encadenados sumaban dos viajes de red
+  // al registro, que es el momento en que el dueño está mirando una pantalla de
+  // espera y decidiendo si esto funciona o no.
+  const [
+    { data: clientes, error: errClientes },
+    { data: numero,   error: errNumero },
+  ] = await Promise.all([
+    admin
+      .from('clientes')
+      .insert(CLIENTES_EJEMPLO.map(c => ({ ...c, taller_id: tallerId, telefono, es_ejemplo: true })))
+      .select('id, placas'),
+    // El número de orden sale del contador atómico del taller, no de un valor
+    // fijo: si no, chocaría con el índice único en cuanto el taller cree la suya.
+    admin.rpc('siguiente_numero_orden', { p_taller_id: tallerId }),
+  ])
 
   if (errClientes || !clientes?.length) {
     throw errClientes ?? new Error('No se crearon los clientes de ejemplo')
   }
+  if (errNumero) throw errNumero
 
   // Se busca por placa en vez de tomar clientes[0]: el orden de las filas
   // devueltas por un insert múltiple no está garantizado, y colgar la orden del
   // cliente equivocado dejaría un Nissan a nombre del dueño del Chevrolet.
   const duenoDeLaOrden = clientes.find(c => c.placas === CLIENTES_EJEMPLO[0].placas)
   if (!duenoDeLaOrden) throw new Error('No se encontró el cliente de la orden de ejemplo')
-
-  // El número de orden sale del contador atómico del taller, no de un valor
-  // fijo: si no, chocaría con el índice único en cuanto el taller cree la suya.
-  const { data: numero, error: errNumero } = await admin
-    .rpc('siguiente_numero_orden', { p_taller_id: tallerId })
-  if (errNumero) throw errNumero
 
   const total = ORDEN_EJEMPLO.servicios_realizados.reduce((suma, s) => suma + s.total, 0)
 

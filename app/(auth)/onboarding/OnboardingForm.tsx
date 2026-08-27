@@ -91,7 +91,15 @@ export default function OnboardingForm({ tallerId, nombreTaller }: Props) {
         const { error: uploadError } = await supabase.storage
           .from('logos')
           .upload(path, archivoLogo, { upsert: true, contentType: archivoLogo.type })
-        if (!uploadError) {
+        if (uploadError) {
+          // Antes esto era `if (!uploadError)` a secas: si la subida fallaba se
+          // seguía al paso 2 como si nada y el taller se quedaba sin logo sin
+          // que nadie dijera nada. El alta no se detiene por esto —perder el
+          // onboarding es peor que perder el logo— pero sí se avisa y se deja
+          // rastro para poder verlo desde fuera.
+          console.error('[onboarding] no se pudo subir el logo:', uploadError.message)
+          setError('No se pudo subir el logo. Puedes añadirlo después en Configuración.')
+        } else {
           const { data: urlData } = supabase.storage.from('logos').getPublicUrl(path)
           logo_url = urlData.publicUrl
         }

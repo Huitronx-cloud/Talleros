@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Upload, Loader2, Check, X, Building2 } from 'lucide-react'
-import { guardarConfiguracion } from '@/app/(dashboard)/configuracion/actions'
+import { guardarConfiguracion, guardarLogo } from '@/app/(dashboard)/configuracion/actions'
 import { createClient } from '@/lib/supabase/client'
 import { Taller } from '@/types'
 import Image from 'next/image'
@@ -44,6 +45,7 @@ function parsearTelefono(telefono: string): { codigoPais: string; numero: string
 
 export default function FormConfiguracion({ taller }: { taller: Taller }) {
   const supabase = createClient()
+  const router   = useRouter()
 
   const telefonoParseado = parsearTelefono(taller.telefono ?? '')
   const whatsappParseado = parsearTelefono(taller.whatsapp_numero ?? '')
@@ -98,13 +100,43 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
 
     const { error: errUp } = await supabase.storage
       .from('logos')
-      .upload(path, file, { upsert: true })
+      .upload(path, file, { upsert: true, contentType: file.type })
 
     if (errUp) { setError('Error al subir el logo: ' + errUp.message); setSubiendo(false); return }
 
     const { data } = supabase.storage.from('logos').getPublicUrl(path)
-    setLogoUrl(data.publicUrl + '?t=' + Date.now())
+    const nuevaUrl = data.publicUrl + '?t=' + Date.now()
+    setLogoUrl(nuevaUrl)
+
+    // El logo se guarda aquí mismo, no al enviar el formulario.
+    //
+    // Antes esto solo tocaba el estado local: la imagen aparecía en su recuadro
+    // al instante, con su botón propio y su "Subiendo…", así que parecía una
+    // acción terminada. Pero `logo_url` no llegaba a la base hasta pulsar
+    // "Guardar cambios" al final de la página. Quien subía el logo y se iba —
+    // que es lo natural, porque la tarjeta se ve completa— volvía al panel y
+    // seguía viendo la llave de siempre, sin ningún aviso de que faltaba algo.
+    //
+    // Ahora la pantalla no miente: si se ve el logo, está guardado.
+    const guardado = await guardarLogo(nuevaUrl)
+    if (guardado.error) {
+      setError('El logo se subió pero no se pudo guardar: ' + guardado.error)
+      setSubiendo(false)
+      return
+    }
+
+    // Refresca el árbol del servidor para que la barra lateral —que vive en el
+    // layout y lee `logo_url` allí— lo tome sin recargar la página a mano.
+    router.refresh()
     setSubiendo(false)
+  }
+
+  async function handleQuitarLogo() {
+    setLogoUrl('')
+    setError('')
+    const guardado = await guardarLogo('')
+    if (guardado.error) { setError('No se pudo quitar el logo: ' + guardado.error); return }
+    router.refresh()
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -183,7 +215,7 @@ export default function FormConfiguracion({ taller }: { taller: Taller }) {
             {logoUrl && (
               <button
                 type="button"
-                onClick={() => setLogoUrl('')}
+                onClick={handleQuitarLogo}
                 className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 mt-1"
               >
                 <X className="w-3 h-3" /> Quitar logo

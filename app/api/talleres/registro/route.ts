@@ -68,10 +68,19 @@ export async function POST(req: Request) {
     const userId = authData.user.id
 
     // ── 2. Esperar al trigger que crea taller/usuario (reintentos con backoff) ─
+    //
+    // Se pregunta ANTES de esperar. `on_auth_user_created` es un trigger
+    // `after insert ... for each row` sobre `auth.users` (migración 003), o sea
+    // que corre dentro de la misma transacción que el alta: cuando
+    // `createUser` devuelve, la fila de `usuarios` ya está confirmada y visible.
+    // Con la espera por delante, el primer `setTimeout` de 200 ms se pagaba
+    // siempre, en todos los registros, para comprobar algo que ya estaba listo.
+    // El backoff se queda como red por si algún día el trigger deja de ser
+    // síncrono — solo que ahora solo se paga cuando de verdad hace falta.
     let usuario: { taller_id: string | null } | null = null
-    const ESPERAS_MS = [200, 300, 500, 800, 1200]
+    const ESPERAS_MS = [0, 200, 300, 500, 800, 1200]
     for (const espera of ESPERAS_MS) {
-      await new Promise(resolve => setTimeout(resolve, espera))
+      if (espera > 0) await new Promise(resolve => setTimeout(resolve, espera))
       const { data } = await supabaseAdmin
         .from('usuarios')
         .select('taller_id')
@@ -100,65 +109,86 @@ export async function POST(req: Request) {
     // `talleres.telefono` sí existe, es lo que ya leen los crons de onboarding
     // y trial, y es lo que el portal enseña como "Contactar al taller por
     // WhatsApp" — que es exactamente lo que el formulario pide.
+    // A partir de aquí quedan tres trabajos —los datos del taller, la muestra y
+    // el correo de bienvenida— que antes se hacían en fila india: once llamadas
+    // de red encadenadas mientras el dueño mira "Creando tu taller…". Pero
+    // ninguno de los tres necesita el resultado de los otros: los tres solo
+    // dependen del `taller_id` que ya tenemos. Se lanzan a la vez y se espera
+    // una sola vez al final, así que el registro tarda lo que tarde el más
+    // lento en vez de la suma de los tres.
+    //
+    // Cada uno se traga sus propios errores igual que antes. Es a propósito:
+    // que falle la muestra o el correo no puede tirar un alta ya confirmada en
+    // Auth, y `Promise.all` con un rechazo suelto haría justo eso.
     const telefonoLimpio = telefono?.trim() ? telefono.replace(/\D/g, '') : ''
-    const { error: tallerUpdateError } = await supabaseAdmin
-      .from('talleres')
-      .update({
-        nombre: nombre_taller.trim(),
-        pais,
-        ...(telefonoLimpio.length >= 8 ? { telefono: telefono.trim() } : {}),
-      })
-      .eq('id', usuario.taller_id)
-    // Este error ya no se traga en silencio: sin teléfono no hay forma de
-    // contactar a un taller que se registró y no volvió.
-    if (tallerUpdateError) {
-      console.error('[registro] no se pudieron guardar los datos del taller:', tallerUpdateError.message)
-    }
+    const tallerId = usuario.taller_id
 
-    // ── 4b. La moneda, en su propia escritura y a propósito ──────────────────
-    //
-    // Va aparte porque `talleres.moneda` tiene una restricción que solo acepta
-    // MXN y COP (migración 006). Escribir 'ARS' la viola, y si fuera en el mismo
-    // UPDATE que arriba se caería la fila entera: el taller perdería también su
-    // nombre, su país y su teléfono. Separada, un rechazo de la moneda no se
-    // lleva por delante lo demás.
-    //
-    // La migración 046 amplía esa restricción a las 16 monedas del selector.
-    // Mientras no se haya corrido, esto falla para los países de fuera de
-    // México y Colombia y se queda en MXN — que es exactamente lo que pasaba
-    // antes, no una regresión.
-    const moneda = monedaDePais(pais)
-    if (moneda !== 'MXN') {
-      const { error: monedaError } = await supabaseAdmin
+    const datosDelTaller = (async () => {
+      const { error: tallerUpdateError } = await supabaseAdmin
         .from('talleres')
-        .update({ moneda })
-        .eq('id', usuario.taller_id)
-      if (monedaError) {
-        console.error(`[registro] no se pudo fijar la moneda ${moneda} (¿falta la migración 046?):`, monedaError.message)
+        .update({
+          nombre: nombre_taller.trim(),
+          pais,
+          ...(telefonoLimpio.length >= 8 ? { telefono: telefono.trim() } : {}),
+        })
+        .eq('id', tallerId)
+      // Este error ya no se traga en silencio: sin teléfono no hay forma de
+      // contactar a un taller que se registró y no volvió.
+      if (tallerUpdateError) {
+        console.error('[registro] no se pudieron guardar los datos del taller:', tallerUpdateError.message)
       }
-    }
 
-    // ── 4c. Sembrar la muestra para que el panel no arranque vacío ───────────
-    // Va después de guardar el teléfono para poder reutilizarlo en los clientes
-    // de ejemplo. Si algo falla, el registro sigue adelante: quedarse sin datos
-    // de muestra es un panel soso, pero perder el alta es perder al taller.
-    try {
-      await sembrarDatosEjemplo(supabaseAdmin, usuario.taller_id, telefonoLimpio.length >= 8 ? telefono.trim() : null)
-    } catch (ejemploErr) {
+      // La moneda, en su propia escritura y a propósito.
+      //
+      // Va aparte porque `talleres.moneda` tenía una restricción que solo
+      // aceptaba MXN y COP (migración 006). Escribir 'ARS' la violaba, y si
+      // fuera en el mismo UPDATE que arriba se caería la fila entera: el taller
+      // perdería también su nombre, su país y su teléfono. Separada, un rechazo
+      // de la moneda no se lleva por delante lo demás.
+      //
+      // La migración 046 ya amplió esa restricción a las 16 monedas del
+      // selector, así que hoy no debería rechazar ninguna. Se queda separada de
+      // todos modos: es una escritura barata y es la que evitó que un cambio de
+      // monedas volviera a costar datos.
+      //
+      // Las dos van seguidas entre sí, no en paralelo: tocan la misma fila.
+      const moneda = monedaDePais(pais)
+      if (moneda !== 'MXN') {
+        const { error: monedaError } = await supabaseAdmin
+          .from('talleres')
+          .update({ moneda })
+          .eq('id', tallerId)
+        if (monedaError) {
+          console.error(`[registro] no se pudo fijar la moneda ${moneda} (¿falta la migración 046?):`, monedaError.message)
+        }
+      }
+    })()
+
+    // Sembrar la muestra para que el panel no arranque vacío. El teléfono sale
+    // del formulario, no de la escritura de arriba, así que no hay que esperarla.
+    // Si algo falla, el registro sigue adelante: quedarse sin datos de muestra
+    // es un panel soso, pero perder el alta es perder al taller.
+    const muestra = sembrarDatosEjemplo(
+      supabaseAdmin,
+      tallerId,
+      telefonoLimpio.length >= 8 ? telefono.trim() : null,
+    ).catch(ejemploErr => {
       console.error('Error sembrando datos de ejemplo (no crítico):', ejemploErr)
-    }
-
-    // ── 5. Generar magic link para acceso directo al onboarding ──────────────
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL!
-    const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email.toLowerCase().trim(),
-      options: { redirectTo: `${appUrl}/auth/callback?next=/onboarding` },
     })
-    const magicLink = linkData?.properties?.action_link ?? `${appUrl}/login`
 
-    // ── 6. Email de bienvenida ───────────────────────────────────────────────
-    try {
+    // El magic link y el correo de bienvenida. Es el tramo más lento de todos
+    // —una llamada a Auth más una a Resend, que es un tercero— y era justo el
+    // último de la fila, así que el dueño lo esperaba entero para ver una
+    // pantalla que no habla del correo.
+    const bienvenida = (async () => {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL!
+      const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'magiclink',
+        email: email.toLowerCase().trim(),
+        options: { redirectTo: `${appUrl}/auth/callback?next=/onboarding` },
+      })
+      const magicLink = linkData?.properties?.action_link ?? `${appUrl}/login`
+
       await resend.emails.send({
         from: 'TallerOS <hola@tallerosapp.com>',
         to: email.toLowerCase().trim(),
@@ -169,9 +199,11 @@ export async function POST(req: Request) {
           magicLink,
         }),
       })
-    } catch (emailErr) {
+    })().catch(emailErr => {
       console.error('Email error (no crítico):', emailErr)
-    }
+    })
+
+    await Promise.all([datosDelTaller, muestra, bienvenida])
 
     return NextResponse.json({ ok: true })
 
