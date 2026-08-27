@@ -56,14 +56,23 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   useEffect(() => {
     if (!['propietario', 'admin', 'recepcion'].includes(rol)) return
 
+    // El canal se guarda para poder cerrarlo al desmontar. Antes el efecto
+    // abría `citas-badge` y no devolvía nada: cada vez que se volvía a ejecutar
+    // se abría otra suscripción de realtime sobre la misma tabla y la anterior
+    // se quedaba viva, escuchando y recontando citas por su cuenta. Nadie las
+    // cerraba hasta recargar la página entera.
+    let canal: ReturnType<typeof supabase.channel> | null = null
+    let cancelado = false
+
     async function cargarCitas() {
       const { data: usuario } = await supabase.from('usuarios').select('taller_id').eq('id', (await supabase.auth.getUser()).data.user?.id ?? '').single()
-      if (!usuario) return
+      if (!usuario || cancelado) return
       const { count } = await supabase.from('citas').select('*', { count: 'exact', head: true }).eq('taller_id', usuario.taller_id).eq('estado', 'pendiente')
+      if (cancelado) return
       setCitasPendientes(count ?? 0)
 
       // Realtime
-      supabase.channel('citas-badge')
+      canal = supabase.channel('citas-badge')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'citas', filter: `taller_id=eq.${usuario.taller_id}` }, async () => {
           const { count: c } = await supabase.from('citas').select('*', { count: 'exact', head: true }).eq('taller_id', usuario.taller_id).eq('estado', 'pendiente')
           setCitasPendientes(c ?? 0)
@@ -71,6 +80,11 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
         .subscribe()
     }
     cargarCitas()
+
+    return () => {
+      cancelado = true
+      if (canal) supabase.removeChannel(canal)
+    }
   }, [rol])
 
   const NAV_ITEMS    = TODOS_NAV_ITEMS.filter(i => i.roles.includes(rol))
