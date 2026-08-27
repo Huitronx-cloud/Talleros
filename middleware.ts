@@ -1,5 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  COOKIE_CONTEXTO,
+  COOKIE_CONTEXTO_MAX_AGE,
+  formatearContexto,
+  leerContexto,
+} from '@/lib/sesion-cookie'
 
 // ── RATE LIMITING ─────────────────────────────────────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -286,28 +292,43 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Verificar acceso por rol en rutas protegidas
-  // El rol se cachea en cookie para evitar un query DB en cada navegación
+  // Verificar acceso por rol en rutas protegidas.
+  //
+  // El rol se cacheaba ya en cookie para ahorrarse esta consulta en cada
+  // navegación. Ahora en la misma cookie va también el `taller_id`: es el dato
+  // que TODAS las páginas del panel volvían a pedirle a la base nada más
+  // arrancar, cada una por su cuenta, para obtener lo que aquí ya se acaba de
+  // resolver. Ver `lib/sesion-cookie.ts` para por qué guardarlo es seguro y
+  // para qué no debe usarse.
   if (user && !esApi && !esRutaPublica && !esRutaPostRegistro) {
+    const contexto = leerContexto(request.cookies.get(COOKIE_CONTEXTO)?.value, user.id)
     let rol: string
-    const rolCookie = request.cookies.get('_u_rol')?.value
-    const [cachedUserId, cachedRol] = rolCookie?.split('|') ?? []
 
-    if (cachedUserId === user.id && cachedRol) {
-      rol = cachedRol
+    if (contexto) {
+      rol = contexto.rol
     } else {
       const { data: usuario } = await supabase
         .from('usuarios')
-        .select('rol')
+        .select('rol, taller_id')
         .eq('id', user.id)
         .single()
       rol = usuario?.rol ?? 'tecnico'
-      supabaseResponse.cookies.set('_u_rol', `${user.id}|${rol}`, {
-        maxAge: 3600,
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-      })
+
+      // Sin `taller_id` no se escribe la cookie: media cookie obligaría a cada
+      // página a comprobar qué trozo tiene. Que vayan a la base, que es lo que
+      // hacían antes de todo esto.
+      if (usuario?.taller_id) {
+        supabaseResponse.cookies.set(
+          COOKIE_CONTEXTO,
+          formatearContexto({ userId: user.id, rol, tallerId: usuario.taller_id }),
+          {
+            maxAge: COOKIE_CONTEXTO_MAX_AGE,
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+          }
+        )
+      }
     }
 
     if (!tieneAcceso(rol, pathname)) {

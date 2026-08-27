@@ -1,17 +1,16 @@
 export const dynamic = 'force-dynamic'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getTallerId } from '@/lib/supabase/server'
 import CatalogoClient from './catalogo-client'
 
 export default async function CatalogoPage() {
   const supabase = createClient()
 
-  const { data: usuario } = await supabase
-    .from('usuarios').select('taller_id').single()
+  const tallerId = (await getTallerId()) ?? ''
 
   const { data: servicios } = await supabase
     .from('catalogo_servicios')
     .select('*')
-    .eq('taller_id', usuario?.taller_id ?? '')
+    .eq('taller_id', tallerId)
     .order('categoria')
     .order('nombre')
 
@@ -23,7 +22,7 @@ export default async function CatalogoPage() {
       </p>
       <CatalogoClient
         serviciosIniciales={servicios ?? []}
-        tallerId={usuario?.taller_id ?? ''}
+        tallerId={tallerId}
       />
     </div>
   )

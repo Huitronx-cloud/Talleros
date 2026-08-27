@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createClient, getAuthUser } from '@/lib/supabase/server'
+import { createClient, getAuthUser, getTallerId } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Car, Calendar, DollarSign, Wrench, Clock } from 'lucide-react'
@@ -15,11 +15,7 @@ export default async function HistorialVehiculoPage({
   const user = await getAuthUser()
   if (!user) redirect('/login')
 
-  const { data: usuario } = await supabase
-    .from('usuarios')
-    .select('taller_id')
-    .eq('id', user.id)
-    .single()
+  const tallerId = (await getTallerId()) ?? ''
 
   const vin = decodeURIComponent(params.vin).toUpperCase()
 
@@ -27,7 +23,7 @@ export default async function HistorialVehiculoPage({
   const { data: ordenes } = await supabase
     .from('ordenes')
     .select('*, clientes(nombre, telefono)')
-    .eq('taller_id', usuario?.taller_id ?? '')
+    .eq('taller_id', tallerId)
     .or(`vin.eq.${vin},placas.eq.${vin}`)
     .order('created_at', { ascending: false })
 

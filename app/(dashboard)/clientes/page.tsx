@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createClient, getAuthUser } from '@/lib/supabase/server'
+import { createClient, getTallerId } from '@/lib/supabase/server'
 import { Cliente } from '@/types'
 import TablaClientes from '@/components/clientes/tabla-clientes'
 import AvisoDatosEjemplo from '@/components/clientes/aviso-datos-ejemplo'
@@ -10,15 +10,7 @@ import { Users } from 'lucide-react'
 export default async function ClientesPage() {
   const supabase = createClient()
 
-  const user = await getAuthUser()
-
-  const { data: usuario } = await supabase
-    .from('usuarios')
-    .select('taller_id')
-    .eq('id', user!.id)
-    .single()
-
-  const tallerId = usuario?.taller_id ?? ''
+  const tallerId = (await getTallerId()) ?? ''
 
   const [
     { data: clientes },
