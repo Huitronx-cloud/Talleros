@@ -269,8 +269,14 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse
 }
 
+// `js` se añadió a la lista de extensiones excluidas por un motivo medible:
+// /sw.js era la ruta MÁS frecuente del middleware —11 de 46 peticiones en 24h,
+// casi una cuarta parte— y cada una disparaba un `auth.getUser()` contra
+// Supabase para acabar sirviendo un archivo estático del service worker. Los
+// bundles de la app ya estaban cubiertos por `_next/static`; el único .js
+// suelto en /public es sw.js.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt|json|js)$).*)',
   ],
 }
