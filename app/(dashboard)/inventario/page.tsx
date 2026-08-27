@@ -1,19 +1,14 @@
 export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { Lock, ChevronRight, Package } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getTallerId } from '@/lib/supabase/server'
 import { getLimites } from '@/lib/plan-limits'
 import InventarioClient from './inventario-client'
 
 export default async function InventarioPage() {
   const supabase = createClient()
 
-  const { data: usuario } = await supabase
-    .from('usuarios')
-    .select('taller_id')
-    .single()
-
-  const tallerId = usuario?.taller_id ?? ''
+  const tallerId = (await getTallerId()) ?? ''
 
   const { data: suscripcion } = await supabase
     .from('suscripciones')

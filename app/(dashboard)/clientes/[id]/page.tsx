@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createClient, getAuthUser } from '@/lib/supabase/server'
+import { createClient, getAuthUser, getTallerId } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import ClienteDetalle from './cliente-detalle'
 
@@ -9,13 +9,7 @@ export default async function ClienteDetallePage({ params }: { params: { id: str
   const user = await getAuthUser()
   if (!user) redirect('/login')
 
-  const { data: usuario } = await supabase
-    .from('usuarios')
-    .select('taller_id')
-    .eq('id', user.id)
-    .single()
-
-  const tallerId = usuario?.taller_id ?? ''
+  const tallerId = (await getTallerId()) ?? ''
 
   const { data: cliente } = await supabase
     .from('clientes')

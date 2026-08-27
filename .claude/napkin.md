@@ -114,8 +114,18 @@ ser útil o recurrente, se borra.
 
 6. **[2026-08-03] Capturas del navegador**
    Hacer en su lugar: `playwright-core` con
-   `executablePath: '/opt/pw-browsers/chromium'`. No ejecutar `playwright install`.
-   No está en `package.json`: instalarlo en el scratchpad, no en el proyecto.
+   `executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'`
+   (corregido el 27/08: `/opt/pw-browsers/chromium` no existe, la carpeta lleva
+   el número de build). No ejecutar `playwright install`. No está en
+   `package.json`: instalarlo en el scratchpad, no en el proyecto.
+
+7. **[2026-08-27] Lo que el dueño va a copiar y pegar, va completo**
+   Dos veces en una sesión le costaron tiempo: un `as $ ... $;` con los puntos
+   suspensivos literales dentro (error de sintaxis en el editor de Supabase) y
+   una ruta abreviada `migrations/046_...` en vez de
+   `supabase/migrations/046_...` (404 en GitHub).
+   Hacer en su lugar: rutas y SQL siempre enteros, sin abreviar y sin elidir.
+   La abreviatura ahorra una línea al escribir y cuesta un viaje de ida y vuelta.
 
 ## Guardarraíles del producto
 
@@ -140,10 +150,23 @@ ser útil o recurrente, se borra.
    contra el total en cada revisión. Un `.limit()` sin paginación al lado de un
    cron que publica es una fuga con fecha de caducidad.
 
-4. **[2026-08-03] Nada que dependa del reloj se calcula en el render**
-   `useState(algoConDate())` da un valor en el servidor y otro en el cliente.
-   Hacer en su lugar: arrancar en `null`, calcular en `useEffect`, y no pintar
-   nada hasta tener valor.
+4. **[2026-08-27] El middleware es una llamada de red delante de TODA la app**
+   Se degradó la red entre el borde de Vercel y Supabase —ni el código ni la
+   base tenían nada: Supabase respondió 200 a las 18 peticiones que le llegaron
+   y `middleware.ts` no se tocaba desde el 31/07— y como la consulta de sesión
+   no tenía límite propio, cada petición se colgaba hasta el corte de Vercel a
+   los 25 s: **504 en todas las rutas con sesión iniciada**, incluido el dueño.
+   El reparto de daños lo delata: `/admin` y el blog seguían en 200 porque
+   salen del middleware antes de tocar Supabase.
+   Hacer en su lugar: toda llamada de red en el middleware lleva su propio
+   `Promise.race` con límite (5 s hoy) y decide qué pasa al expirar. Y no
+   asumir "no hay sesión": eso echa de la app a quien sí la tiene, y `/login`
+   depende del mismo servicio caído. Se deja pasar y decide la página, que
+   vuelve a comprobar desde la función serverless. Corolario: **el middleware
+   es la primera capa, nunca la única** — si una comprobación solo vive ahí,
+   desaparece entera cuando el middleware no puede resolver. Así apareció que
+   `/api/promociones` nunca verificaba el rol (el middleware excluye `/api/`)
+   y un técnico podía escribirle a todos los clientes del taller.
 
 5. **[2026-08-03] El CSS del proyecto le gana a lo que escribas en la página**
    Dos trampas: `globals.css` declara `input, select, textarea { color: #0f172a
