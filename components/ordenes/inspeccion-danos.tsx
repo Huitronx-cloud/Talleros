@@ -77,6 +77,7 @@ export default function InspeccionDanos({ ordenId, tallerId, danosIniciales = []
   const [notaInput, setNotaInput]         = useState('')
   const [guardando, setGuardando]         = useState(false)
   const [guardado, setGuardado]           = useState(false)
+  const [error, setError]                 = useState('')
 
   const handleClickSvg = (e: React.MouseEvent<SVGSVGElement>) => {
     if (soloLectura || !activo) return
@@ -104,27 +105,56 @@ export default function InspeccionDanos({ ordenId, tallerId, danosIniciales = []
 
   const guardarInspeccion = async () => {
     setGuardando(true)
-    try {
-      await supabase.from('inspeccion_danos').delete().eq('orden_id', ordenId)
-      if (danos.length > 0) {
-        await supabase.from('inspeccion_danos').insert(
-          danos.map(d => ({
-            orden_id:  ordenId,
-            taller_id: tallerId,
-            x:         d.x,
-            y:         d.y,
-            zona:      d.zona,
-            nota:      d.nota || null,
-          }))
-        )
-      }
-      setGuardado(true)
-      setTimeout(() => setGuardado(false), 2000)
-    } catch (err) {
-      console.error('Error guardando inspección:', err)
-    } finally {
+    setError('')
+
+    // Este bloque estaba envuelto en try/catch, y el try/catch no servía de
+    // nada: supabase-js NO lanza excepciones, devuelve `{ data, error }`. El
+    // `catch` no se ejecutaba nunca, así que un borrado o un insert fallido
+    // pasaba de largo y se pintaba el "Guardado ✓" igual.
+    //
+    // Con un borrado por delante, eso era pérdida de datos: se borraban los
+    // daños que ya estaban registrados, fallaba el insert de los nuevos, y el
+    // taller se quedaba sin la inspección del vehículo —que es justo la prueba
+    // que necesita si el cliente reclama un golpe— viendo un tic verde.
+    const { error: errorBorrado } = await supabase
+      .from('inspeccion_danos')
+      .delete()
+      .eq('orden_id', ordenId)
+
+    if (errorBorrado) {
+      console.error('[inspeccion] no se pudo limpiar la inspección anterior:', errorBorrado.message)
+      setError('No se pudo guardar la inspección. Revisa tu conexión e intenta de nuevo.')
       setGuardando(false)
+      return
     }
+
+    if (danos.length > 0) {
+      const { error: errorInsert } = await supabase.from('inspeccion_danos').insert(
+        danos.map(d => ({
+          orden_id:  ordenId,
+          taller_id: tallerId,
+          x:         d.x,
+          y:         d.y,
+          zona:      d.zona,
+          nota:      d.nota || null,
+        }))
+      )
+
+      if (errorInsert) {
+        console.error('[inspeccion] no se pudieron guardar los daños:', errorInsert.message)
+        // Los daños siguen en el estado de React, así que la pantalla los sigue
+        // enseñando y se puede reintentar sin volver a marcarlos uno a uno. Es
+        // importante decirlo: si no, el taller cierra la orden creyendo que
+        // quedó y lo perdido ya no se recupera.
+        setError('Los daños no se guardaron y la inspección anterior se borró. NO cierres esta pantalla: vuelve a pulsar Guardar.')
+        setGuardando(false)
+        return
+      }
+    }
+
+    setGuardado(true)
+    setTimeout(() => setGuardado(false), 2000)
+    setGuardando(false)
   }
 
   // Vista de solo lectura sin daños
@@ -449,6 +479,12 @@ export default function InspeccionDanos({ ordenId, tallerId, danosIniciales = []
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 mb-3">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 

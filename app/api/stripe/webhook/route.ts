@@ -46,6 +46,30 @@ async function avisarPrecioDesconocido(precioId: string, tallerId: string, decis
   }
 }
 
+/**
+ * Aplica una escritura del webhook y REVIENTA si falla.
+ *
+ * Las tres escrituras a `suscripciones` se hacían con un `await` suelto, sin
+ * mirar el error. supabase-js no lanza: devuelve `{ error }`. Así que si el
+ * update fallaba —red caída, RLS, una restricción— el webhook seguía hasta el
+ * final y le respondía 200 a Stripe. Para Stripe, 200 significa "recibido y
+ * procesado": no reintenta nunca más. El taller pagaba, Stripe cobraba, y la
+ * fila de `suscripciones` se quedaba como estaba, para siempre y en silencio.
+ * Es la misma forma de fallar que degradó a FASTCAR en julio, por otra puerta.
+ *
+ * Lanzando, el error cae en el `catch` que ya existe abajo y el webhook
+ * responde 500 — que es lo que hace que Stripe lo vuelva a intentar.
+ */
+async function aplicar(
+  descripcion: string,
+  operacion: PromiseLike<{ error: { message: string } | null }>,
+) {
+  const { error } = await operacion
+  if (error) {
+    throw new Error(`[webhook] ${descripcion}: ${error.message}`)
+  }
+}
+
 export async function POST(req: NextRequest) {
   const stripe = getStripe()
   const supabaseAdmin = createClient(
@@ -95,19 +119,22 @@ export async function POST(req: NextRequest) {
 
         const { inicio: periodoInicio, fin: periodoFin } = periodo(sub)
 
-        await supabaseAdmin
-          .from('suscripciones')
-          .update({
-            plan,
-            estado:                 'activa',
-            stripe_subscription_id: subscriptionId,
-            stripe_customer_id:     session.customer,
-            precio_id:              precioId,
-            periodo_inicio:         periodoInicio,
-            periodo_fin:            periodoFin,
-            trial_fin:              null,
-          })
-          .eq('taller_id', tallerId)
+        await aplicar(
+          `no se pudo activar el plan ${plan} del taller ${tallerId}`,
+          supabaseAdmin
+            .from('suscripciones')
+            .update({
+              plan,
+              estado:                 'activa',
+              stripe_subscription_id: subscriptionId,
+              stripe_customer_id:     session.customer,
+              precio_id:              precioId,
+              periodo_inicio:         periodoInicio,
+              periodo_fin:            periodoFin,
+              trial_fin:              null,
+            })
+            .eq('taller_id', tallerId)
+        )
 
         // Obtener datos del taller para el email y Meta CAPI
         try {
@@ -173,17 +200,20 @@ export async function POST(req: NextRequest) {
 
         const { inicio: periodoInicio, fin: periodoFin } = periodo(sub)
 
-        await supabaseAdmin
-          .from('suscripciones')
-          .update({
-            plan,
-            estado:              sub.status === 'active' ? 'activa' : 'vencida',
-            precio_id:           precioId,
-            periodo_inicio:      periodoInicio,
-            periodo_fin:         periodoFin,
-            cancelar_al_periodo: sub.cancel_at_period_end,
-          })
-          .eq('taller_id', tallerId)
+        await aplicar(
+          `no se pudo actualizar la suscripción del taller ${tallerId}`,
+          supabaseAdmin
+            .from('suscripciones')
+            .update({
+              plan,
+              estado:              sub.status === 'active' ? 'activa' : 'vencida',
+              precio_id:           precioId,
+              periodo_inicio:      periodoInicio,
+              periodo_fin:         periodoFin,
+              cancelar_al_periodo: sub.cancel_at_period_end,
+            })
+            .eq('taller_id', tallerId)
+        )
         break
       }
 
@@ -192,14 +222,17 @@ export async function POST(req: NextRequest) {
         const tallerId = sub.metadata?.taller_id
         if (!tallerId) break
 
-        await supabaseAdmin
-          .from('suscripciones')
-          .update({
-            plan:                   'trial',
-            estado:                 'cancelada',
-            stripe_subscription_id: null,
-          })
-          .eq('taller_id', tallerId)
+        await aplicar(
+          `no se pudo registrar la cancelación del taller ${tallerId}`,
+          supabaseAdmin
+            .from('suscripciones')
+            .update({
+              plan:                   'trial',
+              estado:                 'cancelada',
+              stripe_subscription_id: null,
+            })
+            .eq('taller_id', tallerId)
+        )
         break
       }
 
