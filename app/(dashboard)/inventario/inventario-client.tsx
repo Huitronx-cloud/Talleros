@@ -119,7 +119,17 @@ export default function InventarioClient({ productosIniciales, tallerId }: Props
 
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar este producto?')) return
-    await supabase.from('inventario').delete().eq('id', id)
+
+    // La fila solo desaparece de la pantalla si de verdad se borró. Antes se
+    // quitaba siempre: si el borrado fallaba, el producto se esfumaba de la
+    // lista y volvía a aparecer al recargar, sin explicación.
+    const { error } = await supabase.from('inventario').delete().eq('id', id)
+    if (error) {
+      console.error('[inventario] no se pudo eliminar el producto:', error.message)
+      alert('No se pudo eliminar el producto. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
+
     setProductos(prev => prev.filter(p => p.id !== id))
   }
 
@@ -131,17 +141,33 @@ export default function InventarioClient({ productosIniciales, tallerId }: Props
     const producto = productos.find(p => p.id === productoId)!
     const nuevoStock = Math.max(0, producto.stock_actual + delta)
 
-    await supabase.from('inventario')
+    // El stock es contabilidad: si el ajuste no entra, la pantalla no puede
+    // decir que sí. Antes se pintaba el número nuevo pasara lo que pasara.
+    const { error: errorStock } = await supabase.from('inventario')
       .update({ stock_actual: nuevoStock })
       .eq('id', productoId)
 
-    await supabase.from('inventario_movimientos').insert({
+    if (errorStock) {
+      console.error('[inventario] no se pudo ajustar el stock:', errorStock.message)
+      alert('No se pudo ajustar el stock. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
+
+    // El movimiento es el historial del ajuste. Si falla, el stock YA cambió:
+    // no se revierte —sería peor dejar el número mal— pero sí se avisa, porque
+    // ese ajuste no va a aparecer en el historial.
+    const { error: errorMovimiento } = await supabase.from('inventario_movimientos').insert({
       taller_id:   tallerId,
       producto_id: productoId,
       tipo:        ajusteTipo === 'entrada' ? 'entrada' : 'salida',
       cantidad,
       nota:        'Ajuste manual',
     })
+
+    if (errorMovimiento) {
+      console.error('[inventario] stock ajustado, pero el movimiento no se registró:', errorMovimiento.message)
+      alert('El stock se ajustó, pero el movimiento no quedó en el historial.')
+    }
 
     setProductos(prev => prev.map(p =>
       p.id === productoId ? { ...p, stock_actual: nuevoStock } : p

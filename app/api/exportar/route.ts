@@ -11,11 +11,27 @@ export async function GET() {
 
   const { data: usuario } = await supabase
     .from('usuarios')
-    .select('taller_id')
+    .select('taller_id, rol')
     .eq('id', user.id)
     .single()
 
-  const tallerId = usuario?.taller_id ?? ''
+  // El middleware excluye todo /api/ de su comprobación de rol, así que tener
+  // la página en RUTAS_SOLO_ADMIN no protege este endpoint: un técnico podía
+  // llamarlo directo. La comprobación va donde se ejecuta la acción. Mismo
+  // hueco que tenía /api/promociones.
+  // Esto se lleva la base de clientes entera, más órdenes y cotizaciones, en un
+  // archivo descargable.
+  if (!usuario?.taller_id) {
+    return NextResponse.json({ error: 'Usuario sin taller' }, { status: 400 })
+  }
+  if (!['propietario', 'admin'].includes(usuario.rol)) {
+    return NextResponse.json(
+      { error: 'Solo el propietario y administradores pueden exportar los datos del taller' },
+      { status: 403 }
+    )
+  }
+
+  const tallerId = usuario.taller_id
 
   const [
     { data: clientes },

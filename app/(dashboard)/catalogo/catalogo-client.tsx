@@ -95,7 +95,16 @@ export default function CatalogoClient({ serviciosIniciales, tallerId }: Props) 
 
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Eliminar este servicio del catálogo?')) return
-    await supabase.from('catalogo_servicios').delete().eq('id', id)
+
+    // Igual que en inventario: el servicio solo desaparece de la lista si de
+    // verdad se borró, no por haber pulsado el botón.
+    const { error } = await supabase.from('catalogo_servicios').delete().eq('id', id)
+    if (error) {
+      console.error('[catalogo] no se pudo eliminar el servicio:', error.message)
+      alert('No se pudo eliminar el servicio. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
+
     setServicios(prev => prev.filter(s => s.id !== id))
   }
 

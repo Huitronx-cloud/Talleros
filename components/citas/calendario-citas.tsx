@@ -110,7 +110,22 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   const cambiarEstado = async (citaId: string, nuevoEstado: EstadoCita) => {
     setActualizando(true)
 
-    await supabase.from('citas').update({ estado: nuevoEstado }).eq('id', citaId)
+    // Si el cambio de estado falla no se sigue adelante. Antes se ignoraba el
+    // error y se continuaba igual: se le mandaba al cliente el WhatsApp y el
+    // correo diciéndole que su cita estaba confirmada, cuando en la base seguía
+    // pendiente. El cliente se presenta un día que el taller no tiene apuntado.
+    const { error: errorEstado } = await supabase
+      .from('citas')
+      .update({ estado: nuevoEstado })
+      .eq('id', citaId)
+
+    if (errorEstado) {
+      console.error('[citas] no se pudo cambiar el estado:', errorEstado.message)
+      alert('No se pudo actualizar la cita. Revisa tu conexión e intenta de nuevo.')
+      setActualizando(false)
+      return
+    }
+
 // Mandar WhatsApp + email al confirmar
     if (nuevoEstado === 'confirmada') {
       try {

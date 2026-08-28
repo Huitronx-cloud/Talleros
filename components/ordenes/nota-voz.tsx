@@ -91,19 +91,34 @@ export default function NotaVoz({ ordenId, tallerId }: Props) {
       .upload(filename, blob, { contentType: 'audio/webm', upsert: false })
 
     if (uploadError) {
+      // Antes esto solo iba a la consola: el mecánico grababa la nota, no
+      // pasaba nada y no aparecía en la lista, sin ninguna explicación.
       console.error('Error subiendo nota de voz:', uploadError)
+      alert('No se pudo subir la nota de voz. Revisa tu conexión e intenta de nuevo.')
       setSubiendo(false)
       return
     }
 
     const { data: urlData } = supabase.storage.from('notas-voz').getPublicUrl(filename)
 
-    await supabase.from('notas_voz').insert({
+    // El archivo ya está subido; esta fila es la que hace que se vea en la
+    // orden. Si falla, el audio queda huérfano en Storage y la nota no existe
+    // para nadie — hay que decirlo, no dejarlo pasar.
+    const { error: errorFila } = await supabase.from('notas_voz').insert({
       orden_id:          ordenId,
       taller_id:         tallerId,
       url:               urlData.publicUrl,
       duracion_segundos: duracion,
     })
+
+    if (errorFila) {
+      console.error('[notas-voz] el audio se subió pero no se pudo registrar:', errorFila.message)
+      alert('La nota se grabó pero no se pudo guardar en la orden. Intenta de nuevo.')
+      // Se borra el archivo para no dejar audio suelto que nadie va a oír.
+      await supabase.storage.from('notas-voz').remove([filename])
+      setSubiendo(false)
+      return
+    }
 
     await cargarNotas()
     setSegundos(0)
@@ -128,7 +143,15 @@ export default function NotaVoz({ ordenId, tallerId }: Props) {
 
   const eliminarNota = async (nota: NotaVoz) => {
     if (!confirm('¿Eliminar esta nota de voz?')) return
-    await supabase.from('notas_voz').delete().eq('id', nota.id)
+
+    const { error } = await supabase.from('notas_voz').delete().eq('id', nota.id)
+    if (error) {
+      // Antes se quitaba de la lista igualmente y reaparecía al recargar.
+      console.error('[notas-voz] no se pudo eliminar la nota:', error.message)
+      alert('No se pudo eliminar la nota. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
+
     setNotas(prev => prev.filter(n => n.id !== nota.id))
   }
 

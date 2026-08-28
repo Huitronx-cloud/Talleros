@@ -327,11 +327,20 @@ async function obtenerOCrearTokenPortal(
   if (existente?.token) return existente.token
 
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: nuevo } = await supabase
+  const { data: nuevo, error } = await supabase
     .from('portal_tokens')
     .insert({ orden_id: ordenId, taller_id: tallerId, expires_at: expires })
     .select('token')
     .single()
+
+  // Devolver null sigue siendo correcto —quien llama arma el mensaje sin enlace
+  // al portal, que es mejor que no mandar nada— pero ahora queda registrado.
+  // Antes un fallo aquí era indistinguible de "todo bien": el taller mandaba el
+  // WhatsApp sin el enlace de seguimiento y nadie sabía por qué. El portal ya
+  // nos dio dos sustos así, los dos por errores que no se miraban.
+  if (error) {
+    console.error(`[portal] no se pudo crear el token de la orden ${ordenId}:`, error.message)
+  }
 
   return nuevo?.token ?? null
 }
