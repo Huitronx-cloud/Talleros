@@ -124,6 +124,40 @@ export const PRECIOS_POR_PAIS: Record<string, PreciosPais> = {
       pro_anual:        'price_1U9SneRFpmo4G9XHnQBGl8OV',
     },
   },
+
+  // Colombia, desde el 28/08/2026. Tipo de cambio 3156 COP/USD.
+  //
+  // Aquí el desajuste iba en la dirección contraria a la de Argentina: la tabla
+  // vieja usaba 4200, así que a los talleres colombianos se les enseñaba un
+  // precio un 33% MÁS CARO del que realmente costaba. No los espantaba la letra
+  // pequeña, los espantaba el número grande.
+  //
+  // Colchón sobre el objetivo en dólares, ya descontado el ~2% de Stripe:
+  //   Esencial mensual   $84.900 → US$26.36 sobre US$24    (+9.8%)
+  //   Esencial anual    $799.900 → US$248.38 sobre US$228  (+8.9%)
+  //   Pro mensual       $169.900 → US$52.76 sobre US$49    (+7.7%)
+  //   Pro anual       $1.599.900 → US$496.80 sobre US$468  (+6.2%)
+  //
+  // El primer redondeo que se propuso dejaba el Pro anual en $1.477.900, que
+  // neteaba US$465.75: por DEBAJO del objetivo. Cada suscripción anual de Pro
+  // habría perdido dinero. Se detectó comprobando los márgenes uno a uno, no al
+  // escribirlos — por eso los números están aquí, para que se puedan rehacer.
+  CO: {
+    moneda:  'COP',
+    simbolo: '$',
+    importes: {
+      esencial_mensual: 84900,
+      esencial_anual:   799900,
+      pro_mensual:      169900,
+      pro_anual:        1599900,
+    },
+    precios: {
+      esencial_mensual: 'price_1U9TrbRFpmo4G9XHcnQxrjWZ',
+      esencial_anual:   'price_1U9Tt7RFpmo4G9XHZH3pPEjA',
+      pro_mensual:      'price_1U9Tu4RFpmo4G9XHHRTK7hQb',
+      pro_anual:        'price_1U9Tv0RFpmo4G9XHI0CYS9iW',
+    },
+  },
 }
 
 /** Normaliza 'México', 'mexico', 'MX' → 'MX'. */
@@ -132,7 +166,8 @@ function codigoPais(pais?: string | null): string {
   const limpio = pais.trim()
   if (limpio.length === 2) return limpio.toUpperCase()
   const sinAcentos = limpio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  if (sinAcentos === 'mexico') return 'MX'
+  if (sinAcentos === 'mexico')   return 'MX'
+  if (sinAcentos === 'colombia') return 'CO'
   return limpio.toUpperCase()
 }
 
