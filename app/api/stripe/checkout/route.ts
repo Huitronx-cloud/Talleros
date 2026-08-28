@@ -75,6 +75,12 @@ export async function POST(req: NextRequest) {
       customer:             customerId,
       mode:                 'subscription',
       payment_method_types: ['card'],
+      // Sin esto Stripe adivina el idioma por el navegador, y de esa
+      // adivinanza dependen dos cosas: la página de pago y el correo de
+      // recuperación que Stripe manda cuando alguien abandona. Los tres
+      // carritos abandonados que tenemos son de talleres mexicanos; no hay
+      // motivo para dejar su idioma al azar.
+      locale:               'es-419',
       line_items: [{ price: precio_id, quantity: 1 }],
       metadata: { taller_id: usuario.taller_id },
       subscription_data: {

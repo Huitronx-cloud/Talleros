@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Tarjeta, SerieDiaria, Embudo, type Punto } from '@/components/admin/panel-graficas'
+import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
 const DIAS = 30
 
@@ -33,8 +34,8 @@ export default async function AdminPanelPage() {
 
   const [talleresRes, suscripcionesRes, ordenesRealesRes, ordenesPeriodoRes,
          clientesRealesRes, leadsRes, articulosRes, prospectosRes, usuariosRes] = await Promise.all([
-    supabase.from('talleres').select('id, nombre, ciudad, pais, created_at').order('created_at', { ascending: false }),
-    supabase.from('suscripciones').select('taller_id, plan, estado, trial_fin'),
+    supabase.from('talleres').select('id, nombre, ciudad, pais, telefono, created_at').order('created_at', { ascending: false }),
+    supabase.from('suscripciones').select('taller_id, plan, estado, trial_fin, stripe_customer_id'),
     supabase.from('ordenes').select('taller_id').eq('es_ejemplo', false),
     supabase.from('ordenes').select('created_at').eq('es_ejemplo', false).gte('created_at', desde),
     supabase.from('clientes').select('*', { count: 'exact', head: true }).eq('es_ejemplo', false),
@@ -92,6 +93,61 @@ export default async function AdminPanelPage() {
   const enRiesgo = talleres
     .filter(t => !activados.has(t.id) && diasDesde(t.created_at) >= 2 && diasDesde(t.created_at) <= 14)
 
+  // ── Carritos abandonados ───────────────────────────────────────────────────
+  //
+  // No hace falta ni tabla nueva ni escuchar un evento de Stripe: el dato ya
+  // está. `stripe_customer_id` se escribe en el instante en que alguien pulsa
+  // pagar (api/stripe/checkout crea el cliente ANTES de abrir la pantalla de
+  // pago), y si no completa, su plan se queda en trial o gratis.
+  //
+  //     tiene stripe_customer_id  +  sigue sin pagar  =  llegó y no terminó
+  //
+  // Son las personas más calientes que hay: no "se registraron y no
+  // volvieron", sino que decidieron pagar y se cayeron en el último paso.
+  //
+  // El WhatsApp NO se envía solo, y no es un descuido: WhatsApp no entrega
+  // mensajes automáticos a quien no te escribió antes — es lo que dejó seco el
+  // presupuesto de Twilio con la prospección. El link wa.me abre el chat con el
+  // texto puesto y el envío lo hace una persona, igual que los mensajes que los
+  // talleres mandan a sus propios clientes.
+  //
+  // Un caso que conviene tener presente: quien pagó y luego canceló vuelve a
+  // `trial` conservando su `stripe_customer_id`, así que también aparece aquí.
+  // Hoy no hay ninguna cancelación y además es gente a la que igualmente se le
+  // quiere escribir, pero si algún día la lista crece sin explicación, es por
+  // esto — se separan mirando `estado = 'cancelada'`.
+  const carritos = suscripciones
+    .filter(s => s.stripe_customer_id && !['esencial', 'pro'].includes(s.plan))
+    .map(s => {
+      const taller = talleres.find(t => t.id === s.taller_id)
+      return { suscripcion: s, taller }
+    })
+    // Sin taller detrás son las filas huérfanas de las pruebas viejas, las
+    // mismas que inflaban el "Pagando 4". No son nadie a quien escribir.
+    .filter(c => c.taller)
+    .sort((a, b) => new Date(b.taller!.created_at).getTime() - new Date(a.taller!.created_at).getTime())
+    .map(({ suscripcion, taller }) => {
+      const primerNombre = (taller!.nombre ?? '').trim().split(' ')[0]
+      const mensaje =
+        `Hola, soy Iván de TallerOS. Vi que entraste a activar tu plan en ${taller!.nombre} y no llegaste a terminar.\n\n` +
+        `¿Hubo algo que te frenó? Te lo pregunto en serio: si fue el precio, la moneda del cobro o algo de esa pantalla, ` +
+        `quiero saberlo para arreglarlo.\n\n` +
+        `Y si lo que necesitas es más tiempo para probarlo con calma, te amplío los días sin problema. Nada más dime.`
+      return {
+        tallerId: taller!.id,
+        nombre:   taller!.nombre,
+        ciudad:   taller!.ciudad,
+        telefono: taller!.telefono,
+        dias:     diasDesde(taller!.created_at),
+        activo:   activados.has(taller!.id),
+        // Sin teléfono no hay WhatsApp posible: se enseña igual, pero marcado,
+        // para que se note que a ese hay que escribirle por correo.
+        wa: taller!.telefono
+          ? buildWhatsAppLink(taller!.telefono, mensaje, taller!.pais)
+          : null,
+      }
+    })
+
   const etapas = ['nuevo', 'contactado', 'interesado', 'negociacion', 'cliente', 'descartado'] as const
   const pctActivacion = talleres.length ? (activados.size / talleres.length) * 100 : 0
 
@@ -127,6 +183,55 @@ export default async function AdminPanelPage() {
         <Tarjeta etiqueta="Activados" valor={activados.size} tono={pctActivacion >= 50 ? 'bueno' : 'alerta'}
                  pie={`${pctActivacion.toFixed(0)}% creó una orden real`} />
       </div>
+
+      {carritos.length > 0 && (
+        <div className="bg-gray-900 border border-amber-500/30 rounded-xl p-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+            <h3 className="text-sm font-semibold text-white">
+              Carritos abandonados
+              <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 align-middle">
+                {carritos.length}
+              </span>
+            </h3>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Pulsaron pagar y no completaron. Es la gente más caliente que hay: ya
+            decidió, se cayó en el último paso. El mensaje va escrito — se abre tu
+            WhatsApp con el texto puesto y lo mandas tú.
+          </p>
+          <div className="space-y-2">
+            {carritos.map(c => (
+              <div
+                key={c.tallerId}
+                className="flex items-center justify-between gap-3 bg-gray-950/60 border border-gray-800 rounded-lg px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm text-white font-medium truncate">{c.nombre}</p>
+                  <p className="text-xs text-gray-500">
+                    hace {c.dias} d
+                    {c.ciudad ? ` · ${c.ciudad}` : ''}
+                    {c.activo ? ' · usó el producto' : ' · sin actividad'}
+                  </p>
+                </div>
+                {c.wa ? (
+                  <a
+                    href={c.wa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                ) : (
+                  <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded-full bg-gray-700/40 text-gray-500">
+                    SIN TELÉFONO
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Embudo
