@@ -43,6 +43,7 @@ export default function PanelPagos({ orden, tallerId }: Props) {
   const [forma, setForma]         = useState<FormaPago>('efectivo')
   const [concepto, setConcepto]   = useState<'anticipo' | 'pago' | 'saldo'>('pago')
   const [nota, setNota]           = useState('')
+  const [error, setError]         = useState('')
 
   useEffect(() => { cargarPagos() }, [])
 
@@ -65,8 +66,17 @@ export default function PanelPagos({ orden, tallerId }: Props) {
     const montoNum = parseFloat(monto)
     if (!montoNum || montoNum <= 0) return
     setGuardando(true)
+    setError('')
 
-    const { data } = await supabase.from('pagos').insert({
+    // El error se mira, y si lo hay el modal NO se cierra.
+    //
+    // Antes esto era `const { data } = ...` seguido de `if (data)`. Cuando el
+    // insert fallaba, `data` llegaba null, el `if` no entraba... y el código
+    // seguía: limpiaba el importe, cerraba el modal y apagaba el spinner igual
+    // que en el caso bueno. El taller veía desaparecer el formulario, daba el
+    // pago por registrado, y no lo estaba. Es dinero cobrado que no queda
+    // anotado en ningún sitio, y nadie se entera hasta cuadrar la caja.
+    const { data, error } = await supabase.from('pagos').insert({
       taller_id:  tallerId,
       orden_id:   orden.id,
       monto:      montoNum,
@@ -75,12 +85,27 @@ export default function PanelPagos({ orden, tallerId }: Props) {
       nota:       nota.trim() || null,
     }).select().single()
 
-    if (data) {
-      setPagos(prev => [...prev, data as Pago])
-      // Marcar cobrado si ya está liquidado
-      const nuevoTotal = totalPagado + montoNum
-      if (nuevoTotal >= orden.total) {
-        await supabase.from('ordenes').update({ cobrado: true }).eq('id', orden.id)
+    if (error || !data) {
+      setError('No se pudo registrar el pago. Revisa tu conexión e intenta de nuevo.')
+      console.error('[pagos] no se pudo registrar el pago:', error?.message)
+      setGuardando(false)
+      return
+    }
+
+    setPagos(prev => [...prev, data as Pago])
+
+    // Marcar cobrado si ya está liquidado. Si esta parte falla, el pago SÍ
+    // quedó guardado —que es lo que importa— así que no se revierte nada: se
+    // avisa de lo único que quedó pendiente, que es la marca de cobrado.
+    const nuevoTotal = totalPagado + montoNum
+    if (nuevoTotal >= orden.total) {
+      const { error: errorCobrado } = await supabase
+        .from('ordenes')
+        .update({ cobrado: true })
+        .eq('id', orden.id)
+      if (errorCobrado) {
+        console.error('[pagos] pago guardado, pero no se pudo marcar la orden como cobrada:', errorCobrado.message)
+        setError('El pago quedó registrado, pero no se pudo marcar la orden como cobrada. Vuelve a abrirla en un momento.')
       }
     }
 
@@ -258,8 +283,14 @@ export default function PanelPagos({ orden, tallerId }: Props) {
                 />
               </div>
 
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-1">
-                <button onClick={() => setModal(false)}
+                <button onClick={() => { setError(''); setModal(false) }}
                   className="px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">
                   Cancelar
                 </button>
