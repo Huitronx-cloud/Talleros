@@ -40,6 +40,18 @@ export const PRECIOS_A_PLAN: Record<string, string> = {
   'price_1U9SmqRFpmo4G9XHSCZngHCz': 'pro',
   'price_1U9SneRFpmo4G9XHnQBGl8OV': 'pro',
 
+  // Vigentes (COP) — Colombia cobra en pesos colombianos desde el 28/08/2026.
+  'price_1U9TrbRFpmo4G9XHcnQxrjWZ': 'esencial',
+  'price_1U9Tt7RFpmo4G9XHZH3pPEjA': 'esencial',
+  'price_1U9Tu4RFpmo4G9XHHRTK7hQb': 'pro',
+  'price_1U9Tv0RFpmo4G9XHI0CYS9iW': 'pro',
+
+  // Vigentes (PEN) — Perú cobra en soles desde el 28/08/2026.
+  'price_1U9TxyRFpmo4G9XHesK00ug0': 'esencial',
+  'price_1U9TzERFpmo4G9XH6kRdHIUG': 'esencial',
+  'price_1U9U0BRFpmo4G9XHZ4keRuon': 'pro',
+  'price_1U9U1ERFpmo4G9XHPfKHC6Jl': 'pro',
+
   // Retirados en julio de 2026 (CAD). Siguen activos en Stripe para quien los
   // contrató antes del cambio.
   'price_1TVxQ1RFpmo4G9XHSD938Kyf': 'esencial',

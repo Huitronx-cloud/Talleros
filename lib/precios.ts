@@ -22,8 +22,10 @@
  * exactos de esa moneda. La pantalla lee de aquí; el checkout lee de aquí. No
  * hay dos números que puedan separarse, hay uno.
  *
- *   México          → MXN → se muestra $449 MXN y se cobra $449 MXN
- *   Resto de países → USD → se muestra US$24 y se cobra US$24
+ *   México          → MXN → se muestra $449 MXN     y se cobra $449 MXN
+ *   Colombia        → COP → se muestra $84.900 COP y se cobra $84.900 COP
+ *   Perú            → PEN → se muestra S/ 89       y se cobra S/ 89
+ *   Resto de países → USD → se muestra US$24       y se cobra US$24
  *
  * Para los países que aún no tienen precio propio, el número grande es el de
  * dólares —el que de verdad se va a cobrar— y debajo va una conversión
@@ -92,9 +94,20 @@ export const PRECIOS_USD: PreciosPais = {
  * de cambio que Stripe cobra al liquidar en la moneda de la cuenta (~2%) más un
  * colchón para que un movimiento del peso no obligue a retocar precios.
  *
- * Comprobación con el tipo de cambio del 28/08/2026 (17.02 MXN/USD):
- *   $449 MXN ÷ 17.02 = US$26.38, menos ~2% de Stripe ≈ US$25.85 netos.
- *   El objetivo eran US$24, así que hay margen de sobra.
+ * Comprobación con el tipo de cambio del 28/08/2026 (16.97 MXN/USD), ya
+ * descontado el ~2% que Stripe cobra al convertir:
+ *
+ *   Esencial mensual  $449   → US$25.93 netos sobre US$24    (+8.0%)
+ *   Esencial anual  $3.999   → US$230.94 netos sobre US$228  (+1.3%)
+ *   Pro mensual       $899   → US$51.92 netos sobre US$49    (+6.0%)
+ *   Pro anual       $8.199   → US$473.48 netos sobre US$468  (+1.2%)
+ *
+ * DECISIÓN DEL DUEÑO (28/08/2026): los dos anuales se quedan así, con el
+ * colchón justo. Se le propuso subirlos a $4.399 y $8.999 para alinearlos con
+ * el 6-10% de los demás y dijo que no. No están rotos —netean por encima del
+ * objetivo— pero un movimiento del peso del 2% se lleva ese margen. Si en una
+ * revisión futura estos números parecen un descuido, no lo son: no tocarlos
+ * sin preguntarle.
  */
 export const PRECIOS_POR_PAIS: Record<string, PreciosPais> = {
   MX: {
@@ -113,6 +126,67 @@ export const PRECIOS_POR_PAIS: Record<string, PreciosPais> = {
       pro_anual:        'price_1U9SneRFpmo4G9XHnQBGl8OV',
     },
   },
+
+  // Colombia, desde el 28/08/2026. Tipo de cambio 3156 COP/USD.
+  //
+  // Aquí el desajuste iba en la dirección contraria a la de Argentina: la tabla
+  // vieja usaba 4200, así que a los talleres colombianos se les enseñaba un
+  // precio un 33% MÁS CARO del que realmente costaba. No los espantaba la letra
+  // pequeña, los espantaba el número grande.
+  //
+  // Colchón sobre el objetivo en dólares, ya descontado el ~2% de Stripe:
+  //   Esencial mensual   $84.900 → US$26.36 sobre US$24    (+9.8%)
+  //   Esencial anual    $799.900 → US$248.38 sobre US$228  (+8.9%)
+  //   Pro mensual       $169.900 → US$52.76 sobre US$49    (+7.7%)
+  //   Pro anual       $1.599.900 → US$496.80 sobre US$468  (+6.2%)
+  //
+  // El primer redondeo que se propuso dejaba el Pro anual en $1.477.900, que
+  // neteaba US$465.75: por DEBAJO del objetivo. Cada suscripción anual de Pro
+  // habría perdido dinero. Se detectó comprobando los márgenes uno a uno, no al
+  // escribirlos — por eso los números están aquí, para que se puedan rehacer.
+  CO: {
+    moneda:  'COP',
+    simbolo: '$',
+    importes: {
+      esencial_mensual: 84900,
+      esencial_anual:   799900,
+      pro_mensual:      169900,
+      pro_anual:        1599900,
+    },
+    precios: {
+      esencial_mensual: 'price_1U9TrbRFpmo4G9XHcnQxrjWZ',
+      esencial_anual:   'price_1U9Tt7RFpmo4G9XHZH3pPEjA',
+      pro_mensual:      'price_1U9Tu4RFpmo4G9XHHRTK7hQb',
+      pro_anual:        'price_1U9Tv0RFpmo4G9XHI0CYS9iW',
+    },
+  },
+
+  // Perú, desde el 28/08/2026. Tipo de cambio 3.35 PEN/USD.
+  //
+  // La tabla vieja usaba 3.75, así que a los talleres peruanos también se les
+  // enseñaba un precio más caro del real, un 12%.
+  //
+  // Colchón sobre el objetivo en dólares, ya descontado el ~2% de Stripe:
+  //   Esencial mensual   S/    89 → US$26.04 sobre US$24    (+8.5%)
+  //   Esencial anual     S/   849 → US$248.36 sobre US$228  (+8.9%)
+  //   Pro mensual        S/   179 → US$52.36 sobre US$49    (+6.9%)
+  //   Pro anual          S/ 1.699 → US$497.02 sobre US$468  (+6.2%)
+  PE: {
+    moneda:  'PEN',
+    simbolo: 'S/ ',
+    importes: {
+      esencial_mensual: 89,
+      esencial_anual:   849,
+      pro_mensual:      179,
+      pro_anual:        1699,
+    },
+    precios: {
+      esencial_mensual: 'price_1U9TxyRFpmo4G9XHesK00ug0',
+      esencial_anual:   'price_1U9TzERFpmo4G9XH6kRdHIUG',
+      pro_mensual:      'price_1U9U0BRFpmo4G9XHZ4keRuon',
+      pro_anual:        'price_1U9U1ERFpmo4G9XHPfKHC6Jl',
+    },
+  },
 }
 
 /** Normaliza 'México', 'mexico', 'MX' → 'MX'. */
@@ -121,7 +195,9 @@ function codigoPais(pais?: string | null): string {
   const limpio = pais.trim()
   if (limpio.length === 2) return limpio.toUpperCase()
   const sinAcentos = limpio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  if (sinAcentos === 'mexico') return 'MX'
+  if (sinAcentos === 'mexico')   return 'MX'
+  if (sinAcentos === 'colombia') return 'CO'
+  if (sinAcentos === 'peru')     return 'PE'
   return limpio.toUpperCase()
 }
 
