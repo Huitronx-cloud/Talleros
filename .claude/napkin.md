@@ -301,7 +301,23 @@ ser útil o recurrente, se borra.
 
 ## Trabajo pendiente
 
-1. **[2026-08-24] Medir la activación — hacia el 7 de septiembre, no antes**
+1. **[2026-08-28] Los carritos abandonados van ANTES que la lista de inactivos**
+   Tres talleres pulsaron pagar y no completaron: Ribec (24/07, lo intentó
+   **dos veces** con 69 minutos de diferencia), Apex (19/07) y Llantera
+   papagayo (22/08). Los logs de Stripe descartan fallo técnico —todo 200 OK,
+   ni un `payment_intent`, y como único evento "Checkout Session expired" a las
+   24 h—: llegaron a la pantalla de la tarjeta y no escribieron nada. Los tres
+   se registraron y fueron a pagar **el mismo día**, en cuestión de horas.
+   Hacer en su lugar: salen solos en la sección "Carritos abandonados" de
+   `/admin`, con su link wa.me. Escribirles a ellos primero — están muy por
+   delante de los 20 inactivos, porque ya decidieron pagar. **Y preguntarles
+   qué les frenó**: son la única fuente fiable de por qué se cayó el checkout,
+   y cualquier teoría nuestra (moneda, precio, solo-tarjeta) vale menos que su
+   respuesta. Si contestan, hay arreglo concreto que hacer.
+   La regla que los detecta: `stripe_customer_id` puesto + plan sin pagar. El
+   customer se crea al pulsar pagar, antes de abrir la pantalla.
+
+2. **[2026-08-24] Medir la activación — hacia el 7 de septiembre, no antes**
    Los correos de activación y el portal del cliente estuvieron rotos hasta el
    20-22/08, así que ninguna cohorte anterior sirve de comparación: la secuencia
    nunca llegó a enviarse y el portal daba 404. El reloj empieza ahí.
@@ -310,7 +326,7 @@ ser útil o recurrente, se borra.
    crearon una orden real). La muestra sigue siendo diminuta; leer dos semanas
    como veredicto es el error a evitar.
 
-2. **[2026-08-24] El cuello de botella NO es la web — no rediseñarla**
+3. **[2026-08-24] El cuello de botella NO es la web — no rediseñarla**
    Medido con Google Analytics sobre 30 días: la portada tuvo **18 usuarios**, el
    blog **3**, y todo el sitio 51 usuarios activos (la mayoría dueños entrando a
    `/dashboard` y `/login`). Con 22 registros reales en el mismo periodo, entra
@@ -324,7 +340,7 @@ ser útil o recurrente, se borra.
    Rediseñar no ataca ninguno de los dos. Vercel Analytics se montó el 24/08 y
    mide sin el sesgo del banner: a partir de septiembre hay dato limpio.
 
-3. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
+4. **[2026-08-05] Search Console: esperar, no volver a tocar el código**
    Tras el PR #62 hay que pedir la reindexación del sitemap y dejar pasar
    días/semanas. Las 10 "Página con redirección" deberían desaparecer y el
    artículo sin canónica pasar a indexado. El 06/08 se cambió además la
