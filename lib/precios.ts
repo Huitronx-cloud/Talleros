@@ -92,9 +92,20 @@ export const PRECIOS_USD: PreciosPais = {
  * de cambio que Stripe cobra al liquidar en la moneda de la cuenta (~2%) más un
  * colchón para que un movimiento del peso no obligue a retocar precios.
  *
- * Comprobación con el tipo de cambio del 28/08/2026 (17.02 MXN/USD):
- *   $449 MXN ÷ 17.02 = US$26.38, menos ~2% de Stripe ≈ US$25.85 netos.
- *   El objetivo eran US$24, así que hay margen de sobra.
+ * Comprobación con el tipo de cambio del 28/08/2026 (16.97 MXN/USD), ya
+ * descontado el ~2% que Stripe cobra al convertir:
+ *
+ *   Esencial mensual  $449   → US$25.93 netos sobre US$24    (+8.0%)
+ *   Esencial anual  $3.999   → US$230.94 netos sobre US$228  (+1.3%)
+ *   Pro mensual       $899   → US$51.92 netos sobre US$49    (+6.0%)
+ *   Pro anual       $8.199   → US$473.48 netos sobre US$468  (+1.2%)
+ *
+ * DECISIÓN DEL DUEÑO (28/08/2026): los dos anuales se quedan así, con el
+ * colchón justo. Se le propuso subirlos a $4.399 y $8.999 para alinearlos con
+ * el 6-10% de los demás y dijo que no. No están rotos —netean por encima del
+ * objetivo— pero un movimiento del peso del 2% se lleva ese margen. Si en una
+ * revisión futura estos números parecen un descuido, no lo son: no tocarlos
+ * sin preguntarle.
  */
 export const PRECIOS_POR_PAIS: Record<string, PreciosPais> = {
   MX: {
