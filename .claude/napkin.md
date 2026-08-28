@@ -36,13 +36,30 @@ ser útil o recurrente, se borra.
    tipos, `pg_get_function_identity_arguments` para firmas. Todo archivo con
    `create table if not exists` es una descripción sin garantía.
 
-3. **[2026-08-03] `next build` NO valida tipos**
+3. **[2026-08-27] Quitar una política de RLS exige inventariar quién escribe, no solo quién lee**
+   La 036 quitó políticas de `storage.objects` que dejaban listar archivos sin
+   filtrar por taller. Para `notas-voz` quitó la suya y **volvió a crear** el
+   INSERT, porque ese bucket se escribe desde el cliente. Para `logos` la quitó
+   y no creó nada, razonando que las descargas van por `getPublicUrl` y no
+   dependen de RLS — cierto para **leer**, pero los logos también se **suben**
+   desde el cliente, en Configuración y en el onboarding. Resultado: durante
+   semanas, cualquier taller que intentara poner su logo chocaba con "new row
+   violates row-level security policy". Solo se vio cuando el dueño entró por
+   Configuración; el onboarding se lo tragaba con un `if` sin rama `else`.
+   Hacer en su lugar: antes de tocar políticas de un bucket o una tabla,
+   `grep` de todos los sitios que escriben en él desde el cliente y reponer una
+   política por cada verbo que se use. Ojo con `upsert`: necesita **UPDATE**
+   además de INSERT, y es fácil de olvidar porque la primera subida funciona y
+   solo falla al reemplazar. El modelo bueno es
+   `supabase/migrations/030_storage_diagnosticos.sql`.
+
+4. **[2026-08-03] `next build` NO valida tipos**
    `next.config.mjs` tiene `ignoreBuildErrors: true` e `ignoreDuringBuilds: true`,
    así que "✓ Compiled successfully" no dice nada sobre TypeScript.
    Hacer en su lugar: `npx tsc --noEmit`. El repo arrastra **19 errores previos**;
    comparar el total antes y después para saber si añadiste alguno.
 
-4. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
+5. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
    Fusionar a `main` dispara el deploy de producción en Vercel. Si el código
    consulta una columna que aún no existe, tumba las pantallas de todos.
    Hacer en su lugar: pasarle el SQL al usuario, esperar confirmación de que lo
@@ -54,7 +71,7 @@ ser útil o recurrente, se borra.
    500. Preguntarse siempre quién habla primero: si la base empieza a decir algo
    que el código desplegado no sabe interpretar, el código va primero.
 
-5. **[2026-08-03] La rama diverge tras cada squash merge**
+6. **[2026-08-03] La rama diverge tras cada squash merge**
    La PR sale `mergeable_state: dirty` porque la rama conserva los commits que
    en `main` entraron aplastados en uno.
    Hacer en su lugar: comprobar que los árboles coinciden
@@ -65,12 +82,12 @@ ser útil o recurrente, se borra.
    sincronizado mientras la rama del servidor sigue en el commit viejo. Para
    saber dónde está de verdad: `git ls-remote origin <rama>`.
 
-6. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
+7. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
    exportar por falta de variables de Supabase. No es una regresión.
    Hacer en su lugar: darlo por esperado; comprobar solo `Compiled successfully`.
 
-7. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
+8. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
    No se pueden usar en sesiones no interactivas.
    Hacer en su lugar: leer el esquema en `supabase/migrations/`, y seguir el
    estado del deploy con `get_deployment` (`state: READY` + `aliasError: null`).
