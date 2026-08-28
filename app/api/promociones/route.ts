@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { encolarMensajeWhatsApp } from '@/lib/mensajes-pendientes'
 import { getLimites } from '@/lib/plan-limits'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export async function POST(req: NextRequest) {
   const supabase      = createClient()
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   // protegida por él. Un técnico podía llamarla directamente y mandarle una
   // promoción a todos los clientes del taller. La comprobación va aquí, que es
   // donde de verdad se ejecuta la acción.
-  if (!['propietario', 'admin'].includes(usuario.rol)) {
+  if (!puedeGestionarTaller(usuario.rol)) {
     return NextResponse.json(
       { error: 'Solo el propietario y administradores pueden enviar promociones' },
       { status: 403 }

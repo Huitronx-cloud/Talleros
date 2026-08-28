@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import * as XLSX from 'xlsx'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export async function GET() {
   const supabase = createClient()
@@ -24,7 +25,7 @@ export async function GET() {
   if (!usuario?.taller_id) {
     return NextResponse.json({ error: 'Usuario sin taller' }, { status: 400 })
   }
-  if (!['propietario', 'admin'].includes(usuario.rol)) {
+  if (!puedeGestionarTaller(usuario.rol)) {
     return NextResponse.json(
       { error: 'Solo el propietario y administradores pueden exportar los datos del taller' },
       { status: 403 }

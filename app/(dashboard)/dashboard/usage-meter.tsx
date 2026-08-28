@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getLimites } from '@/lib/plan-limits'
 import { TrendingUp } from 'lucide-react'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 interface Props {
   plan:       string
@@ -16,7 +17,7 @@ export default function UsageMeter({ plan, usadas, rol, trialFin }: Props) {
   // Solo se muestra cuando hay tope: plan gratis = 10, de pago (y prueba
   // vigente) = -1 ilimitado, y ahí no hay nada que medir.
   if (limite === -1) return null
-  if (!['propietario', 'admin'].includes(rol)) return null
+  if (!puedeGestionarTaller(rol)) return null
 
   const pct     = Math.min(100, Math.round((usadas / limite) * 100))
   const libre   = Math.max(0, limite - usadas)

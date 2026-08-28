@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, Zap, X } from 'lucide-react'
 import { enTrial } from '@/lib/plan-limits'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; rol?: string }) {
   const [suscripcion, setSuscripcion] = useState<any>(null)
@@ -23,7 +24,7 @@ export default function BannerUpgrade({ tallerId, rol }: { tallerId?: string; ro
       .then(({ data }) => setSuscripcion(data))
   }, [tallerId])
 
-  if (!['propietario', 'admin'].includes(rol ?? '')) return null
+  if (!puedeGestionarTaller(rol)) return null
   if (!suscripcion || cerrado) return null
 
   const esTrial   = suscripcion.plan === 'trial'

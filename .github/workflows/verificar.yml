@@ -1,0 +1,49 @@
+# Comprobaciones antes de fusionar a main.
+#
+# Por qué existe: hasta el 28/08/2026 este repositorio no tenía ni una prueba
+# automática ni CI, y `next.config.mjs` ignora los errores de TypeScript y de
+# lint al construir. O sea que nada impedía desplegar código roto — y de hecho
+# se desplegó: pagos que se perdían en silencio, un webhook de Stripe que
+# respondía 200 a fallos de base, notificaciones que se borraban solas.
+#
+# Esto no atrapa todo. Atrapa las regresiones en lo que toca dinero y permisos,
+# que es donde un fallo se paga caro y tarda semanas en verse.
+name: Verificar
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Tipos sin regresiones
+        # No exige cero errores: exige que no crezcan. Ver scripts/tsc-baseline.mjs
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Compilar
+        # Las variables son de relleno: el build solo necesita que existan.
+        # Nada de esto toca la base de datos real.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: clave-de-relleno-para-compilar
+          SUPABASE_SERVICE_ROLE_KEY: clave-de-relleno-para-compilar
+        run: npm run build
