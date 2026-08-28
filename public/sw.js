@@ -6,7 +6,21 @@
 //    - Nada más se cachea. El HTML y los datos del dashboard SIEMPRE van a la
 //      red — un taller nunca debe ver órdenes o pagos desactualizados.
 
-const CACHE = 'talleros-v2'
+// El nombre de la caché lleva versión a propósito, y hay que SUBIRLA cuando se
+// quiera limpiar lo acumulado.
+//
+// El `activate` de abajo borra las cachés cuyo nombre no sea este, pero dentro
+// de la caché no se expira nada nunca. Como los estáticos de Next llevan hash
+// en el nombre, cada despliegue añade un juego nuevo de archivos y el anterior
+// se queda ahí para siempre. En un teléfono que lleve meses con la app
+// instalada eso solo crece.
+//
+// Que los viejos se queden tiene una parte buena —una pestaña abierta con HTML
+// antiguo sigue encontrando sus chunks y no revienta a media navegación— así
+// que no se expira agresivamente. Lo que se hace es subir la versión de vez en
+// cuando: al activarse, el `activate` se lleva por delante todo lo anterior de
+// una vez.
+const CACHE = 'talleros-v3'
 const OFFLINE_URL = '/offline'
 // /abriendo es la página puente de arranque de la PWA: estática, se sirve
 // cache-first para que el splash pinte al instante del tap (su redirect es

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { enviarPushAUsuario } from '@/lib/push'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
 import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
 import { enviarResenaOrden } from '@/lib/resenas'
@@ -576,15 +577,13 @@ async function notificarMecanicoAsignado(
 
     if (!mecanico) return
 
-    await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://tallerosapp.com'}/api/push/enviar`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        usuarioId: mecanico.id,
-        titulo:    '🔧 Nueva orden asignada',
-        cuerpo:    'Te han asignado una nueva orden de trabajo.',
-        url:       `/ordenes/${ordenId}`,
-      }),
+    // Llamada directa, sin pasar por HTTP: antes esto era un fetch al propio
+    // dominio contra un endpoint que no pedía autenticación de ningún tipo.
+    await enviarPushAUsuario({
+      usuarioId: mecanico.id,
+      titulo:    '🔧 Nueva orden asignada',
+      cuerpo:    'Te han asignado una nueva orden de trabajo.',
+      url:       `/ordenes/${ordenId}`,
     })
   } catch (e) {
     console.error('Error notificando mecánico:', e)

@@ -38,7 +38,7 @@ export default function TerminosPage() {
           },
           {
             titulo: '4. Planes y pagos',
-            contenido: `TallerOS ofrece un período de prueba gratuito de 14 días sin necesidad de tarjeta de crédito. Después del período de prueba, debe suscribirse a un plan de pago para continuar usando el servicio. Los pagos se procesan mensual o anualmente según el plan elegido. Los precios están en dólares estadounidenses (USD). No ofrecemos reembolsos por períodos parciales, excepto donde lo exija la ley aplicable.`,
+            contenido: `TallerOS ofrece un período de prueba gratuito de 14 días sin necesidad de tarjeta de crédito. Después del período de prueba, debe suscribirse a un plan de pago para continuar usando el servicio. Los pagos se procesan mensual o anualmente según el plan elegido. En México, Colombia y Perú el cobro se realiza en la moneda local del país (peso mexicano, peso colombiano y sol, respectivamente), por el importe exacto que se muestra al contratar. En el resto de países el cobro se realiza en dólares estadounidenses (USD); el importe en moneda local que aparezca junto al precio es una referencia aproximada y no el importe del cargo. No ofrecemos reembolsos por períodos parciales, excepto donde lo exija la ley aplicable.`,
           },
           {
             titulo: '5. Cancelación',
