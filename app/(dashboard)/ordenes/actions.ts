@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { enviarPushAUsuario } from '@/lib/push'
+import { debeAvisarAlMecanico } from '@/lib/asignacion'
 import { EstadoOrden, FormaPago, ServicioItem, HistorialItem } from '@/types'
 import { enviarNotificacion, mensajeOrdenLista } from '@/lib/notificaciones'
 import { enviarResenaOrden } from '@/lib/resenas'
@@ -228,6 +229,18 @@ export async function editarOrden(ordenId: string, datos: EditarOrdenForm) {
   const tallerId = await getTallerId()
   if (!tallerId) return { error: 'No se encontró el taller' }
 
+  // Quién tenía la orden ANTES de guardar. Se lee aquí porque después del
+  // update ya no hay forma de saberlo, y sin compararlo no se puede distinguir
+  // "le acaban de asignar esta orden" de "guardaron la orden otra vez tocando
+  // el kilometraje". Sin esa distinción, al mecánico le llegaría el mismo aviso
+  // cada vez que alguien edita la orden por cualquier motivo.
+  const { data: ordenPrevia } = await supabase
+    .from('ordenes')
+    .select('mecanico_asignado')
+    .eq('id', ordenId)
+    .eq('taller_id', tallerId)
+    .single()
+
   // Igual que en crearOrden: los totales se recalculan en el servidor a partir
   // de servicios_realizados y la tasa de IVA — nunca se confía en los que
   // manda el cliente. Esto evita justo el bug del "doble IVA".
@@ -265,6 +278,25 @@ export async function editarOrden(ordenId: string, datos: EditarOrdenForm) {
     .eq('taller_id', tallerId)
 
   if (error) return { error: error.message }
+
+  // Avisar al mecánico cuando le acaban de asignar la orden.
+  //
+  // Hasta ahora esto solo pasaba al CREAR la orden, y en un taller lo normal es
+  // al revés: entra el coche, se abre la orden, y después se decide quién la
+  // agarra. Con lo anterior, ese mecánico —el caso más común— no se enteraba.
+  //
+  // Solo cuando CAMBIA: guardar la orden tres veces tocando el kilometraje no
+  // debe mandarle tres avisos por el mismo trabajo.
+  //
+  // A quien se la quitan no se le dice nada, por decisión del dueño: ya tiene
+  // bastante con perder el trabajo y añadir ruido no ayuda a nadie.
+  // La regla vive en lib/asignacion.ts para poder probarla: es corta pero se
+  // equivoca fácil, y equivocarse de más es peor que de menos — a un mecánico
+  // al que le suena el teléfono por una orden que ya tenía le bastan dos o tres
+  // veces para apagar las notificaciones, y a partir de ahí no se entera de nada.
+  if (debeAvisarAlMecanico(ordenPrevia?.mecanico_asignado, datos.mecanico_asignado)) {
+    notificarMecanicoAsignado(ordenId, datos.mecanico_asignado.trim(), tallerId).catch(console.error)
+  }
 
   revalidatePath('/ordenes')
   revalidatePath(`/ordenes/${ordenId}`)
@@ -568,14 +600,26 @@ async function notificarMecanicoAsignado(
 ) {
   try {
     const supabase = createClient()
-    const { data: mecanico } = await supabase
+    const { data: mecanico, error } = await supabase
       .from('usuarios')
       .select('id')
       .eq('taller_id', tallerId)
       .eq('nombre', mecanicoNombre)
       .single()
 
-    if (!mecanico) return
+    // El mecánico se busca por nombre exacto contra `usuarios.nombre`. Los dos
+    // formularios usan un desplegable con la gente del taller, así que
+    // normalmente cuadra — pero si a alguien lo renombran en Equipo después de
+    // asignarle órdenes, deja de cuadrar y el aviso no sale. Antes eso era un
+    // `return` mudo: nadie podía saber por qué no llegó la notificación.
+    if (error || !mecanico) {
+      console.error(
+        `[push] no se encontró al mecánico "${mecanicoNombre}" en el taller ${tallerId}; ` +
+        `la orden ${ordenId} se asignó pero no se pudo avisar` +
+        (error ? `: ${error.message}` : ' (¿lo renombraron en Equipo?)')
+      )
+      return
+    }
 
     // Llamada directa, sin pasar por HTTP: antes esto era un fetch al propio
     // dominio contra un endpoint que no pedía autenticación de ningún tipo.
