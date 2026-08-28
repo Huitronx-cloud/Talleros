@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Tarjeta, SerieDiaria, Embudo, type Punto } from '@/components/admin/panel-graficas'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
+import { TASAS_ACTUALIZADAS } from '@/lib/precios'
 
 const DIAS = 30
 
@@ -183,6 +184,19 @@ export default async function AdminPanelPage() {
         <Tarjeta etiqueta="Activados" valor={activados.size} tono={pctActivacion >= 50 ? 'bueno' : 'alerta'}
                  pie={`${pctActivacion.toFixed(0)}% creó una orden real`} />
       </div>
+
+      {diasDesde(TASAS_ACTUALIZADAS) > 30 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
+          <p className="text-sm text-amber-300">
+            Tipos de cambio actualizados hace <strong>{diasDesde(TASAS_ACTUALIZADAS)} días</strong>.
+          </p>
+          <p className="text-xs text-amber-500/80 mt-0.5">
+            Solo afectan a la línea de referencia “≈ …” que acompaña a los precios
+            en dólares — el importe que se cobra no depende de ellos. Aun así,
+            pásale los tipos de cambio actuales a Claude para refrescarlos.
+          </p>
+        </div>
+      )}
 
       {carritos.length > 0 && (
         <div className="bg-gray-900 border border-amber-500/30 rounded-xl p-4">

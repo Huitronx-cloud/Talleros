@@ -2,13 +2,12 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
+import { resolverPrecio, todosLosPreciosVigentes } from '@/lib/precios'
 
-const PLANES_VALIDOS = [
-  'price_1TyjpIRFpmo4G9XHLwyeCvth',
-  'price_1TyjplRFpmo4G9XHYkBdR8hc',
-  'price_1TyjqERFpmo4G9XHEjasGmnq',
-  'price_1TyjqfRFpmo4G9XHL9pi6s3y',
-]
+// La lista sale de la tabla de precios, no escrita a mano: si mañana se añade
+// un país nuevo, es imposible olvidarse de habilitar sus precios aquí y que el
+// checkout los rechace con "Plan inválido".
+const PLANES_VALIDOS = todosLosPreciosVigentes()
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const { data: usuario } = await supabase
       .from('usuarios')
-      .select('taller_id, rol, talleres(nombre)')
+      .select('taller_id, rol, talleres(nombre, pais)')
       .eq('id', user.id)
       .single()
 
@@ -50,17 +49,36 @@ export async function POST(req: NextRequest) {
 
     const { data: suscripcion } = await supabase
       .from('suscripciones')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, precio_id')
       .eq('taller_id', usuario.taller_id)
       .single()
+
+    // El precio final lo decide el servidor a partir del país del taller, no el
+    // navegador. El cliente manda el que vio en pantalla y aquí se traduce al
+    // que de verdad le toca: un mexicano acaba en el precio en pesos aunque su
+    // pantalla mandara el de dólares. Así es imposible enseñar un importe y
+    // cobrar otro, que es justo lo que estamos arreglando.
+    //
+    // Y si el taller ya trató antes con Stripe, manda la moneda de aquella vez:
+    // Stripe no admite dos monedas en un mismo cliente, y ese rechazo es el que
+    // dejó a FASTCAR sin poder pagar tres semanas en julio.
+    const tallerDatos = usuario.talleres as any
+    const precioFinal = resolverPrecio(
+      precio_id,
+      tallerDatos?.pais,
+      suscripcion?.precio_id,
+    )
+
+    if (!precioFinal) {
+      return NextResponse.json({ error: 'Plan inválido' }, { status: 400 })
+    }
 
     let customerId = suscripcion?.stripe_customer_id
 
     if (!customerId) {
-      const taller = usuario.talleres as any
       const customer = await stripe.customers.create({
         email: user.email,
-        name:  taller?.nombre ?? 'Taller',
+        name:  tallerDatos?.nombre ?? 'Taller',
         metadata: { taller_id: usuario.taller_id },
       })
       customerId = customer.id
@@ -81,7 +99,7 @@ export async function POST(req: NextRequest) {
       // carritos abandonados que tenemos son de talleres mexicanos; no hay
       // motivo para dejar su idioma al azar.
       locale:               'es-419',
-      line_items: [{ price: precio_id, quantity: 1 }],
+      line_items: [{ price: precioFinal, quantity: 1 }],
       metadata: { taller_id: usuario.taller_id },
       subscription_data: {
         metadata: { taller_id: usuario.taller_id },
