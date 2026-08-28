@@ -153,13 +153,24 @@ ser útil o recurrente, se borra.
    `UsageMeter` de `dashboard/page.tsx`.
    Hacer en su lugar: filtrar por `es_ejemplo` al contar; las listas sí las enseñan.
 
-2. **[2026-08-13] Un tope fijo más un productor diario = huérfanos silenciosos**
-   `/blog` pedía `.limit(50)` sin paginar mientras el cron publica un artículo al
-   día. Con 77 publicados, 27 quedaron sin ningún enlace del sitio que llevara a
-   ellos, y el número crecía solo. Nadie se entera: la página se ve bien.
-   Hacer en su lugar: donde algo crece a diario, o se pagina o el tope se compara
-   contra el total en cada revisión. Un `.limit()` sin paginación al lado de un
-   cron que publica es una fuga con fecha de caducidad.
+2. **[2026-08-28] Un número escrito a mano al lado de una realidad que se mueve**
+   Dos veces, y las dos invisibles hasta que alguien miró:
+   · **Los precios.** La web calculaba el precio local multiplicando dólares por
+     una tabla de tipos de cambio escrita a mano, y Stripe cobraba en dólares.
+     Dos números para el mismo hecho, cada uno por su lado. Se separaron: a un
+     argentino se le anunciaba un **31% menos** de lo que se le cobraba, y a un
+     colombiano un **33% más** de lo que costaba de verdad. Nadie tocaba esa
+     tabla desde hacía meses.
+   · **El blog.** `/blog` pedía `.limit(50)` sin paginar mientras el cron
+     publica un artículo al día. Con 77 publicados, 27 quedaron sin ningún
+     enlace que llevara a ellos, y el número crecía solo.
+   Hacer en su lugar: cuando dos sitios calculan el mismo hecho, acaban
+   diciendo cosas distintas — que lo calcule uno y el otro lo lea
+   (`lib/precios.ts` es el ejemplo: la pantalla y el checkout leen la misma
+   tabla, así que no pueden divergir). Y cuando un número fijo convive con algo
+   que cambia solo, o se saca del cálculo o se le pone encima un aviso de
+   antigüedad visible — `/admin` avisa a los 30 días de los tipos de cambio,
+   precisamente porque confiar en que alguien se acuerde ya falló.
 
 3. **[2026-08-27] El middleware es una llamada de red delante de TODA la app**
    Se degradó la red entre el borde de Vercel y Supabase —ni el código ni la
