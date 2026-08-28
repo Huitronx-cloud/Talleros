@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export async function POST(req: NextRequest) {
   const supabase = createClient()
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  if (!usuario || !['propietario', 'admin'].includes(usuario.rol)) {
+  if (!usuario || !puedeGestionarTaller(usuario.rol)) {
     return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
   }
 
@@ -162,7 +163,7 @@ export async function GET(req: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  if (!usuario || !['propietario', 'admin'].includes(usuario.rol)) {
+  if (!usuario || !puedeGestionarTaller(usuario.rol)) {
     return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
   }
 

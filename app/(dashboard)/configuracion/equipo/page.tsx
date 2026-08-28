@@ -6,6 +6,7 @@ import EquipoClient from './equipo-client'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
 import Link from 'next/link'
 import { Users } from 'lucide-react'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export default async function EquipoPage() {
   const supabase = createClient()
@@ -20,7 +21,7 @@ export default async function EquipoPage() {
     .eq('id', user.id)
     .single()
 
-  if (!usuario || !['propietario', 'admin'].includes(usuario.rol)) {
+  if (!usuario || !puedeGestionarTaller(usuario.rol)) {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">

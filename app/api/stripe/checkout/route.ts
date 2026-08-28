@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
 import { resolverPrecio, todosLosPreciosVigentes } from '@/lib/precios'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 // La lista sale de la tabla de precios, no escrita a mano: si mañana se añade
 // un país nuevo, es imposible olvidarse de habilitar sus precios aquí y que el
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     // llamarlo directo. La comprobación va donde se ejecuta la acción. Mismo
     // hueco que tenía /api/promociones.
     // Contratar un plan es comprometer al taller con un cobro recurrente.
-    if (!['propietario', 'admin'].includes(usuario.rol)) {
+    if (!puedeGestionarTaller(usuario.rol)) {
       return NextResponse.json(
         { error: 'Solo el propietario y administradores pueden contratar un plan' },
         { status: 403 }

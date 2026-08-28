@@ -53,11 +53,18 @@ ser útil o recurrente, se borra.
    solo falla al reemplazar. El modelo bueno es
    `supabase/migrations/030_storage_diagnosticos.sql`.
 
-4. **[2026-08-03] `next build` NO valida tipos**
-   `next.config.mjs` tiene `ignoreBuildErrors: true` e `ignoreDuringBuilds: true`,
-   así que "✓ Compiled successfully" no dice nada sobre TypeScript.
-   Hacer en su lugar: `npx tsc --noEmit`. El repo arrastra **19 errores previos**;
-   comparar el total antes y después para saber si añadiste alguno.
+4. **[2026-08-28] Antes de decir que algo funciona: `npm run verify`**
+   Ejecuta las tres cosas en orden: tipos sin regresiones, 91 pruebas, y el
+   build. Es lo mismo que corre el CI en cada PR (`.github/workflows/verificar.yml`).
+   · `npm run typecheck` NO exige cero errores: exige que no **crezcan**. El
+     repo arrastra **19 previos** y `next.config.mjs` tiene
+     `ignoreBuildErrors: true`, así que "✓ Compiled successfully" nunca ha
+     dicho nada sobre TypeScript. `scripts/tsc-baseline.mjs` pone el tope; si
+     arreglas alguno, baja el número y ya no se puede volver atrás.
+   · `npm test` cubre lo que toca dinero y permisos: precios (que lo mostrado
+     sea lo cobrado en las 16 combinaciones), topes de plan, roles, links de
+     WhatsApp y monedas por país.
+   Hacer en su lugar: nunca reportar "verificado" sin haberlo corrido.
 
 5. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
    Fusionar a `main` dispara el deploy de producción en Vercel. Si el código
@@ -82,10 +89,18 @@ ser útil o recurrente, se borra.
    sincronizado mientras la rama del servidor sigue en el commit viejo. Para
    saber dónde está de verdad: `git ls-remote origin <rama>`.
 
-7. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
+7. **[2026-08-28] El build local falla en 4 páginas de auth — y tiene arreglo**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
-   exportar por falta de variables de Supabase. No es una regresión.
-   Hacer en su lugar: darlo por esperado; comprobar solo `Compiled successfully`.
+   exportar cuando **faltan** las variables de Supabase. Durante meses se dio
+   por inevitable; no lo es. Con variables de relleno el build pasa entero:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://ejemplo.supabase.co \
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=relleno \
+   SUPABASE_SERVICE_ROLE_KEY=relleno \
+   npm run build
+   ```
+   Hacer en su lugar: correrlo así, que es como lo corre el CI. Comprobar solo
+   `Compiled successfully` deja pasar fallos de las cuatro páginas de auth.
 
 8. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
    No se pueden usar en sesiones no interactivas.

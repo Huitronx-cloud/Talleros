@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getLimites } from '@/lib/plan-limits'
+import { puedeGestionarTaller } from '@/lib/permisos'
 import {
   Tag, MessageCircle, Mail, Send, ChevronRight, Lock,
   Users, CheckSquare, Square, Eye, Loader2, CheckCircle2, AlertCircle,
@@ -200,7 +201,7 @@ export default function PromocionesPage() {
   // cumplir el middleware. Aquí es cosmético —la comprobación de verdad está en
   // POST /api/promociones, que es donde se ejecuta el envío— pero evita
   // enseñarle a un técnico un formulario que le va a dar 403 al final.
-  if (rol !== '' && !['propietario', 'admin'].includes(rol)) {
+  if (rol !== '' && !puedeGestionarTaller(rol)) {
     return (
       <div className="max-w-2xl mx-auto mt-16 text-center px-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-10">

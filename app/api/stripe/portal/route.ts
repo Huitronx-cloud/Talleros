@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe } from '@/lib/stripe'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     // hueco que tenía /api/promociones.
     // Aquí pesa más que en otros sitios: el portal de Stripe deja cancelar la
     // suscripción, cambiar de plan y ver los datos de la tarjeta.
-    if (!['propietario', 'admin'].includes(usuario.rol)) {
+    if (!puedeGestionarTaller(usuario.rol)) {
       return NextResponse.json(
         { error: 'Solo el propietario y administradores pueden gestionar la facturación' },
         { status: 403 }

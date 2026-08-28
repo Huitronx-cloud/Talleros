@@ -3,6 +3,7 @@ import { createClient, getAuthUser } from '@/lib/supabase/server'
 import FormConfiguracion from '@/components/configuracion/form-configuracion'
 import { Taller } from '@/types'
 import Link from 'next/link'
+import { puedeGestionarTaller } from '@/lib/permisos'
 
 export default async function ConfiguracionPage() {
   const supabase = createClient()
@@ -35,7 +36,7 @@ export default async function ConfiguracionPage() {
   // estaba en RUTAS_SOLO_ADMIN pero era una de las dos que no lo verificaba por
   // su cuenta: si el middleware no podía resolver la sesión —como pasó el 27/08
   // con la red entre Vercel y Supabase caída— no quedaba nadie comprobándolo.
-  if (!['propietario', 'admin'].includes(usuario.rol)) {
+  if (!puedeGestionarTaller(usuario.rol)) {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
