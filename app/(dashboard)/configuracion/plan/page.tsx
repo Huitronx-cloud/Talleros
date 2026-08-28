@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, Loader2, Zap, Star, AlertTriangle } from 'lucide-react'
 import { trackEvent } from '@/components/meta-pixel'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
+import { preciosDePais, formatearPrecio, tienePrecioLocal, PRECIOS_USD, type PreciosPais } from '@/lib/precios'
 
 type Suscripcion = {
   plan:                   string
@@ -27,42 +28,48 @@ type Tarjeta = {
   diasRestantes: number
 } | null
 
-const PLANES = {
-  esencial_mensual: 'price_1TyjpIRFpmo4G9XHLwyeCvth',
-  esencial_anual:   'price_1TyjplRFpmo4G9XHYkBdR8hc',
-  pro_mensual:      'price_1TyjqERFpmo4G9XHEjasGmnq',
-  pro_anual:        'price_1TyjqfRFpmo4G9XHL9pi6s3y',
-}
-
-// Mismos números que la web (home-client y las landings por país) para que el
-// usuario no vea un precio en el sitio y otro distinto al entrar a pagar.
-const PRECIOS = {
-  esencial: { mensual: 24, mensual_antes: 48, anual: 19, anual_antes: 38, total_anual: 228 },
-  pro:      { mensual: 49, mensual_antes: 98, anual: 39, anual_antes: 78, total_anual: 468 },
-}
+// Ya no hay constantes de precios aquí. Los importes y los price IDs salen de
+// `lib/precios.ts`, que es la misma tabla que usa `api/stripe/checkout`. Tener
+// dos listas era lo que permitía que la pantalla dijera una cosa y el cargo
+// fuera otra.
 
 function BloquePrecio({
-  plan, anual, convertir, moneda, cargandoMoneda,
+  clave, precios, anual, convertir, cargandoMoneda,
 }: {
-  plan:           { mensual: number; mensual_antes: number; anual: number; anual_antes: number; total_anual: number }
+  /** 'esencial' o 'pro'. Los importes salen de la tabla, no de constantes sueltas. */
+  clave:          'esencial' | 'pro'
+  precios:        PreciosPais
   anual:          boolean
   convertir:      (usd: number) => string
-  moneda:         string
   cargandoMoneda: boolean
 }) {
-  const actual   = anual ? plan.anual       : plan.mensual
-  const original = anual ? plan.anual_antes : plan.mensual_antes
-  const pct      = Math.round((1 - actual / original) * 100)
+  // Todos los importes salen de `lib/precios.ts`, la misma tabla que usa
+  // `api/stripe/checkout` para decidir qué cobrar. Antes había una constante
+  // PRECIOS aquí con los dólares y una conversión encima; el número de la
+  // pantalla y el del cargo eran dos cosas distintas que podían separarse, y se
+  // separaron: a los argentinos se les enseñaba un 31% menos de lo que pagaban.
+  const actual     = anual ? precios.importes[`${clave}_anual`] : precios.importes[`${clave}_mensual`]
+  const totalAnual = precios.importes[`${clave}_anual`]
 
-  // Mientras no sepamos el país se muestra USD, que es la moneda real del
-  // cargo: es preferible a pintar un precio local que luego cambia.
-  const fmt = (usd: number) => (cargandoMoneda ? `$${usd} USD` : convertir(usd))
+  // El precio tachado es el doble, que es el descuento de lanzamiento que la
+  // web viene anunciando desde el principio.
+  const original = actual * 2
+  const pct      = 50
+
+  // En anual, Stripe cobra el total de una vez; en pantalla se enseña dividido
+  // entre doce porque así es como lo compara la gente.
+  const mostrado = anual ? Math.round(totalAnual / 12) : actual
+
 
   return (
     <div className="mb-4">
       <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="text-gray-400 text-lg line-through">{fmt(original)}</span>
-        <span className="text-3xl font-bold text-gray-900">{fmt(actual)}</span>
+        <span className="text-gray-400 text-lg line-through">
+          {formatearPrecio(anual ? Math.round(totalAnual / 12) * 2 : original, precios)}
+        </span>
+        <span className="text-3xl font-bold text-gray-900">
+          {formatearPrecio(mostrado, precios)}
+        </span>
         <span className="text-gray-500 text-sm">/mes</span>
       </div>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -71,16 +78,17 @@ function BloquePrecio({
         </span>
         {anual && (
           <span className="text-green-600 text-xs">
-            {fmt(plan.total_anual)} facturado anualmente
+            {formatearPrecio(totalAnual, precios)} facturado anualmente
           </span>
         )}
       </div>
-      {/* El cobro en Stripe es en USD: el precio local es una referencia al
-          tipo de cambio aproximado, no el importe exacto que verá en su banco. */}
-      {!cargandoMoneda && moneda !== 'USD' && (
+
+      {/* Cuando el cobro va en dólares, la conversión local es SOLO orientación
+          y se dice así de claro. El número grande de arriba es el que Stripe va
+          a cobrar, que es lo único que no puede sorprender a nadie. */}
+      {precios.moneda === 'USD' && !cargandoMoneda && (
         <p className="text-gray-400 text-xs mt-1.5">
-          Precio de referencia. El cargo se hace en dólares: US${actual}/mes
-          {anual ? ` (US$${plan.total_anual} al año)` : ''}.
+          Se cobra en dólares. Aproximadamente {convertir(mostrado)} al cambio de hoy.
         </p>
       )}
     </div>
@@ -93,8 +101,19 @@ export default function PlanPage() {
   const [cargando,     setCargando]     = useState(true)
   const [procesando,   setProcesando]   = useState<string | null>(null)
   const [billingAnual, setBillingAnual] = useState(false)
+  // El país del TALLER, no el de la IP: es el que decide el precio en el
+  // servidor, así que es el que tiene que mandar también en pantalla. Si
+  // usáramos la geolocalización volveríamos a poder enseñar un número y
+  // cobrar otro, que es justo lo que este cambio viene a cerrar.
+  const [paisTaller, setPaisTaller] = useState<string | null>(null)
 
   const { convertir, moneda, cargando: cargandoMoneda } = useMonedaLocal()
+
+  // La tabla que decide TODO: qué importe se enseña y qué price ID se manda a
+  // Stripe. Sale del país del taller. Mientras carga se usa la de dólares, que
+  // es la que le toca a la mayoría de países — y aunque acertara mal, el
+  // servidor vuelve a resolver el precio por su cuenta antes de cobrar.
+  const precios = paisTaller ? preciosDePais(paisTaller) : PRECIOS_USD
 
   const supabase = createClient()
 
@@ -105,11 +124,13 @@ export default function PlanPage() {
 
       const { data: usuario } = await supabase
         .from('usuarios')
-        .select('taller_id')
+        .select('taller_id, talleres(pais)')
         .eq('id', user.id)
         .single()
 
       if (!usuario) { setCargando(false); return }
+
+      setPaisTaller(((usuario.talleres as any)?.pais as string | null) ?? null)
 
       const { data } = await supabase
         .from('suscripciones')
@@ -250,10 +271,10 @@ export default function PlanPage() {
             <h2 className="text-lg font-bold text-gray-900">Esencial</h2>
           </div>
           <BloquePrecio
-            plan={PRECIOS.esencial}
+            clave="esencial"
+            precios={precios}
             anual={billingAnual}
             convertir={convertir}
-            moneda={moneda}
             cargandoMoneda={cargandoMoneda}
           />
           <ul className="space-y-2 mb-6 text-sm text-gray-600">
@@ -274,11 +295,11 @@ export default function PlanPage() {
           {!esEsencial && (
             <button
               type="button"
-              onClick={() => handleUpgrade(billingAnual ? PLANES.esencial_anual : PLANES.esencial_mensual)}
+              onClick={() => handleUpgrade(billingAnual ? precios.precios.esencial_anual : precios.precios.esencial_mensual)}
               disabled={!!procesando}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
             >
-              {procesando === (billingAnual ? PLANES.esencial_anual : PLANES.esencial_mensual)
+              {procesando === (billingAnual ? precios.precios.esencial_anual : precios.precios.esencial_mensual)
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : 'Elegir Esencial'}
             </button>
@@ -300,10 +321,10 @@ export default function PlanPage() {
             <h2 className="text-lg font-bold text-gray-900">Pro</h2>
           </div>
           <BloquePrecio
-            plan={PRECIOS.pro}
+            clave="pro"
+            precios={precios}
             anual={billingAnual}
             convertir={convertir}
-            moneda={moneda}
             cargandoMoneda={cargandoMoneda}
           />
           <ul className="space-y-2 mb-6 text-sm text-gray-600">
@@ -324,11 +345,11 @@ export default function PlanPage() {
           {!esPro && (
             <button
               type="button"
-              onClick={() => handleUpgrade(billingAnual ? PLANES.pro_anual : PLANES.pro_mensual)}
+              onClick={() => handleUpgrade(billingAnual ? precios.precios.pro_anual : precios.precios.pro_mensual)}
               disabled={!!procesando}
               className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
             >
-              {procesando === (billingAnual ? PLANES.pro_anual : PLANES.pro_mensual)
+              {procesando === (billingAnual ? precios.precios.pro_anual : precios.precios.pro_mensual)
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : 'Elegir Pro'}
             </button>

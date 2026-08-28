@@ -6,7 +6,9 @@ export function getStripe() {
   })
 }
 
-// Los precios que se le ofrecen a quien contrata HOY.
+// Los precios en dólares, que son los que se le ofrecen a quien contrata HOY
+// desde un país sin precio propio. Para saber qué precio le toca a cada país
+// —incluido el que se le ENSEÑA— usar `preciosDePais()` de `lib/precios.ts`.
 export const PLANES = {
   esencial_mensual: 'price_1TyjpIRFpmo4G9XHLwyeCvth',
   esencial_anual:   'price_1TyjplRFpmo4G9XHYkBdR8hc',
@@ -25,11 +27,18 @@ export const PLANES = {
 // las degradaba al plan gratis. Un cliente que pagaba puntualmente se quedó con
 // los topes del plan gratis y sin poder crear órdenes.
 export const PRECIOS_A_PLAN: Record<string, string> = {
-  // Vigentes (USD)
+  // Vigentes (USD) — para todo país sin precio propio
   'price_1TyjpIRFpmo4G9XHLwyeCvth': 'esencial',
   'price_1TyjplRFpmo4G9XHYkBdR8hc': 'esencial',
   'price_1TyjqERFpmo4G9XHEjasGmnq': 'pro',
   'price_1TyjqfRFpmo4G9XHL9pi6s3y': 'pro',
+
+  // Vigentes (MXN) — México cobra en pesos desde el 28/08/2026. El importe es
+  // el mismo que ve en la web, sin conversión de por medio. Ver lib/precios.ts.
+  'price_1U9SjlRFpmo4G9XHC7CiZXc7': 'esencial',
+  'price_1U9SlhRFpmo4G9XHNAfuvTJW': 'esencial',
+  'price_1U9SmqRFpmo4G9XHSCZngHCz': 'pro',
+  'price_1U9SneRFpmo4G9XHnQBGl8OV': 'pro',
 
   // Retirados en julio de 2026 (CAD). Siguen activos en Stripe para quien los
   // contrató antes del cambio.

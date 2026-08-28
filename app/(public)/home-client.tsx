@@ -11,6 +11,7 @@ import {
 import { PREGUNTAS } from './preguntas'
 import { PLANES_WEB } from '@/lib/planes-web'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
+import { textosPlan } from '@/lib/precios'
 
 const HF = {
   mechanic1:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184811_0f52f642-6922-4609-9046-e009d73138b4.png',
@@ -79,7 +80,7 @@ export default function LandingPage() {
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0, ordenes: 0 })
   const [toast, setToast]           = useState(false)
   const obs = useRef<IntersectionObserver | null>(null)
-  const { convertir, cargando: cM } = useMonedaLocal()
+  const { convertir, pais, cargando: cM } = useMonedaLocal()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -362,7 +363,11 @@ export default function LandingPage() {
           {PLANES.map(plan => {
             const pa  = anual ? plan.precio_anual : plan.precio_mensual
             const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
-            const la  = convertir(pa); const lor = convertir(por); const lan = convertir(plan.total_anual)
+            // Los importes salen de `lib/precios.ts`, la misma tabla que decide
+            // qué cobra Stripe. Antes se calculaban aquí con una tasa escrita a
+            // mano, y por eso a un argentino se le enseñaba un 31% menos de lo
+            // que se le iba a cobrar.
+            const txt = textosPlan(plan.nombre, pais, anual)
             const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}${plan.nombre==='Esencial'?' esencial':''}`}>
@@ -379,15 +384,22 @@ export default function LandingPage() {
                     <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
                   ) : (
                     <>
-                      <div className="lplan-or">{montoYmoneda(!cM ? lor : `$${por} USD`)[0]}</div>
+                      <div className="lplan-or">{montoYmoneda(txt ? txt.tachado : `$${por}`)[0]}</div>
                       <div className="lplan-pr">
-                        <span className="lplan-num">{montoYmoneda(!cM ? la : `$${pa} USD`)[0]}</span>
-                        <span className="lplan-cur">{montoYmoneda(!cM ? la : `$${pa} USD`)[1]}</span>
+                        <span className="lplan-num">{montoYmoneda(txt ? txt.principal : `$${pa}`)[0]}</span>
+                        <span className="lplan-cur">{montoYmoneda(txt ? txt.principal : `$${pa}`)[1]}</span>
                         <span className="lplan-per">/mes</span>
                       </div>
                       {anual
-                        ? <p className="lplan-an">{!cM ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>
+                        ? <p className="lplan-an">{txt ? `${txt.anualTotal} al año` : ''}</p>
                         : <p className="lplan-an">Ahorras {!cM ? convertir(plan.precio_mensual*12 - plan.total_anual) : `$${plan.precio_mensual*12 - plan.total_anual} USD`} pagando al año</p>}
+                      {/* Solo cuando el cobro va en dólares. Donde hay precio en
+                          moneda local el número de arriba ES el cargo. */}
+                      {txt?.enDolares && !cM && (
+                        <p className="lplan-an" style={{opacity:.75}}>
+                          Se cobra en dólares · ≈ {convertir(anual ? Math.round(plan.total_anual/12) : pa)}
+                        </p>
+                      )}
                     </>
                   )}
                 </div>

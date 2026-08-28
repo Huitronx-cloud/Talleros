@@ -1,10 +1,29 @@
+'use client'
+
 import { useState, useEffect } from 'react'
+
+// ── Conversión aproximada para ORIENTAR, nunca para cobrar ──────────────────
+//
+// Estas tasas ya NO deciden ningún precio. El importe que se enseña y el que se
+// cobra salen los dos de `lib/precios.ts`; esto solo alimenta la línea pequeña
+// de "≈ $409 MXN" que acompaña a los precios en dólares.
+//
+// Ese cambio importa: hasta el 28/08/2026 la tasa argentina decía 1150 cuando
+// el dólar estaba a 1511.88, así que a los talleres argentinos se les anunciaba
+// un precio **31% más barato** del que se les iba a cobrar. Un número fijo al
+// lado de una realidad que se mueve sola, sin nadie mirándolo.
+//
+// Ahora un desfase solo desdibuja una referencia, no engaña a nadie. Aun así
+// conviene refrescarlas: `/admin` avisa cuando pasan de 30 días.
+// La fecha vive en `lib/precios.ts` para que el panel de admin -que es un
+// Server Component- pueda leerla sin arrastrar este hook.
+export { TASAS_ACTUALIZADAS } from '@/lib/precios'
 
 const TASAS_APROXIMADAS: Record<string, { moneda: string; simbolo: string; tasa: number }> = {
   US: { moneda: 'USD', simbolo: '$',    tasa: 1     },
-  MX: { moneda: 'MXN', simbolo: '$',   tasa: 17    },
+  MX: { moneda: 'MXN', simbolo: '$',   tasa: 17.02 },
   CO: { moneda: 'COP', simbolo: '$',   tasa: 4200  },
-  AR: { moneda: 'ARS', simbolo: '$',   tasa: 1150  },
+  AR: { moneda: 'ARS', simbolo: '$',   tasa: 1511.88 },
   CL: { moneda: 'CLP', simbolo: '$',   tasa: 960   },
   PE: { moneda: 'PEN', simbolo: 'S/',  tasa: 3.75  },
   EC: { moneda: 'USD', simbolo: '$',   tasa: 1     },

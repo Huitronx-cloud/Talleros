@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { PLANES_WEB } from '@/lib/planes-web'
 import { useMonedaLocal } from '@/hooks/useMonedaLocal'
+import { textosPlan } from '@/lib/precios'
 
 const HF = {
   mechanic1:  'https://d8j0ntlcm91z4.cloudfront.net/user_3Db18pZKAxWF2uKESaKQVcyRlzv/hf_20260519_184811_0f52f642-6922-4609-9046-e009d73138b4.png',
@@ -115,7 +116,7 @@ export default function ColombiaClient() {
   // que React descartara todo el HTML del servidor para repintar de cero.
   const [secs, setSecs]             = useState<number | null>(null)
   const obs = useRef<IntersectionObserver | null>(null)
-  const { convertir, cargando: cM } = useMonedaLocal()
+  const { convertir, pais, cargando: cM } = useMonedaLocal()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -361,7 +362,11 @@ export default function ColombiaClient() {
           {PLANES.map(plan => {
             const pa  = anual ? plan.precio_anual : plan.precio_mensual
             const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
-            const la  = convertir(pa); const lor = convertir(por); const lan = convertir(plan.total_anual)
+            // Los importes salen de `lib/precios.ts`, la misma tabla que decide qué
+            // cobra Stripe. Antes se calculaban aquí multiplicando por una tasa
+            // escrita a mano, y eso hacía que a un argentino se le enseñara un
+            // 31% menos de lo que se le iba a cobrar.
+            const txt = textosPlan(plan.nombre, pais, anual)
             const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}`}>
@@ -371,9 +376,17 @@ export default function ColombiaClient() {
                   <div><h3 className="lplan-n">{plan.nombre}</h3>{!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}</div>
                 </div>
                 <div className="lplan-pb">
-                  {!plan.gratis && <div className="lplan-or">{!cM ? lor.replace(/\s[A-Z]{3}$/, '') : `$${por}`}</div>}
-                  <div className="lplan-pr"><span className="lplan-num">{!cM ? la : `$${pa} USD`}</span><span className="lplan-per">/mes</span></div>
-                  {anual && <p className="lplan-an">{!cM ? `${lan} al año` : `$${plan.total_anual} USD al año`}</p>}
+                  {!plan.gratis && txt && <div className="lplan-or">{txt.tachado}</div>}
+                  <div className="lplan-pr"><span className="lplan-num">{txt ? txt.principal : `$${pa}`}</span><span className="lplan-per">/mes</span></div>
+                  {anual && txt && <p className="lplan-an">{txt.anualTotal} al año</p>}
+                  {/* Solo se aclara cuando el cobro va en dólares. Donde hay
+                      precio en moneda local, el número de arriba ES el cargo y
+                      añadir letra pequeña solo sembraría dudas. */}
+                  {txt?.enDolares && !cM && !plan.gratis && (
+                    <p className="lplan-nt" style={{marginTop:'.35rem'}}>
+                      Se cobra en dólares · ≈ {convertir(anual ? Math.round(plan.total_anual/12) : pa)}
+                    </p>
+                  )}
                 </div>
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
