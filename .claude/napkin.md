@@ -36,13 +36,30 @@ ser útil o recurrente, se borra.
    tipos, `pg_get_function_identity_arguments` para firmas. Todo archivo con
    `create table if not exists` es una descripción sin garantía.
 
-3. **[2026-08-03] `next build` NO valida tipos**
+3. **[2026-08-27] Quitar una política de RLS exige inventariar quién escribe, no solo quién lee**
+   La 036 quitó políticas de `storage.objects` que dejaban listar archivos sin
+   filtrar por taller. Para `notas-voz` quitó la suya y **volvió a crear** el
+   INSERT, porque ese bucket se escribe desde el cliente. Para `logos` la quitó
+   y no creó nada, razonando que las descargas van por `getPublicUrl` y no
+   dependen de RLS — cierto para **leer**, pero los logos también se **suben**
+   desde el cliente, en Configuración y en el onboarding. Resultado: durante
+   semanas, cualquier taller que intentara poner su logo chocaba con "new row
+   violates row-level security policy". Solo se vio cuando el dueño entró por
+   Configuración; el onboarding se lo tragaba con un `if` sin rama `else`.
+   Hacer en su lugar: antes de tocar políticas de un bucket o una tabla,
+   `grep` de todos los sitios que escriben en él desde el cliente y reponer una
+   política por cada verbo que se use. Ojo con `upsert`: necesita **UPDATE**
+   además de INSERT, y es fácil de olvidar porque la primera subida funciona y
+   solo falla al reemplazar. El modelo bueno es
+   `supabase/migrations/030_storage_diagnosticos.sql`.
+
+4. **[2026-08-03] `next build` NO valida tipos**
    `next.config.mjs` tiene `ignoreBuildErrors: true` e `ignoreDuringBuilds: true`,
    así que "✓ Compiled successfully" no dice nada sobre TypeScript.
    Hacer en su lugar: `npx tsc --noEmit`. El repo arrastra **19 errores previos**;
    comparar el total antes y después para saber si añadiste alguno.
 
-4. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
+5. **[2026-08-03] Las migraciones van ANTES del merge — salvo cuando van después**
    Fusionar a `main` dispara el deploy de producción en Vercel. Si el código
    consulta una columna que aún no existe, tumba las pantallas de todos.
    Hacer en su lugar: pasarle el SQL al usuario, esperar confirmación de que lo
@@ -54,7 +71,7 @@ ser útil o recurrente, se borra.
    500. Preguntarse siempre quién habla primero: si la base empieza a decir algo
    que el código desplegado no sabe interpretar, el código va primero.
 
-5. **[2026-08-03] La rama diverge tras cada squash merge**
+6. **[2026-08-03] La rama diverge tras cada squash merge**
    La PR sale `mergeable_state: dirty` porque la rama conserva los commits que
    en `main` entraron aplastados en uno.
    Hacer en su lugar: comprobar que los árboles coinciden
@@ -65,12 +82,12 @@ ser útil o recurrente, se borra.
    sincronizado mientras la rama del servidor sigue en el commit viejo. Para
    saber dónde está de verdad: `git ls-remote origin <rama>`.
 
-6. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
+7. **[2026-08-03] El build local falla en 4 páginas de auth y es normal**
    `/login`, `/registro`, `/nueva-password` y `/recuperar-password` fallan al
    exportar por falta de variables de Supabase. No es una regresión.
    Hacer en su lugar: darlo por esperado; comprobar solo `Compiled successfully`.
 
-7. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
+8. **[2026-08-03] Supabase MCP y los registros de build de Vercel piden aprobación**
    No se pueden usar en sesiones no interactivas.
    Hacer en su lugar: leer el esquema en `supabase/migrations/`, y seguir el
    estado del deploy con `get_deployment` (`state: READY` + `aliasError: null`).
@@ -136,13 +153,7 @@ ser útil o recurrente, se borra.
    `UsageMeter` de `dashboard/page.tsx`.
    Hacer en su lugar: filtrar por `es_ejemplo` al contar; las listas sí las enseñan.
 
-2. **[2026-08-03] La CSP bloquea tipografías y hojas externas**
-   `next.config.mjs` declara `style-src 'self'` y `font-src 'self'`. Un `@import`
-   a Google Fonts se rechaza en silencio y la web cae a la fuente del sistema
-   (pasó durante meses con Plus Jakarta Sans).
-   Hacer en su lugar: `next/font/google`, que las autoaloja.
-
-3. **[2026-08-13] Un tope fijo más un productor diario = huérfanos silenciosos**
+2. **[2026-08-13] Un tope fijo más un productor diario = huérfanos silenciosos**
    `/blog` pedía `.limit(50)` sin paginar mientras el cron publica un artículo al
    día. Con 77 publicados, 27 quedaron sin ningún enlace del sitio que llevara a
    ellos, y el número crecía solo. Nadie se entera: la página se ve bien.
@@ -150,7 +161,7 @@ ser útil o recurrente, se borra.
    contra el total en cada revisión. Un `.limit()` sin paginación al lado de un
    cron que publica es una fuga con fecha de caducidad.
 
-4. **[2026-08-27] El middleware es una llamada de red delante de TODA la app**
+3. **[2026-08-27] El middleware es una llamada de red delante de TODA la app**
    Se degradó la red entre el borde de Vercel y Supabase —ni el código ni la
    base tenían nada: Supabase respondió 200 a las 18 peticiones que le llegaron
    y `middleware.ts` no se tocaba desde el 31/07— y como la consulta de sesión
@@ -168,7 +179,7 @@ ser útil o recurrente, se borra.
    `/api/promociones` nunca verificaba el rol (el middleware excluye `/api/`)
    y un técnico podía escribirle a todos los clientes del taller.
 
-5. **[2026-08-03] El CSS del proyecto le gana a lo que escribas en la página**
+4. **[2026-08-03] El CSS del proyecto le gana a lo que escribas en la página**
    Dos trampas: `globals.css` declara `input, select, textarea { color: #0f172a
    !important }`, así que sobre fondo oscuro el texto del campo desaparece (la
    clase `.input-on-dark` lo arregla, cubre `input` y `textarea`); y las cuatro
@@ -178,7 +189,7 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: replicar todo cambio visual en las cuatro landings, o
    extraerlo a `globals.css` bajo `.lr`, como ya se hizo con la tipografía.
 
-6. **[2026-08-20] De un mapa histórico no se borra nunca una entrada**
+5. **[2026-08-20] De un mapa histórico no se borra nunca una entrada**
    `PRECIOS_A_PLAN` traduce el precio que manda Stripe → plan. Al cambiar los
    precios de CAD a USD se sacaron los viejos del mapa "porque ya no se
    ofrecen", pero las suscripciones vivas seguían corriendo sobre ellos: el
@@ -190,13 +201,40 @@ ser útil o recurrente, se borra.
    desconocido nunca justifica bajarle el plan a nadie: se conserva lo que
    había y se avisa.
 
-7. **[2026-08-03] El número de orden sale de un contador atómico**
+6. **[2026-08-27] Una tarjeta con botón propio y vista previa dice "guardado" aunque no lo esté**
+   El logo del taller se subía a Storage, se pintaba al instante en su
+   recuadro y ahí se quedaba: `logo_url` no llegaba a la base hasta pulsar
+   "Guardar cambios" al final de una página larga. La tarjeta tiene su propio
+   botón, su propio "Subiendo…" y enseña el resultado — se lee como una acción
+   terminada, y nadie tiene por qué adivinar que falta otro botón abajo. Meses
+   de talleres subiendo su logo y volviendo al panel con la llave genérica.
+   Hacer en su lugar: si un control tiene botón e indicador propios, que
+   escriba él. Guardar en el envío del formulario solo vale cuando el control
+   se ve claramente como un campo más del formulario. Y ojo con dónde se lee
+   el dato: la barra lateral vive en el layout del grupo, así que
+   `revalidatePath('/configuracion')` no la alcanzaba — hacía falta
+   `revalidatePath('/', 'layout')`.
+
+7. **[2026-08-27] Trabajo encadenado que no depende entre sí = espera regalada**
+   El alta hacía once llamadas de red **en fila** mientras el dueño mira
+   "Creando tu taller…". Los tres tramos finales —datos del taller, muestra
+   inicial y correo de bienvenida— solo necesitaban el `taller_id`, ninguno
+   el resultado de los otros; el más caro (Auth + Resend) estaba el último.
+   Y la espera del trigger dormía **antes** de preguntar, pagando 200 ms en
+   todos los registros por una fila que ya estaba commiteada.
+   Hacer en su lugar: en cualquier handler largo, preguntarse por cada `await`
+   de quién depende de verdad. Lo independiente va en `Promise.all` con su
+   propio `.catch` — un rechazo suelto tumbaría un alta ya confirmada en Auth.
+   Y un `sleep` antes de la primera comprobación es siempre sospechoso: mirar
+   si el trigger es síncrono antes de asumir que hay carrera.
+
+8. **[2026-08-03] El número de orden sale de un contador atómico**
    `siguiente_numero_orden(taller_id)` incrementa `contadores_orden`, que bajo RLS
    es de **solo lectura** desde el cliente.
    Hacer en su lugar: no escribir esa tabla directamente; usar funciones
    `security definer` (ver `reiniciar_contador_orden`).
 
-8. **[2026-08-13] SEO del blog: la fuente única y la canónica a prueba de fallos**
+9. **[2026-08-13] SEO del blog: la fuente única y la canónica a prueba de fallos**
    Las redirecciones viven **solo** en `lib/blog-redirecciones.json`, que leen
    `next.config.mjs` (emite los 301) y `app/sitemap.ts` (los excluye); cuando
    vivían solo en el config, el sitemap seguía ofreciendo 10 URLs que redirigían.
@@ -208,7 +246,7 @@ ser útil o recurrente, se borra.
    canónica que dependa de la base, nunca una canónica fija en un listado que
    pagina.
 
-9. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
+10. **[2026-08-03] Patrón recurrente: funciones construidas pero nunca conectadas**
    Ya pasó con los dos crons, el `UsageMeter`, `/api/stats`, las cuatro puertas de
    plan, el bloqueo del trial y —el más caro— `imagen_url`: la migración 043 creó
    la columna, cuatro sitios la leen, las 23 portadas llevaban meses en
@@ -217,20 +255,6 @@ ser útil o recurrente, se borra.
    Hacer en su lugar: antes de construir algo nuevo, comprobar si ya existe y solo
    le falta el cable. Que una columna exista y se lea no significa que alguien la
    rellene: para eso, contar filas en la base, no leer el código.
-
-10. **[2026-08-06] `/api/cron/video` está huérfano, y cablearlo tal cual cuesta dinero**
-   Genera vídeos con HeyGen (avatar y voz fijos, 1080×1920, subtítulos) desde
-   `scripts_video`. Nadie lo llama: el orquestador diario invoca
-   `/api/cron/videos` (plural, investigación de keywords en YouTube), nunca el
-   singular. Las columnas `heygen_video_id` y `video_url` sí existen.
-   El GET elige por `publicado = false`, pero `publicado` solo se marca en el
-   POST, que tampoco tiene quien lo llame — y el cron de correos usa otro campo,
-   `email_enviado`. Cablear el GET sin más regeneraría **el mismo script cada
-   día**, pagando HeyGen cada vez.
-   Hacer en su lugar: si se enciende, que el cron se cierre solo en una pasada —
-   primero consultar el estado de un `heygen_video_id` sin `video_url` y marcar
-   `publicado`, y solo si no hay pendientes generar el siguiente; seleccionando
-   por `heygen_video_id is null`, no por `publicado`.
 
 ## Directivas del usuario
 
