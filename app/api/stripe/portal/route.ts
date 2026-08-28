@@ -15,12 +15,25 @@ export async function POST(req: NextRequest) {
 
     const { data: usuario } = await supabase
       .from('usuarios')
-      .select('taller_id')
+      .select('taller_id, rol')
       .eq('id', user.id)
       .single()
 
     if (!usuario) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+    }
+
+    // El middleware excluye todo /api/ de su comprobación de rol, así que tener
+    // la página en RUTAS_SOLO_ADMIN no protege este endpoint: un técnico podía
+    // llamarlo directo. La comprobación va donde se ejecuta la acción. Mismo
+    // hueco que tenía /api/promociones.
+    // Aquí pesa más que en otros sitios: el portal de Stripe deja cancelar la
+    // suscripción, cambiar de plan y ver los datos de la tarjeta.
+    if (!['propietario', 'admin'].includes(usuario.rol)) {
+      return NextResponse.json(
+        { error: 'Solo el propietario y administradores pueden gestionar la facturación' },
+        { status: 403 }
+      )
     }
 
     const { data: suscripcion } = await supabase
