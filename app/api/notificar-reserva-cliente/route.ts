@@ -7,6 +7,7 @@ import { createClient as createAdmin } from '@supabase/supabase-js'
 // una notificación push para aprobar la cita o sugerir otro día.
 // import { enviarWhatsApp } from '@/lib/twilio'
 import { Resend } from 'resend'
+import { enviarPushAUsuario } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,18 +50,14 @@ export async function POST(req: NextRequest) {
         .eq('taller_id', tallerId)
         .in('rol', ['propietario', 'admin', 'recepcion'])
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+      // Llamada directa, sin pasar por HTTP. Ver lib/push.ts.
       await Promise.allSettled(
         (staff ?? []).map(u =>
-          fetch(`${baseUrl}/api/push/enviar`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              usuarioId: u.id,
-              titulo:    '📅 Nueva solicitud de cita',
-              cuerpo:    `${cita.cliente_nombre} pidió cita el ${fechaFormateada} a las ${hora}. Entra para confirmarla o sugerir otro día.`,
-              url:       '/citas',
-            }),
+          enviarPushAUsuario({
+            usuarioId: u.id,
+            titulo:    '📅 Nueva solicitud de cita',
+            cuerpo:    `${cita.cliente_nombre} pidió cita el ${fechaFormateada} a las ${hora}. Entra para confirmarla o sugerir otro día.`,
+            url:       '/citas',
           })
         )
       )

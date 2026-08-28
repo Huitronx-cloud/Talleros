@@ -40,11 +40,21 @@ export function usePushNotifications() {
         ),
       })
 
-      await fetch('/api/push/suscribir', {
+      // Si el guardado falla, el interruptor NO se pone en activado. Antes se
+      // ponía siempre: el navegador sí quedaba suscrito, pero sin la fila en la
+      // base nunca le llegaría una notificación — y la pantalla decía que sí.
+      const res = await fetch('/api/push/suscribir', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(sub),
       })
+
+      if (!res.ok) {
+        // Se deshace la suscripción del navegador para que el siguiente intento
+        // empiece limpio en vez de encontrarse una a medias.
+        await sub.unsubscribe().catch(() => {})
+        throw new Error('No se pudo guardar la suscripción')
+      }
 
       setActivado(true)
     } catch (e) {
