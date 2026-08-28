@@ -22,8 +22,10 @@
  * exactos de esa moneda. La pantalla lee de aquí; el checkout lee de aquí. No
  * hay dos números que puedan separarse, hay uno.
  *
- *   México          → MXN → se muestra $449 MXN y se cobra $449 MXN
- *   Resto de países → USD → se muestra US$24 y se cobra US$24
+ *   México          → MXN → se muestra $449 MXN     y se cobra $449 MXN
+ *   Colombia        → COP → se muestra $84.900 COP y se cobra $84.900 COP
+ *   Perú            → PEN → se muestra S/ 89       y se cobra S/ 89
+ *   Resto de países → USD → se muestra US$24       y se cobra US$24
  *
  * Para los países que aún no tienen precio propio, el número grande es el de
  * dólares —el que de verdad se va a cobrar— y debajo va una conversión
@@ -158,6 +160,33 @@ export const PRECIOS_POR_PAIS: Record<string, PreciosPais> = {
       pro_anual:        'price_1U9Tv0RFpmo4G9XHI0CYS9iW',
     },
   },
+
+  // Perú, desde el 28/08/2026. Tipo de cambio 3.35 PEN/USD.
+  //
+  // La tabla vieja usaba 3.75, así que a los talleres peruanos también se les
+  // enseñaba un precio más caro del real, un 12%.
+  //
+  // Colchón sobre el objetivo en dólares, ya descontado el ~2% de Stripe:
+  //   Esencial mensual   S/    89 → US$26.04 sobre US$24    (+8.5%)
+  //   Esencial anual     S/   849 → US$248.36 sobre US$228  (+8.9%)
+  //   Pro mensual        S/   179 → US$52.36 sobre US$49    (+6.9%)
+  //   Pro anual          S/ 1.699 → US$497.02 sobre US$468  (+6.2%)
+  PE: {
+    moneda:  'PEN',
+    simbolo: 'S/ ',
+    importes: {
+      esencial_mensual: 89,
+      esencial_anual:   849,
+      pro_mensual:      179,
+      pro_anual:        1699,
+    },
+    precios: {
+      esencial_mensual: 'price_1U9TxyRFpmo4G9XHesK00ug0',
+      esencial_anual:   'price_1U9TzERFpmo4G9XH6kRdHIUG',
+      pro_mensual:      'price_1U9U0BRFpmo4G9XHZ4keRuon',
+      pro_anual:        'price_1U9U1ERFpmo4G9XHPfKHC6Jl',
+    },
+  },
 }
 
 /** Normaliza 'México', 'mexico', 'MX' → 'MX'. */
@@ -168,6 +197,7 @@ function codigoPais(pais?: string | null): string {
   const sinAcentos = limpio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   if (sinAcentos === 'mexico')   return 'MX'
   if (sinAcentos === 'colombia') return 'CO'
+  if (sinAcentos === 'peru')     return 'PE'
   return limpio.toUpperCase()
 }
 
