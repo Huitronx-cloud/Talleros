@@ -33,7 +33,7 @@ export default async function EquipoPage() {
   }
 
   // Usar service client para ver todos los miembros del taller (bypasa RLS)
-  const [{ data: miembros }, { data: suscripcion }, { count: invitacionesPendientes }] = await Promise.all([
+  const [{ data: miembros }, { data: suscripcion }, { count: invitacionesPendientes }, { data: taller }] = await Promise.all([
     admin.from('usuarios').select('*').eq('taller_id', usuario.taller_id).order('created_at'),
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', usuario.taller_id).single(),
     admin.from('invitaciones')
@@ -41,6 +41,9 @@ export default async function EquipoPage() {
       .eq('taller_id', usuario.taller_id)
       .eq('usado', false)
       .gt('expires_at', new Date().toISOString()),
+    // Para armar el link de WhatsApp: un teléfono local de 10 dígitos necesita
+    // el código del país del taller.
+    supabase.from('talleres').select('nombre, pais').eq('id', usuario.taller_id).single(),
   ])
 
   const plan    = suscripcion?.plan ?? 'trial'
@@ -109,6 +112,8 @@ export default async function EquipoPage() {
         tallerId={usuario.taller_id}
         puedeInvitar={puedeInvitar}
         limitePlan={limites.usuarios}
+        tallerNombre={taller?.nombre ?? ''}
+        pais={taller?.pais ?? null}
       />
     </div>
   )

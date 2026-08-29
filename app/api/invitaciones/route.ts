@@ -148,7 +148,11 @@ const resendRes = await fetch('https://api.resend.com/emails', {
 const resendData = await resendRes.json()
 console.log('[RESEND]', resendData)
 
-return NextResponse.json({ success: true, link })
+// El correo se manda igual, pero ya no es el único camino: la pantalla de
+// equipo enseña este link para pasarlo por WhatsApp. Por eso se devuelve si
+// salió de verdad — antes se decía "invitación enviada" aunque Resend hubiera
+// fallado, y el dueño se quedaba esperando a alguien que nunca recibió nada.
+return NextResponse.json({ success: true, link, correoEnviado: resendRes.ok })
 }
 
 export async function GET(req: NextRequest) {
