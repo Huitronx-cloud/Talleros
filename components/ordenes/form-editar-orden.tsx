@@ -8,6 +8,7 @@ import { editarOrden } from '@/app/(dashboard)/ordenes/actions'
 import { formatMoney } from '@/lib/utils'
 import { getIva } from '@/lib/iva'
 import AutocompleteVehiculo from '@/components/ui/AutocompleteVehiculo'
+import CampoMecanico from './campo-mecanico'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -192,15 +193,12 @@ export default function FormEditarOrden({ orden, pais, moneda, mecanicos }: Prop
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={LABEL}>Mecánico asignado</label>
-              <select value={form.mecanico_asignado} onChange={e => setForm(p => ({ ...p, mecanico_asignado: e.target.value }))} className={INPUT}>
-                <option value="">Sin asignar</option>
-                {mecanicos.map(m => (
-                  <option key={m.id} value={m.nombre}>{m.nombre}</option>
-                ))}
-                {form.mecanico_asignado && !mecanicos.some(m => m.nombre === form.mecanico_asignado) && (
-                  <option value={form.mecanico_asignado}>{form.mecanico_asignado}</option>
-                )}
-              </select>
+              <CampoMecanico
+                valor={form.mecanico_asignado}
+                onChange={v => setForm(p => ({ ...p, mecanico_asignado: v }))}
+                mecanicos={mecanicos}
+                className={INPUT}
+              />
             </div>
             <div>
               <label className={LABEL}>Fecha prometida</label>

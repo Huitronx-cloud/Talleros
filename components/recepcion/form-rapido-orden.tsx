@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ChevronRight, ChevronLeft, Loader2, UserPlus, Car, History } from 'lucide-react'
 import HistorialCliente from './historial-cliente'
+import CampoMecanico from '@/components/ordenes/campo-mecanico'
 import { Cliente } from '@/types'
 import { crearOrden } from '@/app/(dashboard)/ordenes/actions'
 
@@ -341,16 +342,14 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, meca
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Mecánico asignado</label>
-<select
-  value={mecanico}
-  onChange={e => setMecanico(e.target.value)}
-  className={INPUT}
->
-  <option value="">Sin asignar</option>
-  {mecanicos.map(m => (
-    <option key={m.id} value={m.nombre}>{m.nombre}</option>
-  ))}
-</select>
+              <CampoMecanico
+                valor={mecanico}
+                onChange={setMecanico}
+                mecanicos={mecanicos}
+                className={INPUT}
+              />
+            </div>
+            <div>
               <label className={LABEL}>Fecha prometida</label>
               <input
                 type="date"

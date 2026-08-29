@@ -6,6 +6,7 @@ import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide
 import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
+import CampoMecanico from './campo-mecanico'
 import SelectorCatalogo from './selector-catalogo'
 import { formatMoney } from '@/lib/utils'
 import { getIva, getMoneda } from '@/lib/iva'
@@ -343,16 +344,12 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Mecánico asignado</label>
-                <select
-                  value={form.mecanico_asignado}
-                  onChange={e => setForm(p => ({ ...p, mecanico_asignado: e.target.value }))}
+                <CampoMecanico
+                  valor={form.mecanico_asignado}
+                  onChange={v => setForm(p => ({ ...p, mecanico_asignado: v }))}
+                  mecanicos={mecanicos}
                   className={INPUT}
-                >
-                  <option value="">Sin asignar</option>
-                  {mecanicos.map(m => (
-                    <option key={m.id} value={m.nombre}>{m.nombre}</option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <label className={LABEL}>Fecha prometida</label>
@@ -529,6 +526,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
         <ChecklistRecepcion
           ordenId={ordenId}
           tallerId={tallerIdProp}
+          notasPrevias={form.notas_internas}
           onTerminar={() => router.push(`/ordenes/${ordenId}`)}
         />
       )}
