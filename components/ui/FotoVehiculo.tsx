@@ -4,6 +4,15 @@ import { useRef, useState } from 'react'
 import { Camera, X, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
+// 44px de alto: es el mínimo que se acierta con el pulgar, y aquí se usa con
+// las manos sucias y el coche delante.
+const botonOpcion: React.CSSProperties = {
+  flex: 1, minHeight: 44, border: '1px solid #d1d5db', borderRadius: 9,
+  background: '#fff', color: '#374151', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  fontSize: 13, fontWeight: 600,
+}
+
 interface Props {
   tallerId: string
   clienteId?: string
@@ -13,13 +22,22 @@ interface Props {
 
 export default function FotoVehiculo({ tallerId, clienteId, fotoActual, onFotoChange }: Props) {
   const supabase    = createClient()
-  const inputRef    = useRef<HTMLInputElement>(null)
+  // Dos inputs, no uno. El de la cámara lleva `capture`, que en el teléfono
+  // salta directo a la cámara trasera — un toque, que es lo que hace falta con
+  // el coche delante. El de la galería NO lo lleva: con `capture` el teléfono
+  // ni siquiera ofrece el carrete, y muchas fotos llegan por WhatsApp antes de
+  // que el coche entre al taller.
+  const inputCamara  = useRef<HTMLInputElement>(null)
+  const inputGaleria = useRef<HTMLInputElement>(null)
   const [preview, setPreview]   = useState<string | null>(fotoActual ?? null)
   const [subiendo, setSubiendo] = useState(false)
   const [error, setError]       = useState('')
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
+    // Se vacía en cuanto se lee: si no, elegir la MISMA foto otra vez no dispara
+    // `change`, y quien acaba de leer "intenta de nuevo" se queda sin poder.
+    e.target.value = ''
     if (!file) return
     if (file.size > 5 * 1024 * 1024) { setError('La foto no puede pesar más de 5 MB'); return }
     if (!file.type.startsWith('image/')) { setError('Solo se permiten imágenes'); return }
@@ -56,16 +74,25 @@ export default function FotoVehiculo({ tallerId, clienteId, fotoActual, onFotoCh
   function quitarFoto() {
     setPreview(null)
     onFotoChange(null)
-    if (inputRef.current) inputRef.current.value = ''
+    // Los dos, o volver a elegir el mismo archivo no dispara `change`.
+    if (inputCamara.current) inputCamara.current.value = ''
+    if (inputGaleria.current) inputGaleria.current.value = ''
   }
 
   return (
     <div>
       <input
-        ref={inputRef}
+        ref={inputCamara}
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFile}
+        className="hidden"
+      />
+      <input
+        ref={inputGaleria}
+        type="file"
+        accept="image/*"
         onChange={handleFile}
         className="hidden"
       />
@@ -94,14 +121,29 @@ export default function FotoVehiculo({ tallerId, clienteId, fotoActual, onFotoCh
           }}>
             <button
               type="button"
-              onClick={() => inputRef.current?.click()}
+              onClick={() => inputCamara.current?.click()}
+              title="Tomar otra foto"
+              aria-label="Tomar otra foto"
               style={{
                 background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 8,
-                padding: '6px 10px', color: '#fff', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600,
+                padding: '6px 8px', color: '#fff', cursor: 'pointer',
+                display: 'flex', alignItems: 'center',
               }}
             >
-              <Camera size={13} /> Cambiar
+              <Camera size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => inputGaleria.current?.click()}
+              title="Elegir otra de la galería"
+              aria-label="Elegir otra de la galería"
+              style={{
+                background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 8,
+                padding: '6px 8px', color: '#fff', cursor: 'pointer',
+                display: 'flex', alignItems: 'center',
+              }}
+            >
+              <Upload size={13} />
             </button>
             <button
               type="button"
@@ -117,40 +159,44 @@ export default function FotoVehiculo({ tallerId, clienteId, fotoActual, onFotoCh
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={subiendo}
+        <div
           style={{
-            width: '100%', height: 120, border: '2px dashed #d1d5db',
-            borderRadius: 12, background: '#f9fafb', cursor: 'pointer',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 8, transition: 'border-color .2s, background .2s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = '#3b82f6'
-            e.currentTarget.style.background  = '#eff6ff'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = '#d1d5db'
-            e.currentTarget.style.background  = '#f9fafb'
+            width: '100%', border: '2px dashed #d1d5db', borderRadius: 12,
+            background: '#f9fafb', padding: '14px 12px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
           }}
         >
-          <div style={{
-            width: 40, height: 40, borderRadius: 10, background: '#e5e7eb',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Camera size={20} color="#6b7280" />
-          </div>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 9, background: '#e5e7eb',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Camera size={17} color="#6b7280" />
+            </div>
             <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', margin: 0 }}>
               Foto del vehículo
             </p>
-            <p style={{ fontSize: 11, color: '#9ca3af', margin: '2px 0 0' }}>
-              Toca para tomar foto o subir imagen
-            </p>
           </div>
-        </button>
+
+          <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => inputCamara.current?.click()}
+              disabled={subiendo}
+              style={botonOpcion}
+            >
+              <Camera size={15} /> Tomar foto
+            </button>
+            <button
+              type="button"
+              onClick={() => inputGaleria.current?.click()}
+              disabled={subiendo}
+              style={botonOpcion}
+            >
+              <Upload size={15} /> Galería
+            </button>
+          </div>
+        </div>
       )}
 
       {error && (

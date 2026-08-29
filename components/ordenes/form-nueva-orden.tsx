@@ -16,6 +16,30 @@ const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
 
+/**
+ * Los datos del coche que ya conocemos del cliente.
+ *
+ * Antes esto vivía suelto dentro de `seleccionarCliente`, así que solo se
+ * rellenaba al hacer clic en la lista de sugerencias. Al entrar desde el perfil
+ * del cliente —con el nombre ya puesto— nunca se ejecutaba: se veía el nombre
+ * arriba y el vehículo en blanco abajo, y quien está en el mostrador teclea de
+ * nuevo la marca, el modelo y las placas sin sospechar que TallerOS ya las
+ * tenía. Al ser una función, el mismo relleno sirve para los dos caminos.
+ *
+ * El kilometraje no se hereda a propósito: cambia en cada visita, y arrastrar
+ * el de la vez pasada es peor que dejarlo vacío.
+ */
+function vehiculoDeCliente(c: Cliente | null) {
+  return {
+    marca:       c?.vehiculo_marca  ?? '',
+    modelo:      c?.vehiculo_modelo ?? '',
+    año:         c?.vehiculo_año    ? String(c.vehiculo_año) : '',
+    placas:      c?.placas          ?? '',
+    kilometraje: '',
+    vin:         c?.vin             ?? '',
+  }
+}
+
 interface Props {
   clientes: Cliente[]
   tallerId: string
@@ -38,9 +62,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(clienteInicial)
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
-  const [vehiculo, setVehiculo] = useState({
-    marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '',
-  })
+  const [vehiculo, setVehiculo] = useState(vehiculoDeCliente(clienteInicial))
 
   const [form, setForm] = useState({
     numero_factura:       '',
@@ -70,20 +92,13 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
     setClienteSeleccionado(c)
     setBusquedaCliente(c.nombre)
     setMostrarSugerencias(false)
-    setVehiculo({
-      marca:       c.vehiculo_marca  ?? '',
-      modelo:      c.vehiculo_modelo ?? '',
-      año:         c.vehiculo_año    ? String(c.vehiculo_año) : '',
-      placas:      c.placas          ?? '',
-      kilometraje: '',
-      vin:         '',
-    })
+    setVehiculo(vehiculoDeCliente(c))
   }
 
   const limpiarCliente = () => {
     setClienteSeleccionado(null)
     setBusquedaCliente('')
-    setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '' })
+    setVehiculo(vehiculoDeCliente(null))
   }
 
   const actualizarPrecioRaw = (i: number, val: string) => {

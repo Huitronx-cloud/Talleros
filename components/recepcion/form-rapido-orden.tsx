@@ -16,16 +16,23 @@ interface Props {
   pais: string
   moneda: string
   mecanicos: { id: string; nombre: string }[]
+  clienteIdInicial?: string
 }
 
-export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, mecanicos }: Props) {
+export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, mecanicos, clienteIdInicial }: Props) {
   const router = useRouter()
+
+  // Se entra aquí desde "Nueva orden" en el perfil del cliente, que lleva el
+  // cliente en la URL. Sin esto, recepción —que es quien más lo usa— llegaba
+  // desde la ficha del cliente a un formulario en blanco y volvía a teclear lo
+  // que TallerOS ya sabía.
+  const clienteInicial = clienteIdInicial ? (clientes.find(c => c.id === clienteIdInicial) ?? null) : null
 
   const [paso, setPaso]                       = useState(1)
   const [cargando, setCargando]               = useState(false)
   const [error, setError]                     = useState('')
-  const [busqueda, setBusqueda]               = useState('')
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
+  const [busqueda, setBusqueda]               = useState(clienteInicial?.nombre ?? '')
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(clienteInicial)
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
   const [modoNuevoCliente, setModoNuevoCliente]       = useState(false)
 
@@ -34,9 +41,9 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, meca
   const [nuevoTelefono, setNuevoTelefono] = useState('')
 
   // Campos vehículo y orden
-  const [marca, setMarca]           = useState('')
-  const [modelo, setModelo]         = useState('')
-  const [placas, setPlacas]         = useState('')
+  const [marca, setMarca]           = useState(clienteInicial?.vehiculo_marca ?? '')
+  const [modelo, setModelo]         = useState(clienteInicial?.vehiculo_modelo ?? '')
+  const [placas, setPlacas]         = useState(clienteInicial?.placas ?? '')
   const [problema, setProblema]     = useState('')
   const [mecanico, setMecanico]     = useState('')
   const [fechaPrometida, setFechaPrometida] = useState('')
