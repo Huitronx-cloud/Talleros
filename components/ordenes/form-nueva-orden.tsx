@@ -6,6 +6,7 @@ import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide
 import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
+import CampoMecanico from './campo-mecanico'
 import SelectorCatalogo from './selector-catalogo'
 import { formatMoney } from '@/lib/utils'
 import { getIva, getMoneda } from '@/lib/iva'
@@ -15,6 +16,30 @@ const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
+
+/**
+ * Los datos del coche que ya conocemos del cliente.
+ *
+ * Antes esto vivía suelto dentro de `seleccionarCliente`, así que solo se
+ * rellenaba al hacer clic en la lista de sugerencias. Al entrar desde el perfil
+ * del cliente —con el nombre ya puesto— nunca se ejecutaba: se veía el nombre
+ * arriba y el vehículo en blanco abajo, y quien está en el mostrador teclea de
+ * nuevo la marca, el modelo y las placas sin sospechar que TallerOS ya las
+ * tenía. Al ser una función, el mismo relleno sirve para los dos caminos.
+ *
+ * El kilometraje no se hereda a propósito: cambia en cada visita, y arrastrar
+ * el de la vez pasada es peor que dejarlo vacío.
+ */
+function vehiculoDeCliente(c: Cliente | null) {
+  return {
+    marca:       c?.vehiculo_marca  ?? '',
+    modelo:      c?.vehiculo_modelo ?? '',
+    año:         c?.vehiculo_año    ? String(c.vehiculo_año) : '',
+    placas:      c?.placas          ?? '',
+    kilometraje: '',
+    vin:         c?.vin             ?? '',
+  }
+}
 
 interface Props {
   clientes: Cliente[]
@@ -38,9 +63,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(clienteInicial)
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
-  const [vehiculo, setVehiculo] = useState({
-    marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '',
-  })
+  const [vehiculo, setVehiculo] = useState(vehiculoDeCliente(clienteInicial))
 
   const [form, setForm] = useState({
     numero_factura:       '',
@@ -70,20 +93,13 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
     setClienteSeleccionado(c)
     setBusquedaCliente(c.nombre)
     setMostrarSugerencias(false)
-    setVehiculo({
-      marca:       c.vehiculo_marca  ?? '',
-      modelo:      c.vehiculo_modelo ?? '',
-      año:         c.vehiculo_año    ? String(c.vehiculo_año) : '',
-      placas:      c.placas          ?? '',
-      kilometraje: '',
-      vin:         '',
-    })
+    setVehiculo(vehiculoDeCliente(c))
   }
 
   const limpiarCliente = () => {
     setClienteSeleccionado(null)
     setBusquedaCliente('')
-    setVehiculo({ marca: '', modelo: '', año: '', placas: '', kilometraje: '', vin: '' })
+    setVehiculo(vehiculoDeCliente(null))
   }
 
   const actualizarPrecioRaw = (i: number, val: string) => {
@@ -328,16 +344,12 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Mecánico asignado</label>
-                <select
-                  value={form.mecanico_asignado}
-                  onChange={e => setForm(p => ({ ...p, mecanico_asignado: e.target.value }))}
+                <CampoMecanico
+                  valor={form.mecanico_asignado}
+                  onChange={v => setForm(p => ({ ...p, mecanico_asignado: v }))}
+                  mecanicos={mecanicos}
                   className={INPUT}
-                >
-                  <option value="">Sin asignar</option>
-                  {mecanicos.map(m => (
-                    <option key={m.id} value={m.nombre}>{m.nombre}</option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <label className={LABEL}>Fecha prometida</label>
@@ -514,6 +526,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
         <ChecklistRecepcion
           ordenId={ordenId}
           tallerId={tallerIdProp}
+          notasPrevias={form.notas_internas}
           onTerminar={() => router.push(`/ordenes/${ordenId}`)}
         />
       )}

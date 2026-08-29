@@ -1,19 +1,35 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, CheckCircle2, Loader2, X } from 'lucide-react'
+import { Camera, CheckCircle2, Loader2, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import FirmaDigital from './firma-digital'
 import InspeccionDanos from './inspeccion-danos'
+
+const NIVEL_GASOLINA = 'Nivel de gasolina registrado'
 
 const ITEMS_CHECKLIST = [
   'Carrocería sin daños visibles',
   'Vidrios y espejos en buen estado',
   'Llantas sin daños',
-  'Nivel de gasolina registrado',
+  NIVEL_GASOLINA,
   'Interior sin daños',
   'Luces funcionando',
   'Accesorios y objetos de valor retirados',
+]
+
+/**
+ * Los cinco niveles de la aguja. El botón lleva la marca corta —cabe en el
+ * teléfono y es la que se ve en el tablero— y la nota se guarda con la frase
+ * completa, que es la que hay que poder leer meses después si el cliente
+ * reclama que dejó el tanque lleno.
+ */
+const NIVELES_GASOLINA = [
+  { corto: 'Reserva', texto: 'En reserva (casi vacío)' },
+  { corto: '¼',       texto: 'Un cuarto de tanque' },
+  { corto: '½',       texto: 'Medio tanque' },
+  { corto: '¾',       texto: 'Tres cuartos de tanque' },
+  { corto: 'Lleno',   texto: 'Tanque lleno' },
 ]
 
 interface Foto {
@@ -25,16 +41,22 @@ interface Props {
   ordenId: string
   tallerId: string
   onTerminar: () => void
+  /** Lo que se escribió en "Notas internas" al crear la orden: el checklist se
+   *  añade debajo en vez de pisarlo. */
+  notasPrevias?: string
 }
 
 type Etapa = 'checklist' | 'firma'
 
-export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Props) {
+export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar, notasPrevias }: Props) {
   const supabase = createClient()
   const inputRef = useRef<HTMLInputElement>(null)
+  const inputGaleria = useRef<HTMLInputElement>(null)
 
   const [etapa, setEtapa]           = useState<Etapa>('checklist')
   const [checks, setChecks]         = useState<Record<string, boolean>>({})
+  const [gasolina, setGasolina]     = useState<string | null>(null)
+  const [errorGuardar, setErrorGuardar] = useState('')
   const [fotos, setFotos]           = useState<Foto[]>([])
   const [subiendo, setSubiendo]     = useState(false)
   const [guardando, setGuardando]   = useState(false)
@@ -42,11 +64,25 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
   const [fotoActual, setFotoActual] = useState<{ url: string; file: File } | null>(null)
   const [descripcion, setDescripcion] = useState('')
 
-  const toggleCheck = (item: string) =>
+  const toggleCheck = (item: string) => {
     setChecks(prev => ({ ...prev, [item]: !prev[item] }))
+    // Destildar "nivel de gasolina" borra el nivel: dejar la marca puesta sin
+    // que la casilla lo respalde es justo lo que hace inservible una nota.
+    if (item === NIVEL_GASOLINA && checks[item]) setGasolina(null)
+  }
+
+  const elegirGasolina = (texto: string) => {
+    const mismo = gasolina === texto
+    setGasolina(mismo ? null : texto)
+    // Marcar el nivel ES registrarlo; pedir además el tic sería pedir dos veces
+    // lo mismo, y el que se olvide deja la nota diciendo "no confirmado".
+    setChecks(prev => ({ ...prev, [NIVEL_GASOLINA]: !mismo }))
+  }
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    // Sin esto, volver a elegir la misma foto no dispara `change`.
+    e.target.value = ''
     if (!file) return
     setFotoActual({ url: URL.createObjectURL(file), file })
     setDescripcion('')
@@ -78,9 +114,10 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
 
   const handleGuardarChecklist = async () => {
     setGuardando(true)
+    setErrorGuardar('')
     try {
       if (fotos.length > 0) {
-        await supabase.from('fotos_diagnostico').insert(
+        const { error } = await supabase.from('fotos_diagnostico').insert(
           fotos.map(f => ({
             orden_id:    ordenId,
             taller_id:   tallerId,
@@ -89,23 +126,37 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
             tipo:        'recepcion',
           }))
         )
+        if (error) throw error
       }
-      const itemsOk  = ITEMS_CHECKLIST.filter(i => checks[i])
-      const itemsNok = ITEMS_CHECKLIST.filter(i => !checks[i])
-      const nota = [
+
+      // La gasolina no va en las listas de tildes: se guarda con su valor, que
+      // es lo único que sirve si el cliente reclama.
+      const otros    = ITEMS_CHECKLIST.filter(i => i !== NIVEL_GASOLINA)
+      const itemsOk  = otros.filter(i => checks[i])
+      const itemsNok = otros.filter(i => !checks[i])
+      const checklist = [
         '✅ CHECKLIST DE RECEPCIÓN',
-        itemsOk.length  > 0 ? `\nConfirmado:\n${itemsOk.map(i  => `• ${i}`).join('\n')}` : '',
-        itemsNok.length > 0 ? `\nNo confirmado:\n${itemsNok.map(i => `• ${i}`).join('\n')}` : '',
+        `\nGasolina al recibir: ${gasolina ?? 'no registrada'}`,
+        itemsOk.length  > 0 ? `\n\nConfirmado:\n${itemsOk.map(i  => `• ${i}`).join('\n')}` : '',
+        itemsNok.length > 0 ? `\n\nNo confirmado:\n${itemsNok.map(i => `• ${i}`).join('\n')}` : '',
       ].join('')
 
-      await supabase.from('ordenes')
+      // Se añade debajo de lo que ya había. Antes se sobrescribía, así que las
+      // notas internas escritas al crear la orden desaparecían al terminar el
+      // checklist, sin avisar.
+      const nota = [notasPrevias?.trim(), checklist].filter(Boolean).join('\n\n')
+
+      const { error: errorNota } = await supabase.from('ordenes')
         .update({ notas_internas: nota })
         .eq('id', ordenId)
+      if (errorNota) throw errorNota
 
       // Pasar a la etapa de firma
       setEtapa('firma')
     } catch (err) {
       console.error('Error guardando checklist:', err)
+      // Antes se seguía a la firma igual y el checklist se perdía en silencio.
+      setErrorGuardar('No se pudo guardar el checklist. Revisa tu conexión e intenta de nuevo.')
     } finally {
       setGuardando(false)
     }
@@ -139,21 +190,48 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Estado del vehículo</h3>
             <div className="space-y-3">
               {ITEMS_CHECKLIST.map(item => (
-                <label key={item} className="flex items-center gap-3 cursor-pointer group">
-                  <div
-                    onClick={() => toggleCheck(item)}
-                    className={`w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-colors ${
-                      checks[item]
-                        ? 'bg-green-500 border-green-500'
-                        : 'border-gray-300 group-hover:border-green-400'
-                    }`}
-                  >
-                    {checks[item] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                  </div>
-                  <span className={`text-sm ${checks[item] ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                    {item}
-                  </span>
-                </label>
+                <div key={item}>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div
+                      onClick={() => toggleCheck(item)}
+                      className={`w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-colors ${
+                        checks[item]
+                          ? 'bg-green-500 border-green-500'
+                          : 'border-gray-300 group-hover:border-green-400'
+                      }`}
+                    >
+                      {checks[item] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                    <span className={`text-sm ${checks[item] ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
+                      {item}
+                    </span>
+                  </label>
+
+                  {/* El punto pedía "registrado" y no había dónde registrarlo. */}
+                  {item === NIVEL_GASOLINA && (
+                    <div className="ml-8 mt-2 flex gap-1.5">
+                      {NIVELES_GASOLINA.map(n => {
+                        const activo = gasolina === n.texto
+                        return (
+                          <button
+                            key={n.texto}
+                            type="button"
+                            onClick={() => elegirGasolina(n.texto)}
+                            title={n.texto}
+                            aria-pressed={activo}
+                            className={`flex-1 min-h-[38px] px-1 rounded-lg border text-xs font-semibold transition-colors ${
+                              activo
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'bg-white border-gray-300 text-gray-600 hover:border-green-400'
+                            }`}
+                          >
+                            {n.corto}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -219,16 +297,35 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar }: Pr
               </div>
             )}
 
+            {/* Dos inputs: con capture el teléfono no ofrece el carrete, y el
+                botón prometía "o subir foto" sin poder cumplirlo. */}
             <input ref={inputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFoto} />
-            <button
-              onClick={() => inputRef.current?.click()}
-              disabled={!!fotoActual || subiendo}
-              className="flex items-center gap-2 border border-dashed border-gray-300 hover:border-blue-400 text-gray-500 hover:text-blue-600 text-sm font-medium px-4 py-2.5 rounded-xl w-full justify-center transition-colors disabled:opacity-50"
-            >
-              <Camera className="w-4 h-4" />
-              Tomar o subir foto
-            </button>
+            <input ref={inputGaleria} type="file" accept="image/*" className="hidden" onChange={handleFoto} />
+            <div className="flex gap-2">
+              <button
+                onClick={() => inputRef.current?.click()}
+                disabled={!!fotoActual || subiendo}
+                className="flex-1 flex items-center gap-2 border border-dashed border-gray-300 hover:border-blue-400 text-gray-500 hover:text-blue-600 text-sm font-medium px-4 py-2.5 rounded-xl justify-center transition-colors disabled:opacity-50"
+              >
+                <Camera className="w-4 h-4" />
+                Tomar foto
+              </button>
+              <button
+                onClick={() => inputGaleria.current?.click()}
+                disabled={!!fotoActual || subiendo}
+                className="flex-1 flex items-center gap-2 border border-dashed border-gray-300 hover:border-blue-400 text-gray-500 hover:text-blue-600 text-sm font-medium px-4 py-2.5 rounded-xl justify-center transition-colors disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                Galería
+              </button>
+            </div>
           </div>
+
+          {errorGuardar && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
+              {errorGuardar}
+            </p>
+          )}
 
           {/* Botones */}
           <div className="flex gap-3">

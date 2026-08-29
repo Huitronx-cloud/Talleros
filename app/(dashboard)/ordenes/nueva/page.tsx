@@ -75,6 +75,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
           pais={taller?.pais ?? 'México'}
           moneda={taller?.moneda ?? 'MXN'}
           mecanicos={mecanicos ?? []}
+          clienteIdInicial={searchParams.cliente_id}
         />
       </div>
     )
