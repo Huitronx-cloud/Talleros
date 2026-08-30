@@ -26,7 +26,9 @@ export default async function EditarOrdenPage({ params }: { params: { id: string
 
   const [{ data: taller }, { data: mecanicos }] = await Promise.all([
     supabase.from('talleres').select('pais, moneda').eq('id', tallerId).single(),
-    admin.from('usuarios').select('id, nombre').eq('taller_id', tallerId).eq('rol', 'tecnico').order('nombre'),
+    // Propietario incluido: en un taller de una persona el dueño es el mecánico.
+    // Los administradores no, por decisión del dueño (29/08/2026).
+    admin.from('usuarios').select('id, nombre').eq('taller_id', tallerId).in('rol', ['propietario', 'tecnico']).order('nombre'),
   ])
 
   return (

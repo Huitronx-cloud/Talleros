@@ -8,16 +8,22 @@ import { Loader2 } from 'lucide-react'
 interface Props {
   token: string
   email: string
+  /** El que puso el dueño al invitar. Editable, pero ya viene escrito. */
+  nombreInicial?: string
   rol: string
   tallerNombre: string
   tallerId: string
 }
 
-export default function FormUnirse({ token, email, rol, tallerNombre, tallerId }: Props) {
+export default function FormUnirse({ token, email, nombreInicial, rol, tallerNombre, tallerId }: Props) {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [nombre, setNombre]     = useState('')
+  // Viene puesto para que el nombre coincida con el que el dueño ve en el
+  // desplegable de "Mecánico asignado". Se deja editable porque el invitado
+  // puede querer su nombre completo, pero el punto de partida lo pone quien
+  // va a usar la lista.
+  const [nombre, setNombre]     = useState(nombreInicial ?? '')
   const [password, setPassword] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError]       = useState('')
