@@ -99,29 +99,42 @@ export default function CampoTelefono({
     emitir(codigo, digitos)
   }
 
+  // El ancho se controla con los contenedores y no con clases sobre el select.
+  // `className` es el estilo común de los campos del formulario y lleva
+  // `w-full`; añadirle `w-auto` aquí no gana, porque en Tailwind decide el
+  // orden de la hoja de estilos, no el del atributo. El selector se estiraba a
+  // lo ancho y el número quedaba en un hueco diminuto, fuera de la pantalla.
+  //
+  // `min-w-0` en el número es lo que le permite encogerse: sin él, un hijo
+  // flexible no baja de su ancho natural y desborda la fila.
   return (
     <div className="flex gap-2">
-      <select
-        value={codigo}
-        onChange={e => cambiarPais(e.target.value)}
-        aria-label="Código de país"
-        title="Código de país"
-        className={`${className} w-auto shrink-0 pr-1`}
-      >
-        {PAISES.map(p => (
-          <option key={p.codigo} value={p.codigo}>
-            {bandera(p.codigo)} {p.lada}
-          </option>
-        ))}
-      </select>
-      <input
-        type="tel"
-        inputMode="numeric"
-        value={numero}
-        onChange={e => cambiarNumero(e.target.value)}
-        placeholder={placeholder}
-        className={className}
-      />
+      {/* 8rem entra "🇬🇹 +502" —la lada más larga— con su flecha. */}
+      <div className="shrink-0 w-32">
+        <select
+          value={codigo}
+          onChange={e => cambiarPais(e.target.value)}
+          aria-label="Código de país"
+          title="Código de país"
+          className={className}
+        >
+          {PAISES.map(p => (
+            <option key={p.codigo} value={p.codigo}>
+              {bandera(p.codigo)} {p.lada}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex-1 min-w-0">
+        <input
+          type="tel"
+          inputMode="numeric"
+          value={numero}
+          onChange={e => cambiarNumero(e.target.value)}
+          placeholder={placeholder}
+          className={className}
+        />
+      </div>
     </div>
   )
 }
