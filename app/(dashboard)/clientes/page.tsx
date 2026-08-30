@@ -16,10 +16,14 @@ export default async function ClientesPage() {
     { data: clientes },
     { data: ordenesStats },
     { data: suscripcion },
+    { data: taller },
   ] = await Promise.all([
     supabase.from('clientes').select('*').order('created_at', { ascending: false }),
     supabase.from('ordenes').select('cliente_id, total, estado, created_at').not('cliente_id', 'is', null),
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
+    // Para que la lada del teléfono venga puesta en el país del taller y no
+    // siempre en México.
+    supabase.from('talleres').select('pais').eq('id', tallerId).single(),
   ])
 
   const plan          = suscripcion?.plan ?? 'trial'
@@ -85,6 +89,7 @@ export default async function ClientesPage() {
         statsMap={statsMap}
         puedeAgregar={puedeAgregar}
         limiteClientes={limites.clientes}
+        pais={taller?.pais ?? null}
       />
     </div>
   )
