@@ -19,9 +19,10 @@ interface Props {
   statsMap:       Record<string, ClienteStats>
   puedeAgregar?:  boolean
   limiteClientes?: number
+  pais?:          string | null
 }
 
-export default function TablaClientes({ clientes, statsMap, puedeAgregar = true, limiteClientes = -1 }: Props) {
+export default function TablaClientes({ clientes, statsMap, puedeAgregar = true, limiteClientes = -1, pais = null }: Props) {
   const router = useRouter()
   const [busqueda, setBusqueda]           = useState('')
   const [modalAbierto, setModalAbierto]   = useState(false)
@@ -285,7 +286,7 @@ export default function TablaClientes({ clientes, statsMap, puedeAgregar = true,
       </div>
 
       {modalAbierto && (
-        <ModalCliente cliente={clienteEditar} onCerrar={cerrarModal} />
+        <ModalCliente cliente={clienteEditar} pais={pais} onCerrar={cerrarModal} />
       )}
     </>
   )

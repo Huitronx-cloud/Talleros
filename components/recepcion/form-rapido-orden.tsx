@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, ChevronRight, ChevronLeft, Loader2, UserPlus, Car, History } from 'lucide-react'
 import HistorialCliente from './historial-cliente'
 import CampoMecanico from '@/components/ordenes/campo-mecanico'
+import CampoTelefono from '@/components/ui/CampoTelefono'
 import { Cliente } from '@/types'
 import { crearOrden } from '@/app/(dashboard)/ordenes/actions'
 
@@ -245,12 +246,12 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, meca
                 </div>
                 <div>
                   <label className={LABEL}>Teléfono (WhatsApp)</label>
-                  <input
-                    type="tel"
-                    value={nuevoTelefono}
-                    onChange={e => setNuevoTelefono(e.target.value)}
-                    placeholder="10 dígitos"
+                  <CampoTelefono
+                    valor={nuevoTelefono}
+                    onChange={setNuevoTelefono}
+                    paisPorDefecto={pais}
                     className={INPUT}
+                    placeholder="Su número"
                   />
                 </div>
               </div>

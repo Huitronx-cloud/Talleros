@@ -74,6 +74,20 @@ export function getPais(pais?: string | null): DatosPais {
   return codigo ? PAISES[codigo] : POR_DEFECTO
 }
 
+/**
+ * Código ISO de un país aceptando código o nombre. Sin coincidencia, 'MX'.
+ *
+ * Existe para que nadie más tenga que repetir la tabla de nombres: antes
+ * `lib/whatsapp-link.ts` llevaba su propia copia con los veinte países en
+ * español, y mantener dos listas es mantener una que se queda atrás.
+ */
+export function codigoDePais(pais?: string | null): string {
+  if (!pais) return 'MX'
+  const limpio = pais.trim()
+  if (PAISES[limpio.toUpperCase()]) return limpio.toUpperCase()
+  return POR_NOMBRE[normalizar(limpio)] ?? 'MX'
+}
+
 /** Moneda que le corresponde a un país. */
 export function monedaDePais(pais?: string | null): string {
   return getPais(pais).moneda

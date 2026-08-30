@@ -5,6 +5,7 @@ import { Usuario, RolUsuario } from '@/types'
 import { Loader2, UserPlus, Mail, Trash2, Shield, Wrench, Coffee, Lock, MessageCircle, Copy, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
+import CampoTelefono from '@/components/ui/CampoTelefono'
 
 const ROL_CONFIG: Record<string, { label: string; color: string; icon: any; descripcion: string }> = {
   propietario: { label: 'Propietario',    color: 'bg-purple-100 text-purple-700', icon: Shield,  descripcion: 'Acceso total' },
@@ -188,13 +189,12 @@ export default function EquipoClient({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
-              <input
-                type="tel"
-                value={telefono}
-                onChange={e => setTelefono(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleInvitar()}
-                placeholder="Su número"
+              <CampoTelefono
+                valor={telefono}
+                onChange={setTelefono}
+                paisPorDefecto={pais}
                 className={INPUT}
+                placeholder="Su número, sin la lada"
               />
               <p className="text-xs text-gray-400 mt-1">
                 Por aquí le llega la invitación.
