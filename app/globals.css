@@ -155,3 +155,27 @@ input.input-on-dark::placeholder, textarea.input-on-dark::placeholder {
   50%  { transform: rotate(180deg) scale(1.08); }
   100% { transform: rotate(360deg) scale(1); }
 }
+/* ── El zoom que se quedaba pegado al escribir en un campo ──────────────────
+ *
+ * Safari en iOS hace zoom al enfocar un campo cuya letra mida menos de 16px, y
+ * al salir NO deshace el zoom: la pantalla se queda grande y hay que volver a
+ * pellizcar con dos dedos. Quien no sepa ese gesto —que son muchos— se queda
+ * moviendo la página en horizontal para encontrar el siguiente campo.
+ *
+ * Los campos de TallerOS usan `text-sm` (14px), así que lo disparaban todos.
+ * Aquí se suben a 16px SOLO en pantallas táctiles: al no bajar del umbral,
+ * Safari no hace zoom y no hay nada que deshacer.
+ *
+ * La otra salida sería `maximum-scale=1` en el viewport, y está descartada a
+ * propósito: le quita el pellizco a quien lo necesita para leer, y Safari lo
+ * ignora desde iOS 10, así que ni siquiera arreglaría esto.
+ *
+ * El `:where()` no suma especificidad y los dos `:not()` sí, lo justo para
+ * ganarle a las clases de Tailwind sin recurrir a !important. Las casillas y
+ * los radios se quedan fuera: no se escribe en ellos y el tamaño es su caja.
+ */
+@media (hover: none) and (pointer: coarse) {
+  :where(input, select, textarea):not([type='checkbox']):not([type='radio']) {
+    font-size: 16px;
+  }
+}
