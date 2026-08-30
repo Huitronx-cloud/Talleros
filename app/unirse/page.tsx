@@ -52,6 +52,7 @@ export default async function UnirsePage({
         <FormUnirse
           token={token}
           email={invitacion.email}
+          nombreInicial={invitacion.nombre ?? ''}
           rol={invitacion.rol}
           tallerNombre={taller?.nombre ?? ''}
           tallerId={invitacion.taller_id}

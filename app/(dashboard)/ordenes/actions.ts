@@ -621,6 +621,13 @@ async function notificarMecanicoAsignado(
       return
     }
 
+    // Asignarse una orden a uno mismo no se avisa. Con el propietario ya en el
+    // desplegable, el caso normal de un taller de una persona es justo ese: se
+    // asigna todas sus órdenes, y el teléfono le sonaría cada vez por algo que
+    // acaba de hacer él. Dos o tres de esos y apaga las notificaciones.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.id === mecanico.id) return
+
     // Llamada directa, sin pasar por HTTP: antes esto era un fetch al propio
     // dominio contra un endpoint que no pedía autenticación de ningún tipo.
     await enviarPushAUsuario({

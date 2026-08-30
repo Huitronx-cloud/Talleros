@@ -28,6 +28,7 @@ interface Props {
 /** Lo que queda en pantalla tras invitar: el link vale por sí solo. */
 interface Invitacion {
   link:          string
+  nombre:        string
   email:         string
   telefono:      string
   correoEnviado: boolean
@@ -43,6 +44,7 @@ export default function EquipoClient({
   pais,
 }: Props) {
   const [miembros, setMiembros]     = useState(miembrosIniciales)
+  const [nombre, setNombre]         = useState('')
   const [email, setEmail]           = useState('')
   const [telefono, setTelefono]     = useState('')
   const [rol, setRol]               = useState<'admin' | 'tecnico' | 'recepcion'>('tecnico')
@@ -58,7 +60,9 @@ export default function EquipoClient({
       router.push('/configuracion/plan')
       return
     }
-    if (!email.trim()) { setError('El email es requerido'); return }
+    if (!nombre.trim())   { setError('El nombre es requerido'); return }
+    if (!email.trim())    { setError('El email es requerido'); return }
+    if (!telefono.trim()) { setError('El WhatsApp es requerido: es por donde le llega la invitación'); return }
     setEnviando(true)
     setError('')
     setInvitacion(null)
@@ -68,16 +72,18 @@ export default function EquipoClient({
       const res  = await fetch('/api/invitaciones', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: email.trim(), rol }),
+        body:    JSON.stringify({ nombre: nombre.trim(), email: email.trim(), telefono: telefono.trim(), rol }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
       setInvitacion({
         link:          data.link,
+        nombre:        nombre.trim(),
         email:         email.trim(),
         telefono:      telefono.trim(),
         correoEnviado: data.correoEnviado !== false,
       })
+      setNombre('')
       setEmail('')
       setTelefono('')
     } catch {
@@ -153,6 +159,20 @@ export default function EquipoClient({
         ) : (
           <div className="space-y-3">
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <input
+                type="text"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleInvitar()}
+                placeholder="Juan Pérez"
+                className={INPUT}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Así aparecerá en el desplegable de &ldquo;Mecánico asignado&rdquo;.
+              </p>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
                 type="email"
@@ -163,22 +183,22 @@ export default function EquipoClient({
                 className={INPUT}
               />
               <p className="text-xs text-gray-400 mt-1">
-                Le sirve para entrar a TallerOS. No hace falta que lo revise: la
-                invitación se la puedes mandar por WhatsApp.
+                Le sirve para entrar a TallerOS. No hace falta que lo revise.
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                WhatsApp <span className="text-gray-400 font-normal">(opcional)</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
               <input
                 type="tel"
                 value={telefono}
                 onChange={e => setTelefono(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleInvitar()}
-                placeholder="Su número, para mandarle el link"
+                placeholder="Su número"
                 className={INPUT}
               />
+              <p className="text-xs text-gray-400 mt-1">
+                Por aquí le llega la invitación.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
@@ -211,12 +231,12 @@ export default function EquipoClient({
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
                 <div>
                   <p className="text-sm font-semibold text-green-800">
-                    Invitación creada para {invitacion.email}
+                    Invitación creada para {invitacion.nombre}
                   </p>
                   <p className="text-xs text-green-700 mt-0.5">
                     {invitacion.correoEnviado
-                      ? 'Le mandamos el correo. Si no lo revisa, pásale el link por WhatsApp:'
-                      : 'El correo no salió, pero la invitación es válida. Pásale el link por WhatsApp:'}
+                      ? 'Le mandamos el correo de respaldo. Ahora mándale el link por WhatsApp:'
+                      : 'El correo no salió, pero la invitación es válida. Mándale el link por WhatsApp:'}
                   </p>
                 </div>
 
@@ -227,7 +247,7 @@ export default function EquipoClient({
                   <a
                     href={buildWhatsAppLink(
                       invitacion.telefono,
-                      `Te invito a unirte a ${tallerNombre} en TallerOS.\n\n` +
+                      `Hola ${invitacion.nombre.split(' ')[0]}, te invito a unirte a ${tallerNombre} en TallerOS.\n\n` +
                       `Ábrelo desde tu teléfono y crea tu contraseña:\n${invitacion.link}\n\n` +
                       `Tu correo para entrar es: ${invitacion.email}\n` +
                       `El link vence en 7 días.`,
@@ -238,7 +258,7 @@ export default function EquipoClient({
                     className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    {invitacion.telefono ? 'Enviar por WhatsApp' : 'Elegir contacto'}
+                    Enviar por WhatsApp
                   </a>
                   <button
                     onClick={copiarLink}

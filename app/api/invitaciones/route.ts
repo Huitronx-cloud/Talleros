@@ -28,18 +28,31 @@ export async function POST(req: NextRequest) {
     .eq('taller_id', usuario.taller_id)
     .single()
 
-  const { email, rol } = await req.json()
+  const { nombre, email, telefono, rol } = await req.json()
 
-  if (!email || !rol) return NextResponse.json({ error: 'Email y rol son requeridos' }, { status: 400 })
+  // El nombre lo pone quien invita, no el invitado: es el texto que después
+  // aparece en el desplegable de "Mecánico asignado", y con el que se le busca
+  // para avisarle. Si cada uno escribe el suyo, "Juan Pérez" y "juan" acaban
+  // siendo dos mecánicos distintos en los reportes.
+  if (!nombre?.trim()) return NextResponse.json({ error: 'El nombre es requerido' }, { status: 400 })
+  if (!email?.trim())  return NextResponse.json({ error: 'El email es requerido' }, { status: 400 })
+  // El WhatsApp es por donde llega de verdad la invitación; el correo es el
+  // respaldo, no al revés.
+  if (!telefono?.trim()) return NextResponse.json({ error: 'El WhatsApp es requerido' }, { status: 400 })
+  if (!rol) return NextResponse.json({ error: 'El rol es requerido' }, { status: 400 })
   if (!['admin', 'tecnico', 'recepcion'].includes(rol)) {
     return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
   }
+
+  // Un espacio de más al teclear el correo hacía que las comprobaciones de
+  // duplicado de abajo miraran un texto distinto del que se acaba de guardar.
+  const correo = email.trim()
 
   // Verificar que no exista ya un usuario con ese email en el taller
   const { data: existente } = await admin
     .from('usuarios')
     .select('id')
-    .eq('email', email)
+    .eq('email', correo)
     .eq('taller_id', usuario.taller_id)
     .single()
 
@@ -52,7 +65,7 @@ export async function POST(req: NextRequest) {
     .from('invitaciones')
     .select('id')
     .eq('taller_id', usuario.taller_id)
-    .eq('email', email)
+    .eq('email', correo)
     .eq('usado', false)
     .gt('expires_at', new Date().toISOString())
     .maybeSingle()
@@ -92,7 +105,13 @@ export async function POST(req: NextRequest) {
   // Crear invitación
   const { data: invitacion, error } = await admin
     .from('invitaciones')
-    .insert({ taller_id: usuario.taller_id, email, rol })
+    .insert({
+      taller_id: usuario.taller_id,
+      email:     correo,
+      nombre:    nombre.trim(),
+      telefono:  telefono.trim(),
+      rol,
+    })
     .select('token')
     .single()
 
@@ -123,7 +142,7 @@ const resendRes = await fetch('https://api.resend.com/emails', {
   },
   body: JSON.stringify({
     from: 'TallerOS <notificaciones@tallerosapp.com>',
-    to: [email],
+    to: [correo],
     subject: `Te invitaron a unirte a ${(taller as any)?.nombre ?? 'un taller'} en TallerOS`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">

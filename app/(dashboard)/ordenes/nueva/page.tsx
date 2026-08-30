@@ -44,12 +44,17 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
       .lt('created_at', `${mesActual}-31`),
   ])
 
-  // Usar service client para bypassar RLS y obtener todos los mecánicos del taller
+  // Usar service client para bypassar RLS y obtener todos los mecánicos del taller.
+  // El propietario va en la lista: en un taller de una persona el dueño ES el
+  // mecánico, y filtrando solo por 'tecnico' no podía asignarse sus propias
+  // órdenes — en cuanto invitaba a un ayudante, el desplegable enseñaba al
+  // ayudante y a él no. Los administradores quedan fuera por decisión del dueño
+  // (29/08/2026): suelen ser de oficina y no tocan coches.
   const { data: mecanicos } = await admin
     .from('usuarios')
     .select('id, nombre')
     .eq('taller_id', tallerId)
-    .eq('rol', 'tecnico')
+    .in('rol', ['propietario', 'tecnico'])
     .order('nombre')
 
   const plan            = suscripcion?.plan ?? 'trial'
