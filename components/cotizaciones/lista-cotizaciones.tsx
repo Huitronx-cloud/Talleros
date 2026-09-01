@@ -32,14 +32,17 @@ export default function ListaCotizaciones({ cotizaciones }: { cotizaciones: Coti
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      {/* En el teléfono el título y el botón no caben en una línea sin quedar
+          pegados, así que ahí van uno debajo del otro. El gap-4 evita que se
+          toquen también en pantalla ancha. */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Cotizaciones</h1>
           <p className="text-gray-500 text-sm mt-1">{cotizaciones.length} cotizaciones en total</p>
         </div>
         <Link
           href="/cotizaciones/nueva"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
           Nueva cotización

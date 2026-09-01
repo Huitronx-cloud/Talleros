@@ -18,7 +18,7 @@ export default async function CotizacionesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       <ListaCotizaciones cotizaciones={cotizaciones ?? []} />
     </div>
   )

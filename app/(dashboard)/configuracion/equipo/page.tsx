@@ -59,7 +59,7 @@ export default async function EquipoPage() {
   const puedeInvitar  = puedeCrear(ocupadas, limites.usuarios)
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Equipo</h1>
         <p className="text-gray-500 text-sm mt-1">Invita y gestiona a los miembros de tu taller.</p>
