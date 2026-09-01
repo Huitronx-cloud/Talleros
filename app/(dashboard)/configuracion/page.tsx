@@ -64,7 +64,7 @@ export default async function ConfiguracionPage() {
   const googleConectado = !!(taller as any).google_connected_at
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
         <p className="text-gray-500 text-sm mt-1">Administra los datos de tu taller y las preferencias de cotización.</p>
