@@ -8,6 +8,32 @@ function getSupabaseAdmin() {
   )
 }
 
+/**
+ * El coche como se le nombra al cliente en el WhatsApp: "2020 Toyota Corolla".
+ *
+ * Vive aparte para poder probarlo. La versión anterior era
+ * `${anio} ${marca} ${modelo}`.trim(), y `trim()` solo limpia los extremos: a
+ * una orden sin marca pero con modelo le salía un hueco doble en medio
+ * ("2020  Corolla"). Con partes sueltas eso no se ve al leer el código, pero el
+ * cliente sí lo ve en su teléfono.
+ *
+ * Sin ningún dato devuelve "tu vehículo", que es lo que encaja en la frase del
+ * mensaje ("ya toca revisar tu vehículo").
+ */
+export function describirVehiculo(
+  marca?: string | null,
+  modelo?: string | null,
+  anio?: number | string | null,
+): string {
+  const partes = [anio, marca, modelo]
+    .map(p => String(p ?? '').trim())
+    // El '0' se descarta aparte de lo vacío: un año guardado como 0 es un dato
+    // malo, no un año, y "0 Toyota Corolla" es peor que no decir el año.
+    .filter(p => p !== '' && p !== '0')
+
+  return partes.length > 0 ? partes.join(' ') : 'tu vehículo'
+}
+
 export async function getClientesParaRecordar(
   tallerId: string,
   mesesIntervalo: number
@@ -16,21 +42,35 @@ export async function getClientesParaRecordar(
   fechaLimite.setMonth(fechaLimite.getMonth() - mesesIntervalo)
 
   const supabaseAdmin = getSupabaseAdmin()
+  // El vehículo sale de la propia orden. Antes esto pedía una unión con la
+  // tabla `vehiculos`, que NO EXISTE en la base: la consulta fallaba entera,
+  // el error se tragaba abajo, y la campaña de mantenimiento llevaba desde
+  // siempre devolviendo cero clientes cada día sin mandar un solo mensaje. Se
+  // veía igual que "hoy no le toca a nadie".
+  //
+  // La unión nunca hizo falta: las órdenes ya guardan los datos del coche tal
+  // como entró al taller, que además es lo correcto aquí — si el cliente
+  // vendió el coche, el recordatorio habla del que trajo.
   const { data: ordenes, error } = await supabaseAdmin
     .from('ordenes')
-    .select('id, fecha_entrega, cliente_id, clientes(id, nombre, telefono, email), vehiculos(marca, modelo, anio)')
+    .select('id, fecha_entrega, cliente_id, vehiculo_marca, vehiculo_modelo, vehiculo_año, clientes(id, nombre, telefono, email)')
     .eq('taller_id', tallerId)
     .in('estado', ['entregado', 'completado'])
     .lte('fecha_entrega', fechaLimite.toISOString())
     .order('fecha_entrega', { ascending: false })
 
-  if (error || !ordenes) return []
+  // Antes era un `return []` mudo, y eso es lo que mantuvo el fallo escondido
+  // meses: el cron anotaba "0 clientes encontrados" y terminaba bien.
+  if (error) {
+    console.error(`[recordatorios] taller ${tallerId}: no se pudieron leer las órdenes: ${error.message}`)
+    return []
+  }
+  if (!ordenes) return []
 
   const clientesMap = new Map<string, ClienteParaRecordatorio>()
 
   for (const orden of ordenes as any[]) {
     const cliente = orden.clientes
-    const vehiculo = orden.vehiculos
 
     if (!cliente || clientesMap.has(cliente.id)) continue
 
@@ -47,9 +87,11 @@ export async function getClientesParaRecordar(
       (ahora.getTime() - fechaOrden.getTime()) / (1000 * 60 * 60 * 24 * 30)
     )
 
-    const vehiculoStr = vehiculo
-      ? `${vehiculo.anio || ''} ${vehiculo.marca || ''} ${vehiculo.modelo || ''}`.trim()
-      : 'tu vehículo'
+    const vehiculoStr = describirVehiculo(
+      orden.vehiculo_marca,
+      orden.vehiculo_modelo,
+      orden.vehiculo_año,
+    )
 
     clientesMap.set(cliente.id, {
       cliente_id: cliente.id,
