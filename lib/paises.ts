@@ -20,28 +20,30 @@ export interface DatosPais {
   moneda:   string
   tasa:     number
   etiqueta: string
+  /** Zona IANA, para mandar la hora correcta a Google Calendar. */
+  zona:     string
 }
 
 const PAISES: Record<string, DatosPais> = {
-  MX: { nombre: 'México',               moneda: 'MXN', tasa: 0.16, etiqueta: 'IVA 16%'   },
-  CO: { nombre: 'Colombia',             moneda: 'COP', tasa: 0.19, etiqueta: 'IVA 19%'   },
-  AR: { nombre: 'Argentina',            moneda: 'ARS', tasa: 0.21, etiqueta: 'IVA 21%'   },
-  CL: { nombre: 'Chile',                moneda: 'CLP', tasa: 0.19, etiqueta: 'IVA 19%'   },
-  PE: { nombre: 'Perú',                 moneda: 'PEN', tasa: 0.18, etiqueta: 'IGV 18%'   },
-  EC: { nombre: 'Ecuador',              moneda: 'USD', tasa: 0.15, etiqueta: 'IVA 15%'   },
-  VE: { nombre: 'Venezuela',            moneda: 'USD', tasa: 0.16, etiqueta: 'IVA 16%'   },
-  BO: { nombre: 'Bolivia',              moneda: 'BOB', tasa: 0.13, etiqueta: 'IVA 13%'   },
-  PY: { nombre: 'Paraguay',             moneda: 'PYG', tasa: 0.10, etiqueta: 'IVA 10%'   },
-  UY: { nombre: 'Uruguay',              moneda: 'UYU', tasa: 0.22, etiqueta: 'IVA 22%'   },
-  GT: { nombre: 'Guatemala',            moneda: 'GTQ', tasa: 0.12, etiqueta: 'IVA 12%'   },
-  CR: { nombre: 'Costa Rica',           moneda: 'CRC', tasa: 0.13, etiqueta: 'IVA 13%'   },
-  PA: { nombre: 'Panamá',               moneda: 'USD', tasa: 0.07, etiqueta: 'ITBMS 7%'  },
-  HN: { nombre: 'Honduras',             moneda: 'HNL', tasa: 0.15, etiqueta: 'ISV 15%'   },
-  SV: { nombre: 'El Salvador',          moneda: 'USD', tasa: 0.13, etiqueta: 'IVA 13%'   },
-  NI: { nombre: 'Nicaragua',            moneda: 'NIO', tasa: 0.15, etiqueta: 'IVA 15%'   },
-  DO: { nombre: 'República Dominicana', moneda: 'DOP', tasa: 0.18, etiqueta: 'ITBIS 18%' },
-  US: { nombre: 'Estados Unidos',       moneda: 'USD', tasa: 0,    etiqueta: 'Sin impuesto' },
-  CA: { nombre: 'Canadá',               moneda: 'CAD', tasa: 0.05, etiqueta: 'GST 5%'    },
+  MX: { nombre: 'México',               moneda: 'MXN', tasa: 0.16, etiqueta: 'IVA 16%', zona: 'America/Mexico_City' },
+  CO: { nombre: 'Colombia',             moneda: 'COP', tasa: 0.19, etiqueta: 'IVA 19%', zona: 'America/Bogota' },
+  AR: { nombre: 'Argentina',            moneda: 'ARS', tasa: 0.21, etiqueta: 'IVA 21%', zona: 'America/Argentina/Buenos_Aires' },
+  CL: { nombre: 'Chile',                moneda: 'CLP', tasa: 0.19, etiqueta: 'IVA 19%', zona: 'America/Santiago' },
+  PE: { nombre: 'Perú',                 moneda: 'PEN', tasa: 0.18, etiqueta: 'IGV 18%', zona: 'America/Lima' },
+  EC: { nombre: 'Ecuador',              moneda: 'USD', tasa: 0.15, etiqueta: 'IVA 15%', zona: 'America/Guayaquil' },
+  VE: { nombre: 'Venezuela',            moneda: 'USD', tasa: 0.16, etiqueta: 'IVA 16%', zona: 'America/Caracas' },
+  BO: { nombre: 'Bolivia',              moneda: 'BOB', tasa: 0.13, etiqueta: 'IVA 13%', zona: 'America/La_Paz' },
+  PY: { nombre: 'Paraguay',             moneda: 'PYG', tasa: 0.10, etiqueta: 'IVA 10%', zona: 'America/Asuncion' },
+  UY: { nombre: 'Uruguay',              moneda: 'UYU', tasa: 0.22, etiqueta: 'IVA 22%', zona: 'America/Montevideo' },
+  GT: { nombre: 'Guatemala',            moneda: 'GTQ', tasa: 0.12, etiqueta: 'IVA 12%', zona: 'America/Guatemala' },
+  CR: { nombre: 'Costa Rica',           moneda: 'CRC', tasa: 0.13, etiqueta: 'IVA 13%', zona: 'America/Costa_Rica' },
+  PA: { nombre: 'Panamá',               moneda: 'USD', tasa: 0.07, etiqueta: 'ITBMS 7%', zona: 'America/Panama' },
+  HN: { nombre: 'Honduras',             moneda: 'HNL', tasa: 0.15, etiqueta: 'ISV 15%', zona: 'America/Tegucigalpa' },
+  SV: { nombre: 'El Salvador',          moneda: 'USD', tasa: 0.13, etiqueta: 'IVA 13%', zona: 'America/El_Salvador' },
+  NI: { nombre: 'Nicaragua',            moneda: 'NIO', tasa: 0.15, etiqueta: 'IVA 15%', zona: 'America/Managua' },
+  DO: { nombre: 'República Dominicana', moneda: 'DOP', tasa: 0.18, etiqueta: 'ITBIS 18%', zona: 'America/Santo_Domingo' },
+  US: { nombre: 'Estados Unidos',       moneda: 'USD', tasa: 0,    etiqueta: 'Sin impuesto', zona: 'America/New_York' },
+  CA: { nombre: 'Canadá',               moneda: 'CAD', tasa: 0.05, etiqueta: 'GST 5%', zona: 'America/Toronto' },
 }
 
 // Ecuador, Venezuela, Panamá y El Salvador operan en dólares: no llevan moneda

@@ -14,7 +14,7 @@
  */
 import { execSync } from 'node:child_process'
 
-const BASE = 19
+const BASE = 10
 
 let salida = ''
 try {
