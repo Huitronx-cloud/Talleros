@@ -80,7 +80,7 @@ export default function LandingPage() {
   const [stats, setStats]           = useState({ hoy: 0, semana: 0, total: 0, ordenes: 0 })
   const [toast, setToast]           = useState(false)
   const obs = useRef<IntersectionObserver | null>(null)
-  const { convertir, pais, cargando: cM } = useMonedaLocal()
+  const { convertir, pais, moneda: monedaLocal, cargando: cM } = useMonedaLocal()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -350,11 +350,18 @@ export default function LandingPage() {
         <div className="lsl">Cuesta menos que un servicio</div>
         <h2 className="lsh2">Sin sorpresas.<br/>Sin letra chica.</h2>
         <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
+        {/* La única urgencia que la web puede sostener mirándola de cerca: no
+            es escasez de producto sino de tarifa, y Stripe ya la cumple solo
+            —cada suscripción conserva el precio con el que se creó—. */}
+        <div className="lfund">
+          <span className="lfund-d" />
+          Precio de fundador — el que tomes hoy es el que pagas siempre
+        </div>
         <div className="ltog-w">
           <div className="ltog">
             {['Mensual','Anual'].map((label,i) => (
               <button key={label} onClick={() => setAnual(i===1)} className={`ltb${(i===1)===anual?' a':''}`}>
-                {label}{i===1 && <span className="ltbadge">-20%</span>}
+                {label}{i===1 && <span className="ltbadge">2 meses gratis</span>}
               </button>
             ))}
           </div>
@@ -362,20 +369,17 @@ export default function LandingPage() {
         <div className="lpg">
           {PLANES.map(plan => {
             const pa  = anual ? plan.precio_anual : plan.precio_mensual
-            const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
             // Los importes salen de `lib/precios.ts`, la misma tabla que decide
             // qué cobra Stripe. Antes se calculaban aquí con una tasa escrita a
             // mano, y por eso a un argentino se le enseñaba un 31% menos de lo
             // que se le iba a cobrar.
             const txt = textosPlan(plan.nombre, pais, anual)
-            const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}${plan.nombre==='Esencial'?' esencial':''}`}>
                 {plan.popular && <div className="lplan-b">Más popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={22}/></div>
                   <h3 className="lplan-n">{plan.nombre}</h3>
-                  {!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}
                   {plan.gratis && <span className="lplan-free">Para siempre gratis</span>}
                 </div>
                 <p className="lplan-ideal">{plan.ideal}</p>
@@ -384,18 +388,27 @@ export default function LandingPage() {
                     <div className="lplan-pr"><span className="lplan-num">$0</span><span className="lplan-per">/mes</span></div>
                   ) : (
                     <>
-                      <div className="lplan-or">{montoYmoneda(txt ? txt.tachado : `$${por}`)[0]}</div>
+                      {/* Aquí iba un precio tachado que era el doble del real:
+                          un "antes" que nunca se cobró. Lo sustituye el cargo
+                          verdadero y, en anual, la resta exacta contra doce
+                          meses sueltos — que además es un descuento mayor que
+                          el 20% que se anunciaba. */}
                       <div className="lplan-pr">
                         <span className="lplan-num">{montoYmoneda(txt ? txt.principal : `$${pa}`)[0]}</span>
                         <span className="lplan-cur">{montoYmoneda(txt ? txt.principal : `$${pa}`)[1]}</span>
                         <span className="lplan-per">/mes</span>
                       </div>
-                      {anual
-                        ? <p className="lplan-an">{txt ? `${txt.anualTotal} al año` : ''}</p>
-                        : <p className="lplan-an">Ahorras {!cM ? convertir(plan.precio_mensual*12 - plan.total_anual) : `$${plan.precio_mensual*12 - plan.total_anual} USD`} pagando al año</p>}
+                      {txt && (
+                        <p className="lplan-an">
+                          {anual ? `${txt.anualTotal} al año, un solo cargo` : `${txt.mensualSolo} al mes, cancelas cuando quieras`}
+                        </p>
+                      )}
+                      {anual && txt && <p className="lplan-ah">Te ahorras {txt.ahorroAnual} al año</p>}
                       {/* Solo cuando el cobro va en dólares. Donde hay precio en
                           moneda local el número de arriba ES el cargo. */}
-                      {txt?.enDolares && !cM && (
+                      {/* Solo si el visitante NO usa dólares: en Ecuador, Panamá, El
+                          Salvador y Venezuela el dólar es su moneda. */}
+                      {txt?.enDolares && monedaLocal !== 'USD' && !cM && (
                         <p className="lplan-an" style={{opacity:.75}}>
                           Se cobra en dólares · ≈ {convertir(anual ? Math.round(plan.total_anual/12) : pa)}
                         </p>
@@ -403,21 +416,34 @@ export default function LandingPage() {
                     </>
                   )}
                 </div>
+                {/* Mueve la pregunta de "cuánto cuesta" a "cuánto me deja". */}
+                {!plan.gratis && (
+                  <p className="lplan-lock">🔒 Este precio se te queda congelado mientras no canceles.</p>
+                )}
+                {plan.retorno && <p className="lplan-ret">{plan.retorno}</p>}
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
                 </ul>
                 <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>
-                  {plan.gratis ? 'Empezar gratis' : `Elegir ${plan.nombre}`} <ArrowRight size={15}/>
+                  {plan.gratis ? 'Crear cuenta gratis' : 'Empezar los 14 días gratis'} <ArrowRight size={15}/>
                 </a>
                 <p className="lplan-nt">
                   {plan.gratis
                     ? 'Sin tarjeta de crédito'
-                    : 'Empiezas gratis. Sin permanencia, cancelas cuando quieras.'}
+                    : 'Sin tarjeta · Cancelas cuando quieras'}
                 </p>
               </div>
             )
           })}
         </div>
+        {/* Prueba social en movimiento, del mismo /api/stats que ya alimenta el
+            aviso flotante. Solo con número mayor que cero. */}
+        {stats.semana > 0 && (
+          <p className="lmom">
+            <span className="lmom-p" />
+            {stats.semana} taller{stats.semana > 1 ? 'es' : ''} se {stats.semana > 1 ? 'dieron' : 'dio'} de alta esta semana
+          </p>
+        )}
         {stats.total > 0 && (
         <div className="lproof">
           <div className="lpavs">
@@ -736,12 +762,35 @@ export default function LandingPage() {
       .ltb{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:transparent;color:var(--ink3);transition:all .2s;font-family:inherit;}
       .ltb.a{background:var(--blue);color:#fff;}
       .ltbadge{font-size:10px;background:var(--sig);color:#fff;padding:1px 6px;border-radius:999px;font-weight:700;}
+      .lplan-ah{font-size:13px;font-weight:700;color:var(--ok,#15803d);margin-top:4px;}
+      .lplan-ret{font-size:13px;line-height:1.45;background:var(--sig-sf);color:var(--sig-d);border-radius:10px;padding:10px 12px;margin:14px 0 0;}
       .lpg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
       .lplan{background:var(--surf);border:1px solid var(--bdr2);border-radius:var(--rxl);padding:36px 32px;position:relative;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
       /* "Más popular" cuelga de la tarjeta de Esencial: va del color de esa
          tarjeta. En ámbar chocaba con el plan Pro y parecía señalarlo a él. */
-      .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px rgba(37,99,235,0.3),0 8px 32px rgba(37,99,235,0.14);}
+      /* La tarjeta recomendada en oscuro para que domine de verdad. Cada clase
+         hija lleva su color explícito: heredar es cómo se acaba con texto
+         oscuro sobre oscuro. */
+      .lplan.pop{background:var(--ink);border-color:var(--ink);border-width:1px;box-shadow:0 16px 48px rgba(15,23,42,0.20);}
+      .lplan.pop .lplan-n{color:#fff;}
+      .lplan.pop .lplan-ideal{color:#cbd5e1;}
+      .lplan.pop .lplan-num,.lplan.pop .lplan-per{color:#fff;}
+      .lplan.pop .lplan-cur{color:#94a3b8;}
+      .lplan.pop .lplan-an{color:#cbd5e1;}
+      .lplan.pop .lplan-ah{color:#4ade80;}
+      .lplan.pop .lplan-nt{color:#94a3b8;}
+      .lplan.pop .lplan-free{color:#94a3b8;}
+      .lplan.pop .lplan-fl li{color:#e2e8f0;}
+      .lplan.pop .lplan-ic{background:rgba(255,255,255,0.10);color:#fff;}
+      .lplan.pop .lfck{background:rgba(255,255,255,0.12);color:#7dd3fc;}
+      .lplan.pop .lplan-ret{background:rgba(37,99,235,0.24);color:#bfdbfe;}
+      .lplan.pop .lplan-lock{background:rgba(226,96,10,0.16);border-color:rgba(251,215,184,0.28);color:#fdba74;}
+      .lfund{display:inline-flex;align-items:center;gap:9px;background:var(--sig-sf);border:1px solid var(--sig-bd);color:var(--sig-d);border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;margin-bottom:22px;line-height:1.35;}
+      .lfund-d{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+      .lplan-lock{display:flex;gap:8px;align-items:flex-start;border:1px dashed var(--sig-bd);background:var(--sig-sf);color:var(--sig-d);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.42;margin:14px 0 0;}
+      .lmom{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--ink2);margin-bottom:26px;}
+      .lmom-p{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,0.18);flex-shrink:0;}
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;text-align:center;}
       .lplan-ic{width:56px;height:56px;border-radius:16px;background:rgba(100,116,139,0.10);display:flex;align-items:center;justify-content:center;color:var(--ink3);}
@@ -757,11 +806,9 @@ export default function LandingPage() {
       .lplan:last-child .lplan-ic{background:rgba(226,96,10,0.12);color:var(--sig);}
       .lplan-ideal{font-size:13.5px;color:var(--ink3);margin:0 0 18px;line-height:1.55;text-align:center;min-height:42px;}
       .lplan-n{font-size:29px;font-weight:800;color:var(--ink);letter-spacing:-.022em;line-height:1;}
-      .lplan-pct{font-size:11px;font-weight:800;background:var(--sig-sf);color:var(--sig-d);border:1px solid var(--sig-bd);padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:20px 14px;margin-bottom:22px;text-align:center;}
       .lplan.pop .lplan-pb{background:rgba(37,99,235,0.05);border-color:rgba(37,99,235,0.18);}
       .lplan:last-child .lplan-pb{background:rgba(226,96,10,0.05);border-color:rgba(226,96,10,0.18);}
-      .lplan-or{font-size:17px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:2px;}
       .lplan-pr{display:flex;align-items:baseline;gap:5px;justify-content:center;flex-wrap:nowrap;}
       .lplan-num{font-size:clamp(38px,3.6vw,54px);font-weight:900;color:var(--blue);letter-spacing:-.035em;line-height:1;white-space:nowrap;}
       .lplan-cur{font-size:13px;font-weight:800;color:var(--ink4);letter-spacing:.5px;}

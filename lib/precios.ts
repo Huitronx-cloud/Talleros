@@ -238,23 +238,39 @@ export function textosPlan(
   nombrePlan: string,
   pais: string | null | undefined,
   anual: boolean,
-): { principal: string; tachado: string; anualTotal: string; enDolares: boolean } | null {
+): {
+  principal:    string
+  anualTotal:   string
+  mensualSolo:  string
+  ahorroAnual:  string
+  enDolares:    boolean
+} | null {
   const clave = nombrePlan.toLowerCase() === 'pro' ? 'pro'
               : nombrePlan.toLowerCase() === 'esencial' ? 'esencial'
               : null
   if (!clave) return null
 
   const p = preciosDePais(pais)
-  const totalAnual = p.importes[`${clave}_anual`]
+  const totalAnual  = p.importes[`${clave}_anual`]
+  const porMesSolo  = p.importes[`${clave}_mensual`]
   // En anual el cargo es uno al año, pero en pantalla se enseña por mes porque
   // así es como la gente compara.
-  const porMes = anual ? Math.round(totalAnual / 12) : p.importes[`${clave}_mensual`]
+  const porMes = anual ? Math.round(totalAnual / 12) : porMesSolo
 
   return {
-    principal:  formatearPrecio(porMes, p),
-    tachado:    formatearPrecio(porMes * 2, p),
-    anualTotal: formatearPrecio(totalAnual, p),
-    enDolares:  p.moneda === 'USD',
+    principal:   formatearPrecio(porMes, p),
+    anualTotal:  formatearPrecio(totalAnual, p),
+    mensualSolo: formatearPrecio(porMesSolo, p),
+    // El único descuento que TallerOS puede enseñar sin mentir: doce meses al
+    // precio mensual contra lo que cuesta el año de una vez. Cualquiera lo
+    // comprueba multiplicando.
+    //
+    // Hasta el 04/09/2026 aquí había un `tachado` que era `porMes * 2`, o sea
+    // un precio anterior inventado — el plan Esencial nunca costó $898. Aparte
+    // de que el propio dueño no se lo creía, anunciar en México un precio
+    // anterior que nunca se cobró es lo que sanciona PROFECO.
+    ahorroAnual: formatearPrecio(porMesSolo * 12 - totalAnual, p),
+    enDolares:   p.moneda === 'USD',
   }
 }
 

@@ -17,12 +17,18 @@ export type PlanWeb = {
   precio_mensual:          number
   precio_anual:            number
   total_anual:             number
-  precio_original_mensual: number
-  precio_original_anual:   number
   icono:                   IconoPlan
   popular:                 boolean
   gratis:                  boolean
   ideal:                   string
+  /**
+   * El punto de equilibrio, en el idioma del taller. Existe porque un dueño no
+   * compara el precio contra otro precio: lo compara contra lo que va a ganar.
+   * Solo va en los planes de pago, y tiene que aguantar la cuenta más
+   * conservadora — con un ticket promedio de $1.500 MXN, un cliente al mes
+   * cubre el Esencial anual cuatro veces.
+   */
+  retorno?:                string
   features:                string[]
 }
 
@@ -30,7 +36,6 @@ export const PLANES_WEB: PlanWeb[] = [
   {
     nombre: 'Gratuito',
     precio_mensual: 0, precio_anual: 0, total_anual: 0,
-    precio_original_mensual: 0, precio_original_anual: 0,
     icono: IconLlaveCarro,      popular: false, gratis: true,
     ideal: 'Para arrancar y ver cómo se siente trabajar con sistema.',
     features: [
@@ -46,9 +51,9 @@ export const PLANES_WEB: PlanWeb[] = [
     // todos los días cabe entero aquí.
     nombre: 'Esencial',
     precio_mensual: 24, precio_anual: 19, total_anual: 228,
-    precio_original_mensual: 48, precio_original_anual: 38,
     icono: IconTallerCompleto,  popular: true,  gratis: false,
     ideal: 'Para el taller que ya trabaja todos los días. Sin topes.',
+    retorno: 'Se paga solo con un cliente que regrese al mes.',
     features: [
       'Órdenes de trabajo ilimitadas',
       'Clientes y vehículos ilimitados',
@@ -65,9 +70,9 @@ export const PLANES_WEB: PlanWeb[] = [
     // sucursales, equipo grande, volumen que ya no cabe en Esencial.
     nombre: 'Pro',
     precio_mensual: 49, precio_anual: 39, total_anual: 468,
-    precio_original_mensual: 98, precio_original_anual: 78,
     icono: IconPistonesV,       popular: false, gratis: false,
     ideal: 'Para talleres con varias sucursales o equipos grandes.',
+    retorno: 'Se paga solo con un servicio mayor al mes.',
     features: [
       'Todo lo del plan Esencial',
       'Usuarios ilimitados',
