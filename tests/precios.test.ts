@@ -213,6 +213,40 @@ describe('lo que se pinta en la web sale de la misma tabla', () => {
       expect(num(anual.principal)).toBeLessThan(num(mensual.principal))
     }
   })
+
+  it('el ahorro anual es la resta exacta, no un porcentaje inventado', () => {
+    // Hasta el 04/09/2026 la web enseñaba un precio tachado que era el doble
+    // del real: un "antes" que nunca se cobró. Ahora el único descuento que se
+    // anuncia es este, y tiene que cuadrar con la tabla que cobra Stripe.
+    const num = (s: string) => Number(s.replace(/[^\d]/g, ''))
+
+    for (const [pais, plan, esperado] of [
+      ['MX', 'Esencial', 449 * 12 - 3999],
+      ['MX', 'Pro',      899 * 12 - 8199],
+      ['AR', 'Esencial',  24 * 12 - 228],
+      ['AR', 'Pro',       49 * 12 - 468],
+    ] as const) {
+      const t = textosPlan(plan, pais, true)!
+      expect(num(t.ahorroAnual), `${plan} en ${pais}`).toBe(esperado)
+    }
+  })
+
+  it('en todos los países pagar al año sale a cuenta', () => {
+    // Si en algún país el anual saliera igual o más caro, la web estaría
+    // prometiendo un ahorro que no existe.
+    for (const pais of ['MX', 'CO', 'PE', 'AR']) {
+      for (const plan of ['Esencial', 'Pro']) {
+        const t = textosPlan(plan, pais, true)!
+        const ahorro = Number(t.ahorroAnual.replace(/[^\d]/g, ''))
+        expect(ahorro, `${plan} en ${pais}`).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('el mensual suelto se enseña tal cual, sin dividir nada', () => {
+    expect(textosPlan('Esencial', 'MX', true)!.mensualSolo).toContain('449')
+    expect(textosPlan('Esencial', 'MX', false)!.mensualSolo).toContain('449')
+  })
 })
 
 describe('formato', () => {

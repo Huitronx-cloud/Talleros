@@ -56,12 +56,6 @@ const PLANES = PLANES_WEB
 const MARQUEE = ['Aprobación por WhatsApp','Portal del cliente','Reseñas automáticas','Garantía digital','Fotos del diagnóstico','Recordatorios de mantenimiento','Multi-usuario','Kanban en tiempo real','Cotizaciones profesionales','Historial de vehículo','Control de inventario','Reportes avanzados']
 const WORDS = ['más confiable','más profesional','más rentable','el favorito']
 
-function getSecsUntilEOM(): number {
-  const now = new Date()
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0)
-  return Math.floor((end.getTime() - now.getTime()) / 1000)
-}
-function fmt(s: number) { return { d: Math.floor(s/86400), h: Math.floor((s%86400)/3600), m: Math.floor((s%3600)/60), s: s%60 } }
 
 function LeadForm() {
   const [nombre, setNombre] = useState('')
@@ -114,9 +108,8 @@ export default function MexicoClient() {
   // Arranca en null y se calcula tras montar. Si se calculara en el render,
   // el servidor pintaría un segundo y el cliente otro, y ese desajuste hacía
   // que React descartara todo el HTML del servidor para repintar de cero.
-  const [secs, setSecs]             = useState<number | null>(null)
   const obs = useRef<IntersectionObserver | null>(null)
-  const { convertir, pais, cargando: cM } = useMonedaLocal()
+  const { convertir, pais, moneda: monedaLocal, cargando: cM } = useMonedaLocal()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -126,14 +119,6 @@ export default function MexicoClient() {
 
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
-  }, [])
-
-  // Se recalcula contra el reloj en vez de restar de uno en uno: así no se
-  // desfasa si el navegador congela la pestaña en segundo plano.
-  useEffect(() => {
-    setSecs(getSecsUntilEOM())
-    const t = setInterval(() => setSecs(getSecsUntilEOM()), 1000)
-    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
@@ -146,8 +131,6 @@ export default function MexicoClient() {
   }, [])
 
   const isV = (id: string) => visible.has(id)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const { d, h, m, s } = fmt(secs ?? 0)
 
   return (
     <>
@@ -339,21 +322,19 @@ export default function MexicoClient() {
     {/* PRECIOS */}
     <section id="precios" className="ls lprice-s">
       <div className="li">
-        <div className="lobar">
-          <span className="lobar-f">🔥</span>
-          <span className="lobar-t">OFERTA DE LANZAMIENTO - 50% DE DESCUENTO</span>
-          {/* hasta que el reloj del navegador responda no se enseña nada:
-              un 0d 00:00:00 parpadeando diría que la oferta ya terminó */}
-          {secs !== null && <span className="lobar-tm">Termina en <strong className="lobar-c">{d}d {pad(h)}:{pad(m)}:{pad(s)}</strong></span>}
-        </div>
-        <div className="lsl">Precios de lanzamiento</div>
-        <h2 className="lsh2">Sin sorpresas. Sin letra chica.</h2>
+        {/* Aquí había una barra de "OFERTA DE LANZAMIENTO -50%" con un reloj que
+            contaba hasta fin de mes y se reiniciaba el día 1: una oferta que
+            llevaba desde el lanzamiento y siempre tenía veintitantos días.
+            Junto al precio tachado inventado, hacía que no se creyera ninguno
+            de los cinco descuentos que la sección enseñaba a la vez. */}
+        <div className="lsl">Precios</div>
+        <h2 className="lsh2">Lo que cuesta, y lo que te deja</h2>
         <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
         <div className="ltog-w">
           <div className="ltog">
             {['Mensual','Anual'].map((label,i) => (
               <button key={label} onClick={() => setAnual(i===1)} className={`ltb${(i===1)===anual?' a':''}`}>
-                {label}{i===1 && <span className="ltbadge">-20%</span>}
+                {label}{i===1 && <span className="ltbadge">2 meses gratis</span>}
               </button>
             ))}
           </div>
@@ -361,41 +342,65 @@ export default function MexicoClient() {
         <div className="lpg">
           {PLANES.map(plan => {
             const pa  = anual ? plan.precio_anual : plan.precio_mensual
-            const por = anual ? plan.precio_original_anual : plan.precio_original_mensual
             // Los importes salen de `lib/precios.ts`, la misma tabla que decide qué
             // cobra Stripe. Antes se calculaban aquí multiplicando por una tasa
             // escrita a mano, y eso hacía que a un argentino se le enseñara un
             // 31% menos de lo que se le iba a cobrar.
             const txt = textosPlan(plan.nombre, pais, anual)
-            const pct = Math.round((1 - pa / por) * 100)
             return (
               <div key={plan.nombre} className={`lplan${plan.popular?' pop':''}`}>
                 {plan.popular && <div className="lplan-b">Más popular</div>}
                 <div className="lplan-h">
                   <div className="lplan-ic"><plan.icono size={18}/></div>
-                  <div><h3 className="lplan-n">{plan.nombre}</h3>{!plan.gratis && <span className="lplan-pct">-{pct}% hoy</span>}</div>
+                  <div><h3 className="lplan-n">{plan.nombre}</h3></div>
                 </div>
+                {/* Quien se reconoce en una frase elige más rápido que leyendo
+                    una lista de funciones. */}
+                <p className="lplan-id">{plan.ideal}</p>
                 <div className="lplan-pb">
-                  {!plan.gratis && txt && <div className="lplan-or">{txt.tachado}</div>}
                   <div className="lplan-pr"><span className="lplan-num">{txt ? txt.principal : `$${pa}`}</span><span className="lplan-per">/mes</span></div>
-                  {anual && txt && <p className="lplan-an">{txt.anualTotal} al año</p>}
+                  {/* El cargo de verdad, sin letra chica: en anual es uno al año. */}
+                  {!plan.gratis && txt && (
+                    <p className="lplan-an">
+                      {anual ? `${txt.anualTotal} al año, un solo cargo` : `${txt.mensualSolo} al mes, cancelas cuando quieras`}
+                    </p>
+                  )}
+                  {/* El único ahorro que se anuncia, y en dinero, no en
+                      porcentaje: es la resta exacta entre doce meses sueltos y
+                      el año pagado de una vez. Cualquiera lo comprueba. */}
+                  {anual && !plan.gratis && txt && (
+                    <p className="lplan-ah">Te ahorras {txt.ahorroAnual} al año</p>
+                  )}
                   {/* Solo se aclara cuando el cobro va en dólares. Donde hay
                       precio en moneda local, el número de arriba ES el cargo y
                       añadir letra pequeña solo sembraría dudas. */}
-                  {txt?.enDolares && !cM && !plan.gratis && (
+                  {/* Solo si el visitante NO usa dólares. En Ecuador, Panamá, El
+                      Salvador y Venezuela el dólar ES su moneda, y la línea les
+                      decía "≈ $19 USD" debajo de un precio de US$19: una
+                      aproximación de un número exacto. */}
+                  {txt?.enDolares && monedaLocal !== 'USD' && !cM && !plan.gratis && (
                     <p className="lplan-nt" style={{marginTop:'.35rem'}}>
                       Se cobra en dólares · ≈ {convertir(anual ? Math.round(plan.total_anual/12) : pa)}
                     </p>
                   )}
                 </div>
+                {/* Mueve la pregunta de "cuánto cuesta" a "cuánto me deja", que
+                    es la que el dueño trae en la cabeza. */}
+                {plan.retorno && <p className="lplan-ret">{plan.retorno}</p>}
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
                 </ul>
-                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>Elegir plan <ArrowRight size={15}/></a>
-                <p className="lplan-nt">Sin tarjeta de crédito requerida</p>
+                <a href="/registro" className={`lplan-cta${plan.popular?' pop':''}`}>{plan.gratis ? 'Crear cuenta gratis' : 'Empezar los 14 días gratis'} <ArrowRight size={15}/></a>
+                <p className="lplan-nt">Sin tarjeta · Cancelas cuando quieras</p>
               </div>
             )
           })}
+        </div>
+        {/* Una sola franja en vez de cinco insignias peleándose. */}
+        <div className="lreas">
+          <span>Sin contrato ni permanencia</span>
+          <span>Tu cuenta nunca se cierra</span>
+          <span>Te avisamos antes de cualquier cobro</span>
         </div>
         {stats.total > 0 && (
         <div className="lproof">
@@ -651,13 +656,17 @@ export default function MexicoClient() {
       .lplan-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
       .lplan-ic{width:38px;height:38px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);}
       .lplan-n{font-size:22px;font-weight:800;color:var(--ink);}
-      .lplan-pct{font-size:11px;font-weight:800;background:var(--sig-sf);color:var(--sig-d);border:1px solid var(--sig-bd);padding:3px 10px;border-radius:999px;}
       .lplan-pb{background:var(--surf2);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:20px;}
-      .lplan-or{font-size:16px;color:var(--ink4);text-decoration:line-through;font-weight:600;margin-bottom:4px;}
       .lplan-pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
       .lplan-num{font-size:clamp(30px,4.2vw,46px);font-weight:800;color:var(--blue);letter-spacing:-.032em;line-height:1.05;white-space:nowrap;}
       .lplan-per{font-size:15px;color:var(--ink3);font-weight:600;}
       .lplan-an{font-size:12px;color:var(--ink4);margin-top:6px;}
+      .lplan-id{font-size:13px;color:var(--ink3);margin:-4px 0 14px;line-height:1.45;}
+      .lplan-ah{font-size:13px;font-weight:700;color:var(--ok,#15803d);margin-top:4px;}
+      .lplan-ret{font-size:13px;line-height:1.45;background:var(--sig-sf);color:var(--sig-d);border-radius:10px;padding:10px 12px;margin:14px 0 0;}
+      .lreas{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 28px;margin-top:28px;font-size:13px;color:var(--ink3);}
+      .lreas span{display:inline-flex;align-items:center;gap:6px;}
+      .lreas span::before{content:'✓';color:var(--ok,#15803d);font-weight:700;}
       .lplan-fl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1;}
       .lplan-fl li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);}
       .lfck{width:18px;height:18px;border-radius:5px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;color:var(--blue);flex-shrink:0;margin-top:2px;}

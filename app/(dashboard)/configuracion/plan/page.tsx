@@ -51,10 +51,12 @@ function BloquePrecio({
   const actual     = anual ? precios.importes[`${clave}_anual`] : precios.importes[`${clave}_mensual`]
   const totalAnual = precios.importes[`${clave}_anual`]
 
-  // El precio tachado es el doble, que es el descuento de lanzamiento que la
-  // web viene anunciando desde el principio.
-  const original = actual * 2
-  const pct      = 50
+  // Aquí había un precio tachado que era `actual * 2` y una insignia de "-50%
+  // hoy". Ese "antes" nunca se cobró: el Esencial jamás costó $898. Lo enseñaba
+  // justo a quien estaba a punto de pagar, que es el peor sitio para una cifra
+  // que no se sostiene. Se sustituye por el único descuento real, la diferencia
+  // entre doce meses sueltos y el año pagado de una vez.
+  const ahorroAnual = precios.importes[`${clave}_mensual`] * 12 - totalAnual
 
   // En anual, Stripe cobra el total de una vez; en pantalla se enseña dividido
   // entre doce porque así es como lo compara la gente.
@@ -64,21 +66,24 @@ function BloquePrecio({
   return (
     <div className="mb-4">
       <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="text-gray-400 text-lg line-through">
-          {formatearPrecio(anual ? Math.round(totalAnual / 12) * 2 : original, precios)}
-        </span>
         <span className="text-3xl font-bold text-gray-900">
           {formatearPrecio(mostrado, precios)}
         </span>
         <span className="text-gray-500 text-sm">/mes</span>
       </div>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-        <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
-          -{pct}% hoy
-        </span>
-        {anual && (
-          <span className="text-green-600 text-xs">
-            {formatearPrecio(totalAnual, precios)} facturado anualmente
+        {anual ? (
+          <>
+            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+              Ahorras {formatearPrecio(ahorroAnual, precios)} al año
+            </span>
+            <span className="text-gray-500 text-xs">
+              {formatearPrecio(totalAnual, precios)} en un solo cargo
+            </span>
+          </>
+        ) : (
+          <span className="text-gray-500 text-xs">
+            {formatearPrecio(actual, precios)} al mes, cancelas cuando quieras
           </span>
         )}
       </div>
