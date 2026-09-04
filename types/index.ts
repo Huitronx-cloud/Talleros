@@ -78,6 +78,32 @@ export interface Cliente {
 
 export type ClienteForm = Omit<Cliente, 'id' | 'taller_id' | 'created_at' | 'es_ejemplo'>
 
+/**
+ * Un coche del cliente. Antes vivía dentro de la ficha del cliente en columnas
+ * sueltas, y por eso solo cabía uno: un taller con clientes de confianza
+ * atiende el coche del señor, el de su esposa y la camioneta del negocio.
+ *
+ * Las órdenes conservan SU copia de estos datos: son el registro de lo que
+ * entró al taller ese día. Esto es el presente; la orden es la historia.
+ */
+export interface Vehiculo {
+  id:         string
+  taller_id:  string
+  cliente_id: string
+  marca:      string | null
+  modelo:     string | null
+  anio:       number | null
+  placas:     string | null
+  vin:        string | null
+  foto_url:   string | null
+  notas:      string | null
+  /** Quitar un vehículo no borra sus órdenes: se archiva y deja de ofrecerse. */
+  archivado:  boolean
+  created_at: string
+}
+
+export type VehiculoForm = Pick<Vehiculo, 'marca' | 'modelo' | 'anio' | 'placas' | 'vin' | 'notas'>
+
 export type EstadoOrden = 'recibido' | 'en_proceso' | 'listo' | 'entregado'
 export type FormaPago   = 'efectivo' | 'transferencia' | 'tarjeta'
 

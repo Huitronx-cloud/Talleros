@@ -4,18 +4,20 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, Car, Phone, Mail, FileText, Clock, CheckCircle, Wrench, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { Cliente, Orden } from '@/types'
+import { Cliente, Orden, Vehiculo } from '@/types'
+import VehiculosCliente from '@/components/clientes/vehiculos-cliente'
 import { formatMoney } from '@/lib/utils'
 
 interface Props {
   cliente: Cliente
   ordenes: any[]
   ordenesFinalizadas: any[]
+  vehiculos: Vehiculo[]
 }
 
 const TABS = ['Información', 'Historial del vehículo']
 
-export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }: Props) {
+export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas, vehiculos }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState(0)
 
@@ -116,27 +118,10 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas }:
       {/* Tab: Información */}
       {tab === 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Vehículo */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Car size={18} className="text-blue-500" />
-              <h2 className="font-bold text-gray-900">Vehículo</h2>
-            </div>
-            <div className="space-y-3">
-              {[
-                { label: 'Marca', val: cliente.vehiculo_marca },
-                { label: 'Modelo', val: cliente.vehiculo_modelo },
-                { label: 'Año', val: cliente.vehiculo_año?.toString() },
-                { label: 'Placas', val: cliente.placas },
-                { label: 'VIN', val: cliente.vin },
-              ].map(({ label, val }) => val ? (
-                <div key={label} className="flex justify-between text-sm">
-                  <span className="text-gray-400">{label}</span>
-                  <span className="font-medium text-gray-900">{val}</span>
-                </div>
-              ) : null)}
-            </div>
-          </div>
+          {/* Antes esto era una tarjeta "Vehículo" en singular, porque los datos
+              del coche vivían en columnas dentro de la ficha del cliente y solo
+              cabía uno. */}
+          <VehiculosCliente clienteId={cliente.id} vehiculos={vehiculos} />
 
           {/* Notas */}
           {cliente.notas && (
