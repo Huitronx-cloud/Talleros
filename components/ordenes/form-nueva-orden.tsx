@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Plus, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
-import { Cliente, ServicioItem, EstadoOrden, FormaPago } from '@/types'
+import { Cliente, ServicioItem, EstadoOrden, FormaPago, Vehiculo } from '@/types'
 import { crearOrden, OrdenForm } from '@/app/(dashboard)/ordenes/actions'
 import ChecklistRecepcion from './checklist-recepcion'
 import CampoMecanico from './campo-mecanico'
@@ -17,15 +17,24 @@ const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
 
 const SERVICIO_VACIO: ServicioItem = { descripcion: '', cantidad: 1, precio_unitario: 0, total: 0 }
 
+/** Los campos del formulario a partir de un vehículo de la lista del cliente. */
+function camposDeVehiculo(v: Vehiculo) {
+  return {
+    marca:       v.marca  ?? '',
+    modelo:      v.modelo ?? '',
+    año:         v.anio ? String(v.anio) : '',
+    placas:      v.placas ?? '',
+    kilometraje: '',
+    vin:         v.vin ?? '',
+  }
+}
+
 /**
- * Los datos del coche que ya conocemos del cliente.
+ * El coche guardado en las columnas viejas de la ficha del cliente.
  *
- * Antes esto vivía suelto dentro de `seleccionarCliente`, así que solo se
- * rellenaba al hacer clic en la lista de sugerencias. Al entrar desde el perfil
- * del cliente —con el nombre ya puesto— nunca se ejecutaba: se veía el nombre
- * arriba y el vehículo en blanco abajo, y quien está en el mostrador teclea de
- * nuevo la marca, el modelo y las placas sin sospechar que TallerOS ya las
- * tenía. Al ser una función, el mismo relleno sirve para los dos caminos.
+ * Queda como respaldo para los clientes que todavía no tienen ninguna fila en
+ * `vehiculos` — por ejemplo si se dieron de alta antes de la migración 051 sin
+ * datos de coche. El camino normal ahora es la lista de vehículos.
  *
  * El kilometraje no se hereda a propósito: cambia en cada visita, y arrastrar
  * el de la vez pasada es peor que dejarlo vacío.
@@ -48,9 +57,11 @@ interface Props {
   moneda: string
   mecanicos: { id: string; nombre: string }[]
   clienteIdInicial?: string
+  /** Todos los vehículos del taller; se filtran por cliente al elegirlo. */
+  vehiculos: Vehiculo[]
 }
 
-export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda, mecanicos, clienteIdInicial }: Props) {
+export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais, moneda, mecanicos, clienteIdInicial, vehiculos }: Props) {
   const router = useRouter()
   const [paso, setPaso]         = useState(1)
   const [cargando, setCargando] = useState(false)
@@ -64,6 +75,13 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
   const [mostrarSugerencias, setMostrarSugerencias]   = useState(false)
 
   const [vehiculo, setVehiculo] = useState(vehiculoDeCliente(clienteInicial))
+  // Cuál de los coches del cliente es. Se manda con la orden para poder
+  // enseñar el historial por coche y nombrarlo en los recordatorios.
+  const [vehiculoId, setVehiculoId] = useState<string | null>(null)
+
+  const vehiculosDelCliente = clienteSeleccionado
+    ? vehiculos.filter(v => v.cliente_id === clienteSeleccionado.id && !v.archivado)
+    : []
 
   const [form, setForm] = useState({
     numero_factura:       '',
@@ -93,13 +111,29 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
     setClienteSeleccionado(c)
     setBusquedaCliente(c.nombre)
     setMostrarSugerencias(false)
-    setVehiculo(vehiculoDeCliente(c))
+
+    // Con un solo coche se pone solo, que es el caso normal y ahorra un toque.
+    // Con varios no se adivina: se dejan los campos y el usuario elige.
+    const suyos = vehiculos.filter(v => v.cliente_id === c.id && !v.archivado)
+    if (suyos.length === 1) {
+      setVehiculo(camposDeVehiculo(suyos[0]))
+      setVehiculoId(suyos[0].id)
+    } else {
+      setVehiculo(vehiculoDeCliente(c))
+      setVehiculoId(null)
+    }
+  }
+
+  const elegirVehiculo = (v: Vehiculo) => {
+    setVehiculo(camposDeVehiculo(v))
+    setVehiculoId(v.id)
   }
 
   const limpiarCliente = () => {
     setClienteSeleccionado(null)
     setBusquedaCliente('')
     setVehiculo(vehiculoDeCliente(null))
+    setVehiculoId(null)
   }
 
   const actualizarPrecioRaw = (i: number, val: string) => {
@@ -148,6 +182,7 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
 
     const datos: OrdenForm = {
       cliente_id:           clienteSeleccionado?.id ?? null,
+      vehiculo_id:          vehiculoId,
       vehiculo_marca:       vehiculo.marca,
       vehiculo_modelo:      vehiculo.modelo,
       vehiculo_año:         vehiculo.año,
@@ -259,6 +294,41 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
           {/* Vehículo */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="text-base font-semibold text-gray-900 mb-4">Vehículo</h2>
+
+            {/* Con más de un coche hay que elegir: adivinar cuál trae hoy es
+                justo lo que hace que la orden salga del coche equivocado. Con
+                uno solo no se enseña nada, ya viene puesto. */}
+            {vehiculosDelCliente.length > 1 && (
+              <div className="mb-4">
+                <label className={LABEL}>¿Cuál de sus vehículos trae?</label>
+                <div className="flex flex-wrap gap-2">
+                  {vehiculosDelCliente.map(v => {
+                    const activo = vehiculoId === v.id
+                    const nombre = [v.anio, v.marca, v.modelo].filter(Boolean).join(' ') || 'Sin datos'
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => elegirVehiculo(v)}
+                        aria-pressed={activo}
+                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                          activo
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                        }`}
+                      >
+                        {nombre}
+                        {v.placas && <span className={`ml-1.5 text-xs ${activo ? 'text-blue-100' : 'text-gray-400'}`}>{v.placas}</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">
+                  O escribe abajo los datos si trae uno que no está en la lista.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Marca</label>

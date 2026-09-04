@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { Cliente } from '@/types'
+import { Cliente, Vehiculo } from '@/types'
 import FormNuevaOrden from '@/components/ordenes/form-nueva-orden'
 import FormRapidoOrden from '@/components/recepcion/form-rapido-orden'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
@@ -30,6 +30,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
     { data: suscripcion },
     { data: usoMes },
     { count: ordenesEsteMes },
+    { data: vehiculos },
   ] = await Promise.all([
     supabase.from('clientes').select('*').order('nombre'),
     supabase.from('talleres').select('pais, moneda, nombre').eq('id', tallerId).single(),
@@ -42,6 +43,9 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
       .eq('es_ejemplo', false)
       .gte('created_at', `${mesActual}-01`)
       .lt('created_at', `${mesActual}-31`),
+    // Los coches de todos los clientes del taller: al elegir cliente se filtran
+    // en el propio formulario, sin otra ida a la base.
+    supabase.from('vehiculos').select('*').eq('archivado', false),
   ])
 
   // Usar service client para bypassar RLS y obtener todos los mecánicos del taller.
@@ -102,6 +106,7 @@ export default async function NuevaOrdenPage({ searchParams }: { searchParams: {
         moneda={taller?.moneda ?? 'MXN'}
         mecanicos={mecanicos ?? []}
         clienteIdInicial={searchParams.cliente_id}
+        vehiculos={(vehiculos ?? []) as Vehiculo[]}
       />
     </div>
   )

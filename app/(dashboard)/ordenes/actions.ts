@@ -34,6 +34,16 @@ export interface OrdenForm {
   notas_internas: string
   vin?: string | null
   numero_factura?: string | null
+  /**
+   * De qué coche de la lista del cliente se trata.
+   *
+   * La orden SIGUE guardando su propia copia de marca, modelo y placas: es el
+   * registro de lo que entró al taller ese día, y si el cliente vende el coche
+   * o le cambian las placas esa orden tiene que seguir diciendo lo que decía.
+   * Esto es solo el enlace, y es lo que permite enseñar el historial por coche
+   * y nombrarlo en los recordatorios.
+   */
+  vehiculo_id?: string | null
 }
 
 async function getTallerId(): Promise<string | null> {
@@ -93,6 +103,7 @@ export async function crearOrden(datos: OrdenForm) {
   const { error, data } = await supabase.from('ordenes').insert({
     taller_id:            tallerId,
     cliente_id:           datos.cliente_id || null,
+    vehiculo_id:          datos.vehiculo_id || null,
     numero_orden:         numero,
     vehiculo_marca:       datos.vehiculo_marca   || null,
     vehiculo_modelo:      datos.vehiculo_modelo  || null,
