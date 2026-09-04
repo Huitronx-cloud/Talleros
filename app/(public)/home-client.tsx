@@ -350,6 +350,13 @@ export default function LandingPage() {
         <div className="lsl">Cuesta menos que un servicio</div>
         <h2 className="lsh2">Sin sorpresas.<br/>Sin letra chica.</h2>
         <p className="lssub">Empiezas gratis y sigues gratis. Los primeros 14 días tienes todas las funciones desbloqueadas; después tu cuenta sigue abierta con el plan Gratuito.</p>
+        {/* La única urgencia que la web puede sostener mirándola de cerca: no
+            es escasez de producto sino de tarifa, y Stripe ya la cumple solo
+            —cada suscripción conserva el precio con el que se creó—. */}
+        <div className="lfund">
+          <span className="lfund-d" />
+          Precio de fundador — el que tomes hoy es el que pagas siempre
+        </div>
         <div className="ltog-w">
           <div className="ltog">
             {['Mensual','Anual'].map((label,i) => (
@@ -410,6 +417,9 @@ export default function LandingPage() {
                   )}
                 </div>
                 {/* Mueve la pregunta de "cuánto cuesta" a "cuánto me deja". */}
+                {!plan.gratis && (
+                  <p className="lplan-lock">🔒 Este precio se te queda congelado mientras no canceles.</p>
+                )}
                 {plan.retorno && <p className="lplan-ret">{plan.retorno}</p>}
                 <ul className="lplan-fl">
                   {plan.features.map(f => (<li key={f}><span className="lfck"><Check size={11} strokeWidth={3}/></span>{f}</li>))}
@@ -426,6 +436,14 @@ export default function LandingPage() {
             )
           })}
         </div>
+        {/* Prueba social en movimiento, del mismo /api/stats que ya alimenta el
+            aviso flotante. Solo con número mayor que cero. */}
+        {stats.semana > 0 && (
+          <p className="lmom">
+            <span className="lmom-p" />
+            {stats.semana} taller{stats.semana > 1 ? 'es' : ''} se {stats.semana > 1 ? 'dieron' : 'dio'} de alta esta semana
+          </p>
+        )}
         {stats.total > 0 && (
         <div className="lproof">
           <div className="lpavs">
@@ -751,7 +769,28 @@ export default function LandingPage() {
       .lplan:hover{box-shadow:var(--sh-lg);transform:translateY(-4px);}
       /* "Más popular" cuelga de la tarjeta de Esencial: va del color de esa
          tarjeta. En ámbar chocaba con el plan Pro y parecía señalarlo a él. */
-      .lplan.pop{border-color:var(--blue);border-width:2px;box-shadow:0 0 0 1px rgba(37,99,235,0.3),0 8px 32px rgba(37,99,235,0.14);}
+      /* La tarjeta recomendada en oscuro para que domine de verdad. Cada clase
+         hija lleva su color explícito: heredar es cómo se acaba con texto
+         oscuro sobre oscuro. */
+      .lplan.pop{background:var(--ink);border-color:var(--ink);border-width:1px;box-shadow:0 16px 48px rgba(15,23,42,0.20);}
+      .lplan.pop .lplan-n{color:#fff;}
+      .lplan.pop .lplan-ideal{color:#cbd5e1;}
+      .lplan.pop .lplan-num,.lplan.pop .lplan-per{color:#fff;}
+      .lplan.pop .lplan-cur{color:#94a3b8;}
+      .lplan.pop .lplan-an{color:#cbd5e1;}
+      .lplan.pop .lplan-ah{color:#4ade80;}
+      .lplan.pop .lplan-nt{color:#94a3b8;}
+      .lplan.pop .lplan-free{color:#94a3b8;}
+      .lplan.pop .lplan-fl li{color:#e2e8f0;}
+      .lplan.pop .lplan-ic{background:rgba(255,255,255,0.10);color:#fff;}
+      .lplan.pop .lfck{background:rgba(255,255,255,0.12);color:#7dd3fc;}
+      .lplan.pop .lplan-ret{background:rgba(37,99,235,0.24);color:#bfdbfe;}
+      .lplan.pop .lplan-lock{background:rgba(226,96,10,0.16);border-color:rgba(251,215,184,0.28);color:#fdba74;}
+      .lfund{display:inline-flex;align-items:center;gap:9px;background:var(--sig-sf);border:1px solid var(--sig-bd);color:var(--sig-d);border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;margin-bottom:22px;line-height:1.35;}
+      .lfund-d{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+      .lplan-lock{display:flex;gap:8px;align-items:flex-start;border:1px dashed var(--sig-bd);background:var(--sig-sf);color:var(--sig-d);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.42;margin:14px 0 0;}
+      .lmom{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--ink2);margin-bottom:26px;}
+      .lmom-p{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,0.18);flex-shrink:0;}
       .lplan-b{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:999px;white-space:nowrap;letter-spacing:.3px;}
       .lplan-h{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;text-align:center;}
       .lplan-ic{width:56px;height:56px;border-radius:16px;background:rgba(100,116,139,0.10);display:flex;align-items:center;justify-content:center;color:var(--ink3);}
