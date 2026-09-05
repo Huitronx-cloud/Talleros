@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getPais } from '@/lib/paises'
+import { horasDeCita } from '@/lib/calendario'
 
 const CLIENT_ID     = process.env.GOOGLE_CLIENT_ID!
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const { data: taller } = await supabase
       .from('talleres')
-      .select('nombre, google_access_token, google_refresh_token, google_token_expiry')
+      .select('nombre, pais, google_access_token, google_refresh_token, google_token_expiry')
       .eq('id', usuario?.taller_id)
       .single()
 
@@ -67,46 +69,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Obtener datos de la cita
+    // Obtener datos de la cita.
+    //
+    // Antes esto pedía `duracion_minutos`, `notas` y `servicio`, y unía con
+    // `clientes` y `vehiculos`. Nada de eso existe: `citas` guarda el cliente y
+    // el coche en SUS PROPIAS columnas, sin enlace a ninguna tabla. La consulta
+    // fallaba entera, así que este endpoint no ha funcionado nunca — tampoco se
+    // notaba, porque hasta ahora ninguna pantalla lo llamaba.
     const { data: cita } = await supabase
       .from('citas')
-      .select(`
-        id, fecha, hora, duracion_minutos, notas, servicio,
-        clientes(nombre, telefono, email),
-        vehiculos(marca, modelo, año, placa)
-      `)
+      .select('id, fecha, hora, descripcion, cliente_nombre, cliente_telefono, cliente_email, vehiculo_marca, vehiculo_modelo, placas')
       .eq('id', cita_id)
+      .eq('taller_id', usuario?.taller_id)
       .single()
 
     if (!cita) {
       return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
     }
 
-    const cliente  = (cita.clientes as any)
-    const vehiculo = (cita.vehiculos as any)
+    // La hora se manda SIN zona y con `timeZone` al lado, para que Google la
+    // interprete en el reloj del taller. Antes se mandaba como instante
+    // absoluto calculado con el reloj del servidor —UTC en Vercel—, así que una
+    // cita de las 10:00 habría caído a las 4:00 de la madrugada.
+    const horas = horasDeCita(cita.fecha, cita.hora, 60)
+    if (!horas) {
+      return NextResponse.json({ error: 'La cita no tiene una fecha y hora válidas' }, { status: 400 })
+    }
 
-    // Construir evento para Google Calendar
-    const fechaInicio = new Date(`${cita.fecha}T${cita.hora}`)
-    const fechaFin    = new Date(fechaInicio.getTime() + (cita.duracion_minutos ?? 60) * 60 * 1000)
+    const zona = getPais(taller.pais).zona
+
+    const vehiculo = [cita.vehiculo_marca, cita.vehiculo_modelo].filter(Boolean).join(' ')
 
     const evento = {
-      summary:     `🔧 ${cliente?.nombre ?? 'Cliente'} — ${cita.servicio ?? 'Servicio'}`,
+      summary:     `🔧 ${cita.cliente_nombre ?? 'Cliente'}${vehiculo ? ` — ${vehiculo}` : ''}`,
       description: [
         `Taller: ${taller.nombre}`,
-        `Cliente: ${cliente?.nombre ?? '—'}`,
-        `Teléfono: ${cliente?.telefono ?? '—'}`,
-        `Vehículo: ${vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.año} (${vehiculo.placa})` : '—'}`,
-        `Servicio: ${cita.servicio ?? '—'}`,
-        cita.notas ? `Notas: ${cita.notas}` : '',
+        `Cliente: ${cita.cliente_nombre ?? '—'}`,
+        `Teléfono: ${cita.cliente_telefono ?? '—'}`,
+        vehiculo || cita.placas
+          ? `Vehículo: ${[vehiculo, cita.placas ? `(${cita.placas})` : ''].filter(Boolean).join(' ')}`
+          : '',
+        cita.descripcion ? `Motivo: ${cita.descripcion}` : '',
       ].filter(Boolean).join('\n'),
-      start: {
-        dateTime: fechaInicio.toISOString(),
-        timeZone: 'America/Mexico_City',
-      },
-      end: {
-        dateTime: fechaFin.toISOString(),
-        timeZone: 'America/Mexico_City',
-      },
+      start: { dateTime: horas.inicio, timeZone: zona },
+      end:   { dateTime: horas.fin,    timeZone: zona },
       reminders: {
         useDefault: false,
         overrides: [
@@ -137,11 +143,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Error creando evento en Calendar' }, { status: 500 })
     }
 
-    // Guardar google_event_id en la cita
-    await supabase
+    // Guardar el id del evento para no duplicarlo si se pulsa dos veces.
+    const { error: errorGuardar } = await supabase
       .from('citas')
       .update({ google_calendar_event_id: calData.id })
       .eq('id', cita_id)
+      .eq('taller_id', usuario?.taller_id)
+
+    // El evento YA está en su calendario, así que esto no es un fallo que deba
+    // devolver error: solo significa que si vuelve a pulsar saldrá duplicado.
+    if (errorGuardar) {
+      console.error('[calendar] evento creado pero no se guardó su id:', errorGuardar.message)
+    }
 
     return NextResponse.json({
       ok:       true,

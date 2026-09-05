@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react'
+import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, MessageCircle, CalendarPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
@@ -22,6 +22,8 @@ interface Cita {
   hora: string
   estado: EstadoCita
   notas_internas: string | null
+  /** Puesto cuando la cita ya se mandó al Google Calendar del taller. */
+  google_calendar_event_id?: string | null
   created_at: string
 }
 
@@ -42,6 +44,8 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   const hoy = new Date()
   const [mes, setMes]               = useState(hoy.getMonth())
   const [año, setAño]               = useState(hoy.getFullYear())
+  const [enviandoCalendar, setEnviandoCalendar] = useState<string | null>(null)
+  const [avisoCalendar, setAvisoCalendar]       = useState('')
   const [citaSeleccionada, setCitaSeleccionada] = useState<Cita | null>(null)
   const [citas, setCitas]           = useState<Cita[]>(citasIniciales)
   const [actualizando, setActualizando] = useState(false)
@@ -105,6 +109,43 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
     const ventana = cita.cliente_telefono ? window.open('', '_blank') : null
     await cambiarEstado(cita.id, 'confirmada')
     if (ventana) ventana.location.href = linkConfirmacion(cita)
+  }
+
+  /**
+   * Manda la cita al Google Calendar del taller.
+   *
+   * El endpoint existía desde hace tiempo pero no lo llamaba nadie: no había
+   * botón. Y no habría servido, porque su consulta pedía columnas que `citas`
+   * no tiene — se arregló en el mismo cambio que añadió esto.
+   */
+  const mandarACalendar = async (cita: Cita) => {
+    setEnviandoCalendar(cita.id)
+    setAvisoCalendar('')
+    try {
+      const res  = await fetch('/api/google/calendar', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ cita_id: cita.id }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        // El endpoint devuelve `conectar` cuando el taller aún no ha enlazado
+        // su cuenta: eso no es un error, es el siguiente paso.
+        setAvisoCalendar(data.conectar
+          ? 'Conecta tu Google Calendar en Configuración para poder mandar citas.'
+          : (data.error ?? 'No se pudo crear el evento.'))
+        return
+      }
+
+      setCitas(prev => prev.map(c => c.id === cita.id ? { ...c, google_calendar_event_id: data.event_id } : c))
+      setCitaSeleccionada(prev => prev ? { ...prev, google_calendar_event_id: data.event_id } : null)
+      setAvisoCalendar('Listo, ya está en tu Google Calendar.')
+    } catch {
+      setAvisoCalendar('No se pudo conectar. Revisa tu conexión e intenta de nuevo.')
+    } finally {
+      setEnviandoCalendar(null)
+    }
   }
 
   const cambiarEstado = async (citaId: string, nuevoEstado: EstadoCita) => {
@@ -362,6 +403,29 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
 
             {/* Acciones */}
             <div className="space-y-2">
+              {citaSeleccionada.estado !== 'cancelada' && (
+                citaSeleccionada.google_calendar_event_id ? (
+                  <p className="w-full text-center text-xs text-gray-400 py-2">
+                    Ya está en tu Google Calendar
+                  </p>
+                ) : (
+                  <button
+                    onClick={() => mandarACalendar(citaSeleccionada)}
+                    disabled={enviandoCalendar === citaSeleccionada.id}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-60 text-sm font-medium py-2 rounded-lg transition-colors"
+                  >
+                    {enviandoCalendar === citaSeleccionada.id
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      : <CalendarPlus className="w-3.5 h-3.5" />}
+                    Agregar a Google Calendar
+                  </button>
+                )
+              )}
+              {avisoCalendar && (
+                <p className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  {avisoCalendar}
+                </p>
+              )}
               {citaSeleccionada.estado === 'pendiente' && (
                 <>
                   <button
