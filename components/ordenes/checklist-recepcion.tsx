@@ -156,7 +156,14 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar, nota
     } catch (err) {
       console.error('Error guardando checklist:', err)
       // Antes se seguía a la firma igual y el checklist se perdía en silencio.
-      setErrorGuardar('No se pudo guardar el checklist. Revisa tu conexión e intenta de nuevo.')
+      //
+      // Y el primer aviso decía "revisa tu conexión", que es afirmar una causa
+      // que no se conoce: la mayoría de estos fallos son de permisos o de una
+      // columna que no cuadra, y mandar a mirar el wifi hace perder el tiempo a
+      // quien lo lee y esconde el motivo a quien puede arreglarlo. Ahora se
+      // enseña lo que dijo la base.
+      const motivo = err instanceof Error ? err.message : String(err)
+      setErrorGuardar(motivo || 'No se pudo guardar el checklist.')
     } finally {
       setGuardando(false)
     }
@@ -322,9 +329,15 @@ export default function ChecklistRecepcion({ ordenId, tallerId, onTerminar, nota
           </div>
 
           {errorGuardar && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
-              {errorGuardar}
-            </p>
+            <div className="bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
+              <p className="text-sm font-semibold text-red-700">
+                No se pudo guardar el checklist. No cierres esta pantalla.
+              </p>
+              <p className="text-xs text-red-600 mt-1 break-words">{errorGuardar}</p>
+              <p className="text-xs text-red-500 mt-2">
+                Si vuelve a pasar, mándale esta línea a soporte: dice exactamente qué falló.
+              </p>
+            </div>
           )}
 
           {/* Botones */}
