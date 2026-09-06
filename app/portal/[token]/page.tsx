@@ -2,8 +2,63 @@ import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Clock, CheckCircle2, Package, Wrench, Phone } from 'lucide-react'
 
-export const metadata = {
-  robots: { index: false, follow: false },
+/**
+ * La tarjeta que ve el cliente en WhatsApp antes de abrir el enlace.
+ *
+ * Antes salía la de TallerOS —imagen, título y descripción del layout raíz—,
+ * así que el cliente de un taller recibía por WhatsApp el anuncio del software
+ * que usa su mecánico. La estrella tiene que ser el taller.
+ *
+ * Ojo con la herencia de metadata en Next: definir `openGraph` aquí sustituye
+ * el del layout entero, no lo mezcla. Eso es justo lo que hace falta — si el
+ * taller no tiene logo, esta tarjeta se queda sin imagen en vez de heredar la
+ * de TallerOS.
+ */
+export async function generateMetadata({ params }: { params: { token: string } }) {
+  const base   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+  const comun  = { robots: { index: false, follow: false } }
+
+  const supabase = createAnonClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { data } = await supabase.rpc('get_portal_data', { p_token: params.token })
+
+  // Token inválido o caducado: nada de tarjeta. Un enlace muerto con una
+  // tarjeta bonita confunde más que ayuda.
+  if (!data || (data as any).expirado) {
+    return { ...comun, title: 'Seguimiento de tu vehículo' }
+  }
+
+  const orden  = (data as any).orden  ?? {}
+  const taller = (data as any).taller ?? {}
+
+  const vehiculo = [orden.vehiculo_marca, orden.vehiculo_modelo].filter(Boolean).join(' ')
+  const titulo   = taller.nombre ?? 'Seguimiento de tu vehículo'
+  const desc     = vehiculo
+    ? `Sigue el estado de tu ${vehiculo} en tiempo real.`
+    : 'Sigue el estado de tu vehículo en tiempo real.'
+
+  const imagen = `${base}/api/og/portal/${params.token}`
+
+  return {
+    ...comun,
+    title:       titulo,
+    description: desc,
+    openGraph: {
+      type:        'website',
+      title:       titulo,
+      description: desc,
+      images:      [{ url: imagen, width: 1200, height: 630, alt: titulo }],
+    },
+    twitter: {
+      card:        'summary_large_image',
+      title:       titulo,
+      description: desc,
+      images:      [imagen],
+    },
+  }
 }
 
 // Esta página nunca declaró que era dinámica, a diferencia de las otras 166

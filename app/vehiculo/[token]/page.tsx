@@ -2,10 +2,55 @@ import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { Car, Wrench, Phone, MapPin } from 'lucide-react'
 
-// Un enlace que no caduca y que el dueño puede pasarle al que le compre el
-// coche no tiene ningún motivo para estar en Google.
-export const metadata = {
-  robots: { index: false, follow: false },
+/**
+ * La tarjeta del enlace en WhatsApp.
+ *
+ * Este enlace acaba en manos de quien compra el coche, así que la tarjeta es
+ * la carta de presentación del taller ante alguien que todavía no es cliente
+ * suyo. Sale su nombre y su logo, no los de TallerOS.
+ *
+ * Y `noindex`: un enlace que no caduca no tiene ningún motivo para estar en
+ * Google.
+ */
+export async function generateMetadata({ params }: { params: { token: string } }) {
+  const base  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.tallerosapp.com'
+  const comun = { robots: { index: false, follow: false } }
+
+  const supabase = createAnonClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { data } = await supabase.rpc('get_historial_vehiculo', { p_token: params.token })
+
+  if (!data) return { ...comun, title: 'Historial de servicio' }
+
+  const vehiculo = (data as any).vehiculo ?? {}
+  const taller   = (data as any).taller   ?? {}
+
+  const nombreCoche = titulo(vehiculo)
+  const tituloCard  = taller.nombre ?? 'Historial de servicio'
+  const desc        = `Historial de mantenimiento de ${nombreCoche.toLowerCase() === 'vehículo' ? 'este vehículo' : nombreCoche}.`
+
+  const imagen = `${base}/api/og/vehiculo/${params.token}`
+
+  return {
+    ...comun,
+    title:       tituloCard,
+    description: desc,
+    openGraph: {
+      type:        'website',
+      title:       tituloCard,
+      description: desc,
+      images:      [{ url: imagen, width: 1200, height: 630, alt: tituloCard }],
+    },
+    twitter: {
+      card:        'summary_large_image',
+      title:       tituloCard,
+      description: desc,
+      images:      [imagen],
+    },
+  }
 }
 
 // Como el portal: sin esto Next.js cachea la primera visita a cada token y el
