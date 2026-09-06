@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Tarjeta, SerieDiaria, Embudo, type Punto } from '@/components/admin/panel-graficas'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
+import BotonWhatsAppCarrito from '@/components/admin/boton-whatsapp-carrito'
 import { TASAS_ACTUALIZADAS } from '@/lib/precios'
 
 const DIAS = 30
@@ -23,6 +24,36 @@ function porDia(fechas: string[], dias = DIAS): Punto[] {
   // Array.from y no [...cubo.entries()]: este tsconfig apunta por debajo de
   // es2015 y desestructurar un iterador de Map ahí es un error de tipos.
   return Array.from(cubo.entries()).map(([fecha, valor]) => ({ fecha, valor }))
+}
+
+/**
+ * El mensaje del carrito abandonado, según cuántas veces ya se le escribió.
+ *
+ * Antes era siempre el mismo texto. Alguien llegó a recibirlo dos veces
+ * idéntico, y un tercero igual es peor que no escribir: deja claro que del
+ * otro lado no hay nadie leyendo, solo una plantilla.
+ *
+ * El tercero cierra la puerta a propósito. Después de dos silencios, insistir
+ * ya perdió; quien se retira con respeto suele recibir la respuesta honesta —y
+ * un "no me sirvió" vale más que la venta, porque dice qué arreglar.
+ */
+function mensajeCarrito(nombreTaller: string, intentos: number): string {
+  if (intentos === 0) {
+    return `Hola, soy Iván de TallerOS. Vi que entraste a activar tu plan en ${nombreTaller} y no llegaste a terminar.\n\n` +
+      `¿Hubo algo que te frenó? Te lo pregunto en serio: si fue el precio, la moneda del cobro o algo de esa pantalla, ` +
+      `quiero saberlo para arreglarlo.\n\n` +
+      `Y si lo que necesitas es más tiempo para probarlo con calma, te amplío los días sin problema. Nada más dime.`
+  }
+
+  if (intentos === 1) {
+    return `Hola, soy Iván de TallerOS. Te escribí hace unos días por lo de ${nombreTaller} y no quiero ser pesado.\n\n` +
+      `Solo una pregunta y te dejo: ¿qué te faltó para decidirte? Si me dices en qué se queda corto, me sirve aunque no acabes usándolo.`
+  }
+
+  return `Hola, soy Iván de TallerOS. Te escribí un par de veces y no quiero seguir insistiendo, así que este es el último.\n\n` +
+    `Solo quiero saber una cosa: ¿lo dejaste porque no te sirvió, porque no era el momento, o porque algo no funcionó? ` +
+    `Cualquiera de las tres me vale, y si me dices la primera lo entiendo perfecto.\n\n` +
+    `Si no me contestas no pasa nada, no te vuelvo a escribir.`
 }
 
 function diasDesde(iso: string): number {
@@ -117,6 +148,18 @@ export default async function AdminPanelPage() {
   // Hoy no hay ninguna cancelación y además es gente a la que igualmente se le
   // quiere escribir, pero si algún día la lista crece sin explicación, es por
   // esto — se separan mirando `estado = 'cancelada'`.
+  // Cuántas veces se le ha escrito a cada uno, para no repetirle el mismo
+  // texto. Se cuenta en memoria en vez de con un group by porque son pocas
+  // filas y así no hace falta una vista ni una función en la base.
+  const { data: contactos } = await supabase
+    .from('contactos_carrito')
+    .select('taller_id')
+
+  const vecesContactado = new Map<string, number>()
+  for (const c of contactos ?? []) {
+    vecesContactado.set(c.taller_id, (vecesContactado.get(c.taller_id) ?? 0) + 1)
+  }
+
   const carritos = suscripciones
     .filter(s => s.stripe_customer_id && !['esencial', 'pro'].includes(s.plan))
     .map(s => {
@@ -128,12 +171,8 @@ export default async function AdminPanelPage() {
     .filter(c => c.taller)
     .sort((a, b) => new Date(b.taller!.created_at).getTime() - new Date(a.taller!.created_at).getTime())
     .map(({ suscripcion, taller }) => {
-      const primerNombre = (taller!.nombre ?? '').trim().split(' ')[0]
-      const mensaje =
-        `Hola, soy Iván de TallerOS. Vi que entraste a activar tu plan en ${taller!.nombre} y no llegaste a terminar.\n\n` +
-        `¿Hubo algo que te frenó? Te lo pregunto en serio: si fue el precio, la moneda del cobro o algo de esa pantalla, ` +
-        `quiero saberlo para arreglarlo.\n\n` +
-        `Y si lo que necesitas es más tiempo para probarlo con calma, te amplío los días sin problema. Nada más dime.`
+      const intentos = vecesContactado.get(taller!.id) ?? 0
+      const mensaje  = mensajeCarrito(taller!.nombre, intentos)
       return {
         tallerId: taller!.id,
         nombre:   taller!.nombre,
@@ -141,6 +180,7 @@ export default async function AdminPanelPage() {
         telefono: taller!.telefono,
         dias:     diasDesde(taller!.created_at),
         activo:   activados.has(taller!.id),
+        intentos,
         // Sin teléfono no hay WhatsApp posible: se enseña igual, pero marcado,
         // para que se note que a ese hay que escribirle por correo.
         wa: taller!.telefono
@@ -228,14 +268,7 @@ export default async function AdminPanelPage() {
                   </p>
                 </div>
                 {c.wa ? (
-                  <a
-                    href={c.wa}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
-                  >
-                    WhatsApp
-                  </a>
+                  <BotonWhatsAppCarrito tallerId={c.tallerId} enlace={c.wa} intentos={c.intentos} />
                 ) : (
                   <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded-full bg-gray-700/40 text-gray-500">
                     SIN TELÉFONO
