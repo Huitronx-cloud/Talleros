@@ -38,6 +38,14 @@ export default async function ClienteDetallePage({ params }: { params: { id: str
     .eq('archivado', false)
     .order('created_at')
 
+  // El país del taller solo sirve para armar el link de WhatsApp cuando el
+  // teléfono del cliente está guardado sin lada, que es el caso más común.
+  const { data: taller } = await supabase
+    .from('talleres')
+    .select('pais')
+    .eq('id', tallerId)
+    .single()
+
   const ordenesFinalizadas = (ordenes ?? []).filter(o => o.estado === 'entregado')
 
   return (
@@ -46,6 +54,7 @@ export default async function ClienteDetallePage({ params }: { params: { id: str
       ordenes={ordenes ?? []}
       ordenesFinalizadas={ordenesFinalizadas}
       vehiculos={(vehiculos ?? []) as Vehiculo[]}
+      paisTaller={taller?.pais ?? null}
     />
   )
 }

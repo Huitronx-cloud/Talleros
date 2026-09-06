@@ -80,7 +80,7 @@ export async function crearCliente(datos: ClienteForm) {
       // Limpiar el número — quitar todo excepto dígitos y el +
       const telefonoLimpio = datos.telefono.replace(/[\s\-\(\)]/g, '')
 
-      const mensaje = `Hola ${nombreCliente} 👋 Te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. ¡Gracias por preferirnos! 🔧`
+      const mensaje = `Hola ${nombreCliente}, te damos la bienvenida a *${nombreTaller}*. A partir de ahora te mantendremos informado sobre el estado de tu vehículo por este medio. Gracias por preferirnos.`
 
       await enviarWhatsApp(telefonoLimpio, mensaje)
     } catch (err) {

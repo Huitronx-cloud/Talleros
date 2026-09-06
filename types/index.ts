@@ -99,6 +99,11 @@ export interface Vehiculo {
   notas:      string | null
   /** Quitar un vehículo no borra sus órdenes: se archiva y deja de ofrecerse. */
   archivado:  boolean
+  /**
+   * Enlace permanente del historial del coche, si el taller lo compartió
+   * alguna vez. Null significa que nunca se compartió o que se revocó.
+   */
+  historial_token: string | null
   created_at: string
 }
 

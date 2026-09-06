@@ -110,6 +110,7 @@ const RUTAS_PUBLICAS = [
   '/auth/callback',
   '/unirse',
   '/portal',   // /portal/[token] — portal del cliente
+  '/vehiculo', // /vehiculo/[token] — libreta de servicio del coche, sin caducidad
   '/registro',
   '/recuperar-password',
   '/nueva-password',

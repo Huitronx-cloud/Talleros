@@ -69,9 +69,11 @@ export async function POST(req: NextRequest) {
     if (cita.cliente_email) {
       try {
         await resend.emails.send({
-          from:    'TallerOS <hola@tallerosapp.com>',
+          // Igual que en la confirmación: en la bandeja del cliente el remitente es
+          // su taller, no el software que usa su taller.
+          from:    `${nombreTaller.replace(/["<>]/g, '')} <hola@tallerosapp.com>`,
           to:      cita.cliente_email,
-          subject: `📅 Cita recibida — ${nombreTaller}`,
+          subject: `Cita recibida — ${nombreTaller}`,
           html:    buildEmailAcuse({
             clienteNombre: cita.cliente_nombre,
             nombreTaller,
@@ -109,15 +111,14 @@ function buildEmailAcuse({
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <tr>
           <td style="background:linear-gradient(135deg,#2563eb,#1d4ed8);padding:40px;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">📅</div>
-            <div style="font-size:24px;font-weight:800;color:#fff;">¡Cita Recibida!</div>
+            <div style="font-size:24px;font-weight:800;color:#fff;">Cita recibida</div>
             <div style="color:rgba(255,255,255,0.85);font-size:14px;margin-top:8px;">${nombreTaller}</div>
           </td>
         </tr>
         <tr>
           <td style="padding:40px;">
             <p style="font-size:18px;font-weight:700;color:#111827;margin:0 0 8px;">
-              Hola ${clienteNombre} 👋
+              Hola ${clienteNombre},
             </p>
             <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">
               Hemos recibido tu solicitud de cita. Te confirmaremos en breve.
@@ -126,40 +127,40 @@ function buildEmailAcuse({
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:8px 0;font-size:14px;">
-                    <span style="color:#6b7280;">📅 Fecha solicitada</span><br>
+                    <span style="color:#6b7280;">Fecha solicitada</span><br>
                     <strong style="color:#111827;">${fechaFormateada}</strong>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:8px 0;font-size:14px;border-top:1px solid #dbeafe;">
-                    <span style="color:#6b7280;">🕐 Hora</span><br>
+                    <span style="color:#6b7280;">Hora</span><br>
                     <strong style="color:#111827;">${hora} hrs</strong>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:8px 0;font-size:14px;border-top:1px solid #dbeafe;">
-                    <span style="color:#6b7280;">🔧 Taller</span><br>
+                    <span style="color:#6b7280;">Taller</span><br>
                     <strong style="color:#111827;">${nombreTaller}</strong>
                   </td>
                 </tr>
                 ${vehiculo ? `
                 <tr>
                   <td style="padding:8px 0;font-size:14px;border-top:1px solid #dbeafe;">
-                    <span style="color:#6b7280;">🚗 Vehículo</span><br>
+                    <span style="color:#6b7280;">Vehículo</span><br>
                     <strong style="color:#111827;">${vehiculo}</strong>
                   </td>
                 </tr>` : ''}
                 ${descripcion ? `
                 <tr>
                   <td style="padding:8px 0;font-size:14px;border-top:1px solid #dbeafe;">
-                    <span style="color:#6b7280;">📝 Servicio</span><br>
+                    <span style="color:#6b7280;">Servicio</span><br>
                     <strong style="color:#111827;">${descripcion}</strong>
                   </td>
                 </tr>` : ''}
                 ${telefonoTaller ? `
                 <tr>
                   <td style="padding:8px 0;font-size:14px;border-top:1px solid #dbeafe;">
-                    <span style="color:#6b7280;">📞 Contacto del taller</span><br>
+                    <span style="color:#6b7280;">Contacto del taller</span><br>
                     <strong style="color:#111827;">${telefonoTaller}</strong>
                   </td>
                 </tr>` : ''}

@@ -1,9 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Car, Plus, Pencil, Trash2, Loader2, X } from 'lucide-react'
+import { Car, Plus, Pencil, Trash2, Loader2, X, Share2, Copy, Check } from 'lucide-react'
 import { Vehiculo, VehiculoForm } from '@/types'
-import { agregarVehiculo, editarVehiculo, archivarVehiculo } from '@/app/(dashboard)/clientes/[id]/vehiculos-actions'
+import {
+  agregarVehiculo,
+  editarVehiculo,
+  archivarVehiculo,
+  generarEnlaceHistorial,
+  revocarEnlaceHistorial,
+} from '@/app/(dashboard)/clientes/[id]/vehiculos-actions'
+import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-xs font-medium text-gray-600 mb-1'
@@ -13,6 +20,9 @@ const VACIO: VehiculoForm = { marca: '', modelo: '', anio: null, placas: '', vin
 interface Props {
   clienteId: string
   vehiculos: Vehiculo[]
+  clienteNombre: string
+  clienteTelefono: string | null
+  paisTaller: string | null
 }
 
 /** El coche como se le nombra: "2020 Toyota Corolla". */
@@ -31,12 +41,24 @@ function titulo(v: Vehiculo): string {
  * un taller por correo: "quiero agregar una unidad a un cliente ya registrado
  * pero no me aparece la opción". No aparecía porque no existía.
  */
-export default function VehiculosCliente({ clienteId, vehiculos }: Props) {
+export default function VehiculosCliente({
+  clienteId,
+  vehiculos,
+  clienteNombre,
+  clienteTelefono,
+  paisTaller,
+}: Props) {
   const [editando, setEditando] = useState<string | null>(null)
   const [form, setForm]         = useState<VehiculoForm>(VACIO)
   const [guardando, setGuardando] = useState(false)
   const [quitando, setQuitando] = useState<string | null>(null)
   const [error, setError]       = useState('')
+
+  // El enlace abierto en pantalla y el que se acaba de copiar. Se guardan por
+  // id de vehículo: un cliente puede tener tres coches y cada uno su enlace.
+  const [enlaces, setEnlaces]     = useState<Record<string, string>>({})
+  const [compartiendo, setCompartiendo] = useState<string | null>(null)
+  const [copiado, setCopiado]     = useState<string | null>(null)
 
   const set = (campo: keyof VehiculoForm, valor: string) =>
     setForm(prev => ({ ...prev, [campo]: valor }))
@@ -60,6 +82,50 @@ export default function VehiculosCliente({ clienteId, vehiculos }: Props) {
     setGuardando(false)
     if (res.error) { setError(res.error); return }
     cerrar()
+  }
+
+  const compartir = async (v: Vehiculo) => {
+    setCompartiendo(v.id)
+    setError('')
+    const res = await generarEnlaceHistorial(v.id, clienteId)
+    setCompartiendo(null)
+    if (res.error || !res.url) {
+      setError(res.error ?? 'No se pudo generar el enlace.')
+      return
+    }
+    setEnlaces(prev => ({ ...prev, [v.id]: res.url! }))
+  }
+
+  const copiar = async (v: Vehiculo) => {
+    const url = enlaces[v.id]
+    if (!url) return
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiado(v.id)
+      setTimeout(() => setCopiado(null), 2000)
+    } catch {
+      // Safari en http, o el usuario negó el permiso. El enlace está a la
+      // vista y se puede seleccionar a mano, así que no es un callejón sin
+      // salida — pero decirlo evita que parezca que el botón no hace nada.
+      setError('No se pudo copiar solo. Selecciona el enlace y cópialo a mano.')
+    }
+  }
+
+  const revocar = async (v: Vehiculo) => {
+    if (!confirm(
+      `¿Desactivar el enlace de ${titulo(v)}?\n\n` +
+      'El cliente dejará de poder abrirlo. Puedes generar uno nuevo después, ' +
+      'pero será distinto y el viejo no volverá a funcionar.'
+    )) return
+    setCompartiendo(v.id)
+    const res = await revocarEnlaceHistorial(v.id, clienteId)
+    setCompartiendo(null)
+    if (res.error) { setError(res.error); return }
+    setEnlaces(prev => {
+      const copia = { ...prev }
+      delete copia[v.id]
+      return copia
+    })
   }
 
   const quitar = async (v: Vehiculo) => {
@@ -145,21 +211,89 @@ export default function VehiculosCliente({ clienteId, vehiculos }: Props) {
           editando === v.id ? (
             <div key={v.id}>{formulario}</div>
           ) : (
-            <div key={v.id} className="flex items-start justify-between gap-3 border border-gray-100 rounded-xl p-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{titulo(v)}</p>
-                <p className="text-xs text-gray-400 truncate">
-                  {[v.placas, v.vin].filter(Boolean).join(' · ') || 'Sin placas ni VIN'}
-                </p>
+            <div key={v.id} className="border border-gray-100 rounded-xl p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{titulo(v)}</p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {[v.placas, v.vin].filter(Boolean).join(' · ') || 'Sin placas ni VIN'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => abrirEdicion(v)} aria-label="Editar vehículo" className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-700">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => quitar(v)} disabled={quitando === v.id} aria-label="Quitar vehículo" className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500">
+                    {quitando === v.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => abrirEdicion(v)} aria-label="Editar vehículo" className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-700">
-                  <Pencil className="w-3.5 h-3.5" />
+
+              {/* El enlace permanente del coche. A diferencia del portal de la
+                  orden —que caduca a los 7 días— este el cliente lo guarda: es
+                  su libreta de servicio, la que enseña si vende el coche. */}
+              {enlaces[v.id] ? (
+                <div className="mt-3 border-t border-gray-100 pt-3 space-y-2">
+                  <p className="text-xs text-gray-500">
+                    Enlace permanente del historial. El cliente puede guardarlo: se
+                    actualiza solo con cada visita.
+                  </p>
+                  <p className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 break-all select-all">
+                    {enlaces[v.id]}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {clienteTelefono && (
+                      <a
+                        href={buildWhatsAppLink(
+                          clienteTelefono,
+                          `Hola ${clienteNombre},\n\n` +
+                          `Aquí tienes el historial de servicio de tu ${titulo(v)}:\n${enlaces[v.id]}\n\n` +
+                          'Guarda este enlace: se actualiza solo cada vez que traes el vehículo, ' +
+                          'y te sirve para enseñar los mantenimientos si algún día lo vendes.',
+                          paisTaller,
+                        )}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Enviar por WhatsApp
+                      </a>
+                    )}
+                    <button
+                      onClick={() => copiar(v)}
+                      className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50"
+                    >
+                      {copiado === v.id
+                        ? <><Check className="w-3.5 h-3.5 text-green-600" /> Copiado</>
+                        : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
+                    </button>
+                    <button
+                      onClick={() => revocar(v)}
+                      disabled={compartiendo === v.id}
+                      className="text-xs text-gray-400 hover:text-red-500 px-1"
+                    >
+                      Desactivar enlace
+                    </button>
+                  </div>
+                  {!clienteTelefono && (
+                    <p className="text-xs text-gray-400">
+                      Este cliente no tiene teléfono guardado, así que no se puede
+                      enviar por WhatsApp desde aquí. Copia el enlace y mándaselo.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => compartir(v)}
+                  disabled={compartiendo === v.id}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-semibold disabled:opacity-60"
+                >
+                  {compartiendo === v.id
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <Share2 className="w-3.5 h-3.5" />}
+                  {v.historial_token ? 'Ver enlace del historial' : 'Compartir historial'}
                 </button>
-                <button onClick={() => quitar(v)} disabled={quitando === v.id} aria-label="Quitar vehículo" className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500">
-                  {quitando === v.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                </button>
-              </div>
+              )}
             </div>
           )
         ))}

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Star, MessageCircle, Mail, Send, ChevronRight, Lock, ExternalLink } from 'lucide-react'
 import { ResenaConfig, ResenaEnviada } from '@/types/resenas'
 
-const MENSAJE_WA_DEFAULT = `¡Hola {{nombre}}! 😊 Gracias por confiar en *{{taller}}* con tu {{vehiculo}}. ¿Nos ayudas con una reseña en Google? Solo toma 1 minuto y nos ayuda mucho 🙏 {{link}}`
+const MENSAJE_WA_DEFAULT = `Hola {{nombre}}, gracias por confiar en *{{taller}}* con tu {{vehiculo}}. ¿Nos ayudas con una reseña en Google? Solo toma 1 minuto y nos ayuda mucho: {{link}}`
 const ASUNTO_EMAIL_DEFAULT = `¿Cómo te fue en {{taller}}? Cuéntanos tu experiencia`
 const CUERPO_EMAIL_DEFAULT = `Hola {{nombre}},\n\nGracias por visitarnos en {{taller}}. Tu opinión nos ayuda a mejorar y a que más clientes nos encuentren.\n\nDéjanos una reseña aquí: {{link}}\n\nSaludos,\nEl equipo de {{taller}}`
 

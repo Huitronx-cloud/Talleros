@@ -72,12 +72,12 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   }
 
   function linkConfirmacion(c: Cita) {
-    const mensaje = `✅ *¡Tu cita está confirmada!*\n\nHola ${c.cliente_nombre} 👋\n\n📅 *Fecha:* ${fechaLarga(c)}\n🕐 *Hora:* ${c.hora.slice(0, 5)} hrs\n🔧 *Taller:* ${tallerInfo.nombre}\n\n¡Te esperamos! Si necesitas cambiar tu cita, respóndenos por este medio.`
+    const mensaje = `*Tu cita está confirmada*\n\nHola ${c.cliente_nombre},\n\n*Fecha:* ${fechaLarga(c)}\n*Hora:* ${c.hora.slice(0, 5)} hrs\n*Taller:* ${tallerInfo.nombre}\n\nTe esperamos. Si necesitas cambiar tu cita, respóndenos por este medio.`
     return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
   }
 
   function linkSugerirOtroDia(c: Cita) {
-    const mensaje = `Hola ${c.cliente_nombre} 👋 Recibimos tu solicitud de cita para el ${fechaLarga(c)} a las ${c.hora.slice(0, 5)} en *${tallerInfo.nombre}*.\n\nEse horario no lo tenemos disponible 🙏 ¿Te funcionaría otro día u horario? Respóndenos con la opción que te acomode y la agendamos de inmediato.`
+    const mensaje = `Hola ${c.cliente_nombre}, recibimos tu solicitud de cita para el ${fechaLarga(c)} a las ${c.hora.slice(0, 5)} en *${tallerInfo.nombre}*.\n\nEse horario no lo tenemos disponible. ¿Te funcionaría otro día u horario? Respóndenos con la opción que te acomode y la agendamos de inmediato.`
     return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
   }
 

@@ -13,11 +13,12 @@ interface Props {
   ordenes: any[]
   ordenesFinalizadas: any[]
   vehiculos: Vehiculo[]
+  paisTaller: string | null
 }
 
 const TABS = ['Información', 'Historial del vehículo']
 
-export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas, vehiculos }: Props) {
+export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas, vehiculos, paisTaller }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState(0)
 
@@ -121,7 +122,13 @@ export default function ClienteDetalle({ cliente, ordenes, ordenesFinalizadas, v
           {/* Antes esto era una tarjeta "Vehículo" en singular, porque los datos
               del coche vivían en columnas dentro de la ficha del cliente y solo
               cabía uno. */}
-          <VehiculosCliente clienteId={cliente.id} vehiculos={vehiculos} />
+          <VehiculosCliente
+            clienteId={cliente.id}
+            vehiculos={vehiculos}
+            clienteNombre={cliente.nombre}
+            clienteTelefono={cliente.telefono}
+            paisTaller={paisTaller}
+          />
 
           {/* Notas */}
           {cliente.notas && (

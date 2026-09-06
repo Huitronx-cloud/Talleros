@@ -44,12 +44,12 @@ export async function POST(
   const totalFmt = `${sym}${(cotizacion.total ?? 0).toLocaleString()}`
 
   const mensaje =
-    `Hola ${cliente.nombre} 👋\n\n` +
+    `Hola ${cliente.nombre},\n\n` +
     `*${taller.nombre}* te envía la cotización *#${numero}* para tu aprobación:\n\n` +
     `${lineas}\n\n` +
     `*Total: ${totalFmt}*\n\n` +
-    `Responde *SÍ* para aprobar ✅\n` +
-    `Responde *NO* para rechazar ❌\n\n` +
+    `Responde *SÍ* para aprobar\n` +
+    `Responde *NO* para rechazar\n\n` +
     `_Sin tu aprobación no iniciamos ningún trabajo._`
 
   // DEPRECATED: canal migrado a wa.me — envío directo por Twilio:
