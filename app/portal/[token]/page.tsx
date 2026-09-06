@@ -69,6 +69,22 @@ export default async function PortalClientePage({
   const taller  = portalData.taller ?? {}
   const todasFotos = portalData.fotos as any[]
 
+  // Visitas anteriores del MISMO coche. La función del portal las busca por el
+  // enlace con el vehículo o, para las órdenes que la migración 051 no pudo
+  // enlazar, comparando placas.
+  const historial = (portalData.historial ?? []) as any[]
+
+  const kmMasAlto = historial.reduce(
+    (max: number, v: any) => Math.max(max, Number(v.kilometraje) || 0),
+    Number(orden.kilometraje) || 0,
+  )
+
+  // "Desde 2024" y no "hace 2 años": una fecha se comprueba de un vistazo, un
+  // cálculo hay que creérselo.
+  const primeraVisita = historial.length > 0
+    ? historial[historial.length - 1].fecha
+    : null
+
   const fotosRecepcion   = todasFotos?.filter((f: any) => f.tipo === 'recepcion') ?? []
   const fotosDiagnostico = todasFotos?.filter((f: any) => f.tipo !== 'recepcion' && f.tipo !== 'firma') ?? []
 
@@ -214,6 +230,59 @@ export default async function PortalClientePage({
             )}
           </div>
         </div>
+
+        {/* Historial del vehículo.
+            El taller siempre tuvo esta pantalla; el dueño del coche no podía
+            verla. Va debajo de la orden en curso, que ya se ve completa arriba,
+            y solo con visitas ENTREGADAS: una en curso no tiene total final. */}
+        {historial.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">
+              Todo lo que le hemos hecho a este vehículo
+            </h2>
+            <p className="text-xs text-gray-400 mb-4">
+              {historial.length} {historial.length === 1 ? 'visita anterior' : 'visitas anteriores'} en este taller
+              {primeraVisita ? ` · desde ${new Date(primeraVisita + 'T12:00:00').getFullYear()}` : ''}
+              {kmMasAlto > 0 ? ` · ${kmMasAlto.toLocaleString()} km` : ''}
+            </p>
+
+            <div className="space-y-3">
+              {historial.map((v: any) => {
+                const servicios = Array.isArray(v.servicios)
+                  ? v.servicios.map((s: any) => s?.descripcion).filter(Boolean)
+                  : []
+                return (
+                  <div key={v.id} className="border border-gray-100 rounded-xl p-3">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {v.fecha
+                          ? new Date(v.fecha + 'T12:00:00').toLocaleDateString('es-MX', {
+                              day: 'numeric', month: 'long', year: 'numeric',
+                            })
+                          : 'Sin fecha'}
+                      </span>
+                      {v.total > 0 && (
+                        <span className="text-sm font-bold text-gray-900 shrink-0">
+                          ${Number(v.total).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    {v.kilometraje > 0 && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {Number(v.kilometraje).toLocaleString()} km
+                      </p>
+                    )}
+                    {servicios.length > 0 && (
+                      <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                        {servicios.join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Fotos de diagnóstico */}
         {fotosDiagnostico.length > 0 && (
