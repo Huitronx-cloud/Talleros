@@ -246,7 +246,7 @@ export default function VehiculosCliente({
                       <a
                         href={buildWhatsAppLink(
                           clienteTelefono,
-                          `Hola ${clienteNombre} 👋\n\n` +
+                          `Hola ${clienteNombre},\n\n` +
                           `Aquí tienes el historial de servicio de tu ${titulo(v)}:\n${enlaces[v.id]}\n\n` +
                           'Guarda este enlace: se actualiza solo cada vez que traes el vehículo, ' +
                           'y te sirve para enseñar los mantenimientos si algún día lo vendes.',

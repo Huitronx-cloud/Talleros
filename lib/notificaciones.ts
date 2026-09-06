@@ -99,7 +99,7 @@ export function mensajeOrdenLista(params: {
   const sym      = params.moneda === 'COP' ? 'COP ' : '$'
   const total    = params.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })
 
-  return `Hola ${params.nombre} 👋 Su ${vehiculo}${placas} ya está listo para recoger en ${params.tallerNombre}.\n\nTotal a pagar: ${sym}${total}.\n\n¿Tiene alguna pregunta? Responda este mensaje.`
+  return `Hola ${params.nombre}, su ${vehiculo}${placas} ya está listo para recoger en ${params.tallerNombre}.\n\nTotal a pagar: ${sym}${total}.\n\n¿Tiene alguna pregunta? Responda este mensaje.`
 }
 
 export function mensajeRecordatorio(params: {
@@ -114,7 +114,7 @@ export function mensajeRecordatorio(params: {
     day: 'numeric', month: 'long', year: 'numeric',
   })
 
-  return `Hola ${params.nombre}, le recordamos que ${vehiculo} está siendo atendido en ${params.tallerNombre}.\n\nFecha estimada de entrega: ${fecha}.\n\nLe avisaremos cuando esté listo ✅`
+  return `Hola ${params.nombre}, le recordamos que ${vehiculo} está siendo atendido en ${params.tallerNombre}.\n\nFecha estimada de entrega: ${fecha}.\n\nLe avisaremos cuando esté listo.`
 }
 
 export function mensajeSeguimiento(params: {
@@ -125,9 +125,9 @@ export function mensajeSeguimiento(params: {
   linkGoogleMaps?: string | null
 }) {
   const vehiculo = [params.marca, params.modelo].filter(Boolean).join(' ') || 'su vehículo'
-  const link     = params.linkGoogleMaps ? `\n\n📍 ${params.linkGoogleMaps}` : ''
+  const link     = params.linkGoogleMaps ? `\n\n${params.linkGoogleMaps}` : ''
 
-  return `Hola ${params.nombre} 😊 ¿Cómo ha funcionado ${vehiculo} después del servicio en ${params.tallerNombre}?\n\nSu opinión nos ayuda a mejorar. ¿Nos regalas una reseña en Google?${link}`
+  return `Hola ${params.nombre}, ¿cómo ha funcionado ${vehiculo} después del servicio en ${params.tallerNombre}?\n\nSu opinión nos ayuda a mejorar. ¿Nos regalas una reseña en Google?${link}`
 }
 export function mensajeRecordatorioMantenimiento(params: {
   nombre: string
@@ -137,7 +137,7 @@ export function mensajeRecordatorioMantenimiento(params: {
 }) {
   const vehiculo = [params.marca, params.modelo].filter(Boolean).join(' ') || 'su vehículo'
 
-  return `Hola ${params.nombre} 👋 Han pasado algunos meses desde que atendimos ${vehiculo} en ${params.tallerNombre}.\n\n🔧 Es un buen momento para revisar su vehículo y prevenir problemas futuros.\n\n¿Le gustaría agendar su próximo servicio? Responda este mensaje y con gusto le atendemos.`
+  return `Hola ${params.nombre}, han pasado algunos meses desde que atendimos ${vehiculo} en ${params.tallerNombre}.\n\nEs un buen momento para revisar su vehículo y prevenir problemas futuros.\n\n¿Le gustaría agendar su próximo servicio? Responda este mensaje y con gusto le atendemos.`
 }
 export function mensajeResena(params: {
   nombre: string
@@ -148,5 +148,5 @@ export function mensajeResena(params: {
 }) {
   const vehiculo = [params.marca, params.modelo].filter(Boolean).join(' ') || 'su vehículo'
 
-  return `Hola ${params.nombre} 😊 Esperamos que ${vehiculo} esté funcionando perfecto después del servicio en ${params.tallerNombre}.\n\n⭐ ¿Nos regalas una reseña en Google? Solo toma 1 minuto y nos ayuda muchísimo:\n\n${params.googleReviewUrl}\n\n¡Gracias por preferirnos!`
+  return `Hola ${params.nombre}, esperamos que ${vehiculo} esté funcionando perfecto después del servicio en ${params.tallerNombre}.\n\n¿Nos regalas una reseña en Google? Solo toma 1 minuto y nos ayuda muchísimo:\n\n${params.googleReviewUrl}\n\nGracias por preferirnos.`
 }

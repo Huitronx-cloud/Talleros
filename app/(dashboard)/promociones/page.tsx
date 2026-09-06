@@ -49,9 +49,9 @@ function generarMensaje({
     ? ` por ${motivo.label}`
     : ''
 
-  return `¡Hola ${nombreCliente}! 👋 En *${nombreTaller}* queremos consentirte${ocasion}. ${
+  return `Hola ${nombreCliente}, en *${nombreTaller}* queremos consentirte${ocasion}. ${
     descripcion ? `${descripcion} ` : ''
-  }🎁 Tenemos *${descStr}* especialmente para ti. ¡Agenda tu cita hoy y aprovecha! Responde este mensaje para reservar. 🔧`
+  }Tenemos *${descStr}* especialmente para ti. Agenda tu cita y aprovecha: responde este mensaje para reservar.`
 }
 
 interface Cliente {
