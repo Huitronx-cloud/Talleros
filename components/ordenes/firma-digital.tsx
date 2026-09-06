@@ -17,6 +17,7 @@ export default function FirmaDigital({ ordenId, tallerId, onFirmado, onOmitir }:
   const [tieneFirma, setTieneFirma] = useState(false)
   const [guardando, setGuardando]   = useState(false)
   const [listo, setListo]           = useState(false)
+  const [error, setError]           = useState('')
   const supabase = createClient()
 
   // Configurar canvas
@@ -87,6 +88,7 @@ export default function FirmaDigital({ ordenId, tallerId, onFirmado, onOmitir }:
     const canvas = canvasRef.current
     if (!canvas || !tieneFirma) return
     setGuardando(true)
+    setError('')
 
     try {
       // Convertir canvas a blob
@@ -103,24 +105,33 @@ export default function FirmaDigital({ ordenId, tallerId, onFirmado, onOmitir }:
 
       const { data } = supabase.storage.from('diagnosticos').getPublicUrl(path)
 
-      // Guardar referencia en fotos_diagnostico con tipo 'firma'
-      await supabase.from('fotos_diagnostico').insert({
+      // Los dos escritos comprueban su error. Antes ninguno lo hacía, y
+      // supabase-js no lanza: si algo fallaba, el cliente ya había firmado en
+      // la pantalla, se le decía que todo estaba bien, y la firma no quedaba
+      // guardada en ninguna parte. Es la prueba de que aceptó el trabajo: es de
+      // lo último que puede perderse en silencio.
+      const { error: errorFoto } = await supabase.from('fotos_diagnostico').insert({
         orden_id:    ordenId,
         taller_id:   tallerId,
         url:         data.publicUrl,
         descripcion: 'Firma digital del cliente al entregar el vehículo',
         tipo:        'firma',
       })
+      if (errorFoto) throw errorFoto
 
       // Marcar la orden con fecha de firma
-      await supabase.from('ordenes')
+      const { error: errorOrden } = await supabase.from('ordenes')
         .update({ firma_cliente_url: data.publicUrl })
         .eq('id', ordenId)
+      if (errorOrden) throw errorOrden
 
       setListo(true)
       setTimeout(onFirmado, 1500)
     } catch (err) {
       console.error('Error guardando firma:', err)
+      // Sin esto el botón se quedaba quieto y el cliente ya había firmado:
+      // nadie sabía si había quedado guardada o no.
+      setError(err instanceof Error ? err.message : 'No se pudo guardar la firma.')
     } finally {
       setGuardando(false)
     }
@@ -179,6 +190,15 @@ export default function FirmaDigital({ ordenId, tallerId, onFirmado, onOmitir }:
       <p className="text-xs text-gray-400 text-center">
         Al firmar, el cliente confirma el estado del vehículo al momento de la recepción.
       </p>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 px-4 py-3 rounded-lg mb-3">
+          <p className="text-sm font-semibold text-red-700">
+            No se pudo guardar la firma. No cierres esta pantalla.
+          </p>
+          <p className="text-xs text-red-600 mt-1 break-words">{error}</p>
+        </div>
+      )}
 
       {/* Botones */}
       <div className="flex gap-3">
