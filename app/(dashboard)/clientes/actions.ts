@@ -57,13 +57,42 @@ export async function crearCliente(datos: ClienteForm) {
     if (porEmail?.length) return { error: 'Ya existe un cliente con ese correo.' }
   }
 
-  const { error } = await supabase.from('clientes').insert({
+  const { data: creado, error } = await supabase.from('clientes').insert({
     ...datos,
     vehiculo_año: datos.vehiculo_año ? Number(datos.vehiculo_año) : null,
     taller_id: tallerId,
-  })
+  }).select('id').single()
 
   if (error) return { error: error.message }
+
+  // El coche que se escribió al dar de alta al cliente también va a `vehiculos`.
+  //
+  // Sin esto, un taller registraba al cliente CON su coche y luego abría su
+  // ficha y leía "Este cliente todavía no tiene vehículos". Los datos estaban
+  // —en las columnas viejas de la ficha del cliente— pero la lista de vehículos
+  // mira otra tabla, la que se creó en la migración 051, y a esta tabla no la
+  // alimentaba nadie salvo el botón de "Agregar" y las citas.
+  //
+  // Es el mismo tropiezo de siempre: se añade una tabla y no se actualizan los
+  // caminos que escriben. Las columnas de `clientes` se siguen rellenando: hay
+  // pantallas que todavía leen de ahí y quitarlas es otra faena.
+  if (creado?.id && (datos.vehiculo_marca || datos.vehiculo_modelo || datos.placas)) {
+    const { error: errorVehiculo } = await supabase.from('vehiculos').insert({
+      taller_id:  tallerId,
+      cliente_id: creado.id,
+      marca:      datos.vehiculo_marca?.trim()  || null,
+      modelo:     datos.vehiculo_modelo?.trim() || null,
+      anio:       datos.vehiculo_año ? Number(datos.vehiculo_año) : null,
+      placas:     datos.placas?.trim()?.toUpperCase() || null,
+      vin:        datos.vin?.trim()?.toUpperCase()    || null,
+      foto_url:   datos.foto_vehiculo_url || null,
+    })
+    // No se aborta: el cliente ya existe y perderlo por esto sería peor. Pero
+    // se registra, que es justo lo que no se hacía y por eso nadie se enteró.
+    if (errorVehiculo) {
+      console.error(`[vehiculos] no se pudo crear el coche del cliente ${creado.id}:`, errorVehiculo.message)
+    }
+  }
 
   // Enviar WhatsApp de bienvenida si tiene teléfono
   if (datos.telefono) {
