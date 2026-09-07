@@ -20,7 +20,10 @@
 // que no se expira agresivamente. Lo que se hace es subir la versión de vez en
 // cuando: al activarse, el `activate` se lleva por delante todo lo anterior de
 // una vez.
-const CACHE = 'talleros-v3'
+// v4: /abriendo se sirve cache-first, así que un aparato con la versión vieja
+// guardada seguiría sin la salida de emergencia hasta el siguiente arranque.
+// Subir la versión fuerza la reinstalación y la vuelve a bajar ya.
+const CACHE = 'talleros-v4'
 const OFFLINE_URL = '/offline'
 // /abriendo es la página puente de arranque de la PWA: estática, se sirve
 // cache-first para que el splash pinte al instante del tap (su redirect es

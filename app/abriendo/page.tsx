@@ -32,9 +32,44 @@ export default function AbriendoPage() {
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 500, margin: 0 }}>
         Iniciando tu taller...
       </p>
+
+      {/* La salida de emergencia.
+          Sin esto, si la navegación al panel no prosperaba —red lenta, arranque
+          en frío, un tirón— esta pantalla se quedaba puesta para siempre: sin
+          reintento, sin aviso y sin nada que tocar. Cerrar la app y volver a
+          abrirla lo arreglaba, pero eso solo lo sabe quien conoce la app por
+          dentro; un taller piensa que el programa no sirve y lo cierra.
+          Aparece a los 8 segundos, que es mucho más de lo que tarda el panel
+          incluso arrancando en frío. */}
+      <div id="tarda" style={{ display: 'none', textAlign: 'center', marginTop: 8 }}>
+        <p style={{ color: '#94a3b8', fontSize: 13, margin: '0 0 14px' }}>
+          Está tardando más de lo normal.
+        </p>
+        <a
+          href="/dashboard"
+          style={{
+            display: 'inline-block', background: '#2563eb', color: '#fff',
+            fontSize: 14, fontWeight: 600, textDecoration: 'none',
+            padding: '10px 22px', borderRadius: 10,
+          }}
+        >
+          Entrar al panel
+        </a>
+      </div>
+
       <script
         dangerouslySetInnerHTML={{
-          __html: `window.location.replace('/dashboard')`,
+          __html: `
+            window.location.replace('/dashboard');
+            // Si seguimos aquí a los 8 segundos, la navegación no prosperó.
+            // No se reintenta sola: cancelar una petición que sigue viva y
+            // empezar de cero empeora las conexiones malas, que es justo donde
+            // esto pasa. Se le da al usuario un botón y él decide.
+            setTimeout(function () {
+              var t = document.getElementById('tarda');
+              if (t) t.style.display = 'block';
+            }, 8000);
+          `,
         }}
       />
     </div>
