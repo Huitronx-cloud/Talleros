@@ -87,6 +87,8 @@ export default function DetalleOrden({
 
   const siguienteEstado = ESTADOS_SIGUIENTE[estadoActual]
 
+  const [avisarListo, setAvisarListo] = useState(false)
+
   const handleCambiarEstado = async () => {
   if (!siguienteEstado) return
   setCambiando(true)
@@ -95,6 +97,11 @@ export default function DetalleOrden({
   if (!resultado.error) {
     setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
     setEstadoActual(siguienteEstado)
+    // El vehículo queda listo y el aviso al cliente se propone solo. No se
+    // manda nada: se enseña el mensaje y decide la persona. Marcar "Listo" y
+    // avisar no son la misma cosa —falta lavarlo, son las nueve de la noche—
+    // y un aviso automático hace venir al cliente cuando no debe.
+    if (siguienteEstado === 'listo') setAvisarListo(true)
   } else {
     setErrorEstado(resultado.error)
   }
@@ -142,6 +149,21 @@ export default function DetalleOrden({
 
   return (
     <div className="max-w-3xl lg:max-w-4xl mx-auto">
+
+      {/* ── Aviso al cliente cuando la orden queda lista ──
+          Se propone solo al marcar "Listo", pero no manda nada: enseña el
+          mensaje y decide la persona. Marcar listo y avisar no son la misma
+          cosa —falta lavarlo, falta que confirme el pago, son las nueve de la
+          noche— y un aviso automático hace venir al cliente cuando no debe. */}
+      <BotonWhatsAppLink
+        ordenId={orden.id}
+        estado="listo"
+        plantillaInicial="listo_entrega"
+        oculto
+        abrirAuto={avisarListo}
+        onCerrarAuto={() => setAvisarListo(false)}
+        encabezado={`El vehículo quedó listo. Avísale a ${orden.clientes?.nombre?.split(' ')[0] ?? 'tu cliente'} que puede pasar a recogerlo.`}
+      />
 
       {/* ── Modal de confirmación de borrado ── */}
       {confirmarBorrar && (

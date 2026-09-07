@@ -6,6 +6,7 @@ import { Orden, EstadoOrden } from '@/types'
 import { Car, Clock, AlertTriangle, CheckCircle2, Wrench, ClipboardList, Loader2, ChevronRight } from 'lucide-react'
 import BadgeEstado from './badge-estado'
 import { cambiarEstado } from '@/app/(dashboard)/ordenes/actions'
+import BotonWhatsAppLink from './whatsapp-link-modal'
 
 interface Props {
   ordenes: Orden[]
@@ -68,6 +69,7 @@ const COLOR_BOTON: Partial<Record<EstadoOrden, string>> = {
 function OrdenCard({ orden }: { orden: Orden }) {
   const [estadoActual, setEstadoActual] = useState<EstadoOrden>(orden.estado)
   const [cambiando, setCambiando]       = useState(false)
+  const [avisarListo, setAvisarListo]   = useState(false)
 
   const prioridad = getPrioridad({ ...orden, estado: estadoActual })
   const cfg       = PRIORIDAD_CONFIG[prioridad]
@@ -79,12 +81,28 @@ function OrdenCard({ orden }: { orden: Orden }) {
     if (!siguiente) return
     setCambiando(true)
     const resultado = await cambiarEstado(orden.id, siguiente)
-    if (!resultado.error) setEstadoActual(siguiente)
+    if (!resultado.error) {
+      setEstadoActual(siguiente)
+      // Mismo criterio que en el detalle y en el flujo del técnico: al quedar
+      // lista se propone el aviso, no se manda.
+      if (siguiente === 'listo') setAvisarListo(true)
+    }
     setCambiando(false)
   }
 
   return (
     <div className={`rounded-xl border border-gray-200 border-l-4 overflow-hidden transition-all ${cfg.color}`}>
+      {/* El aviso al cliente al marcar la orden lista. Ver handleCambiarEstado. */}
+      <BotonWhatsAppLink
+        ordenId={orden.id}
+        estado="listo"
+        plantillaInicial="listo_entrega"
+        oculto
+        abrirAuto={avisarListo}
+        onCerrarAuto={() => setAvisarListo(false)}
+        encabezado={`El vehículo quedó listo. Avísale a ${orden.clientes?.nombre?.split(' ')[0] ?? 'tu cliente'} que puede pasar a recogerlo.`}
+      />
+
       {/* Área clickeable → detalle */}
       <Link href={`/ordenes/${orden.id}`} className="block p-4 hover:opacity-90 transition-opacity">
         <div className="flex items-start justify-between gap-3">
