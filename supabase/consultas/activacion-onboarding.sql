@@ -27,6 +27,12 @@
 --
 --   2026-08-24 → nuevo 21%
 --   2026-09-08 → viejo 1/7 (14,3%) · nuevo 11/31 (35,5%)
+--   2026-09-08, ya sin las cuentas de prueba (migración 061):
+--                viejo 1/6 (16,7%) · nuevo 10/30 (33,3%)
+--                solo con ventana cerrada: 1/6 (16,7%) · 5/18 (27,8%)
+--
+-- Las cifras limpias son las que valen. Las de arriba se dejan para poder
+-- comparar con lo que se dijo antes de limpiar, no porque sirvan.
 --
 -- El 35,5% del 08/09 tiene truco y conviene recordarlo al compararlo: 14 de
 -- esos 31 talleres seguían DENTRO de su ventana de 14 días, así que todavía
@@ -67,6 +73,11 @@ with cohorte as (
     ) as activado
   from public.talleres t
   where t.created_at >= timestamptz '2026-07-21'   -- dos semanas antes del cambio
+    -- Fuera las cuentas de prueba del dueño (migración 061). Una de ellas,
+    -- "Taller Mecánico Enzo", tenía cinco órdenes marcadas como reales y se
+    -- contaba como taller activado. Con 31 talleres en la cohorte eso movía el
+    -- resultado dos puntos: los números tienen que salir de los clientes.
+    and not t.es_prueba
 )
 select
   onboarding,
