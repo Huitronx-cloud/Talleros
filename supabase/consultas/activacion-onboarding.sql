@@ -67,6 +67,11 @@ with cohorte as (
     ) as activado
   from public.talleres t
   where t.created_at >= timestamptz '2026-07-21'   -- dos semanas antes del cambio
+    -- Fuera las cuentas de prueba del dueño (migración 061). Una de ellas,
+    -- "Taller Mecánico Enzo", tenía cinco órdenes marcadas como reales y se
+    -- contaba como taller activado. Con 31 talleres en la cohorte eso movía el
+    -- resultado dos puntos: los números tienen que salir de los clientes.
+    and not t.es_prueba
 )
 select
   onboarding,
