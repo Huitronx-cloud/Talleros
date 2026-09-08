@@ -12,10 +12,11 @@
 --
 -- Lista confirmada por el dueño el 08/09/2026.
 --
--- NO se incluye el "Mariantonieta" del 26/05 (6ae461e7): tiene un correo,
--- marian228@hotmail.com, que no se parece a los suyos, y podría ser una
--- persona de verdad. Queda pendiente de confirmar. El otro "Mariantonieta",
--- el del 07/05, sí va: no tiene usuario, ni órdenes, ni clientes.
+-- Los dos "Mariantonieta" son suyos: el del 07/05 no tiene ni usuario, y el
+-- del 26/05 lleva el correo marian228@hotmail.com, que no se parece a los
+-- demás suyos — se preguntó antes de marcarlo en vez de darlo por hecho,
+-- porque marcar por error el taller de una persona real la borraría de todas
+-- las mediciones sin que nadie se enterara.
 
 alter table public.talleres
   add column if not exists es_prueba boolean not null default false;
@@ -45,6 +46,7 @@ where id in (
   '5bcf707c-4af8-4c1c-b219-038054e46494', -- expande
   '517a842d-d098-4f8f-8dbe-b8cc53b0c8d2', -- El mike
   'adf2f266-6439-4a5e-af09-19222ac75b2f', -- Dogon
+  '6ae461e7-e90b-4955-a2f3-f0a6e24e9ca6', -- Mariantonieta (26/05, marian228@hotmail.com)
   -- Cuentas con las que el dueño trabaja de verdad para probar. Estas son las
   -- que ensuciaban las mediciones, porque sí tienen órdenes y clientes.
   'ef4cf77d-977b-4b91-8619-af41d96ce5bb', -- Huitron (huitronx@icloud.com)
