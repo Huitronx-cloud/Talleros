@@ -6,6 +6,7 @@ import { cambiarEstadoCotizacion, eliminarCotizacion } from '@/app/(dashboard)/c
 import { useRouter } from 'next/navigation'
 import { EstadoCotizacion } from '@/types'
 import { formatMoney } from '@/lib/utils'
+import BotonPdf from '@/components/ui/BotonPdf'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
 interface Props {
@@ -126,16 +127,13 @@ export default function AccionesPdf({
               Cotización #{numero} · {totalFmt}
             </p>
             <div className="flex flex-col gap-3">
-              <a
-                href={`/api/cotizaciones/${id}/pdf`}
-      download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-3 rounded-xl transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Descargar PDF
-              </a>
+              {/* Desde el icono instalado, un enlace normal enseñaba el PDF a
+                  pantalla completa sin forma de volver a la app. Ver BotonPdf. */}
+              <BotonPdf
+                url={`/api/cotizaciones/${id}/pdf`}
+                nombre={`cotizacion-${numero}.pdf`}
+                className="w-full flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-3 rounded-xl transition-colors disabled:opacity-60"
+              />
 
               {emailCliente && (
                 <button

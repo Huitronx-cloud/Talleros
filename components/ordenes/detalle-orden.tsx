@@ -16,6 +16,7 @@ import PanelPagos from './panel-pagos'
 import BotonWhatsAppLink from './whatsapp-link-modal'
 import BotonWhatsAppContexto from './whatsapp-contexto-modal'
 import { formatMoney, simboloMoneda } from '@/lib/utils'
+import BotonPdf from '@/components/ui/BotonPdf'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
   recibido:   'en_proceso',
@@ -568,14 +569,12 @@ export default function DetalleOrden({
         className="flex items-center gap-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-lg transition-colors"
       />
     )}
-    <a
-      href={`/api/ordenes/${orden.id}/pdf`}
-      download
-      target="_blank"
-      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium underline underline-offset-2"
-    >
-      Ver PDF
-    </a>
+    <BotonPdf
+      url={`/api/ordenes/${orden.id}/pdf`}
+      nombre={`orden-${String(orden.numero_orden).padStart(4, '0')}.pdf`}
+      etiqueta="Ver PDF"
+      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium underline underline-offset-2 disabled:opacity-60"
+    />
   </div>
 </div>
 
