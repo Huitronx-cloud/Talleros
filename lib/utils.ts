@@ -24,14 +24,32 @@ const CURRENCY_CONFIG: Record<string, { symbol: string; locale: string; decimals
   EUR: { symbol: "€", locale: "es-ES", decimals: 2 },
 }
 
+/**
+ * El importe con su símbolo DELANTE: "$2,141.36", no "2,141.36 $".
+ *
+ * Lo pilló un taller mirando el total en el mensaje al cliente. En todo
+ * Latinoamérica el símbolo va delante —$1,500, MX$1,500, S/350— y verlo detrás
+ * hace dudar de si es una cantidad o una nota al pie. En un mensaje que dice
+ * cuánto hay que pagar, esa duda no puede estar.
+ *
+ * El euro es la excepción y se queda detrás, que es como se escribe en España.
+ *
+ * El espacio solo aparece cuando el símbolo acaba en letra ("Bs 350", "L 350"),
+ * porque pegado se lee como una palabra. Con $ o con glifo va pegado.
+ */
 export function formatMoney(amount: number, moneda?: string | null): string {
   const currency = moneda ?? "USD"
   const config = CURRENCY_CONFIG[currency] ?? CURRENCY_CONFIG["USD"]
 
-  return new Intl.NumberFormat(config.locale, {
+  const numero = new Intl.NumberFormat(config.locale, {
     minimumFractionDigits: config.decimals,
     maximumFractionDigits: config.decimals,
-  }).format(amount) + " " + config.symbol
+  }).format(amount)
+
+  if (currency === "EUR") return `${numero} ${config.symbol}`
+
+  const separador = /[A-Za-z]$/.test(config.symbol) ? " " : ""
+  return `${config.symbol}${separador}${numero}`
 }
 
 /**

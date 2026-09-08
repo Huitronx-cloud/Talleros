@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageCircle, Loader2, X, Send, CheckCircle2 } from 'lucide-react'
 import { EstadoOrden } from '@/types'
 import { generarMensajeWhatsApp, registrarEnvioWhatsApp } from '@/app/(dashboard)/ordenes/actions'
@@ -16,6 +16,10 @@ export default function BotonWhatsAppLink({
   plantillaInicial,
   opts,
   label = 'Enviar por WhatsApp',
+  oculto = false,
+  abrirAuto = false,
+  onCerrarAuto,
+  encabezado,
 }: {
   ordenId: string
   estado: EstadoOrden
@@ -23,6 +27,13 @@ export default function BotonWhatsAppLink({
   plantillaInicial?: PlantillaWhatsApp
   opts?: { garantiaDias?: number; garantiaKm?: number }
   label?: string
+  /** Sin botón: el modal lo abre quien lo usa, con `abrirAuto`. */
+  oculto?: boolean
+  /** Abre el modal desde fuera. Sirve para el aviso al marcar la orden lista. */
+  abrirAuto?: boolean
+  onCerrarAuto?: () => void
+  /** Una línea arriba explicando por qué se abrió solo. */
+  encabezado?: string
 }) {
   const [abierto, setAbierto]     = useState(false)
   const [cargando, setCargando]   = useState(false)
@@ -63,7 +74,20 @@ export default function BotonWhatsAppLink({
     e?.preventDefault()
     e?.stopPropagation()
     setAbierto(false)
+    onCerrarAuto?.()
   }
+
+  // Apertura desde fuera: el taller marca la orden como lista y el aviso al
+  // cliente se propone solo, en vez de quedar a que alguien se acuerde. No se
+  // manda nada aquí — se enseña el mensaje y decide la persona.
+  useEffect(() => {
+    if (!abrirAuto) return
+    setAbierto(true)
+    setEnviado(false)
+    setAvisoLog('')
+    cargarMensaje(plantillaInicial ?? ESTADO_PLANTILLA_DEFAULT[estado])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abrirAuto])
 
   async function handleEnviar(e: React.MouseEvent) {
     e.preventDefault()
@@ -99,6 +123,7 @@ export default function BotonWhatsAppLink({
 
   return (
     <>
+      {!oculto && (
       <button
         onClick={abrir}
         title="Enviar por WhatsApp"
@@ -112,6 +137,7 @@ export default function BotonWhatsAppLink({
         <MessageCircle className="w-4 h-4" />
         {!compacto && label}
       </button>
+      )}
 
       {abierto && (
         <div
@@ -133,6 +159,14 @@ export default function BotonWhatsAppLink({
             </div>
 
             <div className="p-5 space-y-4">
+              {/* Cuando el modal se abre solo, la primera línea dice por qué:
+                  si no, parece que el botón se pulsó sin querer. */}
+              {encabezado && (
+                <p className="text-sm text-gray-700 bg-blue-50 border border-blue-100 px-3 py-2.5 rounded-lg leading-relaxed">
+                  {encabezado}
+                </p>
+              )}
+
               {error && (
                 <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
               )}
@@ -186,7 +220,9 @@ export default function BotonWhatsAppLink({
                 onClick={cerrar}
                 className="text-sm font-medium text-gray-500 hover:text-gray-700 px-4 py-2"
               >
-                Cancelar
+                {/* Abierto solo, "Cancelar" sonaría a deshacer el cambio de
+                    estado. Lo que se rechaza es el aviso, no el trabajo. */}
+                {encabezado ? 'Ahora no' : 'Cancelar'}
               </button>
               <button
                 onClick={handleEnviar}

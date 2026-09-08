@@ -52,6 +52,77 @@ async function getTallerId(): Promise<string | null> {
   return data as string | null
 }
 
+/** Las placas sin guiones ni espacios y en mayúsculas, para poder compararlas. */
+function placasNormalizadas(placas?: string | null): string {
+  return (placas ?? '').replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+}
+
+/**
+ * El coche de la orden, dado de alta en `vehiculos` si no estaba.
+ *
+ * Cuando el taller escribe el coche a mano en vez de elegirlo de la lista, la
+ * orden guardaba marca, modelo y placas en sus propias columnas y ahí se
+ * quedaba: el coche no existía en la lista del cliente. Así, un cliente con el
+ * coche EN EL TALLER, con orden abierta, aparecía en su ficha como si no
+ * tuviera ninguno.
+ *
+ * Devuelve el id del vehículo, o null si no había datos suficientes o si algo
+ * falló — la orden se crea igual, que es lo importante, pero el fallo se
+ * registra en vez de desaparecer.
+ */
+async function vehiculoDeLaOrden(
+  supabase: ReturnType<typeof createClient>,
+  tallerId: string,
+  clienteId: string,
+  datos: { vehiculo_marca?: string | null; vehiculo_modelo?: string | null; vehiculo_año?: string | null; placas?: string | null; vin?: string | null },
+): Promise<string | null> {
+  const marca  = datos.vehiculo_marca?.trim()  || null
+  const modelo = datos.vehiculo_modelo?.trim() || null
+  const placas = datos.placas?.trim()?.toUpperCase() || null
+
+  if (!marca && !modelo && !placas) return null
+
+  const { data: existentes, error: errorLectura } = await supabase
+    .from('vehiculos')
+    .select('id, marca, modelo, placas')
+    .eq('taller_id', tallerId)
+    .eq('cliente_id', clienteId)
+
+  if (errorLectura) {
+    console.error(`[vehiculos] no se pudo leer los coches del cliente ${clienteId}:`, errorLectura.message)
+    return null
+  }
+
+  // Se busca por placas, que es lo único que identifica un coche sin lugar a
+  // dudas. Sin placas se compara marca y modelo, que es flojo pero mejor que
+  // crear un duplicado cada vez que entra el mismo coche.
+  const yaEsta = (existentes ?? []).find(v =>
+    placas
+      ? placasNormalizadas(v.placas) === placasNormalizadas(placas)
+      : (v.marca ?? '').trim().toLowerCase() === (marca ?? '').trim().toLowerCase() &&
+        (v.modelo ?? '').trim().toLowerCase() === (modelo ?? '').trim().toLowerCase()
+  )
+
+  if (yaEsta) return yaEsta.id
+
+  const { data: nuevo, error } = await supabase.from('vehiculos').insert({
+    taller_id:  tallerId,
+    cliente_id: clienteId,
+    marca,
+    modelo,
+    anio:   datos.vehiculo_año ? parseInt(datos.vehiculo_año) : null,
+    placas,
+    vin:    datos.vin?.trim()?.toUpperCase() || null,
+  }).select('id').single()
+
+  if (error) {
+    console.error(`[vehiculos] no se pudo crear el coche de la orden del cliente ${clienteId}:`, error.message)
+    return null
+  }
+
+  return nuevo?.id ?? null
+}
+
 export async function crearOrden(datos: OrdenForm) {
   const supabase = createClient()
   const tallerId = await getTallerId()
@@ -100,10 +171,18 @@ export async function crearOrden(datos: OrdenForm) {
   const impuestosCalc = Math.round(baseIvaCalc * tasaIvaCalc * 100) / 100
   const totalCalc     = Math.round((baseIvaCalc + impuestosCalc) * 100) / 100
 
+  // Si el coche se escribió a mano en vez de elegirlo de la lista, se da de
+  // alta ahora y la orden queda enlazada. Antes la orden se quedaba con sus
+  // columnas sueltas y el coche no existía para el resto de la aplicación.
+  const vehiculoId = datos.vehiculo_id
+    || (datos.cliente_id
+        ? await vehiculoDeLaOrden(supabase, tallerId, datos.cliente_id, datos)
+        : null)
+
   const { error, data } = await supabase.from('ordenes').insert({
     taller_id:            tallerId,
     cliente_id:           datos.cliente_id || null,
-    vehiculo_id:          datos.vehiculo_id || null,
+    vehiculo_id:          vehiculoId,
     numero_orden:         numero,
     vehiculo_marca:       datos.vehiculo_marca   || null,
     vehiculo_modelo:      datos.vehiculo_modelo  || null,

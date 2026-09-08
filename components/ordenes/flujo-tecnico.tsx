@@ -15,6 +15,7 @@ import InspeccionDanos from './inspeccion-danos'
 import { createClient } from '@/lib/supabase/client'
 import TimerOrden from './timer-orden'
 import NotaVoz from './nota-voz'
+import BotonWhatsAppLink from './whatsapp-link-modal'
 
 
 const ITEMS_CHECKLIST = [
@@ -52,6 +53,7 @@ export default function FlujoTecnico({ orden, nombreTecnico }: Props) {
   const [estadoActual, setEstadoActual] = useState<EstadoOrden>(orden.estado)
   const [checks, setChecks]           = useState<Record<string, boolean>>({})
   const [cambiando, setCambiando]     = useState(false)
+  const [avisarListo, setAvisarListo]   = useState(false)
   const [notasTecnico, setNotasTecnico] = useState('')
   const [guardandoNota, setGuardandoNota] = useState(false)
 
@@ -66,6 +68,10 @@ export default function FlujoTecnico({ orden, nombreTecnico }: Props) {
     if (!resultado.error) {
       setEstadoActual(siguienteEstado)
       setPaso('listo')
+      // El mecánico acaba y el aviso al cliente se propone aquí mismo, que es
+      // donde está la persona. No se manda nada solo: se enseña el mensaje y
+      // él decide — falta lavarlo, falta el pago, o son las nueve de la noche.
+      if (siguienteEstado === 'listo') setAvisarListo(true)
     }
     setCambiando(false)
   }
@@ -89,6 +95,17 @@ export default function FlujoTecnico({ orden, nombreTecnico }: Props) {
 
   return (
     <div className="max-w-xl mx-auto">
+
+      {/* El aviso al cliente al terminar. Ver handleCambiarEstado. */}
+      <BotonWhatsAppLink
+        ordenId={orden.id}
+        estado="listo"
+        plantillaInicial="listo_entrega"
+        oculto
+        abrirAuto={avisarListo}
+        onCerrarAuto={() => setAvisarListo(false)}
+        encabezado={`El vehículo quedó listo. Avísale a ${orden.clientes?.nombre?.split(' ')[0] ?? 'tu cliente'} que puede pasar a recogerlo.`}
+      />
 
       {/* Header */}
       <div className="flex items-start justify-between mb-5">

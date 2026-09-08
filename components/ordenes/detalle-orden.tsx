@@ -15,7 +15,7 @@ import FotosDiagnostico from './fotos-diagnosticos'
 import PanelPagos from './panel-pagos'
 import BotonWhatsAppLink from './whatsapp-link-modal'
 import BotonWhatsAppContexto from './whatsapp-contexto-modal'
-import { formatMoney } from '@/lib/utils'
+import { formatMoney, simboloMoneda } from '@/lib/utils'
 
 const ESTADOS_SIGUIENTE: Record<EstadoOrden, EstadoOrden | null> = {
   recibido:   'en_proceso',
@@ -87,6 +87,8 @@ export default function DetalleOrden({
 
   const siguienteEstado = ESTADOS_SIGUIENTE[estadoActual]
 
+  const [avisarListo, setAvisarListo] = useState(false)
+
   const handleCambiarEstado = async () => {
   if (!siguienteEstado) return
   setCambiando(true)
@@ -95,6 +97,11 @@ export default function DetalleOrden({
   if (!resultado.error) {
     setHistorial(prev => [...prev, { estado: siguienteEstado, fecha: new Date().toISOString() }])
     setEstadoActual(siguienteEstado)
+    // El vehículo queda listo y el aviso al cliente se propone solo. No se
+    // manda nada: se enseña el mensaje y decide la persona. Marcar "Listo" y
+    // avisar no son la misma cosa —falta lavarlo, son las nueve de la noche—
+    // y un aviso automático hace venir al cliente cuando no debe.
+    if (siguienteEstado === 'listo') setAvisarListo(true)
   } else {
     setErrorEstado(resultado.error)
   }
@@ -142,6 +149,21 @@ export default function DetalleOrden({
 
   return (
     <div className="max-w-3xl lg:max-w-4xl mx-auto">
+
+      {/* ── Aviso al cliente cuando la orden queda lista ──
+          Se propone solo al marcar "Listo", pero no manda nada: enseña el
+          mensaje y decide la persona. Marcar listo y avisar no son la misma
+          cosa —falta lavarlo, falta que confirme el pago, son las nueve de la
+          noche— y un aviso automático hace venir al cliente cuando no debe. */}
+      <BotonWhatsAppLink
+        ordenId={orden.id}
+        estado="listo"
+        plantillaInicial="listo_entrega"
+        oculto
+        abrirAuto={avisarListo}
+        onCerrarAuto={() => setAvisarListo(false)}
+        encabezado={`El vehículo quedó listo. Avísale a ${orden.clientes?.nombre?.split(' ')[0] ?? 'tu cliente'} que puede pasar a recogerlo.`}
+      />
 
       {/* ── Modal de confirmación de borrado ── */}
       {confirmarBorrar && (
@@ -574,13 +596,22 @@ export default function DetalleOrden({
                   placeholder="Descripción del trabajo adicional (ej. Cambio de balatas traseras)"
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder:text-gray-400"
                 />
-                <input
-                  type="number"
-                  value={costoExtra}
-                  onChange={e => setCostoExtra(e.target.value)}
-                  placeholder="Costo adicional (ej. 850)"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder:text-gray-400"
-                />
+                {/* El símbolo dentro del campo. Sin él no queda claro si lo que
+                    se escribe son pesos, y el importe que sale de aquí es el que
+                    el cliente ve para decidir si autoriza el trabajo. */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
+                    {simboloMoneda(orden.moneda)}
+                  </span>
+                  <input
+                    type="number"
+                    value={costoExtra}
+                    onChange={e => setCostoExtra(e.target.value)}
+                    placeholder="Costo adicional (ej. 850)"
+                    className="w-full pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder:text-gray-400"
+                    style={{ paddingLeft: `${2.4 + simboloMoneda(orden.moneda).length * 0.45}rem` }}
+                  />
+                </div>
                 <BotonWhatsAppContexto
                   ordenId={orden.id}
                   contexto="aprobacion_extra"
