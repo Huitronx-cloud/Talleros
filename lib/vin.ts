@@ -201,26 +201,18 @@ function transmisionLegible(r: Record<string, unknown>): string | null {
 }
 
 /**
- * El catálogo de refacciones que abre el botón.
+ * El coche en una línea, lista para copiar.
  *
- * BuscaRefacciones cruza 39 catálogos, es mexicano y es gratis para talleres,
- * que es exactamente el público de esto. Lo eligió el dueño del producto.
+ * Hubo aquí un botón que abría un catálogo de refacciones de terceros. Se
+ * quitó por decisión del dueño del producto, y por dos motivos que valen la
+ * pena dejar escritos: ese catálogo cobra, y mandarle nuestros talleres era
+ * regalarle clientes. TallerOS no va a depender de un tercero para algo que
+ * el mecánico hace todos los días.
+ *
+ * Queda lo que sí sirve sin depender de nadie: los datos del coche en una
+ * línea, copiables de un toque, para pegarlos donde cada taller compre.
  */
-export const CATALOGO_REFACCIONES = 'https://buscarefacciones.com/'
-
-/**
- * El coche en una línea, lista para pegar en el buscador del catálogo.
- *
- * Se copia al portapapeles al abrir el catálogo en vez de meter los datos en
- * la URL, y es una decisión, no una limitación aceptada a medias: no sabemos
- * si el buscador acepta el vehículo por parámetros o lo guarda en la sesión, y
- * un enlace con parámetros inventados lleva a una página vacía o a un 404.
- * Copiar y pegar funciona con cualquier catálogo, hoy y si mañana se cambia.
- *
- * Si resulta que sí se puede enlazar directo, esto se sustituye por la URL con
- * parámetros y el mecánico se ahorra el pegado.
- */
-export function textoParaCatalogo(partes: {
+export function textoDelVehiculo(partes: {
   marca?: string | null
   modelo?: string | null
   anio?: number | null

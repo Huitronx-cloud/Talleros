@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Search, Loader2, Car, ExternalLink, AlertTriangle, CheckCircle2, User } from 'lucide-react'
+import { Search, Loader2, Car, Copy, Check, AlertTriangle, CheckCircle2, User } from 'lucide-react'
 import {
   normalizarVin, problemaVin, digitoControlCuadra, anioProbable,
-  textoParaCatalogo, CATALOGO_REFACCIONES, DatosVin,
+  textoDelVehiculo, DatosVin,
 } from '@/lib/vin'
 import { buscarVinEnTaller, CocheDelTaller } from './actions'
 
@@ -75,27 +75,27 @@ export default function BuscadorVin() {
     anio:   coche?.anio   ?? nhtsa?.anio   ?? anioProbable(limpio),
     motor:  nhtsa?.motor  ?? null,
   }
-  const textoCatalogo = buscado ? textoParaCatalogo(paraCatalogo) : null
+  const textoCoche = buscado ? textoDelVehiculo(paraCatalogo) : null
 
   /**
-   * Abre el catálogo con el coche ya copiado, para que el mecánico solo pegue.
+   * Copia el coche en una línea, para pegarlo donde el taller compre.
    *
-   * La pestaña se abre ANTES de tocar el portapapeles, igual que en el modal de
-   * WhatsApp: si se abre después de un await, Safari la bloquea por no
-   * considerarla parte del gesto del usuario.
+   * Aquí hubo un botón que abría un catálogo de terceros. Se quitó: ese
+   * catálogo cobra y mandarle nuestros talleres era regalarle clientes.
+   * TallerOS no va a depender de un tercero para algo que el mecánico hace
+   * todos los días.
    */
-  const abrirCatalogo = () => {
-    window.open(CATALOGO_REFACCIONES, '_blank', 'noopener,noreferrer')
-    if (!textoCatalogo) return
-    navigator.clipboard.writeText(textoCatalogo)
+  const copiarCoche = () => {
+    if (!textoCoche) return
+    navigator.clipboard.writeText(textoCoche)
       .then(() => {
         setCopiado(true)
         setTimeout(() => setCopiado(false), 4000)
       })
-      // Safari sin https, o permiso denegado. El dato está a la vista en la
-      // pantalla y se puede copiar a mano, así que no es un callejón sin
-      // salida — pero callarlo haría creer que el botón no hizo nada.
-      .catch(() => setError('Se abrió el catálogo, pero no pudimos copiar los datos. Cópialos de la ficha de arriba.'))
+      // Safari sin https, o permiso denegado. El dato está a la vista y se
+      // puede copiar a mano, así que no es un callejón sin salida — pero
+      // callarlo haría creer que el botón no hizo nada.
+      .catch(() => setError('No pudimos copiar. Selecciona los datos de la ficha de arriba y cópialos a mano.'))
   }
 
   const anioLocal = limpio.length === 17 ? anioProbable(limpio) : null
@@ -268,20 +268,20 @@ export default function BuscadorVin() {
         </div>
       )}
 
-      {/* ── El catálogo ── */}
-      {textoCatalogo && (
+      {/* ── Copiar los datos del coche ── */}
+      {textoCoche && (
         <div className="space-y-2">
           <button
-            onClick={abrirCatalogo}
+            onClick={copiarCoche}
             className="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors"
           >
-            <ExternalLink className="w-4 h-4" />
-            Buscar refacción
+            {copiado ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copiado ? 'Copiado' : 'Copiar datos del vehículo'}
           </button>
           <p className="text-xs text-gray-400 text-center">
             {copiado
-              ? <span className="text-green-600 font-medium">Copiado: {textoCatalogo} — pégalo en el buscador.</span>
-              : <>Abre el catálogo y copia <span className="font-medium text-gray-600">{textoCatalogo}</span> para que solo lo pegues.</>}
+              ? <span className="text-green-600 font-medium">{textoCoche}</span>
+              : <>Copia <span className="font-medium text-gray-600">{textoCoche}</span> para pedirlo con tu proveedor.</>}
           </p>
         </div>
       )}

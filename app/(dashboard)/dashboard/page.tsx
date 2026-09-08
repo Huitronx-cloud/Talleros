@@ -16,7 +16,7 @@ import { getLimites } from '@/lib/plan-limits'
 import UsageMeter from './usage-meter'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
-const MensajesPendientes = nextDynamic(() => import('@/components/dashboard/mensajes-pendientes'), { ssr: false })
+const AvisoPendientes = nextDynamic(() => import('@/components/dashboard/aviso-pendientes'), { ssr: false })
 
 const MODULOS = [
   { href: '/kanban', label: 'Tablero',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -312,14 +312,18 @@ export default async function DashboardPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
-        {/* ── MENSAJES POR ENVIAR ── cola wa.me generada por los crons.
-            Va lo PRIMERO del panel. Estaba enterrada debajo del medidor de uso
-            y el resultado se vio en los datos: 93 mensajes esperando contra 11
-            enviados en toda la vida del producto, algunos parados desde julio.
-            Cada uno es un cliente que debía tener noticias de su taller y no
-            las tuvo. Un taller recién dado de alta no ve nada: la tarjeta no se
-            pinta si no hay cola. */}
-        {['propietario','admin','recepcion'].includes(rol) && <MensajesPendientes />}
+        {/* ── PENDIENTES ── lo primero del tablero, y con forma distinta a
+            todo lo demás: un círculo verde con el número. Si se pareciera a los
+            módulos se leería como "una función que existe" en vez de "algo que
+            hay que hacer hoy".
+
+            La lista entera vive en /pendientes. Estuvo aquí un rato y con
+            cincuenta mensajes en cola tapaba el tablero.
+
+            Por qué importa: 93 mensajes esperando contra 11 enviados en toda la
+            vida del producto, algunos parados desde julio. Cada uno es un
+            cliente que debía tener noticias de su taller y no las tuvo. */}
+        {['propietario','admin','recepcion'].includes(rol) && <AvisoPendientes />}
 
         {/* ── ONBOARDING ── solo cuando el propietario no ha completado la configuración */}
         {rol === 'propietario' && !onboardingCompleto && (
