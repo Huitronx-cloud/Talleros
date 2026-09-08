@@ -53,6 +53,30 @@ export function formatMoney(amount: number, moneda?: string | null): string {
 }
 
 /**
+ * El importe acortado, para donde no cabe entero.
+ *
+ * En la gráfica de ingresos por mes cada columna mide unos cincuenta píxeles en
+ * un móvil, y "MX$1,234,567.00" se sale del recuadro y se monta encima de la
+ * columna de al lado. Acortado son "MX$1.2M" y cabe.
+ *
+ * Solo para gráficas y etiquetas apretadas. Donde el número es el dato —un
+ * total, una factura, lo que el cliente tiene que pagar— va entero: redondear
+ * dinero delante de quien lo cobra no se hace.
+ */
+export function formatMoneyCompacto(amount: number, moneda?: string | null): string {
+  const simbolo = simboloMoneda(moneda)
+  const abs = Math.abs(amount)
+
+  const corto =
+    abs >= 1_000_000 ? `${(amount / 1_000_000).toFixed(1).replace(/\.0$/, '')}M` :
+    abs >= 1_000     ? `${(amount / 1_000).toFixed(1).replace(/\.0$/, '')}k`     :
+    String(Math.round(amount))
+
+  const separador = /[A-Za-z]$/.test(simbolo) ? ' ' : ''
+  return `${simbolo}${separador}${corto}`
+}
+
+/**
  * Solo el símbolo, para los sitios que arman el importe a mano (los PDF, los
  * mensajes de WhatsApp). Sale de la misma tabla que formatMoney: antes cada uno
  * tenía su propio `moneda === 'COP' ? ... : '$'` y por eso las cotizaciones de

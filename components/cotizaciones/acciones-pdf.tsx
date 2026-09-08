@@ -128,6 +128,7 @@ export default function AccionesPdf({
             <div className="flex flex-col gap-3">
               <a
                 href={`/api/cotizaciones/${id}/pdf`}
+      download
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-3 rounded-xl transition-colors"

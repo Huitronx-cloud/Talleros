@@ -5,7 +5,7 @@ import {
   TrendingUp, Users, Clock, Wrench, DollarSign,
   BarChart2, RefreshCw, Award, Target
 } from 'lucide-react'
-import { formatMoney } from '@/lib/utils'
+import { formatMoney, formatMoneyCompacto } from '@/lib/utils'
 
 type Periodo = '1m' | '3m' | '6m'
 
@@ -92,6 +92,9 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
   const maxMecanico = Math.max(...porMecanico.map(m => m.ingresos), 1)
 
   const fmt = (n: number) => formatMoney(n, taller?.moneda)
+  // Para las etiquetas de la gráfica, donde una columna mide cincuenta
+  // píxeles en un móvil y el importe entero se sale del recuadro.
+  const fmtCorto = (n: number) => formatMoneyCompacto(n, taller?.moneda)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -130,7 +133,9 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
               <Icono className={`w-5 h-5 ${color}`} />
             </div>
             <p className="text-xs text-gray-500 mb-1">{label}</p>
-            <p className="text-2xl font-bold text-gray-900">{valor}</p>
+            {/* Se achica en móvil y parte por palabras si hace falta: con
+                "MX$1,234,567.00" el text-2xl se salía de la tarjeta. */}
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight break-words">{valor}</p>
           </div>
         ))}
       </div>
@@ -151,8 +156,8 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
             <div className="flex items-end gap-3 h-48">
               {ingresosPorMes.map(({ mes, total }) => (
                 <div key={mes} className="flex-1 flex flex-col items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-700">
-                    {total > 0 ? fmt(total) : ''}
+                  <span className="text-[10px] sm:text-xs font-semibold text-gray-700 whitespace-nowrap">
+                    {total > 0 ? fmtCorto(total) : ''}
                   </span>
                   <div className="w-full flex items-end" style={{ height: 140 }}>
                     <div
@@ -234,7 +239,7 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-gray-800 truncate">{nombre}</span>
-                    <span className="font-bold text-gray-900 ml-2">{fmt(ingresos)}</span>
+                    <span className="font-bold text-gray-900 ml-2 shrink-0 whitespace-nowrap">{fmt(ingresos)}</span>
                   </div>
                   <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
