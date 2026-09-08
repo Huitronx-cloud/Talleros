@@ -28,8 +28,19 @@ interface MensajePendiente {
   created_at:    string
 }
 
+/** Días enteros que lleva esperando un mensaje. */
+function diasEsperando(fecha: string): number {
+  const ms = Date.now() - new Date(fecha).getTime()
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)))
+}
+
 export default function MensajesPendientes() {
   const [mensajes, setMensajes]   = useState<MensajePendiente[]>([])
+  // El total real, que puede ser mayor que los que se listan: la consulta trae
+  // 50 y había talleres con más de 50 esperando. Antes el contador enseñaba la
+  // longitud de la lista, así que con 52 pendientes decía 50 — y los dos que
+  // faltaban no aparecían por ningún lado.
+  const [total, setTotal]         = useState(0)
   const [visible, setVisible]     = useState(false)
   const [procesando, setProcesando] = useState<string | null>(null)
   const supabase = createClient()
@@ -47,9 +58,9 @@ export default function MensajesPendientes() {
 
       if (!usuario?.taller_id || !ROLES_PERMITIDOS.includes(usuario.rol)) return
 
-      const { data } = await supabase
+      const { data, count } = await supabase
         .from('mensajes_pendientes')
-        .select('id, tipo, telefono, mensaje_texto, wa_link, created_at')
+        .select('id, tipo, telefono, mensaje_texto, wa_link, created_at', { count: 'exact' })
         .eq('taller_id', usuario.taller_id)
         .eq('estado', 'pendiente')
         .order('created_at', { ascending: true })
@@ -57,6 +68,7 @@ export default function MensajesPendientes() {
 
       if (data?.length) {
         setMensajes(data)
+        setTotal(count ?? data.length)
         setVisible(true)
       }
     }
@@ -71,7 +83,10 @@ export default function MensajesPendientes() {
       .update({ estado, ...(estado === 'enviado' ? { enviado_at: new Date().toISOString() } : {}) })
       .eq('id', id)
     setProcesando(null)
-    if (!error) setMensajes(prev => prev.filter(m => m.id !== id))
+    if (!error) {
+      setMensajes(prev => prev.filter(m => m.id !== id))
+      setTotal(prev => Math.max(0, prev - 1))
+    }
   }
 
   function enviar(m: MensajePendiente) {
@@ -82,18 +97,47 @@ export default function MensajesPendientes() {
 
   if (!visible || mensajes.length === 0) return null
 
+  // La lista viene de la más vieja a la más nueva.
+  const diasDelMasViejo = diasEsperando(mensajes[0].created_at)
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-      <div className="flex items-center gap-2 mb-1">
-        <MessageCircle className="w-4 h-4" style={{ color: '#25D366' }} />
-        <h3 className="text-sm font-semibold text-gray-900">Mensajes por enviar</h3>
-        <span className="text-xs font-semibold text-white rounded-full px-2 py-0.5" style={{ background: '#25D366' }}>
-          {mensajes.length}
-        </span>
+    <div className="bg-white rounded-xl border-2 p-5" style={{ borderColor: '#25D366' }}>
+      <div className="flex items-center gap-3 mb-1">
+        <div
+          className="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0"
+          style={{ background: '#25D366' }}
+        >
+          <MessageCircle className="w-5 h-5 text-white" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-gray-900 leading-none">{total}</span>
+            <h3 className="text-sm font-semibold text-gray-900">
+              {total === 1 ? 'mensaje por enviar' : 'mensajes por enviar'}
+            </h3>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Listos para mandar desde tu WhatsApp — un tap por mensaje.
+          </p>
+        </div>
       </div>
-      <p className="text-xs text-gray-400 mb-4">
-        Recordatorios, reseñas y citas listos para mandar desde tu propio WhatsApp — un tap por mensaje.
-      </p>
+
+      {/* La antigüedad del más viejo es lo que convierte esto en una tarea.
+          Un número a secas se ignora; "lleva 24 días esperando" no. */}
+      {diasDelMasViejo >= 3 && (
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg mt-3">
+          El más antiguo lleva <strong>{diasDelMasViejo} días</strong> esperando.
+          Son clientes tuyos que aún no han tenido noticias.
+        </p>
+      )}
+
+      {total > mensajes.length && (
+        <p className="text-xs text-gray-400 mt-3">
+          Se muestran los {mensajes.length} más antiguos de {total}.
+        </p>
+      )}
+
+      <div className="h-4" />
 
       <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
         {mensajes.map(m => {

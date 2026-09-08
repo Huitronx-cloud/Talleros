@@ -312,6 +312,15 @@ export default async function DashboardPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
+        {/* ── MENSAJES POR ENVIAR ── cola wa.me generada por los crons.
+            Va lo PRIMERO del panel. Estaba enterrada debajo del medidor de uso
+            y el resultado se vio en los datos: 93 mensajes esperando contra 11
+            enviados en toda la vida del producto, algunos parados desde julio.
+            Cada uno es un cliente que debía tener noticias de su taller y no
+            las tuvo. Un taller recién dado de alta no ve nada: la tarjeta no se
+            pinta si no hay cola. */}
+        {['propietario','admin','recepcion'].includes(rol) && <MensajesPendientes />}
+
         {/* ── ONBOARDING ── solo cuando el propietario no ha completado la configuración */}
         {rol === 'propietario' && !onboardingCompleto && (
           <OnboardingChecklist
@@ -332,9 +341,6 @@ export default async function DashboardPage() {
           usadas={ordenesMesReales}
           rol={rol}
         />
-
-        {/* ── MENSAJES POR ENVIAR ── cola wa.me generada por los crons */}
-        {['propietario','admin','recepcion'].includes(rol) && <MensajesPendientes />}
 
         {/* ── ACCIONES RÁPIDAS ── */}
         {['propietario','admin','recepcion'].includes(rol) && (
