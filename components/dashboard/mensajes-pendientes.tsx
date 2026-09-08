@@ -26,6 +26,23 @@ interface MensajePendiente {
   mensaje_texto: string
   wa_link:       string
   created_at:    string
+  clientes:      { nombre: string } | { nombre: string }[] | null
+}
+
+/**
+ * El nombre del cliente, o su teléfono si no lo tenemos.
+ *
+ * La cola enseñaba el número y ya está: "524611456622". Una recepcionista no
+ * reconoce un número, reconoce a Rosa Elena. El dato llevaba guardado desde
+ * siempre —`mensajes_pendientes` tiene `cliente_id`— y no se usaba.
+ *
+ * De los 93 mensajes en cola de toda la plataforma, 88 traen cliente. Los
+ * cinco que no, siguen enseñando el teléfono, que es exactamente lo de antes:
+ * nadie pierde nada y casi todos ganan un nombre.
+ */
+function quienEs(m: MensajePendiente): string {
+  const c = Array.isArray(m.clientes) ? m.clientes[0] : m.clientes
+  return c?.nombre?.trim() || m.telefono
 }
 
 /** Días enteros que lleva esperando un mensaje. */
@@ -60,7 +77,7 @@ export default function MensajesPendientes() {
 
       const { data, count } = await supabase
         .from('mensajes_pendientes')
-        .select('id, tipo, telefono, mensaje_texto, wa_link, created_at', { count: 'exact' })
+        .select('id, tipo, telefono, mensaje_texto, wa_link, created_at, clientes(nombre)', { count: 'exact' })
         .eq('taller_id', usuario.taller_id)
         .eq('estado', 'pendiente')
         .order('created_at', { ascending: true })
@@ -149,10 +166,11 @@ export default function MensajesPendientes() {
                 <Icono className="w-4 h-4" style={{ color: meta.color }} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-gray-900 truncate">{quienEs(m)}</span>
                   <span className="text-xs font-semibold" style={{ color: meta.color }}>{meta.label}</span>
-                  <span className="text-xs text-gray-400">{m.telefono}</span>
                 </div>
+                <p className="text-xs text-gray-400 mt-0.5">{m.telefono}</p>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-2">{m.mensaje_texto}</p>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
