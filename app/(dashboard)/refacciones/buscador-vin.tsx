@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Search, Loader2, Car, ExternalLink, AlertTriangle, CheckCircle2, User } from 'lucide-react'
 import {
   normalizarVin, problemaVin, digitoControlCuadra, anioProbable,
-  enlaceCatalogoRefacciones, DatosVin,
+  textoParaCatalogo, CATALOGO_REFACCIONES, DatosVin,
 } from '@/lib/vin'
 import { buscarVinEnTaller, CocheDelTaller } from './actions'
 
@@ -28,6 +28,7 @@ export default function BuscadorVin() {
   const [nhtsa, setNhtsa]       = useState<DatosVin | null>(null)
   const [avisoNhtsa, setAvisoNhtsa] = useState('')
   const [error, setError]       = useState('')
+  const [copiado, setCopiado]   = useState(false)
 
   const limpio   = normalizarVin(vin)
   const problema = limpio.length > 0 ? problemaVin(limpio) : null
@@ -74,7 +75,28 @@ export default function BuscadorVin() {
     anio:   coche?.anio   ?? nhtsa?.anio   ?? anioProbable(limpio),
     motor:  nhtsa?.motor  ?? null,
   }
-  const enlace = buscado ? enlaceCatalogoRefacciones(paraCatalogo) : null
+  const textoCatalogo = buscado ? textoParaCatalogo(paraCatalogo) : null
+
+  /**
+   * Abre el catálogo con el coche ya copiado, para que el mecánico solo pegue.
+   *
+   * La pestaña se abre ANTES de tocar el portapapeles, igual que en el modal de
+   * WhatsApp: si se abre después de un await, Safari la bloquea por no
+   * considerarla parte del gesto del usuario.
+   */
+  const abrirCatalogo = () => {
+    window.open(CATALOGO_REFACCIONES, '_blank', 'noopener,noreferrer')
+    if (!textoCatalogo) return
+    navigator.clipboard.writeText(textoCatalogo)
+      .then(() => {
+        setCopiado(true)
+        setTimeout(() => setCopiado(false), 4000)
+      })
+      // Safari sin https, o permiso denegado. El dato está a la vista en la
+      // pantalla y se puede copiar a mano, así que no es un callejón sin
+      // salida — pero callarlo haría creer que el botón no hizo nada.
+      .catch(() => setError('Se abrió el catálogo, pero no pudimos copiar los datos. Cópialos de la ficha de arriba.'))
+  }
 
   const anioLocal = limpio.length === 17 ? anioProbable(limpio) : null
   const anioEnConflicto =
@@ -247,16 +269,21 @@ export default function BuscadorVin() {
       )}
 
       {/* ── El catálogo ── */}
-      {enlace && (
-        <a
-          href={enlace}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-          Buscar refacción
-        </a>
+      {textoCatalogo && (
+        <div className="space-y-2">
+          <button
+            onClick={abrirCatalogo}
+            className="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Buscar refacción
+          </button>
+          <p className="text-xs text-gray-400 text-center">
+            {copiado
+              ? <span className="text-green-600 font-medium">Copiado: {textoCatalogo} — pégalo en el buscador.</span>
+              : <>Abre el catálogo y copia <span className="font-medium text-gray-600">{textoCatalogo}</span> para que solo lo pegues.</>}
+          </p>
+        </div>
       )}
     </div>
   )

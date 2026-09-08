@@ -201,27 +201,37 @@ function transmisionLegible(r: Record<string, unknown>): string | null {
 }
 
 /**
- * El enlace al catálogo de refacciones con lo que sepamos del coche.
+ * El catálogo de refacciones que abre el botón.
  *
- * PROVISIONAL: apunta a una búsqueda web mientras el dueño del producto pasa
- * la URL real del catálogo que quiere usar. Se hizo así a propósito en vez de
- * adivinar el formato de carparts-catalogs.com: un enlace inventado lleva a un
- * 404 y eso es peor que no tener el botón. Cuando llegue la URL buena, se
- * cambia solo esta función.
+ * BuscaRefacciones cruza 39 catálogos, es mexicano y es gratis para talleres,
+ * que es exactamente el público de esto. Lo eligió el dueño del producto.
  */
-export function enlaceCatalogoRefacciones(partes: {
+export const CATALOGO_REFACCIONES = 'https://buscarefacciones.com/'
+
+/**
+ * El coche en una línea, lista para pegar en el buscador del catálogo.
+ *
+ * Se copia al portapapeles al abrir el catálogo en vez de meter los datos en
+ * la URL, y es una decisión, no una limitación aceptada a medias: no sabemos
+ * si el buscador acepta el vehículo por parámetros o lo guarda en la sesión, y
+ * un enlace con parámetros inventados lleva a una página vacía o a un 404.
+ * Copiar y pegar funciona con cualquier catálogo, hoy y si mañana se cambia.
+ *
+ * Si resulta que sí se puede enlazar directo, esto se sustituye por la URL con
+ * parámetros y el mecánico se ahorra el pegado.
+ */
+export function textoParaCatalogo(partes: {
   marca?: string | null
   modelo?: string | null
   anio?: number | null
   motor?: string | null
 }): string | null {
-  const busqueda = [partes.anio, partes.marca, partes.modelo, partes.motor]
+  const texto = [partes.anio, partes.marca, partes.modelo, partes.motor]
     .map(p => String(p ?? '').trim())
     .filter(p => p !== '' && p !== '0')
     .join(' ')
 
-  if (!busqueda) return null
-  return `https://www.google.com/search?q=${encodeURIComponent(`refacciones ${busqueda}`)}`
+  return texto === '' ? null : texto
 }
 
 /** De la respuesta cruda de NHTSA a lo que enseñamos. */
