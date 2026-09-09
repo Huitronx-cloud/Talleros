@@ -29,6 +29,15 @@ export async function POST(req: NextRequest) {
 
     if (!cita) return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
 
+    // La cita tiene que ser de ESE taller. Este endpoint no pide sesión —lo
+    // llama el formulario público, que no la tiene— y sin esta comprobación
+    // bastaba con mandar el id de una cita real y el id de otro taller para
+    // hacer sonar los teléfonos de un taller ajeno con datos de un cliente que
+    // no es suyo.
+    if (cita.taller_id !== tallerId) {
+      return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+    }
+
     const nombreTaller   = taller?.nombre ?? 'El taller'
     const telefonoTaller = taller?.telefono ?? ''
     const fechaFormateada = new Date(cita.fecha + 'T12:00:00').toLocaleDateString('es-MX', {
@@ -44,20 +53,28 @@ export async function POST(req: NextRequest) {
     // ── PUSH al equipo del taller ── para que apruebe la cita o sugiera otro
     // día desde /citas (los botones abren wa.me con el mensaje al cliente)
     try {
-      const { data: staff } = await supabaseAdmin
+      const { data: staff, error: errorStaff } = await supabaseAdmin
         .from('usuarios')
         .select('id')
         .eq('taller_id', tallerId)
         .in('rol', ['propietario', 'admin', 'recepcion'])
+
+      // supabase-js no lanza: sin esto un fallo aquí sería indistinguible de
+      // "este taller no tiene a nadie con esos roles", y la cita entraría sin
+      // que a nadie le sonara el teléfono.
+      if (errorStaff) {
+        console.error('[notificar-reserva-cliente] no se pudo leer el equipo:', errorStaff.message)
+      }
 
       // Llamada directa, sin pasar por HTTP. Ver lib/push.ts.
       await Promise.allSettled(
         (staff ?? []).map(u =>
           enviarPushAUsuario({
             usuarioId: u.id,
-            titulo:    '📅 Nueva solicitud de cita',
+            titulo:    'Nueva solicitud de cita',
             cuerpo:    `${cita.cliente_nombre} pidió cita el ${fechaFormateada} a las ${hora}. Entra para confirmarla o sugerir otro día.`,
             url:       '/citas',
+            accion:    'Ver la cita',
           })
         )
       )

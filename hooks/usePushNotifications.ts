@@ -5,9 +5,26 @@ export function usePushNotifications() {
   const [permiso,    setPermiso]    = useState<string>('default')
   const [activado,   setActivado]   = useState(false)
   const [cargando,   setCargando]   = useState(false)
+  // Los dos de abajo existen para poder explicar POR QUÉ no se puede, en vez
+  // de no enseñar nada. Ver el comentario de components/push-toggle.tsx.
+  const [esIOS,      setEsIOS]      = useState(false)
+  const [instalada,  setInstalada]  = useState(false)
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (typeof window === 'undefined') return
+
+    // Esto se calcula ANTES del corte de abajo: en un iPhone con Safari sin
+    // instalar, `Notification` no existe y salimos — pero es justo el caso en
+    // el que hay algo que contarle al usuario.
+    const ua = navigator.userAgent || ''
+    // El iPad con iPadOS 13+ se anuncia como Mac; lo delata el táctil.
+    setEsIOS(/iphone|ipod|ipad/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
+    setInstalada(
+      window.matchMedia?.('(display-mode: standalone)').matches === true ||
+      (window.navigator as any).standalone === true
+    )
+
+    if (!('Notification' in window)) return
     setSoportado('serviceWorker' in navigator && 'PushManager' in window)
     setPermiso(Notification.permission)
 
@@ -72,7 +89,7 @@ export function usePushNotifications() {
     setActivado(false)
   }
 
-  return { soportado, permiso, activado, cargando, activar, desactivar }
+  return { soportado, permiso, activado, cargando, esIOS, instalada, activar, desactivar }
 }
 
 function urlBase64ToUint8Array(base64String: string) {

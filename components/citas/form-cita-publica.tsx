@@ -149,21 +149,14 @@ export default function FormCitaPublica({ tallerId, tallerNombre, citasOcupadas:
 
     if (err) { setError('Error al agendar. Intenta de nuevo.'); setEnviando(false); return }
 
-    // Notificar al taller — nueva cita pendiente
-    try {
-      await fetch('/api/notificar-cita', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          tallerId,
-          clienteNombre:  form.cliente_nombre.trim(),
-          fecha:          fechaSeleccionada,
-          hora:           horaSeleccionada,
-        }),
-      })
-    } catch {}
-
-    // Enviar acuse de recibo al cliente (WhatsApp + email)
+    // Aquí había una segunda llamada a /api/notificar-cita que mandaba OTRA
+    // push por la misma reserva. El taller recibía dos avisos seguidos del
+    // mismo coche, y el que se ha quedado es el bueno: filtra por rol
+    // (propietario, admin, recepción), trae un texto que dice qué hacer, y
+    // limpia las suscripciones muertas. El otro le escribía al taller entero,
+    // mecánicos incluidos, y no verificaba nada.
+    //
+    // Avisa al taller por push y manda el acuse al cliente por correo.
     if (nuevaCita?.id) {
       try {
         await fetch('/api/notificar-reserva-cliente', {

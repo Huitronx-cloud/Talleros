@@ -722,9 +722,10 @@ async function notificarMecanicoAsignado(
     // dominio contra un endpoint que no pedía autenticación de ningún tipo.
     await enviarPushAUsuario({
       usuarioId: mecanico.id,
-      titulo:    '🔧 Nueva orden asignada',
+      titulo:    'Nueva orden asignada',
       cuerpo:    'Te han asignado una nueva orden de trabajo.',
       url:       `/ordenes/${ordenId}`,
+      accion:    'Ver la orden',
     })
   } catch (e) {
     console.error('Error notificando mecánico:', e)
