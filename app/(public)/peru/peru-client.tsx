@@ -688,7 +688,10 @@ export default function PeruClient() {
       .lplan.pop .lfck{background:rgba(255,255,255,0.12);color:#7dd3fc;}
       .lplan.pop .lplan-ret{background:rgba(37,99,235,0.24);color:#bfdbfe;}
       .lplan.pop .lplan-lock{background:rgba(226,96,10,0.16);border-color:rgba(251,215,184,0.28);color:#fdba74;}
-      .lfund{display:inline-flex;align-items:center;gap:9px;background:var(--sig-sf);border:1px solid var(--sig-bd);color:var(--sig-d);border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;margin-bottom:22px;line-height:1.35;text-align:left;}
+      /* width:fit-content + margin auto, no inline-flex: el padre no centra a
+         sus hijos —cada uno se centra por su cuenta— y con inline-flex esta
+         píldora se quedaba pegada a la izquierda bajo un bloque centrado. */
+      .lfund{display:flex;width:fit-content;align-items:center;gap:9px;background:var(--sig-sf);border:1px solid var(--sig-bd);color:var(--sig-d);border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;margin:0 auto 22px;line-height:1.35;text-align:left;}
       .lfund-d{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
       .lplan-lock{display:flex;gap:8px;align-items:flex-start;border:1px dashed var(--sig-bd);background:var(--sig-sf);color:var(--sig-d);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.42;margin:14px 0 0;}
       .lmom{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--ink2);margin-top:26px;}
