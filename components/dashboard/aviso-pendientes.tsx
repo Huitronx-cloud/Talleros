@@ -25,13 +25,18 @@ function diasEsperando(fecha: string): number {
  * día ajetreado y está bien; uno de hace tres semanas es un cliente al que su
  * taller nunca contestó.
  *
+ * Los plazos son 7 y 21 días, no 3 y 7 como empezaron. Se aflojaron cuando se
+ * añadió la caducidad: si un seguimiento vive treinta días, ponerlo en rojo a
+ * los siete era regañar al taller por algo que la propia aplicación considera
+ * normal. El color y la caducidad tienen que contar la misma historia.
+ *
  * El verde es el de WhatsApp, que es de donde salen estos mensajes. Los otros
  * dos son los mismos ámbar y rojo que ya usa el resto de la aplicación.
  */
 function tono(dias: number): { color: string; texto: string } {
-  if (dias >= 7) return { color: '#dc2626', texto: '#b91c1c' } // más de una semana
-  if (dias >= 3) return { color: '#d97706', texto: '#b45309' } // unos días
-  return { color: '#25D366', texto: '#15803d' }                // al día
+  if (dias >= 21) return { color: '#dc2626', texto: '#b91c1c' } // tres semanas
+  if (dias >= 7)  return { color: '#d97706', texto: '#b45309' } // una semana
+  return { color: '#25D366', texto: '#15803d' }                 // al día
 }
 
 /**

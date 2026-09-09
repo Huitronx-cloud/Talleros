@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import MensajesPendientes from '@/components/dashboard/mensajes-pendientes'
+import AvisoCaducados from '@/components/dashboard/aviso-caducados'
 
 export const metadata = {
   title: 'Pendientes',
@@ -29,6 +30,10 @@ export default function PendientesPage() {
         Mensajes listos para mandar desde tu propio WhatsApp. Cada uno es un cliente
         esperando noticias: un tap y sale.
       </p>
+
+      {/* Explica los que desaparecieron ANTES de la lista: si no, el taller
+          ve un número más bajo y piensa que se perdieron sus mensajes. */}
+      <AvisoCaducados />
 
       <MensajesPendientes />
 

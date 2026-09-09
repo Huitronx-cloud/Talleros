@@ -22,6 +22,9 @@ function tareasDelGrupo(group: string): string[] {
       '/api/cron/resenas',              // red de seguridad de reseñas
       '/api/cron/recordatorios-citas',  // citas de mañana
       '/api/cron/seguimiento',          // post-servicio 3 días después de entregar
+      // Va el ÚLTIMO del grupo a propósito: primero se encola lo de hoy y
+      // después se retira lo que se pudrió, no al revés.
+      '/api/cron/caducar-mensajes',     // saca de la cola lo que ya no tiene sentido enviar
     ]
   }
   // content (default). script-email va PRIMERO: envía los scripts pendientes
