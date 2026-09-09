@@ -14,6 +14,27 @@ function diasEsperando(fecha: string): number {
 }
 
 /**
+ * El color sube de tono con los días que lleva esperando el más antiguo.
+ *
+ * Decisión del dueño del producto. El motivo: con dieciocho mensajes el verde
+ * llama la atención, pero con sesenta y el más viejo de dos meses el mismo
+ * verde miente — dice "tienes trabajo" cuando el dato dice "esto se te fue de
+ * las manos". El color tiene que contar lo que pasa.
+ *
+ * Manda la ANTIGÜEDAD, no la cantidad. Cincuenta mensajes de esta mañana es un
+ * día ajetreado y está bien; uno de hace tres semanas es un cliente al que su
+ * taller nunca contestó.
+ *
+ * El verde es el de WhatsApp, que es de donde salen estos mensajes. Los otros
+ * dos son los mismos ámbar y rojo que ya usa el resto de la aplicación.
+ */
+function tono(dias: number): { color: string; texto: string } {
+  if (dias >= 7) return { color: '#dc2626', texto: '#b91c1c' } // más de una semana
+  if (dias >= 3) return { color: '#d97706', texto: '#b45309' } // unos días
+  return { color: '#25D366', texto: '#15803d' }                // al día
+}
+
+/**
  * El aviso de mensajes pendientes en el tablero.
  *
  * No es un módulo más de la cuadrícula, y es a propósito: si se parece a los
@@ -64,21 +85,22 @@ export default function AvisoPendientes() {
   }, [])
 
   if (total === 0) return null
+  const t = tono(dias)
 
   return (
     <Link
       href="/pendientes"
       className="flex items-center gap-4 bg-white rounded-2xl border-2 p-4 sm:p-5 transition-colors hover:bg-gray-50"
-      style={{ borderColor: '#25D366' }}
+      style={{ borderColor: t.color }}
     >
       {/* El círculo. Es lo que hace que no se lea como un módulo más. */}
       <div
         className="relative flex items-center justify-center w-16 h-16 rounded-full flex-shrink-0"
-        style={{ background: '#25D366' }}
+        style={{ background: t.color }}
       >
         <span className="text-2xl font-bold text-white leading-none">{total}</span>
         <span className="absolute -bottom-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200">
-          <MessageCircle className="w-4 h-4" style={{ color: '#25D366' }} />
+          <MessageCircle className="w-4 h-4" style={{ color: t.color }} />
         </span>
       </div>
 
@@ -88,7 +110,7 @@ export default function AvisoPendientes() {
         </p>
         <p className="text-sm text-gray-500 mt-0.5 leading-snug">
           {dias >= 3
-            ? <>El más antiguo lleva <span className="font-semibold text-amber-700">{dias} días</span> esperando.</>
+            ? <>El más antiguo lleva <span className="font-semibold" style={{ color: t.texto }}>{dias} días</span> esperando.</>
             : 'Clientes esperando noticias de tu taller.'}
         </p>
       </div>

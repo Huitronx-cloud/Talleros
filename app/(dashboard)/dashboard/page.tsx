@@ -27,10 +27,6 @@ const MODULOS = [
   { href: '/cotizaciones',         label: 'Cotizaciones',  icono: FileText,      color: 'bg-teal-500',    roles: ['propietario','admin','recepcion'] },
   { href: '/inventario', label: 'Inventario', icono: Package, color: 'bg-emerald-500', roles: ['propietario','admin','recepcion'], upgrade: true },
   { href: '/catalogo', label: 'Servicios',      icono: BookOpen,      color: 'bg-amber-500',   roles: ['propietario','admin'] },
-  // Todos los roles y sin candado, por decisión del dueño: el que más la va a
-  // usar es el mecánico con el coche delante, y que abran TallerOS a diario
-  // vale más que cobrarla.
-  { href: '/refacciones',          label: 'Buscar refacción', icono: Wrench, color: 'bg-slate-600', roles: ['propietario','admin','tecnico','recepcion'] },
   { href: '/recordatorios',        label: 'Recordatorios', icono: Bell,          color: 'bg-sky-600',     roles: ['propietario','admin'], upgrade: true },
   { href: '/resenas',              label: 'Reseñas Google',icono: Star,          color: 'bg-yellow-500',  roles: ['propietario','admin'], upgrade: true },
   { href: '/promociones',          label: 'Promociones',   icono: Megaphone,     color: 'bg-orange-500',  roles: ['propietario','admin'], upgrade: true },
