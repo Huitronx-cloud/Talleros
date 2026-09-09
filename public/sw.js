@@ -102,6 +102,15 @@ self.addEventListener('fetch', function(event) {
 
 // ── Push notifications ────────────────────────────────────────────────────────
 
+// El botón y el destino los pone quien manda la notificación.
+//
+// Estaban fijos en "Ver orden" con destino /ordenes, para TODAS las push. Así
+// que el aviso de una cita nueva llegaba diciendo "Ver orden", que no es lo que
+// hay al otro lado. Quien manda el aviso es el único que sabe de qué es.
+//
+// Los valores por defecto son genéricos a propósito: si un día alguien manda
+// una push sin `accion`, sale "Ver" y va al tablero, que es raro pero no
+// miente. Antes el respaldo era /ordenes y sí mentía.
 self.addEventListener('push', function(event) {
   if (!event.data) return
 
@@ -113,9 +122,9 @@ self.addEventListener('push', function(event) {
       icon:    '/icon-192.png',
       badge:   '/icon-192.png',
       vibrate: [200, 100, 200],
-      data:    { url: data.url || '/ordenes' },
+      data:    { url: data.url || '/dashboard' },
       actions: [
-        { action: 'ver', title: 'Ver orden' },
+        { action: 'ver', title: data.accion || 'Ver' },
       ],
     })
   )
@@ -124,7 +133,7 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close()
 
-  const url = event.notification.data?.url || '/ordenes'
+  const url = event.notification.data?.url || '/dashboard'
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {

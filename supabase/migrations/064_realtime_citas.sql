@@ -1,0 +1,36 @@
+-- Enciende realtime para `citas`.
+--
+-- ── Lo que estaba pasando ───────────────────────────────────────────────────
+--
+-- El sidebar lleva desde siempre un canal de realtime escuchando la tabla
+-- `citas` para mantener el contador del badge al día sin recargar. Y nunca ha
+-- funcionado, en ningún taller, ni un solo día.
+--
+-- El motivo: la publicación `supabase_realtime` existe pero está VACÍA. Cero
+-- tablas. Postgres no publica nada, así que el canal se suscribe correctamente,
+-- se queda escuchando, y no le llega un solo evento.
+--
+--   select * from pg_publication_tables where pubname = 'supabase_realtime';
+--   -- (0 filas)
+--
+-- El resultado no es un error: es un número que se queda quieto. El badge
+-- enseña las citas que había cuando se cargó la página y ahí se queda. Una
+-- recepcionista con la pestaña abierta toda la mañana no ve entrar ninguna.
+--
+-- Es el mismo fallo silencioso de siempre en este repositorio: código que da
+-- por supuesta una configuración que no existe. No revienta, no avisa, solo
+-- deja de hacer su trabajo.
+--
+-- ── Por qué solo `citas` ────────────────────────────────────────────────────
+--
+-- `components/recepcion/notificaciones-realtime.tsx` también está muerto por
+-- esto mismo, escuchando `ordenes` para avisar cuando una pasa a "listo". No se
+-- enciende aquí a propósito: ese componente lee `payload.old.estado`, y con la
+-- replica identity por defecto el registro viejo solo trae la clave primaria.
+-- Encenderlo sin arreglar eso haría saltar el aviso en actualizaciones que no
+-- son un cambio a "listo". Va en su propio cambio, con su prueba.
+--
+-- El contador de citas no mira el payload: recuenta con una consulta. Por eso
+-- este sí funciona con solo publicar la tabla.
+
+alter publication supabase_realtime add table public.citas;

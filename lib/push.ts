@@ -26,6 +26,14 @@ interface Notificacion {
   titulo:    string
   cuerpo:    string
   url?:      string
+  /**
+   * El texto del botón de la notificación ("Ver la cita", "Ver la orden").
+   *
+   * Estaba fijo en "Ver orden" dentro del service worker, para todas las push
+   * sin distinción, así que el aviso de una cita llegaba ofreciendo ver una
+   * orden que no existe. Quien manda el aviso es el único que sabe de qué es.
+   */
+  accion?:   string
 }
 
 /**
@@ -58,7 +66,7 @@ export async function enviarPushAUsuario(n: Notificacion): Promise<void> {
     }
     if (!suscripciones?.length) return
 
-    const payload = JSON.stringify({ title: n.titulo, body: n.cuerpo, url: n.url })
+    const payload = JSON.stringify({ title: n.titulo, body: n.cuerpo, url: n.url, accion: n.accion })
 
     const resultados = await Promise.allSettled(
       suscripciones.map(s =>

@@ -47,7 +47,6 @@ const ALLOWED_ORIGINS = [
 const CORS_EXCEPTIONS = [
   '/api/stripe/webhook',
   '/api/cron/',
-  '/api/notificar-cita',
   '/api/confirmar-cita',
 ]
 
