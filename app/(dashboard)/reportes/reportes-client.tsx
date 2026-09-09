@@ -9,6 +9,31 @@ import { formatMoney, formatMoneyCompacto } from '@/lib/utils'
 
 type Periodo = '1m' | '3m' | '6m'
 
+/**
+ * El tamaño del número de una tarjeta, según lo largo que sea.
+ *
+ * En el móvil estas tarjetas van a dos columnas y dejan unos 115 px útiles.
+ * "MX$13,687.92" no cabe a text-lg, y como el párrafo llevaba `break-words`
+ * el `2` de los centavos se caía al renglón de abajo: el importe salía partido
+ * en dos, que es lo peor que le puede pasar a una cifra de dinero.
+ *
+ * Se achica la letra, no la cifra. El importe NO se acorta a "MX$13.7k": ese
+ * formato es para las etiquetas de la gráfica, donde la columna mide cincuenta
+ * píxeles. Aquí el número es el dato y va entero.
+ *
+ * Los cortes están calculados sobre ~0.6 em por carácter con holgura, así que
+ * el caso largo de verdad —"MX$123,456,789.00", diecisiete— también entra.
+ *
+ * En pantalla grande casi siempre cabe a text-2xl; solo el tramo más largo
+ * baja, porque ahí las tarjetas van a cuatro columnas y se estrechan otra vez.
+ */
+function tamanoDelNumero(valor: string): string {
+  if (valor.length > 14) return 'text-xs sm:text-xl'
+  if (valor.length > 11) return 'text-sm sm:text-2xl'
+  if (valor.length > 8)  return 'text-base sm:text-2xl'
+  return 'text-lg sm:text-2xl'
+}
+
 interface Props {
   ordenes:      any[]
   clientes:     any[]
@@ -133,9 +158,9 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
               <Icono className={`w-5 h-5 ${color}`} />
             </div>
             <p className="text-xs text-gray-500 mb-1">{label}</p>
-            {/* Se achica en móvil y parte por palabras si hace falta: con
-                "MX$1,234,567.00" el text-2xl se salía de la tarjeta. */}
-            <p className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight break-words">{valor}</p>
+            {/* Nunca se parte: un importe cortado a la mitad no es un importe.
+                Si no cabe, se achica la letra (ver tamanoDelNumero). */}
+            <p className={`${tamanoDelNumero(valor)} font-bold text-gray-900 leading-tight whitespace-nowrap`}>{valor}</p>
           </div>
         ))}
       </div>
