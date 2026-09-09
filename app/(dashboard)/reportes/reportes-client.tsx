@@ -6,8 +6,34 @@ import {
   BarChart2, RefreshCw, Award, Target
 } from 'lucide-react'
 import { formatMoney, formatMoneyCompacto } from '@/lib/utils'
+import { tasaDeConversion } from '@/lib/reportes'
 
 type Periodo = '1m' | '3m' | '6m'
+
+/**
+ * El tamaño del número de una tarjeta, según lo largo que sea.
+ *
+ * En el móvil estas tarjetas van a dos columnas y dejan unos 115 px útiles.
+ * "MX$13,687.92" no cabe a text-lg, y como el párrafo llevaba `break-words`
+ * el `2` de los centavos se caía al renglón de abajo: el importe salía partido
+ * en dos, que es lo peor que le puede pasar a una cifra de dinero.
+ *
+ * Se achica la letra, no la cifra. El importe NO se acorta a "MX$13.7k": ese
+ * formato es para las etiquetas de la gráfica, donde la columna mide cincuenta
+ * píxeles. Aquí el número es el dato y va entero.
+ *
+ * Los cortes están calculados sobre ~0.6 em por carácter con holgura, así que
+ * el caso largo de verdad —"MX$123,456,789.00", diecisiete— también entra.
+ *
+ * En pantalla grande casi siempre cabe a text-2xl; solo el tramo más largo
+ * baja, porque ahí las tarjetas van a cuatro columnas y se estrechan otra vez.
+ */
+function tamanoDelNumero(valor: string): string {
+  if (valor.length > 14) return 'text-xs sm:text-xl'
+  if (valor.length > 11) return 'text-sm sm:text-2xl'
+  if (valor.length > 8)  return 'text-base sm:text-2xl'
+  return 'text-lg sm:text-2xl'
+}
 
 interface Props {
   ordenes:      any[]
@@ -34,12 +60,16 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
 
   const ordenesEntregadas = ordenesFiltradas.filter(o => o.estado === 'entregado')
 
+  // La conversión se mide dentro de las cotizaciones, no cruzándolas con las
+  // órdenes. El porqué y el bug que corrige están en lib/reportes.ts, con sus
+  // pruebas.
+  const cotizacionesEnviadas  = cotizacionesFiltradas.filter(c => c.estado !== 'borrador')
+  const cotizacionesAprobadas = cotizacionesFiltradas.filter(c => c.estado === 'aprobada')
+
   // KPIs principales
   const ingresosTotales   = ordenesEntregadas.reduce((acc, o) => acc + (o.total || 0), 0)
   const ticketPromedio    = ordenesEntregadas.length > 0 ? ingresosTotales / ordenesEntregadas.length : 0
-  const tasaConversion    = cotizacionesFiltradas.length > 0
-    ? Math.round((ordenesFiltradas.length / cotizacionesFiltradas.length) * 100)
-    : 0
+  const tasaConversion    = tasaDeConversion(cotizacionesFiltradas)
   const clientesNuevos    = clientesFiltrados.length
 
   // Ingresos por mes
@@ -126,16 +156,18 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
           { label: 'Ingresos totales',    valor: fmt(ingresosTotales),          icono: DollarSign, color: 'text-green-600',  bg: 'bg-green-100' },
           { label: 'Ticket promedio',     valor: fmt(ticketPromedio),            icono: TrendingUp, color: 'text-blue-600',   bg: 'bg-blue-100' },
           { label: 'Clientes nuevos',     valor: clientesNuevos.toString(),      icono: Users,      color: 'text-purple-600', bg: 'bg-purple-100' },
-          { label: 'Tasa de conversión',  valor: `${tasaConversion}%`,           icono: Target,     color: 'text-amber-600',  bg: 'bg-amber-100' },
+          // Sin cotizaciones enviadas no hay nada que medir, y un "0%" ahí se
+          // lee como "no cierras ninguna" en vez de "no has mandado ninguna".
+          { label: 'Tasa de conversión',  valor: tasaConversion === null ? '—' : `${tasaConversion}%`, icono: Target, color: 'text-amber-600', bg: 'bg-amber-100' },
         ].map(({ label, valor, icono: Icono, color, bg }) => (
           <div key={label} className="bg-white rounded-2xl border border-gray-200 p-5">
             <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3`}>
               <Icono className={`w-5 h-5 ${color}`} />
             </div>
             <p className="text-xs text-gray-500 mb-1">{label}</p>
-            {/* Se achica en móvil y parte por palabras si hace falta: con
-                "MX$1,234,567.00" el text-2xl se salía de la tarjeta. */}
-            <p className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight break-words">{valor}</p>
+            {/* Nunca se parte: un importe cortado a la mitad no es un importe.
+                Si no cabe, se achica la letra (ver tamanoDelNumero). */}
+            <p className={`${tamanoDelNumero(valor)} font-bold text-gray-900 leading-tight whitespace-nowrap`}>{valor}</p>
           </div>
         ))}
       </div>
@@ -261,12 +293,23 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
           <Target className="w-4 h-4 text-green-500" />
           <h2 className="text-sm font-semibold text-gray-900">Embudo de conversión</h2>
         </div>
+        {/* Las tres etapas son subconjuntos de la primera —aprobadas ⊆
+            enviadas ⊆ todas—, así que cada porcentaje es sobre el mismo total
+            y ninguno puede pasar de 100. Antes la segunda etapa eran TODAS las
+            órdenes, que no salen de estas cotizaciones, y por eso el embudo
+            imprimía un "300%" debajo de una barra más ancha que la de arriba.
+
+            Las órdenes no se pierden de vista: siguen contadas en el recuadro
+            de Total / Entregadas / En proceso, que es su sitio. */}
         <div className="flex items-center gap-2 flex-wrap">
           {[
-            { label: 'Cotizaciones',  valor: cotizacionesFiltradas.length,  color: '#f59e0b', w: 100 },
-            { label: 'Órdenes',       valor: ordenesFiltradas.length,        color: '#3b82f6', w: cotizacionesFiltradas.length > 0 ? (ordenesFiltradas.length / cotizacionesFiltradas.length) * 100 : 0 },
-            { label: 'Entregadas',    valor: ordenesEntregadas.length,       color: '#22c55e', w: ordenesFiltradas.length > 0 ? (ordenesEntregadas.length / ordenesFiltradas.length) * 100 : 0 },
-          ].map(({ label, valor, color, w }, i) => (
+            { label: 'Cotizaciones',      valor: cotizacionesFiltradas.length,  color: '#f59e0b' },
+            { label: 'Enviadas',          valor: cotizacionesEnviadas.length,   color: '#3b82f6' },
+            { label: 'Aprobadas',         valor: cotizacionesAprobadas.length,  color: '#22c55e' },
+          ].map(({ label, valor, color }, i) => {
+            const total = cotizacionesFiltradas.length
+            const w     = total > 0 ? (valor / total) * 100 : 0
+            return (
             <div key={label} className="flex-1 min-w-[120px]">
               <div className="h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg"
                    style={{ background: color, opacity: 0.9 - i * 0.1 }}>
@@ -274,10 +317,11 @@ export default function ReportesClient({ ordenes, clientes, cotizaciones, taller
               </div>
               <p className="text-xs text-gray-500 text-center mt-2">{label}</p>
               <p className="text-xs font-semibold text-center" style={{ color }}>
-                {i > 0 ? `${Math.round(w)}%` : '100%'}
+                {total > 0 ? `${Math.round(w)}%` : '—'}
               </p>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
