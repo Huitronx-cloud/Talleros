@@ -53,8 +53,13 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
   const [menuMovil, setMenuMovil]       = useState(false)
   const [citasPendientes, setCitasPendientes] = useState(0)
 
+  // Quién atiende las citas. Sale de aquí y no de una lista repetida en cada
+  // sitio, porque la campana y el contador tienen que hablar del mismo grupo:
+  // una campana que nunca cuenta nada es peor que no tener campana.
+  const atiendeCitas = ['propietario', 'admin', 'recepcion'].includes(rol)
+
   useEffect(() => {
-    if (!['propietario', 'admin', 'recepcion'].includes(rol)) return
+    if (!atiendeCitas) return
 
     // El canal se guarda para poder cerrarlo al desmontar. Antes el efecto
     // abría `citas-badge` y no devolvía nada: cada vez que se volvía a ejecutar
@@ -85,7 +90,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
       cancelado = true
       if (canal) supabase.removeChannel(canal)
     }
-  }, [rol])
+  }, [rol, atiendeCitas])
 
   const NAV_ITEMS    = TODOS_NAV_ITEMS.filter(i => i.roles.includes(rol))
   const NAV_BOTTOM   = TODOS_NAV_BOTTOM.filter(i => i.roles.includes(rol))
@@ -167,14 +172,38 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
           </div>
           <span className="text-white font-bold text-sm truncate max-w-[160px]">{nombreTaller}</span>
         </Link>
-        <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1 relative">
-          {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          {citasPendientes > 0 && !menuMovil && (
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
-              {citasPendientes > 9 ? '9+' : citasPendientes}
-            </span>
+        <div className="flex items-center gap-1">
+          {/* La campana.
+              El número ya se contaba en vivo, pero en el teléfono colgaba del
+              botón de hamburguesa: un punto rojo sobre tres rayas no dice de
+              qué es, y para enterarte tenías que abrir el menú. Aquí está
+              siempre visible, dice de qué va, y un tap lleva a /citas.
+              Se enseña vacía a propósito: una campana que solo aparece cuando
+              hay algo no se aprende nunca. */}
+          {atiendeCitas && (
+            <Link
+              href="/citas"
+              onClick={() => setMenuMovil(false)}
+              aria-label={
+                citasPendientes > 0
+                  ? `${citasPendientes} ${citasPendientes === 1 ? 'cita pendiente' : 'citas pendientes'}`
+                  : 'Citas'
+              }
+              className="text-gray-400 hover:text-white p-1 relative"
+            >
+              <Bell className="w-5 h-5" />
+              {citasPendientes > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                  {citasPendientes > 9 ? '9+' : citasPendientes}
+                </span>
+              )}
+            </Link>
           )}
-        </button>
+
+          <button onClick={() => setMenuMovil(!menuMovil)} className="text-gray-400 hover:text-white p-1">
+            {menuMovil ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* ── MENÚ MÓVIL ── */}
