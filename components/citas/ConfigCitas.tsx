@@ -132,7 +132,11 @@ export default function ConfigCitas({ tallerId, configInicial }: Props) {
             const activo = !!config.horario[key]
             const horario = config.horario[key] as HorarioDia | null
             return (
-              <div key={key} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+              /* flex-wrap + gap-y: en el teléfono las dos horas bajan a su
+                 propia línea en vez de salirse de la tarjeta. El interruptor y
+                 el nombre del día ocupan 136 px fijos, y lo que sobraba no
+                 daba para dos desplegables de "18:00". */
+              <div key={key} className={`flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-xl border transition-all ${
                 activo ? 'border-blue-200 bg-blue-50' : 'border-gray-100 bg-gray-50'
               }`}>
                 {/* Toggle día */}
@@ -155,21 +159,26 @@ export default function ConfigCitas({ tallerId, configInicial }: Props) {
                   {label}
                 </span>
 
-                {/* Horas */}
+                {/* Horas.
+                    basis-full en móvil: la línea entera para ellas. Desde sm
+                    vuelven a la misma fila, que ahí sí cabe todo.
+                    Los select llevan min-w-0 porque un hijo de flex no baja de
+                    su ancho de contenido si no se le dice: sin eso no encogían
+                    y el desplegable de cierre se salía del recuadro. */}
                 {activo && horario ? (
-                  <div className="flex items-center gap-2 flex-1">
+                  <div className="flex items-center gap-2 basis-full sm:basis-auto sm:flex-1 min-w-0">
                     <select
                       value={horario.abre}
                       onChange={e => setHora(key, 'abre', e.target.value)}
-                      className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
                     </select>
-                    <span className="text-gray-400 text-sm">a</span>
+                    <span className="text-gray-400 text-sm flex-shrink-0">a</span>
                     <select
                       value={horario.cierra}
                       onChange={e => setHora(key, 'cierra', e.target.value)}
-                      className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {HORAS.map(h => <option key={h} value={h}>{h}</option>)}
                     </select>

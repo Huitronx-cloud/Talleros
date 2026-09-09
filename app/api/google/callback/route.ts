@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
 
     // Guardar tokens en Supabase
     const supabase = createClient()
-    await supabase
+    const { error: errorGuardar } = await supabase
       .from('talleres')
       .update({
         google_access_token:  tokens.access_token,
@@ -88,6 +88,16 @@ export async function GET(req: NextRequest) {
         google_connected_at:  new Date().toISOString(),
       })
       .eq('id', taller_id)
+
+    // supabase-js no lanza. Sin esto, un fallo al guardar —RLS, un taller_id
+    // que no es el suyo, la sesión caducada durante el viaje a Google— acababa
+    // igualmente en "?success=google_connected": la pantalla decía Conectado y
+    // en la base no había ni un token. El taller se queda esperando algo que
+    // nunca va a pasar y no tiene forma de saber por qué.
+    if (errorGuardar) {
+      console.error('[google callback] no se pudieron guardar los tokens:', errorGuardar.message)
+      return NextResponse.redirect(new URL('/configuracion?error=google_guardar', req.url))
+    }
 
     return NextResponse.redirect(
       new URL('/configuracion?success=google_connected', req.url)
