@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, MessageCircle, CalendarPlus } from 'lucide-react'
+import { Calendar, Clock, User, Car, Phone, CheckCircle2, XCircle, Loader2, ChevronLeft, ChevronRight, MessageCircle, CalendarPlus, CalendarClock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { buildWhatsAppLink } from '@/lib/whatsapp-link'
 
@@ -50,6 +50,10 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
   const [citas, setCitas]           = useState<Cita[]>(citasIniciales)
   const [actualizando, setActualizando] = useState(false)
   const [vista, setVista]           = useState<'mes' | 'lista'>('mes')
+  const [reagendando, setReagendando]   = useState(false)
+  const [nuevaFecha, setNuevaFecha]     = useState('')
+  const [nuevaHora, setNuevaHora]       = useState('')
+  const [avisoReagenda, setAvisoReagenda] = useState('')
   const [tallerInfo, setTallerInfo] = useState<{ nombre: string; pais: string | null }>({ nombre: 'el taller', pais: null })
 
   useEffect(() => {
@@ -63,6 +67,14 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tallerId])
+
+  // Al cambiar de cita se cierra el formulario de reagendar. Sin esto queda
+  // abierto con la fecha de la cita ANTERIOR ya escrita, apuntando a la nueva:
+  // un clic en Guardar movería la cita equivocada.
+  useEffect(() => {
+    setReagendando(false)
+    setAvisoReagenda('')
+  }, [citaSeleccionada?.id])
 
   // ── Mensajes wa.me (el empleado los envía desde su propio WhatsApp) ────────
   function fechaLarga(c: Cita) {
@@ -78,6 +90,18 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
 
   function linkSugerirOtroDia(c: Cita) {
     const mensaje = `Hola ${c.cliente_nombre}, recibimos tu solicitud de cita para el ${fechaLarga(c)} a las ${c.hora.slice(0, 5)} en *${tallerInfo.nombre}*.\n\nEse horario no lo tenemos disponible. ¿Te funcionaría otro día u horario? Respóndenos con la opción que te acomode y la agendamos de inmediato.`
+    return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
+  }
+
+  /**
+   * El aviso de que la cita se movió.
+   *
+   * Sirve igual para una cita pendiente que para una ya confirmada: en los dos
+   * casos el cliente no eligió esta hora, se la pusimos nosotros. Por eso acaba
+   * abriendo la puerta a que diga que no en vez de darlo por hecho.
+   */
+  function linkReagendada(c: Cita) {
+    const mensaje = `*Cambio en tu cita*\n\nHola ${c.cliente_nombre},\n\nTu cita en *${tallerInfo.nombre}* queda para el ${fechaLarga(c)} a las ${c.hora.slice(0, 5)} hrs.\n\nSi ese momento no te funciona, respóndenos por aquí y buscamos otro.`
     return buildWhatsAppLink(c.cliente_telefono, mensaje, tallerInfo.pais)
   }
 
@@ -146,6 +170,84 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
     } finally {
       setEnviandoCalendar(null)
     }
+  }
+
+  /**
+   * Mueve la cita a otra fecha u hora y avisa al cliente.
+   *
+   * Faltaba entero: se podía confirmar, cancelar y completar, pero no cambiar.
+   * Un taller que no puede mover una cita acaba cancelándola y pidiéndole al
+   * cliente que reserve otra vez, que es como se pierde al cliente.
+   *
+   * No se restringe a los horarios que ofrece la página pública, a propósito:
+   * ahí manda la agenda que el taller publicó, y aquí manda el taller. Si
+   * quiere meter a alguien un sábado a las siete, es su taller.
+   *
+   * El estado no se toca. Una cita pendiente sigue pendiente después de
+   * moverla —el cliente todavía no ha dicho que sí a la hora nueva— y una
+   * confirmada sigue confirmada. Lo que cambia es cuándo, no en qué punto va.
+   */
+  const reagendar = async (cita: Cita) => {
+    if (!nuevaFecha || !nuevaHora) {
+      setAvisoReagenda('Pon la fecha y la hora nuevas.')
+      return
+    }
+    if (nuevaFecha === cita.fecha && nuevaHora === cita.hora.slice(0, 5)) {
+      setAvisoReagenda('Esa es la fecha y la hora que ya tenía.')
+      return
+    }
+
+    setAvisoReagenda('')
+    setActualizando(true)
+
+    const movida: Cita = { ...cita, fecha: nuevaFecha, hora: nuevaHora }
+
+    // La pestaña se abre ANTES de cualquier await: Safari bloquea las que se
+    // abren después, y entonces el aviso al cliente no sale nunca.
+    const ventana = cita.cliente_telefono ? window.open('', '_blank') : null
+
+    const { error } = await supabase
+      .from('citas')
+      .update({ fecha: nuevaFecha, hora: nuevaHora })
+      .eq('id', cita.id)
+
+    if (error) {
+      console.error('[citas] no se pudo reagendar:', error.message)
+      ventana?.close()
+      setActualizando(false)
+      setAvisoReagenda('No se pudo cambiar la cita. Revisa tu conexión e intenta de nuevo.')
+      return
+    }
+
+    // Si ya estaba en Google Calendar, el evento se mueve con ella. Sin esto el
+    // taller vería una hora en TallerOS y otra en su calendario.
+    if (cita.google_calendar_event_id) {
+      try {
+        await fetch('/api/google/calendar', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ cita_id: cita.id }),
+        })
+      } catch (e) {
+        console.error('[citas] reagendada, pero Google Calendar no se actualizó:', e)
+      }
+    }
+
+    setCitas(prev => prev.map(c => c.id === cita.id ? movida : c))
+    setCitaSeleccionada(movida)
+    setReagendando(false)
+    setActualizando(false)
+
+    if (ventana) ventana.location.href = linkReagendada(movida)
+    router.refresh()
+  }
+
+  /** Abre el formulario con lo que la cita tiene ahora ya puesto. */
+  const abrirReagenda = (cita: Cita) => {
+    setNuevaFecha(cita.fecha)
+    setNuevaHora(cita.hora.slice(0, 5))
+    setAvisoReagenda('')
+    setReagendando(true)
   }
 
   const cambiarEstado = async (citaId: string, nuevoEstado: EstadoCita) => {
@@ -403,7 +505,11 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
 
             {/* Acciones */}
             <div className="space-y-2">
-              {citaSeleccionada.estado !== 'cancelada' && (
+              {/* Con el formulario de reagendar abierto se esconde el resto:
+                  un "Confirmar y avisar" justo encima de unos campos de fecha
+                  a medio llenar es una manera fácil de mandarle al cliente la
+                  hora vieja. */}
+              {citaSeleccionada.estado !== 'cancelada' && !reagendando && (
                 citaSeleccionada.google_calendar_event_id ? (
                   <p className="w-full text-center text-xs text-gray-400 py-2">
                     Ya está en tu Google Calendar
@@ -426,7 +532,7 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
                   {avisoCalendar}
                 </p>
               )}
-              {citaSeleccionada.estado === 'pendiente' && (
+              {citaSeleccionada.estado === 'pendiente' && !reagendando && (
                 <>
                   <button
                     onClick={() => confirmarYAvisar(citaSeleccionada)}
@@ -447,7 +553,7 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
                   </a>
                 </>
               )}
-              {citaSeleccionada.estado === 'confirmada' && (
+              {citaSeleccionada.estado === 'confirmada' && !reagendando && (
                 <button
                   onClick={() => cambiarEstado(citaSeleccionada.id, 'completada')}
                   disabled={actualizando}
@@ -457,7 +563,67 @@ export default function CalendarioCitas({ citas: citasIniciales, tallerId }: { c
                   Marcar como completada
                 </button>
               )}
+              {/* Reagendar. Vale para pendiente y para confirmada: mover una
+                  cita ya confirmada es justo lo que pasa cuando al taller se
+                  le complica el día. */}
               {citaSeleccionada.estado !== 'cancelada' && citaSeleccionada.estado !== 'completada' && (
+                reagendando ? (
+                  <div className="border border-gray-200 rounded-lg p-3 space-y-3">
+                    <p className="text-xs font-semibold text-gray-700">Nueva fecha y hora</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="date"
+                        value={nuevaFecha}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={e => setNuevaFecha(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <input
+                        type="time"
+                        value={nuevaHora}
+                        onChange={e => setNuevaHora(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      Se le avisa al cliente por WhatsApp con la fecha nueva.
+                      {citaSeleccionada.google_calendar_event_id && ' El evento de tu Google Calendar se mueve solo.'}
+                    </p>
+                    {avisoReagenda && (
+                      <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        {avisoReagenda}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => reagendar(citaSeleccionada)}
+                        disabled={actualizando}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                      >
+                        {actualizando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        Guardar y avisar
+                      </button>
+                      <button
+                        onClick={() => { setReagendando(false); setAvisoReagenda('') }}
+                        disabled={actualizando}
+                        className="px-3 border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-60 text-sm font-medium py-2 rounded-lg transition-colors"
+                      >
+                        Ahora no
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => abrirReagenda(citaSeleccionada)}
+                    disabled={actualizando}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-60 text-sm font-medium py-2 rounded-lg transition-colors"
+                  >
+                    <CalendarClock className="w-3.5 h-3.5" />
+                    Cambiar fecha u hora
+                  </button>
+                )
+              )}
+              {citaSeleccionada.estado !== 'cancelada' && citaSeleccionada.estado !== 'completada' && !reagendando && (
                 <button
                   onClick={() => {
                     if (confirm('¿Cancelar esta cita?')) cambiarEstado(citaSeleccionada.id, 'cancelada')

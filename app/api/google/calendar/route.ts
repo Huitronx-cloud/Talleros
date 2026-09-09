@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     // notaba, porque hasta ahora ninguna pantalla lo llamaba.
     const { data: cita } = await supabase
       .from('citas')
-      .select('id, fecha, hora, descripcion, cliente_nombre, cliente_telefono, cliente_email, vehiculo_marca, vehiculo_modelo, placas')
+      .select('id, fecha, hora, descripcion, cliente_nombre, cliente_telefono, cliente_email, vehiculo_marca, vehiculo_modelo, placas, google_calendar_event_id')
       .eq('id', cita_id)
       .eq('taller_id', usuario?.taller_id)
       .single()
@@ -123,18 +123,34 @@ export async function POST(req: NextRequest) {
       colorId: '9', // Azul — color de TallerOS
     }
 
-    // Crear evento en Google Calendar
-    const calRes = await fetch(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-      {
-        method:  'POST',
+    // Crear el evento, o actualizarlo si esta cita ya tiene uno.
+    //
+    // Solo sabía crear. Al reagendar una cita que ya estaba en el calendario,
+    // el evento se quedaba con la fecha vieja para siempre: el taller veía en
+    // TallerOS el día nuevo y en su Google el viejo, sin ningún aviso de que
+    // no coincidían.
+    const BASE = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+
+    // Arrow y no `function`: esto vive dentro del try, y una declaración de
+    // función en un bloque no está permitida con el target del proyecto.
+    const mandar = (eventId: string | null) =>
+      fetch(eventId ? `${BASE}/${encodeURIComponent(eventId)}` : BASE, {
+        method:  eventId ? 'PATCH' : 'POST',
         headers: {
           Authorization:  `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(evento),
-      }
-    )
+      })
+
+    let calRes = await mandar(cita.google_calendar_event_id ?? null)
+
+    // Si el evento ya no está en Google —lo borraron a mano— no hay nada que
+    // parchear: se crea uno nuevo en vez de dejar la cita sin evento y sin
+    // manera de volver a ponerla.
+    if (!calRes.ok && cita.google_calendar_event_id && (calRes.status === 404 || calRes.status === 410)) {
+      calRes = await mandar(null)
+    }
 
     const calData = await calRes.json()
 
