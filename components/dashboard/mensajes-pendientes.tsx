@@ -51,6 +51,22 @@ function diasEsperando(fecha: string): number {
   return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)))
 }
 
+/**
+ * La antigüedad de un mensaje, en corto.
+ *
+ * Va en cada fila y no solo arriba, porque es el dato que permite decidir uno
+ * por uno. Lo dijo el dueño de un taller: un aviso viejo puede ser un coche
+ * que sigue en el taller porque el trabajo se alargó, y a ese cliente sí hay
+ * que avisarle. El sistema no puede saberlo; el dueño sí, pero necesita ver
+ * de cuándo es.
+ */
+function edadTexto(fecha: string): string {
+  const dias = diasEsperando(fecha)
+  if (dias === 0) return 'hoy'
+  if (dias === 1) return 'ayer'
+  return `hace ${dias} días`
+}
+
 export default function MensajesPendientes() {
   const [mensajes, setMensajes]   = useState<MensajePendiente[]>([])
   // El total real, que puede ser mayor que los que se listan: la consulta trae
@@ -60,6 +76,9 @@ export default function MensajesPendientes() {
   const [total, setTotal]         = useState(0)
   const [visible, setVisible]     = useState(false)
   const [procesando, setProcesando] = useState<string | null>(null)
+  // Cuál está abierto. Solo uno: la lista se lee de arriba abajo y dos
+  // mensajes largos abiertos a la vez la vuelven ilegible.
+  const [abierto, setAbierto]     = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -104,6 +123,23 @@ export default function MensajesPendientes() {
       setMensajes(prev => prev.filter(m => m.id !== id))
       setTotal(prev => Math.max(0, prev - 1))
     }
+  }
+
+  /**
+   * Descartar pide confirmación con el nombre delante.
+   *
+   * Es irreversible desde la pantalla y la X está a un dedo del botón de
+   * enviar. Perder por un roce el aviso de un cliente que lleva tres semanas
+   * esperando es justo lo que no puede pasar en una lista que se revisa una
+   * por una.
+   */
+  function descartar(m: MensajePendiente) {
+    const ok = confirm(
+      `¿Descartar el mensaje de ${quienEs(m)}?\n\n` +
+      'No se envía y desaparece de la lista. Si el vehículo sigue en el taller ' +
+      'y aún hay que avisarle, mejor déjalo aquí.'
+    )
+    if (ok) marcar(m.id, 'descartado')
   }
 
   function enviar(m: MensajePendiente) {
@@ -156,7 +192,7 @@ export default function MensajesPendientes() {
 
       <div className="h-4" />
 
-      <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+      <div className="space-y-3">
         {mensajes.map(m => {
           const meta = TIPO_META[m.tipo] ?? TIPO_META.recordatorio
           const Icono = meta.icon
@@ -169,9 +205,27 @@ export default function MensajesPendientes() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold text-gray-900 truncate">{quienEs(m)}</span>
                   <span className="text-xs font-semibold" style={{ color: meta.color }}>{meta.label}</span>
+                  {/* La antigüedad, por mensaje. Sin esto no se puede decidir:
+                      un aviso de hace tres semanas puede ser un coche que
+                      sigue en el taller porque el trabajo se alargó, y ese
+                      mensaje SÍ hay que mandarlo. Solo el dueño lo sabe. */}
+                  <span className="text-xs text-gray-400">{edadTexto(m.created_at)}</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">{m.telefono}</p>
-                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{m.mensaje_texto}</p>
+
+                {/* El texto entero, no cortado a dos líneas: es lo que se le va
+                    a mandar al cliente y nadie decide sobre lo que no ha leído. */}
+                <p className={`text-xs text-gray-500 mt-1 whitespace-pre-line ${abierto === m.id ? '' : 'line-clamp-2'}`}>
+                  {m.mensaje_texto}
+                </p>
+                {m.mensaje_texto.length > 110 && (
+                  <button
+                    onClick={() => setAbierto(abierto === m.id ? null : m.id)}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 mt-1"
+                  >
+                    {abierto === m.id ? 'Ver menos' : 'Ver el mensaje completo'}
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
@@ -185,7 +239,7 @@ export default function MensajesPendientes() {
                   Enviar
                 </button>
                 <button
-                  onClick={() => marcar(m.id, 'descartado')}
+                  onClick={() => descartar(m)}
                   disabled={procesando === m.id}
                   title="Descartar"
                   className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-60 transition-colors"
