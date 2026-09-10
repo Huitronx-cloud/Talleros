@@ -10,6 +10,7 @@ import { enviarResenaOrden } from '@/lib/resenas'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
 import { PlantillaWhatsApp, construirMensajeWhatsApp, ContextoWhatsApp, construirMensajeContexto } from '@/lib/whatsapp-templates'
 import { formatMoney } from '@/lib/utils'
+import { fechaHoyDelTaller } from '@/lib/fechas'
 
 export interface OrdenForm {
   cliente_id: string | null
@@ -228,7 +229,7 @@ export async function cambiarEstado(
 
   const { data: orden } = await supabase
     .from('ordenes')
-    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono)')
+    .select('historial, estado, taller_id, cliente_id, vehiculo_marca, vehiculo_modelo, placas, total, clientes(nombre, telefono), talleres(pais)')
     .eq('id', ordenId)
     .single()
 
@@ -249,7 +250,11 @@ export async function cambiarEstado(
   }
 
   if (nuevoEstado === 'entregado') {
-    actualizacion.fecha_entrega = new Date().toISOString().split('T')[0]
+    // La fecha del TALLER. Esto corre en el servidor, que en Vercel va en UTC:
+    // marcar entregado a las 18:30 en México guardaba la fecha de mañana, y esa
+    // fecha la ve el cliente en el PDF y en el portal del vehículo.
+    const paisTaller = (Array.isArray(orden.talleres) ? orden.talleres[0] : orden.talleres) as { pais: string | null } | null
+    actualizacion.fecha_entrega = fechaHoyDelTaller(paisTaller?.pais)
   }
 
   const { error } = await supabase

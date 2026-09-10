@@ -10,6 +10,7 @@ import CampoMecanico from './campo-mecanico'
 import SelectorCatalogo from './selector-catalogo'
 import { formatMoney } from '@/lib/utils'
 import { getIva, getMoneda } from '@/lib/iva'
+import { fechaHoyDelTaller } from '@/lib/fechas'
 import AutocompleteVehiculo from '@/components/ui/AutocompleteVehiculo'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
@@ -193,7 +194,10 @@ export default function FormNuevaOrden({ clientes, tallerId: tallerIdProp, pais,
       servicios_realizados: servicios.filter(s => s.descripcion.trim()),
       mecanico_asignado:    form.mecanico_asignado,
       estado:               form.estado,
-      fecha_entrada:        new Date().toISOString().split('T')[0],
+      // La fecha del TALLER, no la de UTC: toISOString() devuelve UTC también
+      // en el navegador, y a partir de las 18:00 en México esto guardaba la
+      // fecha de mañana. Ver lib/fechas.ts.
+      fecha_entrada:        fechaHoyDelTaller(pais),
       fecha_prometida:      form.fecha_prometida,
       subtotal,
       descuento,

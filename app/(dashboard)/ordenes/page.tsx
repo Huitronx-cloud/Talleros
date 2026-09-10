@@ -5,6 +5,7 @@ import ListaOrdenes from '@/components/ordenes/lista-ordenes'
 import MisOrdenes from '@/components/ordenes/mis-ordenes'
 import AgendaRecepcion from '@/components/recepcion/agenda-recepcion'
 import { getLimites, puedeCrear } from '@/lib/plan-limits'
+import { fechaHoyDelTaller, rangoDelMes } from '@/lib/fechas'
 import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 
@@ -19,24 +20,32 @@ export default async function OrdenesPage({
 
   const { data: usuario } = await supabase
     .from('usuarios')
-    .select('rol, nombre, taller_id')
+    .select('rol, nombre, taller_id, talleres(pais)')
     .eq('id', user!.id)
     .single()
 
   const esTecnico   = usuario?.rol === 'tecnico'
   const esRecepcion = usuario?.rol === 'recepcion'
   const tallerId    = usuario?.taller_id ?? ''
-  const mesActual   = new Date().toISOString().slice(0, 7)
+  const paisTaller  = ((Array.isArray(usuario?.talleres) ? usuario?.talleres[0] : usuario?.talleres) as { pais: string | null } | null)?.pais ?? null
+
+  // El mes del TALLER, no el de UTC: en el servidor `new Date()` va en UTC, y
+  // el 30 a las 18:30 en México ya sería el mes siguiente. Ver lib/fechas.ts.
+  const { inicio: inicioMes, fin: finMes } = rangoDelMes(fechaHoyDelTaller(paisTaller))
 
   // Obtener plan y uso
   const [{ data: suscripcion }, { count: ordenesEsteMes }] = await Promise.all([
     supabase.from('suscripciones').select('plan, trial_fin').eq('taller_id', tallerId).single(),
     // La orden de muestra se lista, pero no cuenta contra el tope del plan.
+    // La cota de arriba era `${mes}-31`, y "2026-09-31" no es una fecha:
+    // Postgres rechazaba la consulta entera, el contador caía a 0, y el tope
+    // de órdenes del plan no se aplicaba en los meses de 30 días ni en
+    // febrero. Ahora es el día 1 del mes siguiente, exclusivo.
     supabase.from('ordenes').select('*', { count: 'exact', head: true })
       .eq('taller_id', tallerId)
       .eq('es_ejemplo', false)
-      .gte('created_at', `${mesActual}-01`)
-      .lt('created_at', `${mesActual}-31`),
+      .gte('created_at', inicioMes)
+      .lt('created_at', finMes),
   ])
 
   const plan    = suscripcion?.plan ?? 'trial'
@@ -78,7 +87,9 @@ export default async function OrdenesPage({
 
   // Recepcionista
   if (esRecepcion) {
-    const hoy = new Date().toISOString().split('T')[0]
+    // El "hoy" del taller. En UTC, a partir de las 18:00 en México la
+    // recepcionista veía las citas de MAÑANA y ninguna de las órdenes de hoy.
+    const hoy = fechaHoyDelTaller(paisTaller)
     const [{ data: citasHoy }, { data: ordenesListas }, { data: ordenesHoy }] = await Promise.all([
       supabase.from('citas').select('*, clientes(nombre, telefono)').eq('fecha', hoy).order('hora', { ascending: true }),
       supabase.from('ordenes').select('*, clientes(nombre, telefono)').eq('estado', 'listo').eq('cobrado', false).order('created_at', { ascending: false }),
