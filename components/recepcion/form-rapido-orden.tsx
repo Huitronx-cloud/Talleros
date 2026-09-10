@@ -8,6 +8,7 @@ import CampoMecanico from '@/components/ordenes/campo-mecanico'
 import CampoTelefono from '@/components/ui/CampoTelefono'
 import { Cliente } from '@/types'
 import { crearOrden } from '@/app/(dashboard)/ordenes/actions'
+import { fechaHoyDelTaller } from '@/lib/fechas'
 
 const INPUT = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400'
 const LABEL = 'block text-sm font-medium text-gray-700 mb-1'
@@ -104,7 +105,8 @@ export default function FormRapidoOrden({ clientes, tallerId, pais, moneda, meca
         servicios_realizados: [],
         mecanico_asignado:    mecanico,
         estado:               'recibido',
-        fecha_entrada:        new Date().toISOString().split('T')[0],
+        // La fecha del TALLER, no la de UTC. Ver lib/fechas.ts.
+        fecha_entrada:        fechaHoyDelTaller(pais),
         fecha_prometida:      fechaPrometida,
         subtotal:             0,
         descuento:            0,
