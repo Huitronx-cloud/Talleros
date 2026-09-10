@@ -78,11 +78,17 @@ export default async function ConfiguracionPage() {
               ⭐
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">Google My Business</h2>
+              {/* Decía "Google My Business — reseñas automáticas", y eso no es
+                  lo que hace esta conexión. Las reseñas salen del enlace que el
+                  taller pega en la pantalla de Reseñas, sin pasar por aquí. Lo
+                  único que esta conexión mueve hoy son las citas al calendario.
+                  Prometer reseñas aquí hace que el taller conecte Google, se
+                  quede esperándolas, y no llegue ninguna. */}
+              <h2 className="text-base font-bold text-gray-900">Cuenta de Google</h2>
               <p className="text-sm text-gray-500">
                 {googleConectado
-                  ? `Conectado — ${(taller as any).google_email ?? ''}`
-                  : 'Conecta tu perfil para solicitar reseñas automáticas en Google'}
+                  ? `Conectada — ${(taller as any).google_email ?? ''}`
+                  : 'Conéctala para mandar tus citas a Google Calendar'}
               </p>
             </div>
           </div>
@@ -114,21 +120,22 @@ export default async function ConfiguracionPage() {
             </Link>
           )}
         </div>
-        {googleConectado && (taller as any).gmb_location_id && (
+        {googleConectado && (
           <div className="mt-4 bg-green-50 rounded-xl p-3 border border-green-100">
-            <p className="text-xs text-green-700">
-              ✅ Google My Business conectado — reseñas automáticas activas.<br/>
-              ✅ Google Calendar conectado — citas se sincronizan automáticamente.
+            <p className="text-xs text-green-700 leading-relaxed">
+              Ya puedes mandar tus citas a Google Calendar. Se hace cita por cita,
+              con el botón <strong>Agregar a Google Calendar</strong> que sale al
+              abrir una cita en la pantalla de Citas.
             </p>
           </div>
         )}
-        {googleConectado && !(taller as any).gmb_location_id && (
-          <div className="mt-4 bg-yellow-50 rounded-xl p-3 border border-yellow-100">
-            <p className="text-xs text-yellow-700">
-              ⚠️ Conectado pero no se encontró una ubicación en Google My Business. Asegúrate de tener un perfil de negocio en Google Maps y vuelve a conectar.
-            </p>
-          </div>
-        )}
+        <p className="mt-3 text-xs text-gray-500 leading-relaxed">
+          Las reseñas no dependen de esta conexión: se configuran en{' '}
+          <Link href="/resenas" className="text-blue-600 hover:text-blue-700 underline underline-offset-2">
+            Reseñas
+          </Link>
+          , pegando el enlace de tu ficha de Google.
+        </p>
       </div>
 
       <FormConfiguracion taller={taller as Taller} />

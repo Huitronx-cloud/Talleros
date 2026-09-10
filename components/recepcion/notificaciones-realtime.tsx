@@ -23,39 +23,80 @@ export default function NotificacionesRealtime({ tallerId }: Props) {
   const [vistas, setVistas]   = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Escuchar cambios en órdenes del taller
-    const channel = supabase
-      .channel(`ordenes-listas-${tallerId}`)
-      .on(
-        'postgres_changes',
-        {
-          event:  'UPDATE',
-          schema: 'public',
-          table:  'ordenes',
-          filter: `taller_id=eq.${tallerId}`,
-        },
-        async (payload) => {
-          const nueva = payload.new as any
-          const vieja = payload.old as any
+    let canal: ReturnType<typeof supabase.channel> | null = null
+    let cancelado = false
 
-          // Solo cuando cambia a estado "listo"
-          if (nueva.estado === 'listo' && vieja.estado !== 'listo') {
-            // Obtener nombre del cliente
+    /**
+     * Las que YA estaban listas cuando se abrió la pantalla.
+     *
+     * Hace de línea base. Antes esto miraba `payload.old.estado` para saber si
+     * la orden acababa de cambiar a "listo", y no podía funcionar: la replica
+     * identity de `ordenes` es la de por defecto, así que el registro viejo que
+     * manda Postgres trae SOLO la clave primaria. `vieja.estado` era siempre
+     * undefined, y `undefined !== 'listo'` es cierto — o sea que el aviso
+     * saltaba en cualquier actualización de una orden ya lista: cambiar una
+     * nota de un coche entregado la semana pasada reventaba un "¡Orden lista!"
+     * en la cara de recepción.
+     *
+     * Se resuelve aquí y no con `replica identity full` a propósito: eso haría
+     * que cada UPDATE escribiera la fila vieja entera en el WAL —incluido el
+     * jsonb de servicios— para averiguar un dato que el navegador ya puede
+     * saber por su cuenta.
+     */
+    const yaEstabanListas = new Set<string>()
+
+    async function arrancar() {
+      const { data: listas } = await supabase
+        .from('ordenes')
+        .select('id')
+        .eq('taller_id', tallerId)
+        .eq('estado', 'listo')
+
+      if (cancelado) return
+      for (const o of listas ?? []) yaEstabanListas.add(o.id)
+
+      canal = supabase
+        .channel(`ordenes-listas-${tallerId}`)
+        .on(
+          'postgres_changes',
+          {
+            event:  'UPDATE',
+            schema: 'public',
+            table:  'ordenes',
+            filter: `taller_id=eq.${tallerId}`,
+          },
+          async (payload) => {
+            const nueva = payload.new as any
+            if (nueva.estado !== 'listo') {
+              // Salió de "listo": si vuelve a entrar, vuelve a avisar.
+              yaEstabanListas.delete(nueva.id)
+              return
+            }
+            // Ya la habíamos contado: esto es otra edición, no un coche nuevo
+            // que acaba de quedar listo.
+            if (yaEstabanListas.has(nueva.id)) return
+            yaEstabanListas.add(nueva.id)
+
             const { data: orden } = await supabase
               .from('ordenes')
               .select('id, numero_orden, clientes(nombre), vehiculo_marca, vehiculo_modelo')
               .eq('id', nueva.id)
               .single()
 
-            if (orden) {
+            if (orden && !cancelado) {
               setAlertas(prev => [orden as unknown as OrdenLista, ...prev])
             }
           }
-        }
-      )
-      .subscribe()
+        )
+        .subscribe()
+    }
+    arrancar()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      cancelado = true
+      if (canal) supabase.removeChannel(canal)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tallerId])
 
   const alertasVisibles = alertas.filter(a => !vistas.has(a.id))
