@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Star, MessageCircle, Mail, Send, ChevronRight, Lock, ExternalLink } from 'lucide-react'
 import { ResenaConfig, ResenaEnviada } from '@/types/resenas'
+import BuscarFicha from '@/components/resenas/buscar-ficha'
 
 const MENSAJE_WA_DEFAULT = `Hola {{nombre}}, gracias por confiar en *{{taller}}* con tu {{vehiculo}}. ¿Nos ayudas con una reseña en Google? Solo toma 1 minuto y nos ayuda mucho: {{link}}`
 const ASUNTO_EMAIL_DEFAULT = `¿Cómo te fue en {{taller}}? Cuéntanos tu experiencia`
@@ -232,6 +233,13 @@ export default function ResenasPage() {
             }`} />
           </button>
         </div>
+
+        {/* Buscar la ficha en Google.
+            Va ENCIMA del campo de pegar a mano a propósito: encontrar ese
+            enlace en Maps es la razón por la que solo 2 talleres de 83 lo
+            tienen puesto. El campo se queda debajo como salida para quien
+            ya lo tenga o para cuando la búsqueda no encuentre nada. */}
+        <BuscarFicha onElegir={url => setConfig(c => ({ ...c, google_review_url: url }))} />
 
         {/* URL de Google */}
         <div className="space-y-2">
