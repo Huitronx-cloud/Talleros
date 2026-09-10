@@ -122,10 +122,16 @@ export function mensajeSeguimiento(params: {
   marca: string | null
   modelo: string | null
   tallerNombre: string
-  linkGoogleMaps?: string | null
+  /**
+   * El enlace para dejar la reseña. Se llamaba `linkGoogleMaps`, y ese nombre
+   * fue parte del problema: quien escribió la consulta que lo alimentaba buscó
+   * una columna `link_google_maps` que no existe, en vez del enlace de reseña
+   * que el taller sí guarda.
+   */
+  linkResena?: string | null
 }) {
   const vehiculo = [params.marca, params.modelo].filter(Boolean).join(' ') || 'su vehículo'
-  const link     = params.linkGoogleMaps ? `\n\n${params.linkGoogleMaps}` : ''
+  const link     = params.linkResena ? `\n\n${params.linkResena}` : ''
 
   return `Hola ${params.nombre}, ¿cómo ha funcionado ${vehiculo} después del servicio en ${params.tallerNombre}?\n\nSu opinión nos ayuda a mejorar. ¿Nos regalas una reseña en Google?${link}`
 }

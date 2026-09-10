@@ -56,21 +56,47 @@ export async function GET(request: Request) {
 
       if (yaEnviado) return // Ya se envió, saltar
 
-      const { data: taller } = await supabase
+      // Esta consulta pedía `link_google_maps`, una columna que NO EXISTE en
+      // `talleres`. PostgREST rechaza la consulta entera cuando se le pide una
+      // columna desconocida, así que `taller` venía siempre en nulo y el
+      // mensaje caía al respaldo:
+      //
+      //   "¿cómo ha funcionado su Jetta después del servicio en el taller?"
+      //
+      // "el taller". A un cliente de FASTCAR, firmado por nadie. El mensaje
+      // parecía de un sistema en vez de de su mecánico, que es justo lo
+      // contrario de lo que tiene que parecer.
+      const { data: taller, error: errorTaller } = await supabase
         .from('talleres')
-        .select('nombre, link_google_maps')
+        .select('nombre')
         .eq('id', orden.taller_id)
         .single()
+
+      // supabase-js no lanza: sin esto, el día que alguien vuelva a tocar el
+      // nombre de una columna, los mensajes vuelven a decir "el taller" y no
+      // se entera nadie.
+      if (errorTaller) {
+        console.error('[cron seguimiento] no se pudo leer el taller:', errorTaller.message)
+      }
+
+      // El enlace de reseña vive en `resenas_config`, que es donde lo guarda la
+      // pantalla de Reseñas. `talleres.google_review_url` es de un flujo
+      // anterior y está vacía en los 83 talleres.
+      const { data: configResenas } = await supabase
+        .from('resenas_config')
+        .select('google_review_url')
+        .eq('taller_id', orden.taller_id)
+        .maybeSingle()
 
       const cliente = orden.clientes as { nombre: string; telefono: string | null } | null
       if (!cliente) return
 
       const mensaje = mensajeSeguimiento({
-        nombre:        cliente.nombre,
-        marca:         orden.vehiculo_marca,
-        modelo:        orden.vehiculo_modelo,
-        tallerNombre:  taller?.nombre ?? 'el taller',
-        linkGoogleMaps: (taller as any)?.link_google_maps ?? null,
+        nombre:       cliente.nombre,
+        marca:        orden.vehiculo_marca,
+        modelo:       orden.vehiculo_modelo,
+        tallerNombre: taller?.nombre ?? 'el taller',
+        linkResena:   configResenas?.google_review_url ?? null,
       })
 
       await enviarNotificacion({
