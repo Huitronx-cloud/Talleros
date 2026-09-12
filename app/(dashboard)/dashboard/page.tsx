@@ -17,6 +17,7 @@ import UsageMeter from './usage-meter'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
 const AvisoPendientes = nextDynamic(() => import('@/components/dashboard/aviso-pendientes'), { ssr: false })
+const AvisoResenas    = nextDynamic(() => import('@/components/dashboard/aviso-resenas'), { ssr: false })
 
 const MODULOS = [
   { href: '/kanban', label: 'Tablero',        icono: LayoutGrid,    color: 'bg-blue-500',    roles: ['propietario','admin','tecnico','recepcion'] },
@@ -320,6 +321,16 @@ export default async function DashboardPage() {
             vida del producto, algunos parados desde julio. Cada uno es un
             cliente que debía tener noticias de su taller y no las tuvo. */}
         {['propietario','admin','recepcion'].includes(rol) && <AvisoPendientes />}
+
+        {/* Debajo de Pendientes, no encima: lo de arriba es trabajo de hoy con
+            clientes esperando; esto es una oportunidad que lleva meses
+            escapándose y puede esperar treinta segundos más.
+
+            Solo propietario y admin, que son los mismos que ven /resenas — no
+            tendría sentido mandar a recepción a una pantalla que no puede abrir.
+
+            Se apaga sola en cuanto el taller tiene enlace. Ver el componente. */}
+        {['propietario','admin'].includes(rol) && <AvisoResenas />}
 
         {/* ── ONBOARDING ── solo cuando el propietario no ha completado la configuración */}
         {rol === 'propietario' && !onboardingCompleto && (
