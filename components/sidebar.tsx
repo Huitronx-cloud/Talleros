@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { RolUsuario } from '@/types'
+import { BLOQUEO_POR_RUTA } from '@/lib/plan-limits'
 import PlanBadge from '@/components/plan-badge'
 import LogoFullscreen from '@/components/logo-fullscreen'
 import dynamic from 'next/dynamic'
@@ -43,9 +44,35 @@ interface Props {
   nombreTaller: string
   logoUrl: string | null
   rol: RolUsuario
+  /**
+   * Qué funciones tiene desbloqueadas el plan del taller.
+   *
+   * El menú no sabía nada del plan, así que Reportes y Promociones —que sí son
+   * de pago— salían igual que todo lo demás. El taller entraba y se topaba el
+   * candado dentro. Enseñarlo antes es más honesto y de paso hace su trabajo:
+   * una etiqueta PRO en el menú dice para qué sirve pagar.
+   */
+  limites?: { reportes: boolean; recordatorios: boolean; promociones: boolean; inventario: boolean }
 }
 
-export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
+export default function Sidebar({ nombreTaller, logoUrl, rol, limites }: Props) {
+  /**
+   * La etiqueta de un elemento del menú, o null si no lleva.
+   *
+   * Sale del mismo mapa que usa el tablero (lib/plan-limits), no de una lista
+   * repetida aquí: es lo que impide que el menú diga PRO y la pantalla diga
+   * ESENCIAL, que es exactamente lo que pasaba.
+   *
+   * Sin `limites` no se pinta nada. Preferimos no enseñar etiqueta a enseñar
+   * una equivocada mientras carga.
+   */
+  function etiquetaDe(href: string): string | null {
+    if (!limites) return null
+    const bloqueo = BLOQUEO_POR_RUTA[href]
+    if (!bloqueo) return null
+    return limites[bloqueo.flag] ? null : bloqueo.etiqueta
+  }
+
   const pathname = usePathname()
   const router   = useRouter()
   const supabase = createClient()
@@ -119,6 +146,7 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
     const esCitas   = href === '/citas'
     const esPlan    = href === '/configuracion/plan'
     const showBadge = esCitas && citasPendientes > 0
+    const etiqueta  = etiquetaDe(href)
     return (
       <Link
         href={href}
@@ -148,6 +176,19 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
             {showBadge && !colapsado && (
               <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
                 {citasPendientes > 9 ? '9+' : citasPendientes}
+              </span>
+            )}
+            {/* PRO en ámbar, ESENCIAL en azul: el que cuesta más se ve más.
+                Solo sale si el taller NO la tiene — a quien ya paga no se le
+                recuerda en cada pantalla lo que compró. */}
+            {etiqueta && !showBadge && (
+              <span className={cn(
+                'ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded leading-none tracking-wide border',
+                etiqueta === 'PRO'
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  : 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+              )}>
+                {etiqueta}
               </span>
             )}
           </span>
@@ -230,6 +271,19 @@ export default function Sidebar({ nombreTaller, logoUrl, rol }: Props) {
                   {showBadge && (
                     <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
                       {citasPendientes > 9 ? '9+' : citasPendientes}
+                    </span>
+                  )}
+                  {/* La misma etiqueta que en el escritorio. El menú del
+                      teléfono se renderiza aparte, y es justo así como empiezan
+                      a separarse dos sitios que deberían decir lo mismo. */}
+                  {!showBadge && etiquetaDe(item.href) && (
+                    <span className={cn(
+                      'text-[9px] font-bold px-1.5 py-0.5 rounded leading-none tracking-wide border',
+                      etiquetaDe(item.href) === 'PRO'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                        : 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                    )}>
+                      {etiquetaDe(item.href)}
                     </span>
                   )}
                 </Link>

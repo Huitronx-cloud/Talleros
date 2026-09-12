@@ -59,6 +59,40 @@ export const LIMITES: Record<Plan, {
   },
 }
 
+/** Las funciones que dependen del plan. Las demás las tienen todos. */
+export type FlagPlan = 'reportes' | 'recordatorios' | 'promociones' | 'inventario'
+
+/**
+ * Qué desbloquea cada pantalla y con qué plan, en UN SOLO SITIO.
+ *
+ * Vivía suelto en el tablero, y el sidebar no tenía nada — así que Reportes y
+ * Promociones, que sí son de pago, salían sin marca en el menú. Peor: la
+ * pantalla de Reseñas llevaba una etiqueta PRO escrita a mano y Reseñas está
+ * incluida en los tres planes; y la de Recordatorios se titulaba "Feature Pro"
+ * cuando basta con Esencial, mandando a comprar el plan caro a quien no lo
+ * necesita.
+ *
+ * Las tres se contradecían entre sí porque cada una se escribió por su lado.
+ * Con el mapa aquí, el menú, el tablero y la pantalla dicen lo mismo por
+ * construcción, y la prueba de tests/planes.test.ts comprueba que la etiqueta
+ * coincide con el plan más barato que de verdad incluye esa función.
+ *
+ * Lo que NO está aquí es lo que no tiene puerta: reseñas y exportar los tienen
+ * los tres planes, así que no llevan etiqueta. Marcar de pago algo que el plan
+ * gratis puede usar es la forma más tonta de perder a alguien.
+ */
+export const BLOQUEO_POR_RUTA: Record<string, { flag: FlagPlan; etiqueta: 'PRO' | 'ESENCIAL' }> = {
+  '/reportes':      { flag: 'reportes',      etiqueta: 'PRO' },
+  '/promociones':   { flag: 'promociones',   etiqueta: 'PRO' },
+  '/recordatorios': { flag: 'recordatorios', etiqueta: 'ESENCIAL' },
+  '/inventario':    { flag: 'inventario',    etiqueta: 'ESENCIAL' },
+}
+
+/** El plan más barato que incluye una función. Es lo que debe decir la etiqueta. */
+export function planMinimoPara(flag: FlagPlan): 'ESENCIAL' | 'PRO' {
+  return LIMITES.esencial[flag] ? 'ESENCIAL' : 'PRO'
+}
+
 /** ¿Sigue vigente la prueba de 14 días? (trial_fin en el futuro) */
 export function enTrial(trialFin?: string | null): boolean {
   if (!trialFin) return false

@@ -12,7 +12,7 @@ import GraficaIngresos from './grafica-ingresos'
 import BannerUpgrade from './banner-upgrade'
 import BannerInstalar from './banner-instalar'
 import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist'
-import { getLimites } from '@/lib/plan-limits'
+import { getLimites, BLOQUEO_POR_RUTA } from '@/lib/plan-limits'
 import UsageMeter from './usage-meter'
 
 const PushToggle = nextDynamic(() => import('@/components/push-toggle'), { ssr: false })
@@ -36,15 +36,10 @@ const MODULOS = [
   { href: '/configuracion/plan',   label: 'Subir a Pro',   icono: TrendingUp,    color: 'from-purple-500 to-purple-700', roles: ['propietario'], upgrade: true },
 ]
 
-// Módulos que dependen de una feature del plan: qué flag los desbloquea y el
-// plan más barato que la incluye (la etiqueta debe mandar al plan correcto —
-// recordatorios ya vienen en Esencial, no hace falta Pro).
-const BLOQUEO_MODULO: Record<string, { flag: 'reportes' | 'recordatorios' | 'promociones' | 'inventario'; etiqueta: string }> = {
-  '/reportes':      { flag: 'reportes',      etiqueta: 'PRO' },
-  '/recordatorios': { flag: 'recordatorios', etiqueta: 'ESENCIAL' },
-  '/promociones':   { flag: 'promociones',   etiqueta: 'PRO' },
-  '/inventario':    { flag: 'inventario',    etiqueta: 'ESENCIAL' },
-}
+// El mapa vivía aquí y el sidebar no tenía ninguno, así que Reportes y
+// Promociones salían sin marca en el menú. Ahora sale de lib/plan-limits para
+// que el menú, el tablero y la pantalla digan lo mismo por construcción.
+const BLOQUEO_MODULO = BLOQUEO_POR_RUTA
 
 export default async function DashboardPage() {
   try {

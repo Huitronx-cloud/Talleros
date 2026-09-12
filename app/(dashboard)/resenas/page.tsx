@@ -114,28 +114,14 @@ export default function ResenasPage() {
     )
   }
 
-  if (plan !== 'pro' && plan !== 'trial' && plan !== 'esencial' && plan !== '') {
-    return (
-      <div className="max-w-2xl mx-auto mt-16 text-center px-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10">
-          <div className="w-16 h-16 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Star className="w-8 h-8 text-yellow-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Feature Pro</h2>
-          <p className="text-slate-400 mb-6">
-            Las reseñas automáticas de Google están disponibles en el plan Pro.
-            Al entregar una orden, el cliente recibe un mensaje automático para dejar su reseña.
-          </p>
-          <a
-            href="/configuracion/plan"
-            className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-xl transition-colors"
-          >
-            Upgrade a Pro <ChevronRight className="w-4 h-4" />
-          </a>
-        </div>
-      </div>
-    )
-  }
+  // Aquí había una pantalla de "Feature Pro" detrás de esta condición:
+  //
+  //   plan !== 'pro' && plan !== 'trial' && plan !== 'esencial' && plan !== ''
+  //
+  // Los planes que existen son exactamente trial, esencial y pro, así que la
+  // condición no podía ser cierta nunca: era código muerto guardando una puerta
+  // que no existe. Y menos mal, porque de haberse activado habría bloqueado una
+  // función que los tres planes incluyen.
 
   const PREVIEW_DATOS = {
     nombre: 'Carlos',
@@ -177,9 +163,12 @@ export default function ResenasPage() {
             Al entregar una orden, el cliente recibe automáticamente un mensaje para dejar su reseña.
           </p>
         </div>
-        <span className="bg-yellow-500/10 text-yellow-600 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-500/20">
-          PRO
-        </span>
+        {/* Aquí había una etiqueta PRO escrita a mano, fija, para todo el
+            mundo. Y es falsa: `resenas` está en true en los tres planes, así
+            que el tablero —que sí saca las etiquetas de los límites reales— no
+            le ponía ninguna. Un taller en plan gratis veía el módulo sin marca,
+            entraba, y se encontraba un PRO que le decía que aquello no era para
+            él. Cuando sí lo era. */}
       </div>
 
       {/* Bloque explicativo */}
