@@ -1,0 +1,62 @@
+-- `anon` podía leer la tabla `talleres` entera. Ahora solo cinco columnas.
+--
+-- ── Lo que pasaba ──────────────────────────────────────────────────────────
+--
+-- La política `lectura pública de talleres` es `SELECT using (true)`, y el rol
+-- `anon` tenía SELECT sobre toda la tabla. Con la clave pública —que por diseño
+-- viaja en el navegador— cualquiera sacaba las 113 filas completas: nombres,
+-- direcciones, 41 teléfonos y 7 correos.
+--
+-- No son datos de los clientes finales de los talleres, que están bien aislados
+-- por RLS. Son los datos de los talleres: la lista de clientes y prospectos del
+-- negocio, servida a quien la pidiera.
+--
+-- ── Por qué permisos por columna y no una política ─────────────────────────
+--
+-- RLS filtra filas, no columnas. La página pública de reservas necesita poder
+-- leer CUALQUIER taller por su id —es su trabajo—, así que la política de fila
+-- se queda como está. Lo que se recorta es QUÉ columnas puede ver, y eso son
+-- permisos de toda la vida.
+--
+-- ── Las cinco ──────────────────────────────────────────────────────────────
+--
+-- Salen de buscar todos los sitios que leen `talleres` con la clave anónima.
+-- Hay exactamente uno:
+--
+--   app/citas/[tallerId]/page.tsx
+--     .select('id, nombre, logo_url, direccion, telefono')
+--
+-- Las demás lecturas públicas —el portal del cliente, el historial del
+-- vehículo, las imágenes de vista previa— pasan por funciones SECURITY DEFINER
+-- (get_portal_data, get_historial_vehiculo), que se saltan estos permisos por
+-- diseño y siguen funcionando igual.
+--
+-- El cliente del navegador usa la misma clave pública, pero con sesión el rol
+-- pasa a ser `authenticated`, así que nada de lo que ve un usuario con cuenta
+-- se toca aquí.
+--
+-- Se conceden exactamente las cinco que se usan, ni una más. Si algún día una
+-- página pública necesita otra, que falle y se añada a conciencia; es mejor eso
+-- que dejar abierto "por si acaso" y no acordarse nunca de cerrarlo.
+--
+-- ── Si esto rompe algo ─────────────────────────────────────────────────────
+--
+-- El síntoma sería la página de reservas devolviendo 404: la consulta falla, el
+-- taller queda en null y salta notFound(). La vuelta atrás es una línea:
+--
+--   grant select on public.talleres to anon;
+
+revoke select on public.talleres from anon;
+
+grant select (id, nombre, logo_url, direccion, telefono)
+  on public.talleres to anon;
+
+-- Verificación (correr aparte):
+--
+--   set local role anon;
+--   select id, nombre, logo_url, direccion, telefono from public.talleres limit 1;
+--   -- debe funcionar
+--
+--   set local role anon;
+--   select google_access_token from public.talleres limit 1;
+--   -- debe fallar con "permission denied for table talleres"
