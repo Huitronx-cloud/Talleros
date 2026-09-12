@@ -140,17 +140,21 @@ export default function RecordatoriosPage() {
           <div className="w-16 h-16 bg-sky-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-sky-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Feature Pro</h2>
+          {/* Se titulaba "Feature Pro" y el botón decía "Upgrade a Pro", con el
+              párrafo de en medio diciendo lo correcto: que basta con Esencial.
+              Se contradecía a sí misma en la misma caja, y de las dos versiones
+              ganaban las grandes — o sea que a quien solo necesitaba Esencial se
+              le vendía el plan caro, o se iba pensando que no le daba. */}
+          <h2 className="text-2xl font-bold text-white mb-2">Disponible desde Esencial</h2>
           <p className="text-slate-400 mb-6">
-            Los recordatorios automáticos de mantenimiento están disponibles desde el plan Esencial.
+            Los recordatorios automáticos de mantenimiento vienen incluidos en el plan Esencial.
             Recupera clientes inactivos automáticamente cada 3 a 6 meses.
           </p>
           <a
-          
             href="/configuracion/plan"
             className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
           >
-            Upgrade a Pro <ChevronRight className="w-4 h-4" />
+            Ver planes <ChevronRight className="w-4 h-4" />
           </a>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import Sidebar from '@/components/sidebar'
 import { RolUsuario } from '@/types'
+import { getLimites } from '@/lib/plan-limits'
 import NotificacionesRealtime from '@/components/recepcion/notificaciones-realtime'
 import UpgradeSuccessModal from '@/components/upgrade-success-modal'
 import SoporteWidget from '@/components/soporte-widget'
@@ -27,6 +28,17 @@ export default async function DashboardLayout({
   const taller = (usuario?.talleres as { nombre: string; logo_url: string | null } | null) ?? null
   const esRecepcion = usuario?.rol === 'recepcion'
 
+  // El plan, para que el menú pueda marcar qué hace falta pagar. Sin esto el
+  // sidebar no tenía forma de saberlo y salía todo sin etiqueta: Reportes y
+  // Promociones parecían incluidas hasta que entrabas y te topabas el candado.
+  const { data: suscripcion } = await supabase
+    .from('suscripciones')
+    .select('plan, trial_fin')
+    .eq('taller_id', usuario?.taller_id ?? '')
+    .maybeSingle()
+
+  const limites = getLimites(suscripcion?.plan ?? 'trial', suscripcion?.trial_fin)
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Suspense fallback={null}>
@@ -34,6 +46,12 @@ export default async function DashboardLayout({
           nombreTaller={taller?.nombre ?? 'Mi taller'}
           logoUrl={taller?.logo_url ?? null}
           rol={(usuario?.rol ?? 'tecnico') as RolUsuario}
+          limites={{
+            reportes:      limites.reportes,
+            recordatorios: limites.recordatorios,
+            promociones:   limites.promociones,
+            inventario:    limites.inventario,
+          }}
         />
       </Suspense>
       <main
